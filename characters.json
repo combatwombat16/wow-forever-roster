@@ -70,5 +70,17 @@
     "class": "Shaman",
     "prof1": "Skinning",
     "prof2": "Leatherworking"
+  },
+  {
+    "id": "1791928613248",
+    "player": "Kristin",
+    "name": "Huntress",
+    "track": "family",
+    "role": "DPS",
+    "roleSec": "None",
+    "race": "Troll",
+    "class": "Hunter",
+    "prof1": "Mining",
+    "prof2": "Blacksmithing"
   }
 ]
