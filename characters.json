@@ -130,5 +130,17 @@
     "class": "Paladin",
     "prof1": "Mining",
     "prof2": "Blacksmithing"
+  },
+  {
+    "id": "1791928967366",
+    "player": "NahBrah",
+    "name": "Tir Rheebeard",
+    "track": "alts",
+    "role": "DPS",
+    "roleSec": "Healer",
+    "race": "Horde Skyborne",
+    "class": "Druid",
+    "prof1": "Alchemy",
+    "prof2": "Herbalism"
   }
 ]
