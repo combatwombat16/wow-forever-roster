@@ -101,40 +101,40 @@
       </div>
     </div>
 
-    <!-- Active Party & Buff Diagnostics -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      <!-- 5-Man Party Builder -->
-      <div class="lg:col-span-2 wow-border bg-slate-900/70 backdrop-blur rounded-xl p-5">
-        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <div class="flex items-center gap-2">
-            <span class="text-amber-400 text-lg">⚔️</span>
-            <h2 class="cinzel text-lg font-bold text-amber-200">Dungeon Group Simulator (5-Man)</h2>
-          </div>
-          <!-- Dynamically updating button based on current filter -->
-          <button id="auto-form-btn" onclick="autoFillDungeonGroup()" class="text-xs text-amber-400/90 hover:text-amber-300 underline font-semibold transition-colors">
-            Auto-Form from "All Characters"
-          </button>
+    <!-- Unified Dungeon Group Simulator & Synergy Bubble -->
+    <section class="wow-border bg-slate-900/70 backdrop-blur rounded-xl p-5 space-y-5">
+      <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800/80">
+        <div class="flex items-center gap-2">
+          <span class="text-amber-400 text-xl">⚔️</span>
+          <h2 class="cinzel text-lg font-bold text-amber-200">Dungeon Group Simulator (5-Man)</h2>
+          <span id="trinity-status" class="ml-2 text-xs font-semibold px-2.5 py-0.5 rounded bg-slate-800/80 border border-slate-700 text-amber-400">Current: 0 Tank, 0 Healer, 0 DPS</span>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-5 gap-3" id="party-slots">
-          <!-- Rendered dynamically -->
+        <div class="flex items-center gap-3">
+          <button id="auto-form-btn" onclick="autoFillDungeonGroup()" class="px-3 py-1.5 rounded text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-semibold transition-all">
+            Auto-Form from "All Characters"
+          </button>
+          <button onclick="clearParty()" class="px-3 py-1.5 rounded text-xs bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/50 font-semibold transition-all">
+            Clear Party ✕
+          </button>
         </div>
       </div>
 
-      <!-- Live Party Synergy Diagnostics -->
-      <div class="wow-border bg-slate-900/70 backdrop-blur rounded-xl p-5 flex flex-col justify-between">
-        <div>
-          <h2 class="cinzel text-lg font-bold text-amber-200 mb-3 flex items-center gap-2">
-            <span>✨</span> Synergy & Party Buffs
-          </h2>
-          <div class="space-y-2 text-xs" id="buff-checklist">
-            <!-- Rendered dynamically -->
-          </div>
+      <!-- 5-Man Party Slots -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3" id="party-slots">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Synergy & Buff Tiles (Integrated within the Simulator bubble) -->
+      <div class="pt-2 border-t border-slate-800/80">
+        <div class="flex items-center justify-between mb-2.5">
+          <h3 class="text-xs uppercase font-bold tracking-wider text-slate-400 flex items-center gap-1.5">
+            <span>✨</span> Active Party Buffs & Dungeon Utility
+          </h3>
+          <span id="synergy-score" class="text-[11px] text-slate-400 font-semibold">0 / 7 Active</span>
         </div>
-        <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
-          <span class="font-semibold text-slate-300">Party Trinity Status:</span>
-          <span id="trinity-status" class="ml-1 text-amber-400">Needs 1 Tank, 1 Healer, 3 DPS</span>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2" id="buff-checklist">
+          <!-- Rendered dynamically -->
         </div>
       </div>
     </section>
@@ -405,7 +405,6 @@
       }
     }
 
-    // Launch countdown
     function updateCountdown() {
       const launchDate = new Date('2026-11-04T00:00:00Z').getTime();
       const now = new Date().getTime();
@@ -427,7 +426,6 @@
     setInterval(updateCountdown, 60000);
     updateCountdown();
 
-    // GitHub Read & Write Services
     async function pullFromGitHub() {
       if (!ghConfig.owner || !ghConfig.repo) {
         setSyncStatus('Local only (configure repo)', false);
@@ -655,7 +653,7 @@
       for (let i = 0; i < 5; i++) {
         const char = party[i];
         const slotEl = document.createElement('div');
-        slotEl.className = 'bg-slate-950/70 border border-slate-800 rounded-lg p-3 flex flex-col justify-between min-h-[110px]';
+        slotEl.className = 'bg-slate-950/80 border border-slate-800 rounded-lg p-3 flex flex-col justify-between min-h-[105px]';
 
         if (char) {
           const color = CLASS_COLORS[char.class] || 'text-slate-300';
@@ -664,7 +662,7 @@
             <div>
               <div class="text-[10px] font-bold text-slate-500 uppercase flex items-center justify-between">
                 <span>${slotLabels[i]}</span>
-                ${isOffspec ? '<span class="text-[9px] text-sky-400 font-semibold bg-sky-950/80 px-1 rounded">Off-spec</span>' : ''}
+                ${isOffspec ? '<span class="text-[9px] text-sky-400 font-semibold bg-sky-950/80 px-1 rounded border border-sky-800/40">Off-spec</span>' : ''}
               </div>
               <div class="font-bold text-sm text-slate-100 truncate mt-1">${char.name}</div>
               <div class="text-xs font-semibold ${color.split(' ')[0]}">${char.class}</div>
@@ -729,9 +727,15 @@
       renderRoster();
     }
 
-    // Auto-form party dynamically scoped to the currently selected filter
+    function clearParty() {
+      party = [null, null, null, null, null];
+      renderParty();
+      renderRoster();
+    }
+
+    // Improved Team Formation Logic:
+    // Strictly checks primary roles first, falling back to secondary hybrid roles only when required.
     function autoFillDungeonGroup() {
-      // 1. Pull exclusively from the active filtered group
       const pool = characters.filter(c => currentFilter === 'all' ? true : c.track === currentFilter);
 
       if (pool.length === 0) {
@@ -741,29 +745,50 @@
       }
 
       party = [null, null, null, null, null];
+      const usedIds = new Set();
 
-      // 2. Tank: Main-spec Tank first, then hybrid secondary Tank
-      const tank = pool.find(c => c.role === 'Tank') || pool.find(c => c.roleSec === 'Tank');
-      if (tank) party[0] = { ...tank, assignedRole: 'Tank' };
+      // Step 1: Tank Selection
+      // 1a: Try candidate whose PRIMARY role is Tank
+      let tank = pool.find(c => c.role === 'Tank');
+      // 1b: If none, fallback to hybrid whose SECONDARY role is Tank
+      if (!tank) {
+        tank = pool.find(c => c.roleSec === 'Tank');
+      }
+      if (tank) {
+        party[0] = { ...tank, assignedRole: 'Tank' };
+        usedIds.add(tank.id);
+      }
 
-      // 3. Healer: Main-spec Healer first, then hybrid secondary Healer (excluding chosen tank)
-      const healer = pool.find(c => c !== tank && c.role === 'Healer') || pool.find(c => c !== tank && c.roleSec === 'Healer');
-      if (healer) party[1] = { ...healer, assignedRole: 'Healer' };
+      // Step 2: Healer Selection
+      // 2a: Try candidate whose PRIMARY role is Healer (unassigned)
+      let healer = pool.find(c => !usedIds.has(c.id) && c.role === 'Healer');
+      // 2b: If none, fallback to hybrid whose SECONDARY role is Healer (unassigned)
+      if (!healer) {
+        healer = pool.find(c => !usedIds.has(c.id) && c.roleSec === 'Healer');
+      }
+      if (healer) {
+        party[1] = { ...healer, assignedRole: 'Healer' };
+        usedIds.add(healer.id);
+      }
 
-      // 4. DPS: Fill remaining 3 slots from candidates not yet selected
-      const availableDps = pool.filter(c => c !== tank && c !== healer);
-      
-      // Sort so characters who actually have DPS as primary or secondary get priority
-      availableDps.sort((a, b) => {
-        const aPref = (a.role === 'DPS' ? 2 : (a.roleSec === 'DPS' ? 1 : 0));
-        const bPref = (b.role === 'DPS' ? 2 : (b.roleSec === 'DPS' ? 1 : 0));
-        return bPref - aPref;
-      });
+      // Step 3: DPS Selection (Slots 2, 3, 4)
+      for (let slot = 2; slot < 5; slot++) {
+        // 3a: Primary DPS
+        let dps = pool.find(c => !usedIds.has(c.id) && c.role === 'DPS');
+        // 3b: Secondary DPS hybrid
+        if (!dps) {
+          dps = pool.find(c => !usedIds.has(c.id) && c.roleSec === 'DPS');
+        }
+        // 3c: Fill with any remaining unassigned character
+        if (!dps) {
+          dps = pool.find(c => !usedIds.has(c.id));
+        }
 
-      const selectedDps = availableDps.slice(0, 3);
-      selectedDps.forEach((d, i) => { 
-        if (i < 3) party[2 + i] = { ...d, assignedRole: 'DPS' }; 
-      });
+        if (dps) {
+          party[slot] = { ...dps, assignedRole: 'DPS' };
+          usedIds.add(dps.id);
+        }
+      }
 
       renderParty();
       renderRoster();
@@ -774,23 +799,32 @@
       const buffContainer = document.getElementById('buff-checklist');
 
       const synergies = [
-        { name: "Bloodlust / Windfury", has: activeClasses.includes("Shaman"), desc: "Shaman utility (now available to Dwarves!)" },
-        { name: "Fortitude Stamina (+Stam)", has: activeClasses.includes("Priest"), desc: "Priest buff (Gnome/Undead/Human/Dwarf)" },
-        { name: "Arcane Intellect (+Mana/Int)", has: activeClasses.includes("Mage"), desc: "Mage buff (Orc/Skyborne/Human/Gnome)" },
-        { name: "Blessings & Auras (+Combat)", has: activeClasses.includes("Paladin"), desc: "Paladin utility (Undead/Human/Dwarf)" },
-        { name: "Mark of the Wild (+Stats/Resist)", has: activeClasses.includes("Druid"), desc: "Druid buff (Skyborne/Tauren/NE)" },
-        { name: "Combat Resurrection (Brez)", has: activeClasses.includes("Druid") || activeClasses.includes("Warlock"), desc: "Soulstone or Rebirth active" },
-        { name: "Crowd Control (Polymorph/Sap)", has: activeClasses.includes("Mage") || activeClasses.includes("Rogue"), desc: "Essential for tight dungeon pulls" }
+        { name: "Bloodlust / Windfury", icon: "⚡", has: activeClasses.includes("Shaman"), desc: "Shaman (Orc/Tauren/Troll/Dwarf/Skyborne)" },
+        { name: "Power Word: Fortitude", icon: "🛡️", has: activeClasses.includes("Priest"), desc: "+Stam (Human/Dwarf/NE/Gnome/Undead/Troll)" },
+        { name: "Arcane Intellect", icon: "📖", has: activeClasses.includes("Mage"), desc: "+Mana/Int (Human/Gnome/Skyborne/Orc/Undead/Troll)" },
+        { name: "Blessings & Auras", icon: "✨", has: activeClasses.includes("Paladin"), desc: "Paladin buffs (Human/Dwarf/Undead)" },
+        { name: "Mark of the Wild", icon: "🐾", has: activeClasses.includes("Druid"), desc: "+Stats/Resist (NE/Skyborne/Tauren)" },
+        { name: "Combat Resurrection", icon: "♻️", has: activeClasses.includes("Druid") || activeClasses.includes("Warlock"), desc: "Rebirth / Soulstone" },
+        { name: "Crowd Control", icon: "🐑", has: activeClasses.includes("Mage") || activeClasses.includes("Rogue"), desc: "Polymorph / Sap" }
       ];
 
-      buffContainer.innerHTML = synergies.map(s => `
-        <div class="flex items-center justify-between p-1.5 rounded ${s.has ? 'bg-emerald-950/40 border border-emerald-800/40' : 'bg-slate-950/40 border border-slate-800/40 text-slate-500'}">
-          <span class="flex items-center gap-1.5 font-medium ${s.has ? 'text-emerald-300' : 'text-slate-500'}">
-            <span>${s.has ? '✓' : '✗'}</span> ${s.name}
-          </span>
-          <span class="text-[10px] text-slate-500">${s.desc}</span>
-        </div>
-      `).join('');
+      let activeCount = 0;
+      buffContainer.innerHTML = synergies.map(s => {
+        if (s.has) activeCount++;
+        return `
+          <div class="rounded-lg p-2 transition-all flex flex-col justify-between border ${s.has ? 'bg-emerald-950/60 border-emerald-500/60 shadow-[0_0_10px_rgba(16,185,129,0.15)]' : 'bg-slate-950/50 border-slate-800/80 opacity-50'}">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-xs font-bold ${s.has ? 'text-emerald-200' : 'text-slate-400'} flex items-center gap-1.5 truncate">
+                <span>${s.icon}</span> <span class="truncate">${s.name}</span>
+              </span>
+              <span class="text-xs font-black ${s.has ? 'text-emerald-400' : 'text-slate-600'}">${s.has ? '✓' : '✗'}</span>
+            </div>
+            <div class="text-[9px] text-slate-400 mt-1 truncate">${s.desc}</div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('synergy-score').textContent = `${activeCount} / ${synergies.length} Active`;
 
       const tankCount = party.filter(c => c && c.assignedRole === 'Tank').length;
       const healCount = party.filter(c => c && c.assignedRole === 'Healer').length;
@@ -798,10 +832,10 @@
 
       const statusEl = document.getElementById('trinity-status');
       if (tankCount === 1 && healCount === 1 && dpsCount === 3) {
-        statusEl.className = 'ml-1 text-emerald-400 font-bold';
-        statusEl.innerText = 'Perfect Holy Trinity Composed! (1T / 1H / 3DPS)';
+        statusEl.className = 'ml-2 text-xs font-semibold px-2.5 py-0.5 rounded bg-emerald-950 border border-emerald-700/60 text-emerald-400';
+        statusEl.innerText = 'Holy Trinity Complete! (1T / 1H / 3DPS)';
       } else {
-        statusEl.className = 'ml-1 text-amber-400 font-semibold';
+        statusEl.className = 'ml-2 text-xs font-semibold px-2.5 py-0.5 rounded bg-slate-800/80 border border-slate-700 text-amber-400';
         statusEl.innerText = `Current: ${tankCount} Tank, ${healCount} Healer, ${dpsCount} DPS`;
       }
     }
@@ -838,7 +872,6 @@
       document.getElementById('prof-coverage-pct').innerText = `${pct}% Guild Coverage (${covered}/${ALL_PROFESSIONS.length})`;
     }
 
-    // Modal & CRUD Handlers
     function openModal() {
       document.getElementById('modal-title').innerText = 'Add Forever Character';
       document.getElementById('edit-id').value = '';
@@ -909,7 +942,6 @@
       await pushToGitHub(updated);
     }
 
-    // GitHub Settings Modal
     function openGhModal() {
       document.getElementById('gh-owner').value = ghConfig.owner || '';
       document.getElementById('gh-repo').value = ghConfig.repo || '';
