@@ -34,5 +34,17 @@
     "class": "Paladin",
     "prof1": "Mining",
     "prof2": "Blacksmithing"
+  },
+  {
+    "id": "1791922047617",
+    "player": "malmypal",
+    "name": "tbd",
+    "track": "family",
+    "role": "Tank",
+    "roleSec": "Healer",
+    "race": "Undead",
+    "class": "Paladin",
+    "prof1": "Mining",
+    "prof2": "Blacksmithing"
   }
 ]
