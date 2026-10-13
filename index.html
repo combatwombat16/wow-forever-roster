@@ -22,146 +22,182 @@
       border: 1px solid #d4af37;
       box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
     }
+    /* Custom scrollbar for vertical character list */
+    .roster-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .roster-scroll::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 4px;
+    }
+    .roster-scroll::-webkit-scrollbar-thumb {
+      background: rgba(212, 175, 55, 0.25);
+      border-radius: 4px;
+    }
+    .roster-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(212, 175, 55, 0.5);
+    }
   </style>
 </head>
-<body class="text-slate-200 min-h-screen p-4 md:p-8">
+<body class="text-slate-200 min-h-screen p-4 md:p-6 lg:p-8">
 
-  <!-- Header & Launch Countdown -->
-  <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-amber-900/40">
+  <!-- Header: Branding on Left, Launch Countdown & GitHub in Top-Right -->
+  <header class="max-w-[1600px] mx-auto mb-6 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 pb-6 border-b border-amber-900/40">
     <div>
       <div class="flex items-center gap-3">
         <span class="px-2.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">Nov 4, 2026</span>
         <span class="text-xs uppercase tracking-widest text-slate-400">Classic+ Guild Roster</span>
       </div>
-      <h1 class="cinzel text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 mt-1">
+      <h1 class="cinzel text-2xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 mt-1">
         World of Warcraft: Forever
       </h1>
-      <p class="text-sm text-slate-400 mt-1">Tracking Flowmasters Squad, Family Team, and Alts with GitHub Sync</p>
+      <p class="text-xs md:text-sm text-slate-400 mt-0.5">Tracking Flowmasters Squad, Family Team, and Alts with GitHub Sync</p>
     </div>
 
-    <!-- Countdown Timer -->
-    <div class="wow-border bg-slate-900/80 rounded-xl px-6 py-3 flex items-center gap-6">
-      <div class="text-center">
-        <div id="days" class="text-2xl font-bold cinzel text-amber-400">--</div>
-        <div class="text-[10px] uppercase text-slate-400 font-semibold tracking-wider">Days</div>
+    <!-- Top-Right Cluster: Launch Countdown + Repo Status -->
+    <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-start xl:justify-end">
+      <!-- Launch Countdown -->
+      <div class="wow-border bg-slate-900/80 rounded-xl px-4 py-2 flex items-center gap-4">
+        <div class="text-center">
+          <div id="days" class="text-xl font-bold cinzel text-amber-400">--</div>
+          <div class="text-[9px] uppercase text-slate-400 font-semibold tracking-wider">Days</div>
+        </div>
+        <div class="text-slate-600 font-bold">:</div>
+        <div class="text-center">
+          <div id="hours" class="text-xl font-bold cinzel text-amber-400">--</div>
+          <div class="text-[9px] uppercase text-slate-400 font-semibold tracking-wider">Hours</div>
+        </div>
+        <div class="text-slate-600 font-bold">:</div>
+        <div class="text-center">
+          <div id="mins" class="text-xl font-bold cinzel text-amber-400">--</div>
+          <div class="text-[9px] uppercase text-slate-400 font-semibold tracking-wider">Mins</div>
+        </div>
       </div>
-      <div class="text-slate-600 font-bold">:</div>
-      <div class="text-center">
-        <div id="hours" class="text-2xl font-bold cinzel text-amber-400">--</div>
-        <div class="text-[10px] uppercase text-slate-400 font-semibold tracking-wider">Hours</div>
-      </div>
-      <div class="text-slate-600 font-bold">:</div>
-      <div class="text-center">
-        <div id="mins" class="text-2xl font-bold cinzel text-amber-400">--</div>
-        <div class="text-[10px] uppercase text-slate-400 font-semibold tracking-wider">Mins</div>
+
+      <!-- Repo Status & GitHub Settings -->
+      <div class="wow-border bg-slate-900/90 rounded-xl px-3 py-2 flex items-center gap-3 text-xs">
+        <div class="flex flex-col text-[11px]">
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-500">Repo:</span>
+            <span id="repo-display" class="font-mono text-amber-300 font-semibold truncate max-w-[150px]">Not Set</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-500">Sync:</span>
+            <span id="sync-status" class="text-slate-400 truncate max-w-[150px]">Ready</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 border-l border-slate-800 pl-2">
+          <button onclick="pullFromGitHub()" title="Pull latest characters.json" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 transition-all">
+            🔄
+          </button>
+          <button onclick="openGhModal()" title="GitHub Settings" class="p-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded border border-amber-500/40 transition-all">
+            ⚙️
+          </button>
+        </div>
       </div>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto space-y-8">
+  <!-- Main Body: Two-Column Layout -->
+  <main class="max-w-[1600px] mx-auto flex flex-col lg:flex-row gap-6 items-start">
 
-    <!-- GitHub Sync Status Banner -->
-    <section class="wow-border bg-slate-900/90 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-      <div class="flex items-center gap-3">
-        <div class="flex items-center gap-2">
-          <span class="text-slate-400">Repo:</span>
-          <span id="repo-display" class="font-mono text-amber-300 font-semibold">Not Configured</span>
-        </div>
-        <span class="text-slate-600">•</span>
-        <div class="flex items-center gap-2">
-          <span class="text-slate-400">Status:</span>
-          <span id="sync-status" class="text-slate-400">Initializing...</span>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <button onclick="pullFromGitHub()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 flex items-center gap-1.5 transition-all">
-          <span>🔄</span> Pull from GitHub
-        </button>
-        <button onclick="openGhModal()" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded border border-amber-500/40 flex items-center gap-1.5 transition-all">
-          <span>⚙️</span> GitHub Settings
-        </button>
-      </div>
-    </section>
-
-    <!-- Top Action & Filter Bar -->
-    <div class="flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex-wrap">
-        <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-3 py-1.5 rounded text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40">All Characters</button>
-        <button onclick="setFilter('flowmasters')" id="filter-flowmasters" class="filter-btn px-3 py-1.5 rounded text-xs font-bold transition-all text-slate-400 hover:text-white">Flowmasters ⚔️</button>
-        <button onclick="setFilter('family')" id="filter-family" class="filter-btn px-3 py-1.5 rounded text-xs font-bold transition-all text-slate-400 hover:text-white">Family 🛡️</button>
-        <button onclick="setFilter('alts')" id="filter-alts" class="filter-btn px-3 py-1.5 rounded text-xs font-bold transition-all text-slate-400 hover:text-white">Alts 🎒</button>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <button onclick="openModal()" class="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg flex items-center gap-2 transition-all">
-          <span>+ Add Character</span>
-        </button>
-        <button onclick="exportData()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg border border-slate-700">Export JSON</button>
-      </div>
-    </div>
-
-    <!-- Unified Dungeon Group Simulator & Synergy Bubble -->
-    <section class="wow-border bg-slate-900/70 backdrop-blur rounded-xl p-5 space-y-5">
-      <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800/80">
-        <div class="flex items-center gap-2">
-          <span class="text-amber-400 text-xl">⚔️</span>
-          <h2 class="cinzel text-lg font-bold text-amber-200">Dungeon Group Simulator (5-Man)</h2>
-          <span id="trinity-status" class="ml-2 text-xs font-semibold px-2.5 py-0.5 rounded bg-slate-800/80 border border-slate-700 text-amber-400">Current: 0 Tank, 0 Healer, 0 DPS</span>
+    <!-- LEFT COLUMN: Character Roster & Group Selector (Vertical Emphasis) -->
+    <aside class="w-full lg:w-96 shrink-0 space-y-4">
+      
+      <!-- Group Track Selector & Top Actions -->
+      <div class="wow-border bg-slate-900/80 rounded-xl p-3.5 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Squad Filter</span>
+          <span id="roster-count" class="text-[11px] text-amber-400 font-semibold">0 Characters</span>
         </div>
 
-        <div class="flex items-center gap-3">
-          <button id="auto-form-btn" onclick="autoFillDungeonGroup()" class="px-3 py-1.5 rounded text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-semibold transition-all">
-            Auto-Form from "All Characters"
+        <!-- Vertically Biased Group Tabs -->
+        <div class="grid grid-cols-2 gap-1.5">
+          <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40 text-left">
+            All Chars
           </button>
-          <button onclick="clearParty()" class="px-3 py-1.5 rounded text-xs bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/50 font-semibold transition-all">
-            Clear Party ✕
+          <button onclick="setFilter('flowmasters')" id="filter-flowmasters" class="filter-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all text-slate-400 hover:text-white border border-transparent text-left">
+            ⚔️ Flowmasters
+          </button>
+          <button onclick="setFilter('family')" id="filter-family" class="filter-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all text-slate-400 hover:text-white border border-transparent text-left">
+            🛡️ Family
+          </button>
+          <button onclick="setFilter('alts')" id="filter-alts" class="filter-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all text-slate-400 hover:text-white border border-transparent text-left">
+            🎒 Alts
+          </button>
+        </div>
+
+        <div class="pt-2 border-t border-slate-800/80 flex items-center gap-2">
+          <button onclick="openModal()" class="flex-1 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-lg shadow-md flex items-center justify-center gap-1.5 transition-all">
+            <span>+</span> <span>Add Character</span>
+          </button>
+          <button onclick="exportData()" title="Export JSON file" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg border border-slate-700">
+            Export
           </button>
         </div>
       </div>
 
-      <!-- 5-Man Party Slots -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3" id="party-slots">
+      <!-- Vertical Character Cards List -->
+      <div id="character-grid" class="space-y-3 max-h-[calc(100vh-320px)] overflow-y-auto pr-1 roster-scroll">
         <!-- Rendered dynamically -->
       </div>
+    </aside>
 
-      <!-- Synergy & Buff Tiles (Integrated within the Simulator bubble) -->
-      <div class="pt-2 border-t border-slate-800/80">
-        <div class="flex items-center justify-between mb-2.5">
-          <h3 class="text-xs uppercase font-bold tracking-wider text-slate-400 flex items-center gap-1.5">
-            <span>✨</span> Active Party Buffs & Dungeon Utility
-          </h3>
-          <span id="synergy-score" class="text-[11px] text-slate-400 font-semibold">0 / 7 Active</span>
+    <!-- RIGHT COLUMN: Simulator Bubble & Profession Matrix Bubble -->
+    <div class="flex-1 w-full space-y-6">
+
+      <!-- BUBBLE 1: Dungeon Group Simulator (5-Man) -->
+      <section class="wow-border bg-slate-900/70 backdrop-blur rounded-xl p-5 space-y-5">
+        <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800/80">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-amber-400 text-xl">⚔️</span>
+            <h2 class="cinzel text-lg font-bold text-amber-200">Dungeon Group Simulator (5-Man)</h2>
+            <span id="trinity-status" class="ml-1 text-xs font-semibold px-2.5 py-0.5 rounded bg-slate-800/80 border border-slate-700 text-amber-400">Current: 0 Tank, 0 Healer, 0 DPS</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="auto-form-btn" onclick="autoFillDungeonGroup()" class="px-3 py-1.5 rounded text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-semibold transition-all">
+              Auto-Form from "All Chars"
+            </button>
+            <button onclick="clearParty()" class="px-3 py-1.5 rounded text-xs bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/50 font-semibold transition-all">
+              Clear Party ✕
+            </button>
+          </div>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2" id="buff-checklist">
+
+        <!-- 5-Man Party Slots -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3" id="party-slots">
           <!-- Rendered dynamically -->
         </div>
-      </div>
-    </section>
 
-    <!-- Guild Profession Coverage Board -->
-    <section class="wow-border bg-slate-900/70 rounded-xl p-5">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="cinzel text-lg font-bold text-amber-200 flex items-center gap-2">
-          <span>⚒️</span> Guild Profession Matrix (Forever Classic+)
-        </h2>
-        <span id="prof-coverage-pct" class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-800 text-amber-300 border border-slate-700">0% Covered</span>
-      </div>
-      <div id="profession-tags" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
-        <!-- Rendered dynamically -->
-      </div>
-    </section>
+        <!-- Synergy & Buff Tiles -->
+        <div class="pt-2 border-t border-slate-800/80">
+          <div class="flex items-center justify-between mb-2.5">
+            <h3 class="text-xs uppercase font-bold tracking-wider text-slate-400 flex items-center gap-1.5">
+              <span>✨</span> Active Party Buffs & Dungeon Utility
+            </h3>
+            <span id="synergy-score" class="text-[11px] text-slate-400 font-semibold">0 / 7 Active</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2" id="buff-checklist">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </section>
 
-    <!-- Characters Grid -->
-    <section>
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="cinzel text-xl font-bold text-amber-200">Registered Roster</h2>
-        <span id="roster-count" class="text-xs text-slate-400 font-semibold">0 Characters</span>
-      </div>
-      <div id="character-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Character Cards injected here -->
-      </div>
-    </section>
+      <!-- BUBBLE 2: Guild Profession Matrix -->
+      <section class="wow-border bg-slate-900/70 backdrop-blur rounded-xl p-5 space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
+          <h2 class="cinzel text-lg font-bold text-amber-200 flex items-center gap-2">
+            <span>⚒️</span> Guild Profession Matrix (Forever Classic+)
+          </h2>
+          <span id="prof-coverage-pct" class="text-xs font-semibold px-2.5 py-0.5 rounded bg-slate-800 text-amber-300 border border-slate-700">0% Covered</span>
+        </div>
+        <div id="profession-tags" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 text-xs">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+    </div>
 
   </main>
 
@@ -393,15 +429,17 @@
     function setSyncStatus(msg, isError = false) {
       const el = document.getElementById('sync-status');
       el.textContent = msg;
-      el.className = isError ? 'text-red-400 font-semibold' : 'text-emerald-400 font-semibold';
+      el.className = isError ? 'text-red-400 font-semibold truncate max-w-[150px]' : 'text-emerald-400 font-semibold truncate max-w-[150px]';
     }
 
     function updateRepoDisplay() {
       const el = document.getElementById('repo-display');
       if (ghConfig.owner && ghConfig.repo) {
-        el.textContent = `${ghConfig.owner}/${ghConfig.repo} (${ghConfig.branch})`;
+        el.textContent = `${ghConfig.owner}/${ghConfig.repo}`;
+        el.title = `${ghConfig.owner}/${ghConfig.repo} (${ghConfig.branch})`;
       } else {
-        el.textContent = 'Not Configured (Click GitHub Settings)';
+        el.textContent = 'Not Set';
+        el.title = 'Click ⚙️ to configure GitHub repo';
       }
     }
 
@@ -428,11 +466,11 @@
 
     async function pullFromGitHub() {
       if (!ghConfig.owner || !ghConfig.repo) {
-        setSyncStatus('Local only (configure repo)', false);
+        setSyncStatus('Local only', false);
         return;
       }
 
-      setSyncStatus('Fetching characters.json...');
+      setSyncStatus('Pulling...');
       const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/characters.json?ref=${ghConfig.branch}`;
       const headers = { 'Accept': 'application/vnd.github.v3+json' };
       if (ghConfig.token) headers['Authorization'] = `token ${ghConfig.token}`;
@@ -440,7 +478,7 @@
       try {
         const res = await fetch(url, { headers });
         if (res.status === 404) {
-          setSyncStatus('characters.json not found in repo', true);
+          setSyncStatus('File missing', true);
           return;
         }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -450,11 +488,11 @@
         const decoded = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
         characters = JSON.parse(decoded);
         localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
-        setSyncStatus(`Synced live from GitHub (${new Date().toLocaleTimeString()})`);
+        setSyncStatus(`Live (${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`);
         renderRoster();
       } catch (err) {
         console.error('GitHub fetch failed:', err);
-        setSyncStatus('Sync error: using local cache', true);
+        setSyncStatus('Sync error', true);
       }
     }
 
@@ -467,7 +505,7 @@
       }
 
       if (!ghConfig.token) {
-        const tokenPrompt = prompt("To commit changes to characters.json in GitHub, enter your GitHub Personal Access Token (PAT):");
+        const tokenPrompt = prompt("To commit changes to characters.json, enter your GitHub Personal Access Token (PAT):");
         if (tokenPrompt) {
           ghConfig.token = tokenPrompt.trim();
           localStorage.setItem('wow_gh_config', JSON.stringify(ghConfig));
@@ -475,12 +513,12 @@
           characters = newCharacters;
           localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
           renderRoster();
-          alert("Saved locally only. Add a GitHub PAT in Settings to commit to the repo.");
+          alert("Saved locally only. Add a GitHub PAT in Settings to commit.");
           return;
         }
       }
 
-      setSyncStatus('Committing changes to GitHub...');
+      setSyncStatus('Committing...');
       const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/characters.json`;
 
       try {
@@ -526,15 +564,15 @@
         currentSha = result.content.sha;
         characters = newCharacters;
         localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
-        setSyncStatus(`Saved & committed to GitHub (${new Date().toLocaleTimeString()})`);
+        setSyncStatus(`Saved (${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`);
         renderRoster();
       } catch (err) {
         console.error('GitHub push failed:', err);
         characters = newCharacters;
         localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
         renderRoster();
-        alert(`Failed to commit to GitHub: ${err.message}. Changes saved to local storage.`);
-        setSyncStatus('Commit failed (saved locally)', true);
+        alert(`Failed to commit to GitHub: ${err.message}. Saved locally.`);
+        setSyncStatus('Commit failed', true);
       }
     }
 
@@ -558,24 +596,24 @@
       const btn = document.getElementById('auto-form-btn');
       if (!btn) return;
       if (currentFilter === 'flowmasters') {
-        btn.textContent = 'Auto-Form from "Flowmasters" Squad';
+        btn.textContent = 'Auto-Form from "Flowmasters"';
       } else if (currentFilter === 'family') {
-        btn.textContent = 'Auto-Form from "Family" Team';
+        btn.textContent = 'Auto-Form from "Family"';
       } else if (currentFilter === 'alts') {
-        btn.textContent = 'Auto-Form from "Alts" Team';
+        btn.textContent = 'Auto-Form from "Alts"';
       } else {
-        btn.textContent = 'Auto-Form from "All Characters"';
+        btn.textContent = 'Auto-Form from "All Chars"';
       }
     }
 
     function setFilter(filter) {
       currentFilter = filter;
       document.querySelectorAll('.filter-btn').forEach(b => {
-        b.className = 'filter-btn px-3 py-1.5 rounded text-xs font-bold transition-all text-slate-400 hover:text-white';
+        b.className = 'filter-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all text-slate-400 hover:text-white border border-transparent text-left';
       });
       const activeBtn = document.getElementById(`filter-${filter}`);
       if (activeBtn) {
-        activeBtn.className = 'filter-btn px-3 py-1.5 rounded text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40';
+        activeBtn.className = 'filter-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40 text-left';
       }
       updateAutoFormButtonLabel();
       renderRoster();
@@ -583,11 +621,11 @@
 
     function getTrackBadge(track) {
       if (track === 'flowmasters') {
-        return `<span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-700/50">⚔️ Flowmasters</span>`;
+        return `<span class="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-700/50">⚔️ Flowmasters</span>`;
       } else if (track === 'family') {
-        return `<span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-700/50">🛡️ Family</span>`;
+        return `<span class="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-700/50">🛡️ Family</span>`;
       } else {
-        return `<span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-purple-950/70 text-purple-300 border border-purple-700/50">🎒 Alt</span>`;
+        return `<span class="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-purple-950/70 text-purple-300 border border-purple-700/50">🎒 Alt</span>`;
       }
     }
 
@@ -597,42 +635,49 @@
       document.getElementById('roster-count').innerText = `${filtered.length} Character${filtered.length === 1 ? '' : 's'}`;
 
       grid.innerHTML = '';
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="text-xs text-slate-500 italic p-4 text-center bg-slate-900/40 rounded-lg border border-slate-800">No characters registered in this group yet.</div>`;
+        renderProfessions();
+        renderParty();
+        return;
+      }
+
       filtered.forEach(c => {
         const classBadge = CLASS_COLORS[c.class] || 'text-slate-300 border-slate-700 bg-slate-800';
         const isPartyMember = party.some(p => p && p.id === c.id);
 
         const card = document.createElement('div');
-        card.className = `wow-border rounded-xl p-4 bg-slate-900/80 hover:border-amber-400/50 transition-all flex flex-col justify-between ${isPartyMember ? 'ring-2 ring-amber-500' : ''}`;
+        card.className = `wow-border rounded-xl p-3.5 bg-slate-900/80 hover:border-amber-400/50 transition-all flex flex-col justify-between ${isPartyMember ? 'ring-2 ring-amber-500' : ''}`;
         card.innerHTML = `
           <div>
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center justify-between mb-1.5">
               ${getTrackBadge(c.track)}
-              <span class="text-xs font-semibold text-slate-400">${c.player}</span>
+              <span class="text-[11px] font-semibold text-slate-400">${c.player}</span>
             </div>
 
-            <div class="flex items-baseline justify-between mt-1">
-              <h3 class="text-base font-bold text-slate-100">${c.name}</h3>
-              <span class="text-xs font-bold px-2 py-0.5 rounded border ${classBadge}">${c.class}</span>
+            <div class="flex items-baseline justify-between mt-0.5">
+              <h3 class="text-sm font-bold text-slate-100 truncate pr-2">${c.name}</h3>
+              <span class="text-[11px] font-bold px-1.5 py-0.5 rounded border ${classBadge}">${c.class}</span>
             </div>
 
-            <p class="text-xs text-slate-400 mt-1">
+            <p class="text-[11px] text-slate-400 mt-1">
               ${c.race} • <span class="text-amber-300 font-semibold">${c.role}</span>
               ${c.roleSec && c.roleSec !== 'None' ? `<span class="text-slate-400 font-normal"> / <span class="text-sky-300">${c.roleSec}</span> (Off)</span>` : ''}
             </p>
 
-            <div class="mt-3 pt-2 border-t border-slate-800 flex items-center gap-2 flex-wrap text-[11px] text-slate-400">
-              <span class="bg-slate-800 px-2 py-0.5 rounded">⚒️ ${c.prof1 || 'None'}</span>
-              <span class="bg-slate-800 px-2 py-0.5 rounded">⚒️ ${c.prof2 || 'None'}</span>
+            <div class="mt-2.5 pt-2 border-t border-slate-800 flex items-center gap-1.5 flex-wrap text-[10px] text-slate-400">
+              <span class="bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700/60">⚒️ ${c.prof1 || 'None'}</span>
+              <span class="bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700/60">⚒️ ${c.prof2 || 'None'}</span>
             </div>
           </div>
 
-          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-            <button onclick="togglePartyMember('${c.id}')" class="text-xs font-bold px-3 py-1.5 rounded ${isPartyMember ? 'bg-red-900/50 text-red-300 border border-red-700/50' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700'}">
-              ${isPartyMember ? 'Remove from Party' : '+ Add to 5-Man'}
+          <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2">
+            <button onclick="togglePartyMember('${c.id}')" class="text-[11px] font-bold px-2.5 py-1 rounded transition-all ${isPartyMember ? 'bg-red-900/50 text-red-300 border border-red-700/50' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700'}">
+              ${isPartyMember ? '✕ Leave Party' : '+ Add to 5-Man'}
             </button>
             <div class="flex items-center gap-2">
-              <button onclick="editCharacter('${c.id}')" class="text-xs text-slate-400 hover:text-white">Edit</button>
-              <button onclick="deleteCharacter('${c.id}')" class="text-xs text-red-400 hover:text-red-300">Delete</button>
+              <button onclick="editCharacter('${c.id}')" class="text-[11px] text-slate-400 hover:text-white">Edit</button>
+              <button onclick="deleteCharacter('${c.id}')" class="text-[11px] text-red-400 hover:text-red-300">Delete</button>
             </div>
           </div>
         `;
@@ -733,14 +778,13 @@
       renderRoster();
     }
 
-    // Improved Team Formation Logic:
-    // Strictly checks primary roles first, falling back to secondary hybrid roles only when required.
+    // Strict multi-pass team formation
     function autoFillDungeonGroup() {
       const pool = characters.filter(c => currentFilter === 'all' ? true : c.track === currentFilter);
 
       if (pool.length === 0) {
-        const groupName = currentFilter === 'all' ? 'All Characters' : currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1);
-        alert(`No characters found in the "${groupName}" group to form a party!`);
+        const groupName = currentFilter === 'all' ? 'All Chars' : currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1);
+        alert(`No characters found in "${groupName}" to form a party!`);
         return;
       }
 
@@ -748,9 +792,7 @@
       const usedIds = new Set();
 
       // Step 1: Tank Selection
-      // 1a: Try candidate whose PRIMARY role is Tank
       let tank = pool.find(c => c.role === 'Tank');
-      // 1b: If none, fallback to hybrid whose SECONDARY role is Tank
       if (!tank) {
         tank = pool.find(c => c.roleSec === 'Tank');
       }
@@ -760,9 +802,7 @@
       }
 
       // Step 2: Healer Selection
-      // 2a: Try candidate whose PRIMARY role is Healer (unassigned)
       let healer = pool.find(c => !usedIds.has(c.id) && c.role === 'Healer');
-      // 2b: If none, fallback to hybrid whose SECONDARY role is Healer (unassigned)
       if (!healer) {
         healer = pool.find(c => !usedIds.has(c.id) && c.roleSec === 'Healer');
       }
@@ -773,13 +813,10 @@
 
       // Step 3: DPS Selection (Slots 2, 3, 4)
       for (let slot = 2; slot < 5; slot++) {
-        // 3a: Primary DPS
         let dps = pool.find(c => !usedIds.has(c.id) && c.role === 'DPS');
-        // 3b: Secondary DPS hybrid
         if (!dps) {
           dps = pool.find(c => !usedIds.has(c.id) && c.roleSec === 'DPS');
         }
-        // 3c: Fill with any remaining unassigned character
         if (!dps) {
           dps = pool.find(c => !usedIds.has(c.id));
         }
@@ -832,10 +869,10 @@
 
       const statusEl = document.getElementById('trinity-status');
       if (tankCount === 1 && healCount === 1 && dpsCount === 3) {
-        statusEl.className = 'ml-2 text-xs font-semibold px-2.5 py-0.5 rounded bg-emerald-950 border border-emerald-700/60 text-emerald-400';
+        statusEl.className = 'ml-1 text-xs font-semibold px-2.5 py-0.5 rounded bg-emerald-950 border border-emerald-700/60 text-emerald-400';
         statusEl.innerText = 'Holy Trinity Complete! (1T / 1H / 3DPS)';
       } else {
-        statusEl.className = 'ml-2 text-xs font-semibold px-2.5 py-0.5 rounded bg-slate-800/80 border border-slate-700 text-amber-400';
+        statusEl.className = 'ml-1 text-xs font-semibold px-2.5 py-0.5 rounded bg-slate-800/80 border border-slate-700 text-amber-400';
         statusEl.innerText = `Current: ${tankCount} Tank, ${healCount} Healer, ${dpsCount} DPS`;
       }
     }
@@ -987,7 +1024,7 @@
     if (ghConfig.owner && ghConfig.repo) {
       pullFromGitHub();
     } else {
-      setSyncStatus('Local only (configure repo)', false);
+      setSyncStatus('Local only', false);
     }
   </script>
 </body>
