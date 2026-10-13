@@ -154,5 +154,17 @@
     "class": "Mage",
     "prof1": "Enchanting",
     "prof2": "Tailoring"
+  },
+  {
+    "id": "1791929106142",
+    "player": "Demonblud",
+    "name": "puritee",
+    "track": "flowmasters",
+    "role": "Healer",
+    "roleSec": "DPS",
+    "race": "Undead",
+    "class": "Priest",
+    "prof1": "Enchanting",
+    "prof2": "Tailoring"
   }
 ]
