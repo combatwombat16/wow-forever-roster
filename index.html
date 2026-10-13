@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WoW: Forever — Roster & Synergy Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 50% 0%, #151922 0%, #0a0c10 80%);
+    }
+    .cinzel { font-family: 'Cinzel', serif; }
+    .wow-border {
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(212, 175, 55, 0.05);
+    }
+    .wow-border-gold {
+      border: 1px solid #d4af37;
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+    }
+  </style>
+</head>
+<body class="text-slate-200 min-h-screen p-4 md:p-8">
+
+  <!-- Header & Launch Countdown -->
+  <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-amber-900/40">
+    <div>
+      <div class="flex items-center gap-3">
+        <span class="px-2.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">Nov 4, 2026</span>
+        <span class="text-xs uppercase tracking-widest text-slate-400">Classic+ Guild Roster</span>
+      </div>
+      <h1 class="cinzel text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 mt-1">
+        World of Warcraft: Forever
+      </h1>
+      <p class="text-sm text-slate-400 mt-1">Tracking Friends Dungeon Team & Family Alts with Forever Race/Class Combinations</p>
+    </div>
+
+    <!-- Countdown Timer -->
+    <div class="wow-border bg-slate-900/80 rounded-xl px-6 py-3 flex items-center gap-6">
+      <div class="text-center">
+        <div id="days" class="text-2xl font-bold cinzel text-amber-400">--</div>
+        <div class="text-[10px] uppercase text-slate-400 font-semibold tracking-wider">Days</div>
+      </div>
+      <div class="text-slate-600 font-bold">:</div>
+      <div class="text-center">
+        <div id="hours" class="text-2xl font-bold cinzel text-amber-400">--</div>
+        <div class="text-[10px] uppercase text-slate-400 font-semibold tracking-wider">Hours</div>
+      </div>
+      <div class="text-slate-600 font-bold">:</div>
+      <div class="text-center">
+        <div id="mins" class="text-2xl font-bold cinzel text-amber-400">--</div>
+        <div class="text-[10px] uppercase text-slate-400 font-semibold tracking-wider">Mins</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto space-y-8">
+
+    <!-- Top Action & Filter Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-2 bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
+        <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-4 py-1.5 rounded text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40">All Characters</button>
+        <button onclick="setFilter('together')" id="filter-together" class="filter-btn px-4 py-1.5 rounded text-xs font-bold transition-all text-slate-400 hover:text-white">Together Team ⚔️</button>
+        <button onclick="setFilter('family')" id="filter-family" class="filter-btn px-4 py-1.5 rounded text-xs font-bold transition-all text-slate-400 hover:text-white">Family Team 🛡️</button>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="openModal()" class="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg flex items-center gap-2 transition-all">
+          <span>+ Add Character</span>
+        </button>
+        <button onclick="exportData()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg border border-slate-700">Export JSON</button>
+        <button onclick="importDataPrompt()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg border border-slate-700">Import</button>
+      </div>
+    </div>
+
+    <!-- Active Party & Buff Diagnostics -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- 5-Man Party Builder -->
+      <div class="lg:col-span-2 wow-border bg-slate-900/70 backdrop-blur rounded-xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-amber-400 text-lg">⚔️</span>
+            <h2 class="cinzel text-lg font-bold text-amber-200">Dungeon Group Simulator (5-Man)</h2>
+          </div>
+          <button onclick="autoFillDungeonGroup()" class="text-xs text-amber-400/80 hover:text-amber-300 underline font-semibold">
+            Auto-Form from "Together" Team
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-5 gap-3" id="party-slots">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Live Party Synergy Diagnostics -->
+      <div class="wow-border bg-slate-900/70 backdrop-blur rounded-xl p-5 flex flex-col justify-between">
+        <div>
+          <h2 class="cinzel text-lg font-bold text-amber-200 mb-3 flex items-center gap-2">
+            <span>✨</span> Synergy & Party Buffs
+          </h2>
+          <div class="space-y-2 text-xs" id="buff-checklist">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+          <span class="font-semibold text-slate-300">Party Trinity Status:</span>
+          <span id="trinity-status" class="ml-1 text-amber-400">Needs 1 Tank, 1 Healer, 3 DPS</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Guild Profession Coverage Board -->
+    <section class="wow-border bg-slate-900/70 rounded-xl p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="cinzel text-lg font-bold text-amber-200 flex items-center gap-2">
+          <span>⚒️</span> Guild Profession Matrix (Forever Classic+)
+        </h2>
+        <span id="prof-coverage-pct" class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-800 text-amber-300 border border-slate-700">0% Covered</span>
+      </div>
+      <div id="profession-tags" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Characters Grid -->
+    <section>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="cinzel text-xl font-bold text-amber-200">Registered Roster</h2>
+        <span id="roster-count" class="text-xs text-slate-400 font-semibold">0 Characters</span>
+      </div>
+      <div id="character-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Character Cards injected here -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Add/Edit Character Modal -->
+  <div id="char-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="wow-border-gold bg-slate-900 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
+      <h3 id="modal-title" class="cinzel text-xl font-bold text-amber-300 mb-4">Add Forever Character</h3>
+      
+      <form id="char-form" onsubmit="saveCharacter(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="edit-id">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Player Name</label>
+            <input type="text" id="player-name" required placeholder="e.g. Ben" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Character Name</label>
+            <input type="text" id="char-name" required placeholder="e.g. Ironclash" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Squad Track</label>
+            <select id="char-track" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+              <option value="together">Together Team (Dungeons)</option>
+              <option value="family">Family Team (Casual)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Primary Role</label>
+            <select id="char-role" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+              <option value="Tank">Tank 🛡️</option>
+              <option value="Healer">Healer 💚</option>
+              <option value="DPS" selected>DPS ⚔️</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Forever Compatible Race Selector -->
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Race (WoW Forever)</label>
+          <select id="char-race" onchange="onRaceChange()" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+            <optgroup label="Alliance">
+              <option value="Human">Human (Now includes Hunter!)</option>
+              <option value="Dwarf">Dwarf (Now includes Shaman!)</option>
+              <option value="Night Elf">Night Elf</option>
+              <option value="Gnome">Gnome (Now includes Priest!)</option>
+              <option value="Alliance Skyborne">Alliance Skyborne (New Race!)</option>
+            </optgroup>
+            <optgroup label="Horde">
+              <option value="Orc">Orc (Now includes Mage!)</option>
+              <option value="Undead">Undead (Now includes Paladin!)</option>
+              <option value="Tauren">Tauren</option>
+              <option value="Troll">Troll (Now includes Warlock!)</option>
+              <option value="Horde Skyborne">Horde Skyborne (New Race!)</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- Class Selector dynamically locked to WoW Forever combinations -->
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Class (Filtered to Race Rules)</label>
+          <select id="char-class" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Primary Profession</label>
+            <select id="char-prof1" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+              <option value="None">None</option>
+              <option value="Alchemy">Alchemy</option>
+              <option value="Blacksmithing">Blacksmithing</option>
+              <option value="Enchanting">Enchanting</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Herbalism">Herbalism</option>
+              <option value="Leatherworking">Leatherworking</option>
+              <option value="Mining">Mining</option>
+              <option value="Skinning">Skinning</option>
+              <option value="Tailoring">Tailoring</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Secondary Profession</label>
+            <select id="char-prof2" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+              <option value="None">None</option>
+              <option value="Alchemy">Alchemy</option>
+              <option value="Blacksmithing">Blacksmithing</option>
+              <option value="Enchanting">Enchanting</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Herbalism">Herbalism</option>
+              <option value="Leatherworking">Leatherworking</option>
+              <option value="Mining">Mining</option>
+              <option value="Skinning">Skinning</option>
+              <option value="Tailoring">Tailoring</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-semibold">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded">Save Character</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // WoW: Forever Official Race & Class matrix (Mobalytics guide verified)
+    const FOREVER_RACE_CLASSES = {
+      "Human": ["Warrior", "Hunter", "Mage", "Rogue", "Priest", "Warlock", "Paladin"],
+      "Dwarf": ["Warrior", "Hunter", "Rogue", "Priest", "Paladin", "Shaman"],
+      "Night Elf": ["Warrior", "Hunter", "Rogue", "Priest", "Druid"],
+      "Gnome": ["Warrior", "Mage", "Rogue", "Priest", "Warlock"],
+      "Alliance Skyborne": ["Warrior", "Hunter", "Mage", "Rogue", "Druid"],
+      "Orc": ["Warrior", "Hunter", "Mage", "Rogue", "Warlock", "Shaman"],
+      "Undead": ["Warrior", "Mage", "Rogue", "Priest", "Warlock", "Paladin"],
+      "Tauren": ["Warrior", "Hunter", "Druid", "Shaman"],
+      "Troll": ["Warrior", "Hunter", "Mage", "Rogue", "Priest", "Warlock", "Shaman"],
+      "Horde Skyborne": ["Warrior", "Hunter", "Rogue", "Druid", "Shaman"]
+    };
+
+    const CLASS_COLORS = {
+      "Warrior": "text-[#C79C6E] border-[#C79C6E]/40 bg-[#C79C6E]/10",
+      "Paladin": "text-[#F58CBA] border-[#F58CBA]/40 bg-[#F58CBA]/10",
+      "Hunter": "text-[#ABD473] border-[#ABD473]/40 bg-[#ABD473]/10",
+      "Rogue": "text-[#FFF569] border-[#FFF569]/40 bg-[#FFF569]/10",
+      "Priest": "text-[#FFFFFF] border-[#FFFFFF]/40 bg-[#FFFFFF]/10",
+      "Shaman": "text-[#0070DE] border-[#0070DE]/40 bg-[#0070DE]/10",
+      "Mage": "text-[#40C7EB] border-[#40C7EB]/40 bg-[#40C7EB]/10",
+      "Warlock": "text-[#8787ED] border-[#8787ED]/40 bg-[#8787ED]/10",
+      "Druid": "text-[#FF7D0A] border-[#FF7D0A]/40 bg-[#FF7D0A]/10"
+    };
+
+    const ALL_PROFESSIONS = [
+      "Alchemy", "Blacksmithing", "Enchanting", "Engineering",
+      "Herbalism", "Leatherworking", "Mining", "Skinning", "Tailoring"
+    ];
+
+    // Seed characters showcasing the new WoW Forever combinations
+    const DEFAULT_CHARACTERS = [
+      { id: '1', player: 'Ben', name: 'Ironshield', race: 'Undead', class: 'Paladin', role: 'Tank', track: 'together', prof1: 'Blacksmithing', prof2: 'Mining' },
+      { id: '2', player: 'Ben', name: 'Moonfang', race: 'Alliance Skyborne', class: 'Druid', role: 'Healer', track: 'family', prof1: 'Herbalism', prof2: 'Alchemy' },
+      { id: '3', player: 'Alex', name: 'Stormcaller', race: 'Dwarf', class: 'Shaman', role: 'Healer', track: 'together', prof1: 'Alchemy', prof2: 'Herbalism' },
+      { id: '4', player: 'Sarah', name: 'Pyroclast', race: 'Orc', class: 'Mage', role: 'DPS', track: 'together', prof1: 'Engineering', prof2: 'Mining' },
+      { id: '5', player: 'Dave', name: 'Shadowspark', race: 'Gnome', class: 'Priest', role: 'DPS', track: 'together', prof1: 'Tailoring', prof2: 'Enchanting' },
+      { id: '6', player: 'Chris', name: 'Netherhex', race: 'Troll', class: 'Warlock', role: 'DPS', track: 'together', prof1: 'Skinning', prof2: 'Leatherworking' },
+      { id: '7', player: 'Mallory', name: 'Sunstrider', race: 'Human', class: 'Hunter', role: 'DPS', track: 'family', prof1: 'Leatherworking', prof2: 'Skinning' }
+    ];
+
+    let characters = JSON.parse(localStorage.getItem('wow_forever_roster') || 'null') || DEFAULT_CHARACTERS;
+    let party = [null, null, null, null, null]; // Tank, Healer, DPS, DPS, DPS
+    let currentFilter = 'all';
+
+    function saveToStorage() {
+      localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
+    }
+
+    // Launch countdown to November 4, 2026
+    function updateCountdown() {
+      const launchDate = new Date('2026-11-04T00:00:00Z').getTime();
+      const now = new Date().getTime();
+      const diff = launchDate - now;
+
+      if (diff > 0) {
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        document.getElementById('days').innerText = d;
+        document.getElementById('hours').innerText = h.toString().padStart(2, '0');
+        document.getElementById('mins').innerText = m.toString().padStart(2, '0');
+      } else {
+        document.getElementById('days').innerText = '00';
+        document.getElementById('hours').innerText = '00';
+        document.getElementById('mins').innerText = '00';
+      }
+    }
+    setInterval(updateCountdown, 60000);
+    updateCountdown();
+
+    function onRaceChange() {
+      const race = document.getElementById('char-race').value;
+      const classSelect = document.getElementById('char-class');
+      const validClasses = FOREVER_RACE_CLASSES[race] || [];
+      const currentSelected = classSelect.value;
+
+      classSelect.innerHTML = '';
+      validClasses.forEach(cls => {
+        const opt = document.createElement('option');
+        opt.value = cls;
+        opt.textContent = cls;
+        if (cls === currentSelected) opt.selected = true;
+        classSelect.appendChild(opt);
+      });
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.className = 'filter-btn px-4 py-1.5 rounded text-xs font-bold transition-all text-slate-400 hover:text-white';
+      });
+      const activeBtn = document.getElementById(`filter-${filter}`);
+      if (activeBtn) {
+        activeBtn.className = 'filter-btn px-4 py-1.5 rounded text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40';
+      }
+      renderRoster();
+    }
+
+    function renderRoster() {
+      const grid = document.getElementById('character-grid');
+      const filtered = characters.filter(c => currentFilter === 'all' ? true : c.track === currentFilter);
+      document.getElementById('roster-count').innerText = `${filtered.length} Character${filtered.length === 1 ? '' : 's'}`;
+
+      grid.innerHTML = '';
+      filtered.forEach(c => {
+        const classBadge = CLASS_COLORS[c.class] || 'text-slate-300 border-slate-700 bg-slate-800';
+        const isPartyMember = party.some(p => p && p.id === c.id);
+
+        const card = document.createElement('div');
+        card.className = `wow-border rounded-xl p-4 bg-slate-900/80 hover:border-amber-400/50 transition-all flex flex-col justify-between ${isPartyMember ? 'ring-2 ring-amber-500' : ''}`;
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${c.track === 'together' ? 'bg-indigo-950 text-indigo-300 border border-indigo-700/50' : 'bg-emerald-950 text-emerald-300 border border-emerald-700/50'}">
+                ${c.track === 'together' ? '⚔️ Together Team' : '🛡️ Family Team'}
+              </span>
+              <span class="text-xs font-semibold text-slate-400">${c.player}</span>
+            </div>
+
+            <div class="flex items-baseline justify-between mt-1">
+              <h3 class="text-base font-bold text-slate-100">${c.name}</h3>
+              <span class="text-xs font-bold px-2 py-0.5 rounded border ${classBadge}">${c.class}</span>
+            </div>
+
+            <p class="text-xs text-slate-400 mt-1">${c.race} • <span class="text-amber-300 font-semibold">${c.role}</span></p>
+
+            <div class="mt-3 pt-2 border-t border-slate-800 flex items-center gap-2 flex-wrap text-[11px] text-slate-400">
+              <span class="bg-slate-800 px-2 py-0.5 rounded">⚒️ ${c.prof1 || 'None'}</span>
+              <span class="bg-slate-800 px-2 py-0.5 rounded">⚒️ ${c.prof2 || 'None'}</span>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+            <button onclick="togglePartyMember('${c.id}')" class="text-xs font-bold px-3 py-1.5 rounded ${isPartyMember ? 'bg-red-900/50 text-red-300 border border-red-700/50' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700'}">
+              ${isPartyMember ? 'Remove from Party' : '+ Add to 5-Man'}
+            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="editCharacter('${c.id}')" class="text-xs text-slate-400 hover:text-white">Edit</button>
+              <button onclick="deleteCharacter('${c.id}')" class="text-xs text-red-400 hover:text-red-300">Delete</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      renderProfessions();
+      renderParty();
+    }
+
+    function renderParty() {
+      const container = document.getElementById('party-slots');
+      container.innerHTML = '';
+
+      const slotLabels = ['Tank 🛡️', 'Healer 💚', 'DPS 1 ⚔️', 'DPS 2 ⚔️', 'DPS 3 ⚔️'];
+      const slotRoles = ['Tank', 'Healer', 'DPS', 'DPS', 'DPS'];
+
+      for (let i = 0; i < 5; i++) {
+        const char = party[i];
+        const slotEl = document.createElement('div');
+        slotEl.className = 'bg-slate-950/70 border border-slate-800 rounded-lg p-3 flex flex-col justify-between min-h-[110px]';
+
+        if (char) {
+          const color = CLASS_COLORS[char.class] || 'text-slate-300';
+          slotEl.innerHTML = `
+            <div>
+              <div class="text-[10px] font-bold text-slate-500 uppercase">${slotLabels[i]}</div>
+              <div class="font-bold text-sm text-slate-100 truncate mt-1">${char.name}</div>
+              <div class="text-xs font-semibold ${color.split(' ')[0]}">${char.class}</div>
+              <div class="text-[10px] text-slate-400">${char.player}</div>
+            </div>
+            <button onclick="removeFromPartyIndex(${i})" class="text-[10px] text-red-400 hover:text-red-300 mt-2 text-left">Remove</button>
+          `;
+        } else {
+          slotEl.innerHTML = `
+            <div class="text-[10px] font-bold text-slate-500 uppercase">${slotLabels[i]}</div>
+            <div class="text-xs text-slate-600 italic my-auto">Slot Empty</div>
+            <span class="text-[10px] text-slate-600">Needs ${slotRoles[i]}</span>
+          `;
+        }
+        container.appendChild(slotEl);
+      }
+
+      updateSynergyDiagnostics();
+    }
+
+    function togglePartyMember(id) {
+      const char = characters.find(c => c.id === id);
+      if (!char) return;
+
+      const existingIndex = party.findIndex(p => p && p.id === id);
+      if (existingIndex !== -1) {
+        party[existingIndex] = null;
+        renderParty();
+        renderRoster();
+        return;
+      }
+
+      // Assign by role preference
+      if (char.role === 'Tank' && !party[0]) {
+        party[0] = char;
+      } else if (char.role === 'Healer' && !party[1]) {
+        party[1] = char;
+      } else {
+        // Fill DPS or first empty
+        const emptyDps = [2, 3, 4].find(idx => !party[idx]);
+        if (emptyDps !== undefined) {
+          party[emptyDps] = char;
+        } else {
+          const firstEmpty = party.findIndex(p => p === null);
+          if (firstEmpty !== -1) party[firstEmpty] = char;
+          else alert('5-man party is currently full! Remove a member first.');
+        }
+      }
+
+      renderParty();
+      renderRoster();
+    }
+
+    function removeFromPartyIndex(index) {
+      party[index] = null;
+      renderParty();
+      renderRoster();
+    }
+
+    function autoFillDungeonGroup() {
+      party = [null, null, null, null, null];
+      const pool = characters.filter(c => c.track === 'together');
+
+      const tank = pool.find(c => c.role === 'Tank');
+      const healer = pool.find(c => c.role === 'Healer');
+      const dps = pool.filter(c => c !== tank && c !== healer).slice(0, 3);
+
+      if (tank) party[0] = tank;
+      if (healer) party[1] = healer;
+      dps.forEach((d, i) => { if (i < 3) party[2 + i] = d; });
+
+      renderParty();
+      renderRoster();
+    }
+
+    function updateSynergyDiagnostics() {
+      const activeClasses = party.filter(Boolean).map(c => c.class);
+      const buffContainer = document.getElementById('buff-checklist');
+
+      const synergies = [
+        { name: "Bloodlust / Windfury", has: activeClasses.includes("Shaman"), desc: "Shaman utility (now available to Dwarves!)" },
+        { name: "Fortitude Stamina (+Stam)", has: activeClasses.includes("Priest"), desc: "Priest buff (Gnome/Undead/Human/Dwarf)" },
+        { name: "Arcane Intellect (+Mana/Int)", has: activeClasses.includes("Mage"), desc: "Mage buff (Orc/Skyborne/Human/Gnome)" },
+        { name: "Blessings & Auras (+Combat)", has: activeClasses.includes("Paladin"), desc: "Paladin utility (Undead/Human/Dwarf)" },
+        { name: "Mark of the Wild (+Stats/Resist)", has: activeClasses.includes("Druid"), desc: "Druid buff (Skyborne/Tauren/NE)" },
+        { name: "Combat Resurrection (Brez)", has: activeClasses.includes("Druid") || activeClasses.includes("Warlock"), desc: "Soulstone or Rebirth active" },
+        { name: "Crowd Control (Polymorph/Sap)", has: activeClasses.includes("Mage") || activeClasses.includes("Rogue"), desc: "Essential for tight dungeon pulls" }
+      ];
+
+      buffContainer.innerHTML = synergies.map(s => `
+        <div class="flex items-center justify-between p-1.5 rounded ${s.has ? 'bg-emerald-950/40 border border-emerald-800/40' : 'bg-slate-950/40 border border-slate-800/40 text-slate-500'}">
+          <span class="flex items-center gap-1.5 font-medium ${s.has ? 'text-emerald-300' : 'text-slate-500'}">
+            <span>${s.has ? '✓' : '✗'}</span> ${s.name}
+          </span>
+          <span class="text-[10px] text-slate-500">${s.desc}</span>
+        </div>
+      `).join('');
+
+      const tankCount = party.filter(c => c && c.role === 'Tank').length;
+      const healCount = party.filter(c => c && c.role === 'Healer').length;
+      const dpsCount = party.filter(c => c && c.role === 'DPS').length;
+
+      const statusEl = document.getElementById('trinity-status');
+      if (tankCount === 1 && healCount === 1 && dpsCount === 3) {
+        statusEl.className = 'ml-1 text-emerald-400 font-bold';
+        statusEl.innerText = 'Perfect Holy Trinity Composed! (1T / 1H / 3DPS)';
+      } else {
+        statusEl.className = 'ml-1 text-amber-400 font-semibold';
+        statusEl.innerText = `Current: ${tankCount} Tank, ${healCount} Healer, ${dpsCount} DPS`;
+      }
+    }
+
+    function renderProfessions() {
+      const container = document.getElementById('profession-tags');
+      const activeTrackChars = characters.filter(c => currentFilter === 'all' ? true : c.track === currentFilter);
+
+      const counts = {};
+      ALL_PROFESSIONS.forEach(p => counts[p] = []);
+
+      activeTrackChars.forEach(c => {
+        if (c.prof1 && counts[c.prof1]) counts[c.prof1].push(c.player);
+        if (c.prof2 && counts[c.prof2]) counts[c.prof2].push(c.player);
+      });
+
+      let covered = 0;
+      container.innerHTML = ALL_PROFESSIONS.map(p => {
+        const players = counts[p] || [];
+        const isCovered = players.length > 0;
+        if (isCovered) covered++;
+
+        return `
+          <div class="p-2.5 rounded border ${isCovered ? 'bg-amber-950/20 border-amber-600/40' : 'bg-slate-950/40 border-slate-800/60 opacity-60'}">
+            <div class="font-bold text-xs ${isCovered ? 'text-amber-300' : 'text-slate-400'}">${p}</div>
+            <div class="text-[10px] text-slate-400 mt-1 truncate">
+              ${isCovered ? players.join(', ') : '<span class="text-red-400/80">Unassigned</span>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const pct = Math.round((covered / ALL_PROFESSIONS.length) * 100);
+      document.getElementById('prof-coverage-pct').innerText = `${pct}% Guild Coverage (${covered}/${ALL_PROFESSIONS.length})`;
+    }
+
+    function openModal() {
+      document.getElementById('modal-title').innerText = 'Add Forever Character';
+      document.getElementById('edit-id').value = '';
+      document.getElementById('player-name').value = '';
+      document.getElementById('char-name').value = '';
+      onRaceChange();
+      document.getElementById('char-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('char-modal').classList.add('hidden');
+    }
+
+    function editCharacter(id) {
+      const c = characters.find(x => x.id === id);
+      if (!c) return;
+      document.getElementById('modal-title').innerText = 'Edit Forever Character';
+      document.getElementById('edit-id').value = c.id;
+      document.getElementById('player-name').value = c.player;
+      document.getElementById('char-name').value = c.name;
+      document.getElementById('char-track').value = c.track;
+      document.getElementById('char-role').value = c.role;
+      document.getElementById('char-race').value = c.race;
+      onRaceChange();
+      document.getElementById('char-class').value = c.class;
+      document.getElementById('char-prof1').value = c.prof1 || 'None';
+      document.getElementById('char-prof2').value = c.prof2 || 'None';
+      document.getElementById('char-modal').classList.remove('hidden');
+    }
+
+    function deleteCharacter(id) {
+      if (confirm('Delete this character from your guild roster?')) {
+        characters = characters.filter(c => c.id !== id);
+        party = party.map(p => (p && p.id === id ? null : p));
+        saveToStorage();
+        renderRoster();
+      }
+    }
+
+    function saveCharacter(e) {
+      e.preventDefault();
+      const editId = document.getElementById('edit-id').value;
+      const charData = {
+        id: editId || Date.now().toString(),
+        player: document.getElementById('player-name').value.trim(),
+        name: document.getElementById('char-name').value.trim(),
+        track: document.getElementById('char-track').value,
+        role: document.getElementById('char-role').value,
+        race: document.getElementById('char-race').value,
+        class: document.getElementById('char-class').value,
+        prof1: document.getElementById('char-prof1').value,
+        prof2: document.getElementById('char-prof2').value
+      };
+
+      if (editId) {
+        characters = characters.map(c => c.id === editId ? charData : c);
+        party = party.map(p => (p && p.id === editId ? charData : p));
+      } else {
+        characters.push(charData);
+      }
+
+      saveToStorage();
+      closeModal();
+      renderRoster();
+    }
+
+    function exportData() {
+      const json = JSON.stringify(characters, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `wow_forever_roster_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importDataPrompt() {
+      const raw = prompt("Paste your roster JSON here:");
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          characters = parsed;
+          saveToStorage();
+          renderRoster();
+          alert("Guild roster successfully loaded!");
+        }
+      } catch (err) {
+        alert("Invalid JSON format.");
+      }
+    }
+
+    // Initial render
+    onRaceChange();
+    renderRoster();
+  </script>
+</body>
+</html>
