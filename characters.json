@@ -106,5 +106,17 @@
     "class": "Shaman",
     "prof1": "Herbalism",
     "prof2": "Alchemy"
+  },
+  {
+    "id": "1791928813281",
+    "player": "Kate",
+    "name": "drood",
+    "track": "family",
+    "role": "DPS",
+    "roleSec": "Healer",
+    "race": "Horde Skyborne",
+    "class": "Druid",
+    "prof1": "Skinning",
+    "prof2": "Leatherworking"
   }
 ]
