@@ -46,5 +46,17 @@
     "class": "Paladin",
     "prof1": "Mining",
     "prof2": "Blacksmithing"
+  },
+  {
+    "id": "1791928493125",
+    "player": "ninjapirate",
+    "name": "shortnstout",
+    "track": "flowmasters",
+    "role": "Tank",
+    "roleSec": "DPS",
+    "race": "Orc",
+    "class": "Warrior",
+    "prof1": "Mining",
+    "prof2": "Blacksmithing"
   }
 ]
