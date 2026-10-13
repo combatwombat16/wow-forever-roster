@@ -82,5 +82,17 @@
     "class": "Hunter",
     "prof1": "Mining",
     "prof2": "Blacksmithing"
+  },
+  {
+    "id": "1791928676823",
+    "player": "squirrel",
+    "name": "stabby_mcgee",
+    "track": "family",
+    "role": "DPS",
+    "roleSec": "None",
+    "race": "Troll",
+    "class": "Rogue",
+    "prof1": "Skinning",
+    "prof2": "Leatherworking"
   }
 ]
