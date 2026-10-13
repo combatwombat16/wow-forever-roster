@@ -94,5 +94,17 @@
     "class": "Rogue",
     "prof1": "Skinning",
     "prof2": "Leatherworking"
+  },
+  {
+    "id": "1791928771432",
+    "player": "NahBrah",
+    "name": "Seamus",
+    "track": "family",
+    "role": "Healer",
+    "roleSec": "DPS",
+    "race": "Horde Skyborne",
+    "class": "Shaman",
+    "prof1": "Herbalism",
+    "prof2": "Alchemy"
   }
 ]
