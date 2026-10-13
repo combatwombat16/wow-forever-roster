@@ -111,8 +111,9 @@
             <span class="text-amber-400 text-lg">⚔️</span>
             <h2 class="cinzel text-lg font-bold text-amber-200">Dungeon Group Simulator (5-Man)</h2>
           </div>
-          <button onclick="autoFillDungeonGroup()" class="text-xs text-amber-400/90 hover:text-amber-300 underline font-semibold">
-            Auto-Form from "Flowmasters" Squad
+          <!-- Dynamically updating button based on current filter -->
+          <button id="auto-form-btn" onclick="autoFillDungeonGroup()" class="text-xs text-amber-400/90 hover:text-amber-300 underline font-semibold transition-colors">
+            Auto-Form from "All Characters"
           </button>
         </div>
 
@@ -350,6 +351,17 @@
       "Herbalism", "Leatherworking", "Mining", "Skinning", "Tailoring"
     ];
 
+    const DEFAULT_CHARACTERS = [
+      { id: '1', player: 'Ben', name: 'Ironshield', race: 'Undead', class: 'Paladin', role: 'Tank', roleSec: 'Healer', track: 'flowmasters', prof1: 'Blacksmithing', prof2: 'Mining' },
+      { id: '2', player: 'Ben', name: 'Moonfang', race: 'Alliance Skyborne', class: 'Druid', role: 'Healer', roleSec: 'Tank', track: 'family', prof1: 'Herbalism', prof2: 'Alchemy' },
+      { id: '3', player: 'Ben', name: 'Lockbox', race: 'Gnome', class: 'Rogue', role: 'DPS', roleSec: 'None', track: 'alts', prof1: 'Engineering', prof2: 'Mining' },
+      { id: '4', player: 'Alex', name: 'Stormcaller', race: 'Dwarf', class: 'Shaman', role: 'Healer', roleSec: 'DPS', track: 'flowmasters', prof1: 'Alchemy', prof2: 'Herbalism' },
+      { id: '5', player: 'Sarah', name: 'Pyroclast', race: 'Orc', class: 'Mage', role: 'DPS', roleSec: 'None', track: 'flowmasters', prof1: 'Engineering', prof2: 'Mining' },
+      { id: '6', player: 'Dave', name: 'Shadowspark', race: 'Gnome', class: 'Priest', role: 'DPS', roleSec: 'Healer', track: 'flowmasters', prof1: 'Tailoring', prof2: 'Enchanting' },
+      { id: '7', player: 'Chris', name: 'Netherhex', race: 'Troll', class: 'Warlock', role: 'DPS', roleSec: 'None', track: 'flowmasters', prof1: 'Skinning', prof2: 'Leatherworking' },
+      { id: '8', player: 'Mallory', name: 'Sunstrider', race: 'Human', class: 'Hunter', role: 'DPS', roleSec: 'None', track: 'family', prof1: 'Leatherworking', prof2: 'Skinning' }
+    ];
+
     let ghConfig = JSON.parse(localStorage.getItem('wow_gh_config') || 'null') || {
       owner: '',
       repo: '',
@@ -357,7 +369,23 @@
       token: ''
     };
 
-    let characters = JSON.parse(localStorage.getItem('wow_forever_roster') || '[]');
+    let stored = localStorage.getItem('wow_forever_roster');
+    let characters = DEFAULT_CHARACTERS;
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          characters = parsed.map(c => ({
+            ...c,
+            track: c.track === 'together' ? 'flowmasters' : c.track,
+            roleSec: c.roleSec || 'None'
+          }));
+        }
+      } catch (e) {
+        characters = DEFAULT_CHARACTERS;
+      }
+    }
+
     let currentSha = null;
     let party = [null, null, null, null, null];
     let currentFilter = 'all';
@@ -421,7 +449,6 @@
 
         const data = await res.json();
         currentSha = data.sha;
-        // Decode base64 UTF-8 content
         const decoded = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
         characters = JSON.parse(decoded);
         localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
@@ -435,7 +462,6 @@
 
     async function pushToGitHub(newCharacters) {
       if (!ghConfig.owner || !ghConfig.repo) {
-        // Save locally only
         characters = newCharacters;
         localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
         renderRoster();
@@ -460,7 +486,6 @@
       const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/characters.json`;
 
       try {
-        // Get latest SHA first if we don't have it
         if (!currentSha) {
           const checkRes = await fetch(`${url}?ref=${ghConfig.branch}`, {
             headers: {
@@ -475,7 +500,6 @@
         }
 
         const jsonString = JSON.stringify(newCharacters, null, 2);
-        // Base64 UTF-8 encode
         const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
 
         const bodyData = {
@@ -532,6 +556,20 @@
       });
     }
 
+    function updateAutoFormButtonLabel() {
+      const btn = document.getElementById('auto-form-btn');
+      if (!btn) return;
+      if (currentFilter === 'flowmasters') {
+        btn.textContent = 'Auto-Form from "Flowmasters" Squad';
+      } else if (currentFilter === 'family') {
+        btn.textContent = 'Auto-Form from "Family" Team';
+      } else if (currentFilter === 'alts') {
+        btn.textContent = 'Auto-Form from "Alts" Team';
+      } else {
+        btn.textContent = 'Auto-Form from "All Characters"';
+      }
+    }
+
     function setFilter(filter) {
       currentFilter = filter;
       document.querySelectorAll('.filter-btn').forEach(b => {
@@ -541,6 +579,7 @@
       if (activeBtn) {
         activeBtn.className = 'filter-btn px-3 py-1.5 rounded text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40';
       }
+      updateAutoFormButtonLabel();
       renderRoster();
     }
 
@@ -690,18 +729,39 @@
       renderRoster();
     }
 
+    // Auto-form party dynamically scoped to the currently selected filter
     function autoFillDungeonGroup() {
-      party = [null, null, null, null, null];
-      const pool = characters.filter(c => c.track === 'flowmasters');
+      // 1. Pull exclusively from the active filtered group
+      const pool = characters.filter(c => currentFilter === 'all' ? true : c.track === currentFilter);
 
+      if (pool.length === 0) {
+        const groupName = currentFilter === 'all' ? 'All Characters' : currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1);
+        alert(`No characters found in the "${groupName}" group to form a party!`);
+        return;
+      }
+
+      party = [null, null, null, null, null];
+
+      // 2. Tank: Main-spec Tank first, then hybrid secondary Tank
       const tank = pool.find(c => c.role === 'Tank') || pool.find(c => c.roleSec === 'Tank');
       if (tank) party[0] = { ...tank, assignedRole: 'Tank' };
 
+      // 3. Healer: Main-spec Healer first, then hybrid secondary Healer (excluding chosen tank)
       const healer = pool.find(c => c !== tank && c.role === 'Healer') || pool.find(c => c !== tank && c.roleSec === 'Healer');
       if (healer) party[1] = { ...healer, assignedRole: 'Healer' };
 
-      const dps = pool.filter(c => c !== tank && c !== healer).slice(0, 3);
-      dps.forEach((d, i) => { 
+      // 4. DPS: Fill remaining 3 slots from candidates not yet selected
+      const availableDps = pool.filter(c => c !== tank && c !== healer);
+      
+      // Sort so characters who actually have DPS as primary or secondary get priority
+      availableDps.sort((a, b) => {
+        const aPref = (a.role === 'DPS' ? 2 : (a.roleSec === 'DPS' ? 1 : 0));
+        const bPref = (b.role === 'DPS' ? 2 : (b.roleSec === 'DPS' ? 1 : 0));
+        return bPref - aPref;
+      });
+
+      const selectedDps = availableDps.slice(0, 3);
+      selectedDps.forEach((d, i) => { 
         if (i < 3) party[2 + i] = { ...d, assignedRole: 'DPS' }; 
       });
 
@@ -778,13 +838,13 @@
       document.getElementById('prof-coverage-pct').innerText = `${pct}% Guild Coverage (${covered}/${ALL_PROFESSIONS.length})`;
     }
 
-    // Modal & Crud Handlers
+    // Modal & CRUD Handlers
     function openModal() {
       document.getElementById('modal-title').innerText = 'Add Forever Character';
       document.getElementById('edit-id').value = '';
       document.getElementById('player-name').value = '';
       document.getElementById('char-name').value = '';
-      document.getElementById('char-track').value = 'flowmasters';
+      document.getElementById('char-track').value = currentFilter !== 'all' ? currentFilter : 'flowmasters';
       document.getElementById('char-role').value = 'DPS';
       document.getElementById('char-role-sec').value = 'None';
       onRaceChange();
@@ -889,6 +949,7 @@
 
     // Initialization
     updateRepoDisplay();
+    updateAutoFormButtonLabel();
     onRaceChange();
     renderRoster();
     if (ghConfig.owner && ghConfig.repo) {
