@@ -166,5 +166,17 @@
     "class": "Priest",
     "prof1": "Enchanting",
     "prof2": "Tailoring"
+  },
+  {
+    "id": "1791929283993",
+    "player": "Nihilist",
+    "name": "shewter",
+    "track": "alts",
+    "role": "DPS",
+    "roleSec": "None",
+    "race": "Orc",
+    "class": "Hunter",
+    "prof1": "Skinning",
+    "prof2": "Engineering"
   }
 ]
