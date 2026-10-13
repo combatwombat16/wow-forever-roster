@@ -178,5 +178,17 @@
     "class": "Hunter",
     "prof1": "Skinning",
     "prof2": "Engineering"
+  },
+  {
+    "id": "1791929450071",
+    "player": "Nihilist",
+    "name": "pewter",
+    "track": "flowmasters",
+    "role": "DPS",
+    "roleSec": "None",
+    "race": "Undead",
+    "class": "Mage",
+    "prof1": "Enchanting",
+    "prof2": "Mining"
   }
 ]
