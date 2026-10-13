@@ -118,5 +118,17 @@
     "class": "Druid",
     "prof1": "Skinning",
     "prof2": "Leatherworking"
+  },
+  {
+    "id": "1791928886528",
+    "player": "NahBrah",
+    "name": "SirNobel",
+    "track": "flowmasters",
+    "role": "Tank",
+    "roleSec": "Healer",
+    "race": "Undead",
+    "class": "Paladin",
+    "prof1": "Mining",
+    "prof2": "Blacksmithing"
   }
 ]
