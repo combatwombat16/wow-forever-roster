@@ -190,5 +190,17 @@
     "class": "Mage",
     "prof1": "Enchanting",
     "prof2": "Mining"
+  },
+  {
+    "id": "1791929660455",
+    "player": "Zack",
+    "name": "pokeystabbey",
+    "track": "alts",
+    "role": "DPS",
+    "roleSec": "None",
+    "race": "Undead",
+    "class": "Rogue",
+    "prof1": "Skinning",
+    "prof2": "Leatherworking"
   }
 ]
