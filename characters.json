@@ -58,5 +58,17 @@
     "class": "Warrior",
     "prof1": "Mining",
     "prof2": "Blacksmithing"
+  },
+  {
+    "id": "1791928548067",
+    "player": "ninjapirate",
+    "name": "troll_sham",
+    "track": "family",
+    "role": "Healer",
+    "roleSec": "DPS",
+    "race": "Troll",
+    "class": "Shaman",
+    "prof1": "Skinning",
+    "prof2": "Leatherworking"
   }
 ]
