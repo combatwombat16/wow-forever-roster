@@ -36,7 +36,7 @@
       <h1 class="cinzel text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 mt-1">
         World of Warcraft: Forever
       </h1>
-      <p class="text-sm text-slate-400 mt-1">Tracking Flowmasters Dungeon Squad, Family Team, and Alts with Forever Race/Class Matrix</p>
+      <p class="text-sm text-slate-400 mt-1">Tracking Flowmasters Squad, Family Team, and Alts with GitHub Sync</p>
     </div>
 
     <!-- Countdown Timer -->
@@ -60,6 +60,30 @@
 
   <main class="max-w-7xl mx-auto space-y-8">
 
+    <!-- GitHub Sync Status Banner -->
+    <section class="wow-border bg-slate-900/90 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-slate-400">Repo:</span>
+          <span id="repo-display" class="font-mono text-amber-300 font-semibold">Not Configured</span>
+        </div>
+        <span class="text-slate-600">•</span>
+        <div class="flex items-center gap-2">
+          <span class="text-slate-400">Status:</span>
+          <span id="sync-status" class="text-slate-400">Initializing...</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="pullFromGitHub()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 flex items-center gap-1.5 transition-all">
+          <span>🔄</span> Pull from GitHub
+        </button>
+        <button onclick="openGhModal()" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded border border-amber-500/40 flex items-center gap-1.5 transition-all">
+          <span>⚙️</span> GitHub Settings
+        </button>
+      </div>
+    </section>
+
     <!-- Top Action & Filter Bar -->
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex-wrap">
@@ -74,7 +98,6 @@
           <span>+ Add Character</span>
         </button>
         <button onclick="exportData()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg border border-slate-700">Export JSON</button>
-        <button onclick="importDataPrompt()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg border border-slate-700">Import</button>
       </div>
     </div>
 
@@ -141,6 +164,45 @@
 
   </main>
 
+  <!-- GitHub Settings Modal -->
+  <div id="gh-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="wow-border-gold bg-slate-900 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
+      <h3 class="cinzel text-xl font-bold text-amber-300 mb-2">GitHub Sync Settings</h3>
+      <p class="text-xs text-slate-400 mb-4">
+        Configure your repository to read and write <code class="text-amber-300">characters.json</code> directly. Reading is public; saving updates requires a personal access token.
+      </p>
+
+      <form id="gh-form" onsubmit="saveGhConfig(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">GitHub Username / Owner</label>
+          <input type="text" id="gh-owner" required placeholder="e.g. your-github-user" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Repository Name</label>
+          <input type="text" id="gh-repo" required placeholder="e.g. wow-forever-roster" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Branch</label>
+          <input type="text" id="gh-branch" value="main" required class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">
+            Personal Access Token (PAT) <span class="text-slate-500 font-normal">(Required to write/commit updates)</span>
+          </label>
+          <input type="password" id="gh-token" placeholder="github_pat_... or ghp_..." class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
+          <p class="text-[10px] text-slate-500 mt-1">
+            Generate in GitHub: Settings &gt; Developer settings &gt; Personal access tokens &gt; Fine-grained (Contents: Read and write). Stored safely only in your browser's local storage.
+          </p>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeGhModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-semibold">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded">Save & Connect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Add/Edit Character Modal -->
   <div id="char-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="wow-border-gold bg-slate-900 rounded-xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
@@ -189,7 +251,6 @@
           </div>
         </div>
 
-        <!-- Forever Compatible Race Selector -->
         <div>
           <label class="block font-semibold text-slate-300 mb-1">Race (WoW Forever)</label>
           <select id="char-race" onchange="onRaceChange()" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
@@ -210,11 +271,10 @@
           </select>
         </div>
 
-        <!-- Class Selector dynamically locked to WoW Forever combinations -->
         <div>
           <label class="block font-semibold text-slate-300 mb-1">Class (Filtered to Race Rules)</label>
           <select id="char-class" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-400">
-            <!-- Populated via JS -->
+            <!-- Populated dynamically -->
           </select>
         </div>
 
@@ -253,14 +313,13 @@
 
         <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
           <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-semibold">Cancel</button>
-          <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded">Save Character</button>
+          <button type="submit" id="save-btn" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded">Save Character</button>
         </div>
       </form>
     </div>
   </div>
 
   <script>
-    // WoW: Forever Official Race & Class matrix (Mobalytics guide verified)
     const FOREVER_RACE_CLASSES = {
       "Human": ["Warrior", "Hunter", "Mage", "Rogue", "Priest", "Warlock", "Paladin"],
       "Dwarf": ["Warrior", "Hunter", "Rogue", "Priest", "Paladin", "Shaman"],
@@ -291,44 +350,34 @@
       "Herbalism", "Leatherworking", "Mining", "Skinning", "Tailoring"
     ];
 
-    // Seed characters showcasing Flowmasters, Family, and Alts + Hybrid specs
-    const DEFAULT_CHARACTERS = [
-      { id: '1', player: 'Ben', name: 'Ironshield', race: 'Undead', class: 'Paladin', role: 'Tank', roleSec: 'Healer', track: 'flowmasters', prof1: 'Blacksmithing', prof2: 'Mining' },
-      { id: '2', player: 'Ben', name: 'Moonfang', race: 'Alliance Skyborne', class: 'Druid', role: 'Healer', roleSec: 'Tank', track: 'family', prof1: 'Herbalism', prof2: 'Alchemy' },
-      { id: '3', player: 'Ben', name: 'Lockbox', race: 'Gnome', class: 'Rogue', role: 'DPS', roleSec: 'None', track: 'alts', prof1: 'Engineering', prof2: 'Mining' },
-      { id: '4', player: 'Alex', name: 'Stormcaller', race: 'Dwarf', class: 'Shaman', role: 'Healer', roleSec: 'DPS', track: 'flowmasters', prof1: 'Alchemy', prof2: 'Herbalism' },
-      { id: '5', player: 'Sarah', name: 'Pyroclast', race: 'Orc', class: 'Mage', role: 'DPS', roleSec: 'None', track: 'flowmasters', prof1: 'Engineering', prof2: 'Mining' },
-      { id: '6', player: 'Dave', name: 'Shadowspark', race: 'Gnome', class: 'Priest', role: 'DPS', roleSec: 'Healer', track: 'flowmasters', prof1: 'Tailoring', prof2: 'Enchanting' },
-      { id: '7', player: 'Chris', name: 'Netherhex', race: 'Troll', class: 'Warlock', role: 'DPS', roleSec: 'None', track: 'flowmasters', prof1: 'Skinning', prof2: 'Leatherworking' },
-      { id: '8', player: 'Mallory', name: 'Sunstrider', race: 'Human', class: 'Hunter', role: 'DPS', roleSec: 'None', track: 'family', prof1: 'Leatherworking', prof2: 'Skinning' }
-    ];
+    let ghConfig = JSON.parse(localStorage.getItem('wow_gh_config') || 'null') || {
+      owner: '',
+      repo: '',
+      branch: 'main',
+      token: ''
+    };
 
-    let stored = localStorage.getItem('wow_forever_roster');
-    let characters = DEFAULT_CHARACTERS;
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Migration check for older track names
-          characters = parsed.map(c => ({
-            ...c,
-            track: c.track === 'together' ? 'flowmasters' : c.track,
-            roleSec: c.roleSec || 'None'
-          }));
-        }
-      } catch (e) {
-        characters = DEFAULT_CHARACTERS;
+    let characters = JSON.parse(localStorage.getItem('wow_forever_roster') || '[]');
+    let currentSha = null;
+    let party = [null, null, null, null, null];
+    let currentFilter = 'all';
+
+    function setSyncStatus(msg, isError = false) {
+      const el = document.getElementById('sync-status');
+      el.textContent = msg;
+      el.className = isError ? 'text-red-400 font-semibold' : 'text-emerald-400 font-semibold';
+    }
+
+    function updateRepoDisplay() {
+      const el = document.getElementById('repo-display');
+      if (ghConfig.owner && ghConfig.repo) {
+        el.textContent = `${ghConfig.owner}/${ghConfig.repo} (${ghConfig.branch})`;
+      } else {
+        el.textContent = 'Not Configured (Click GitHub Settings)';
       }
     }
 
-    let party = [null, null, null, null, null]; // Tank, Healer, DPS, DPS, DPS
-    let currentFilter = 'all';
-
-    function saveToStorage() {
-      localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
-    }
-
-    // Launch countdown to November 4, 2026
+    // Launch countdown
     function updateCountdown() {
       const launchDate = new Date('2026-11-04T00:00:00Z').getTime();
       const now = new Date().getTime();
@@ -349,6 +398,123 @@
     }
     setInterval(updateCountdown, 60000);
     updateCountdown();
+
+    // GitHub Read & Write Services
+    async function pullFromGitHub() {
+      if (!ghConfig.owner || !ghConfig.repo) {
+        setSyncStatus('Local only (configure repo)', false);
+        return;
+      }
+
+      setSyncStatus('Fetching characters.json...');
+      const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/characters.json?ref=${ghConfig.branch}`;
+      const headers = { 'Accept': 'application/vnd.github.v3+json' };
+      if (ghConfig.token) headers['Authorization'] = `token ${ghConfig.token}`;
+
+      try {
+        const res = await fetch(url, { headers });
+        if (res.status === 404) {
+          setSyncStatus('characters.json not found in repo', true);
+          return;
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        currentSha = data.sha;
+        // Decode base64 UTF-8 content
+        const decoded = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
+        characters = JSON.parse(decoded);
+        localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
+        setSyncStatus(`Synced live from GitHub (${new Date().toLocaleTimeString()})`);
+        renderRoster();
+      } catch (err) {
+        console.error('GitHub fetch failed:', err);
+        setSyncStatus('Sync error: using local cache', true);
+      }
+    }
+
+    async function pushToGitHub(newCharacters) {
+      if (!ghConfig.owner || !ghConfig.repo) {
+        // Save locally only
+        characters = newCharacters;
+        localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
+        renderRoster();
+        return;
+      }
+
+      if (!ghConfig.token) {
+        const tokenPrompt = prompt("To commit changes to characters.json in GitHub, enter your GitHub Personal Access Token (PAT):");
+        if (tokenPrompt) {
+          ghConfig.token = tokenPrompt.trim();
+          localStorage.setItem('wow_gh_config', JSON.stringify(ghConfig));
+        } else {
+          characters = newCharacters;
+          localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
+          renderRoster();
+          alert("Saved locally only. Add a GitHub PAT in Settings to commit to the repo.");
+          return;
+        }
+      }
+
+      setSyncStatus('Committing changes to GitHub...');
+      const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/characters.json`;
+
+      try {
+        // Get latest SHA first if we don't have it
+        if (!currentSha) {
+          const checkRes = await fetch(`${url}?ref=${ghConfig.branch}`, {
+            headers: {
+              'Accept': 'application/vnd.github.v3+json',
+              'Authorization': `token ${ghConfig.token}`
+            }
+          });
+          if (checkRes.ok) {
+            const checkData = await checkRes.json();
+            currentSha = checkData.sha;
+          }
+        }
+
+        const jsonString = JSON.stringify(newCharacters, null, 2);
+        // Base64 UTF-8 encode
+        const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
+
+        const bodyData = {
+          message: `Update characters.json via WoW: Forever tracker [skip ci]`,
+          content: encodedContent,
+          branch: ghConfig.branch
+        };
+        if (currentSha) bodyData.sha = currentSha;
+
+        const putRes = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': `token ${ghConfig.token}`
+          },
+          body: JSON.stringify(bodyData)
+        });
+
+        if (!putRes.ok) {
+          const errData = await putRes.json();
+          throw new Error(errData.message || `HTTP ${putRes.status}`);
+        }
+
+        const result = await putRes.json();
+        currentSha = result.content.sha;
+        characters = newCharacters;
+        localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
+        setSyncStatus(`Saved & committed to GitHub (${new Date().toLocaleTimeString()})`);
+        renderRoster();
+      } catch (err) {
+        console.error('GitHub push failed:', err);
+        characters = newCharacters;
+        localStorage.setItem('wow_forever_roster', JSON.stringify(characters));
+        renderRoster();
+        alert(`Failed to commit to GitHub: ${err.message}. Changes saved to local storage.`);
+        setSyncStatus('Commit failed (saved locally)', true);
+      }
+    }
 
     function onRaceChange() {
       const race = document.getElementById('char-race').value;
@@ -492,7 +658,6 @@
         return;
       }
 
-      // Check primary role match first, fallback to secondary role
       if (char.role === 'Tank' && !party[0]) {
         party[0] = { ...char, assignedRole: 'Tank' };
       } else if (char.role === 'Healer' && !party[1]) {
@@ -502,7 +667,6 @@
       } else if (char.roleSec === 'Healer' && !party[1]) {
         party[1] = { ...char, assignedRole: 'Healer' };
       } else {
-        // Fill DPS slot if primary or secondary fits DPS (or fallback empty slot)
         const emptyDps = [2, 3, 4].find(idx => !party[idx]);
         if (emptyDps !== undefined) {
           party[emptyDps] = { ...char, assignedRole: 'DPS' };
@@ -528,18 +692,14 @@
 
     function autoFillDungeonGroup() {
       party = [null, null, null, null, null];
-      // Prefer Flowmasters squad characters
       const pool = characters.filter(c => c.track === 'flowmasters');
 
-      // 1. Tank: primary tank first, then hybrid secondary tank
       const tank = pool.find(c => c.role === 'Tank') || pool.find(c => c.roleSec === 'Tank');
       if (tank) party[0] = { ...tank, assignedRole: 'Tank' };
 
-      // 2. Healer: primary healer first, then hybrid secondary healer
       const healer = pool.find(c => c !== tank && c.role === 'Healer') || pool.find(c => c !== tank && c.roleSec === 'Healer');
       if (healer) party[1] = { ...healer, assignedRole: 'Healer' };
 
-      // 3. DPS slots
       const dps = pool.filter(c => c !== tank && c !== healer).slice(0, 3);
       dps.forEach((d, i) => { 
         if (i < 3) party[2 + i] = { ...d, assignedRole: 'DPS' }; 
@@ -618,6 +778,7 @@
       document.getElementById('prof-coverage-pct').innerText = `${pct}% Guild Coverage (${covered}/${ALL_PROFESSIONS.length})`;
     }
 
+    // Modal & Crud Handlers
     function openModal() {
       document.getElementById('modal-title').innerText = 'Add Forever Character';
       document.getElementById('edit-id').value = '';
@@ -652,16 +813,15 @@
       document.getElementById('char-modal').classList.remove('hidden');
     }
 
-    function deleteCharacter(id) {
-      if (confirm('Delete this character from your guild roster?')) {
-        characters = characters.filter(c => c.id !== id);
+    async function deleteCharacter(id) {
+      if (confirm('Delete this character from the roster?')) {
+        const updated = characters.filter(c => c.id !== id);
         party = party.map(p => (p && p.id === id ? null : p));
-        saveToStorage();
-        renderRoster();
+        await pushToGitHub(updated);
       }
     }
 
-    function saveCharacter(e) {
+    async function saveCharacter(e) {
       e.preventDefault();
       const editId = document.getElementById('edit-id').value;
       const charData = {
@@ -677,16 +837,43 @@
         prof2: document.getElementById('char-prof2').value
       };
 
+      let updated;
       if (editId) {
-        characters = characters.map(c => c.id === editId ? charData : c);
+        updated = characters.map(c => c.id === editId ? charData : c);
         party = party.map(p => (p && p.id === editId ? { ...charData, assignedRole: p.assignedRole || charData.role } : p));
       } else {
-        characters.push(charData);
+        updated = [...characters, charData];
       }
 
-      saveToStorage();
       closeModal();
-      renderRoster();
+      await pushToGitHub(updated);
+    }
+
+    // GitHub Settings Modal
+    function openGhModal() {
+      document.getElementById('gh-owner').value = ghConfig.owner || '';
+      document.getElementById('gh-repo').value = ghConfig.repo || '';
+      document.getElementById('gh-branch').value = ghConfig.branch || 'main';
+      document.getElementById('gh-token').value = ghConfig.token || '';
+      document.getElementById('gh-modal').classList.remove('hidden');
+    }
+
+    function closeGhModal() {
+      document.getElementById('gh-modal').classList.add('hidden');
+    }
+
+    function saveGhConfig(e) {
+      e.preventDefault();
+      ghConfig = {
+        owner: document.getElementById('gh-owner').value.trim(),
+        repo: document.getElementById('gh-repo').value.trim(),
+        branch: document.getElementById('gh-branch').value.trim() || 'main',
+        token: document.getElementById('gh-token').value.trim()
+      };
+      localStorage.setItem('wow_gh_config', JSON.stringify(ghConfig));
+      updateRepoDisplay();
+      closeGhModal();
+      pullFromGitHub();
     }
 
     function exportData() {
@@ -695,34 +882,20 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `wow_forever_flowmasters_${new Date().toISOString().slice(0,10)}.json`;
+      a.download = `characters.json`;
       a.click();
       URL.revokeObjectURL(url);
     }
 
-    function importDataPrompt() {
-      const raw = prompt("Paste your roster JSON here:");
-      if (!raw) return;
-      try {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          characters = parsed.map(c => ({
-            ...c,
-            track: c.track === 'together' ? 'flowmasters' : c.track,
-            roleSec: c.roleSec || 'None'
-          }));
-          saveToStorage();
-          renderRoster();
-          alert("Guild roster successfully loaded!");
-        }
-      } catch (err) {
-        alert("Invalid JSON format.");
-      }
-    }
-
-    // Initial render
+    // Initialization
+    updateRepoDisplay();
     onRaceChange();
     renderRoster();
+    if (ghConfig.owner && ghConfig.repo) {
+      pullFromGitHub();
+    } else {
+      setSyncStatus('Local only (configure repo)', false);
+    }
   </script>
 </body>
 </html>
