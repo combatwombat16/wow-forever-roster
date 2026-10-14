@@ -86,7 +86,7 @@
   <main class="max-w-[1600px] mx-auto flex flex-col lg:flex-row gap-4 items-start">
 
     <!-- LEFT COLUMN: Compact Character Roster (Fits on Page) -->
-    <aside class="w-full lg:w-[380px] shrink-0 space-y-2.5">
+    <aside class="w-full lg:w-[410px] shrink-0 space-y-2.5">
       
       <!-- Group Track Selector & Top Actions -->
       <div class="wow-border bg-slate-900/80 rounded-lg p-2.5 space-y-2">
@@ -350,6 +350,12 @@
       "Troll": ["Warrior", "Hunter", "Mage", "Rogue", "Priest", "Warlock", "Shaman"],
       "Horde Skyborne": ["Warrior", "Hunter", "Rogue", "Druid", "Shaman"]
     };
+
+    // Faction mapping for styling
+    const ALLIANCE_RACES = ["Human", "Dwarf", "Night Elf", "Gnome", "Alliance Skyborne"];
+    function getFaction(race) {
+      return ALLIANCE_RACES.includes(race) ? "alliance" : "horde";
+    }
 
     const CLASS_COLORS = {
       "Warrior": "text-[#C79C6E] border-[#C79C6E]/40 bg-[#C79C6E]/10",
@@ -624,7 +630,7 @@
       return '⚔️';
     }
 
-    // Dense, compact single-row card rendering to eliminate scrolling
+    // Dense, compact single-row card rendering with Faction background coloring
     function renderRoster() {
       const grid = document.getElementById('character-grid');
       const filtered = characters.filter(c => currentFilter === 'all' ? true : c.track === currentFilter);
@@ -641,24 +647,37 @@
       filtered.forEach(c => {
         const classBadge = CLASS_COLORS[c.class] || 'text-slate-300 border-slate-700 bg-slate-800';
         const isPartyMember = party.some(p => p && p.id === c.id);
+        const faction = getFaction(c.race);
+
+        // Faction-based backdrop and border styling
+        const factionStyles = faction === 'alliance'
+          ? 'bg-gradient-to-r from-blue-950/45 via-slate-900/85 to-slate-900/90 border-blue-900/50 hover:border-blue-500/60 shadow-[inset_0_0_12px_rgba(30,58,138,0.2)]'
+          : 'bg-gradient-to-r from-red-950/45 via-slate-900/85 to-slate-900/90 border-red-900/50 hover:border-red-500/60 shadow-[inset_0_0_12px_rgba(153,27,27,0.2)]';
+
+        const factionTag = faction === 'alliance'
+          ? '<span class="text-[9px] font-bold text-sky-400 bg-blue-950/80 px-1 py-0.2 rounded border border-blue-800/60">Alliance</span>'
+          : '<span class="text-[9px] font-bold text-red-400 bg-red-950/80 px-1 py-0.2 rounded border border-red-800/60">Horde</span>';
 
         const prof1Str = c.prof1 && c.prof1 !== 'None' ? (PROF_ABBR[c.prof1] || c.prof1) : '';
         const prof2Str = c.prof2 && c.prof2 !== 'None' ? (PROF_ABBR[c.prof2] || c.prof2) : '';
         const profsFormatted = [prof1Str, prof2Str].filter(Boolean).join('/');
 
         const card = document.createElement('div');
-        card.className = `wow-border rounded-lg px-2.5 py-1.5 bg-slate-900/80 hover:border-amber-400/50 transition-all flex items-center justify-between gap-2 text-xs ${isPartyMember ? 'ring-1 ring-amber-500 bg-amber-950/20' : ''}`;
+        card.className = `rounded-lg px-2.5 py-1.5 transition-all border flex items-center justify-between gap-2 text-xs ${factionStyles} ${isPartyMember ? 'ring-1 ring-amber-400 border-amber-400/80' : ''}`;
         card.innerHTML = `
-          <!-- Left: Identity & Badges -->
+          <!-- Left: Identity, Faction & Badges -->
           <div class="flex items-center gap-2 min-w-0 flex-1">
             ${getTrackDot(c.track)}
             <div class="min-w-0">
               <div class="flex items-center gap-1.5 leading-tight">
                 <span class="font-bold text-slate-100 truncate text-[12px]">${c.name}</span>
                 <span class="text-[10px] text-slate-400 truncate">(${c.player})</span>
+                ${factionTag}
               </div>
               <div class="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5 leading-none">
                 <span class="font-semibold ${classBadge.split(' ')[0]}">${c.class}</span>
+                <span class="text-slate-600">•</span>
+                <span class="text-slate-300 font-normal">${c.race}</span>
                 <span class="text-slate-600">•</span>
                 <span class="text-amber-300/90 font-medium">${getRoleIcon(c.role)}${c.role}</span>
                 ${c.roleSec && c.roleSec !== 'None' ? `<span class="text-sky-300/80">(${getRoleIcon(c.roleSec)}${c.roleSec})</span>` : ''}
@@ -697,24 +716,33 @@
       for (let i = 0; i < 5; i++) {
         const char = party[i];
         const slotEl = document.createElement('div');
-        slotEl.className = 'bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 flex flex-col justify-between min-h-[95px]';
 
         if (char) {
+          const faction = getFaction(char.race);
+          const factionBg = faction === 'alliance' 
+            ? 'bg-gradient-to-b from-blue-950/60 to-slate-950/90 border-blue-900/60' 
+            : 'bg-gradient-to-b from-red-950/60 to-slate-950/90 border-red-900/60';
           const color = CLASS_COLORS[char.class] || 'text-slate-300';
           const isOffspec = char.assignedRole && char.assignedRole === char.roleSec;
+
+          slotEl.className = `${factionBg} border rounded-lg p-2.5 flex flex-col justify-between min-h-[95px] shadow-sm`;
           slotEl.innerHTML = `
             <div>
-              <div class="text-[9px] font-bold text-slate-500 uppercase flex items-center justify-between">
+              <div class="text-[9px] font-bold text-slate-400 uppercase flex items-center justify-between">
                 <span>${slotLabels[i]}</span>
-                ${isOffspec ? '<span class="text-[8px] text-sky-400 font-semibold bg-sky-950/80 px-1 rounded border border-sky-800/40">Off-spec</span>' : ''}
+                <div class="flex items-center gap-1">
+                  ${isOffspec ? '<span class="text-[8px] text-sky-300 font-semibold bg-sky-950 px-1 rounded border border-sky-800/40">Off-spec</span>' : ''}
+                  <span class="text-[8px] font-bold ${faction === 'alliance' ? 'text-sky-400' : 'text-red-400'}">${faction === 'alliance' ? 'Alliance' : 'Horde'}</span>
+                </div>
               </div>
               <div class="font-bold text-sm text-slate-100 truncate mt-0.5">${char.name}</div>
               <div class="text-xs font-semibold ${color.split(' ')[0]}">${char.class}</div>
-              <div class="text-[10px] text-slate-400">${char.player}</div>
+              <div class="text-[10px] text-slate-400">${char.player} • ${char.race}</div>
             </div>
             <button onclick="removeFromPartyIndex(${i})" class="text-[10px] text-red-400 hover:text-red-300 mt-1.5 text-left">Remove</button>
           `;
         } else {
+          slotEl.className = 'bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 flex flex-col justify-between min-h-[95px]';
           slotEl.innerHTML = `
             <div class="text-[9px] font-bold text-slate-500 uppercase">${slotLabels[i]}</div>
             <div class="text-xs text-slate-600 italic my-auto">Slot Empty</div>
