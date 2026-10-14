@@ -214,5 +214,17 @@
     "class": "Hunter",
     "prof1": "Mining",
     "prof2": "Engineering"
+  },
+  {
+    "id": "1791945790634",
+    "player": "phatbastid",
+    "name": "gnomeater",
+    "track": "flowmasters",
+    "role": "DPS",
+    "roleSec": "Healer",
+    "race": "Orc",
+    "class": "Shaman",
+    "prof1": "Mining",
+    "prof2": "Blacksmithing"
   }
 ]
