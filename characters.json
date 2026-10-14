@@ -202,5 +202,17 @@
     "class": "Rogue",
     "prof1": "Skinning",
     "prof2": "Leatherworking"
+  },
+  {
+    "id": "1791945705052",
+    "player": "pandamancer",
+    "name": "koalaman dingoh",
+    "track": "alts",
+    "role": "DPS",
+    "roleSec": "None",
+    "race": "Human",
+    "class": "Hunter",
+    "prof1": "Mining",
+    "prof2": "Engineering"
   }
 ]
