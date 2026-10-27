@@ -181,6 +181,35 @@
         </div>
       </section>
 
+      <!-- BUBBLE 3: Squad Composition (Race & Class distribution, follows the Squad Filter) -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+
+        <section class="wow-border bg-slate-900/70 backdrop-blur rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
+            <h2 class="cinzel text-base font-bold text-amber-200 flex items-center gap-2">
+              <span>🧬</span> Race Distribution
+            </h2>
+            <span id="race-summary" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-amber-300 border border-slate-700">0 Races / 0 Chars</span>
+          </div>
+          <div id="race-stats" class="space-y-1.5 text-xs">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+        <section class="wow-border bg-slate-900/70 backdrop-blur rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
+            <h2 class="cinzel text-base font-bold text-amber-200 flex items-center gap-2">
+              <span>🛡️</span> Class Distribution
+            </h2>
+            <span id="class-summary" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-amber-300 border border-slate-700">0 Classes / 0 Chars</span>
+          </div>
+          <div id="class-stats" class="space-y-1.5 text-xs">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+      </div>
+
     </div>
 
   </main>
@@ -369,6 +398,26 @@
       "Druid": "text-[#FF7D0A] border-[#FF7D0A]/40 bg-[#FF7D0A]/10"
     };
 
+    // Bar fills for the class distribution. Spelled out as literals because the
+    // Tailwind Play CDN only emits utilities it can find verbatim in this file, so
+    // interpolating a hex out of CLASS_COLORS would produce unstyled bars.
+    const CLASS_BAR = {
+      "Warrior": "bg-[#C79C6E]/75",
+      "Paladin": "bg-[#F58CBA]/75",
+      "Hunter": "bg-[#ABD473]/75",
+      "Rogue": "bg-[#FFF569]/75",
+      "Priest": "bg-[#FFFFFF]/75",
+      "Shaman": "bg-[#0070DE]/75",
+      "Mage": "bg-[#40C7EB]/75",
+      "Warlock": "bg-[#8787ED]/75",
+      "Druid": "bg-[#FF7D0A]/75"
+    };
+
+    const RACE_BAR = {
+      alliance: "bg-sky-500/75",
+      horde: "bg-red-500/75"
+    };
+
     const ALL_PROFESSIONS = [
       "Alchemy", "Blacksmithing", "Enchanting", "Engineering",
       "Herbalism", "Leatherworking", "Mining", "Skinning", "Tailoring"
@@ -385,6 +434,13 @@
       "Skinning": "Skin",
       "Tailoring": "Tail"
     };
+
+    // Roster names and player handles are typed into a form and arrive from a shared
+    // JSON file, so they must never be able to close the tag they are printed inside.
+    function escapeHtml(value) {
+      const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+      return String(value == null ? '' : value).replace(/[&<>"']/g, ch => entities[ch]);
+    }
 
     const DEFAULT_CHARACTERS = [
       { id: '1', player: 'Ben', name: 'Ironshield', race: 'Undead', class: 'Paladin', role: 'Tank', roleSec: 'Healer', track: 'flowmasters', prof1: 'Blacksmithing', prof2: 'Mining' },
@@ -641,6 +697,8 @@
         grid.innerHTML = `<div class="text-[11px] text-slate-500 italic p-3 text-center bg-slate-900/40 rounded border border-slate-800">No characters in this filter.</div>`;
         renderProfessions();
         renderParty();
+        renderRaceStats();
+        renderClassStats();
         return;
       }
 
@@ -660,7 +718,7 @@
 
         const prof1Str = c.prof1 && c.prof1 !== 'None' ? (PROF_ABBR[c.prof1] || c.prof1) : '';
         const prof2Str = c.prof2 && c.prof2 !== 'None' ? (PROF_ABBR[c.prof2] || c.prof2) : '';
-        const profsFormatted = [prof1Str, prof2Str].filter(Boolean).join('/');
+        const profsFormatted = [prof1Str, prof2Str].filter(Boolean).map(escapeHtml).join('/');
 
         const card = document.createElement('div');
         card.className = `rounded-lg px-2.5 py-1.5 transition-all border flex items-center justify-between gap-2 text-xs ${factionStyles} ${isPartyMember ? 'ring-1 ring-amber-400 border-amber-400/80' : ''}`;
@@ -670,14 +728,14 @@
             ${getTrackDot(c.track)}
             <div class="min-w-0">
               <div class="flex items-center gap-1.5 leading-tight">
-                <span class="font-bold text-slate-100 truncate text-[12px]">${c.name}</span>
-                <span class="text-[10px] text-slate-400 truncate">(${c.player})</span>
+                <span class="font-bold text-slate-100 truncate text-[12px]">${escapeHtml(c.name)}</span>
+                <span class="text-[10px] text-slate-400 truncate">(${escapeHtml(c.player)})</span>
                 ${factionTag}
               </div>
               <div class="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5 leading-none">
-                <span class="font-semibold ${classBadge.split(' ')[0]}">${c.class}</span>
+                <span class="font-semibold ${classBadge.split(' ')[0]}">${escapeHtml(c.class)}</span>
                 <span class="text-slate-600">•</span>
-                <span class="text-slate-300 font-normal">${c.race}</span>
+                <span class="text-slate-300 font-normal">${escapeHtml(c.race)}</span>
                 <span class="text-slate-600">•</span>
                 <span class="text-amber-300/90 font-medium">${getRoleIcon(c.role)}${c.role}</span>
                 ${c.roleSec && c.roleSec !== 'None' ? `<span class="text-sky-300/80">(${getRoleIcon(c.roleSec)}${c.roleSec})</span>` : ''}
@@ -688,13 +746,13 @@
 
           <!-- Right: Compact Micro-actions -->
           <div class="flex items-center gap-1 shrink-0">
-            <button onclick="togglePartyMember('${c.id}')" title="${isPartyMember ? 'Remove from party' : 'Add to party'}" class="px-1.5 py-0.5 rounded text-[11px] font-bold transition-all ${isPartyMember ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700'}">
+            <button onclick="togglePartyMember('${escapeHtml(c.id)}')" title="${isPartyMember ? 'Remove from party' : 'Add to party'}" class="px-1.5 py-0.5 rounded text-[11px] font-bold transition-all ${isPartyMember ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700'}">
               ${isPartyMember ? '✓' : '+'}
             </button>
-            <button onclick="editCharacter('${c.id}')" title="Edit character" class="p-1 text-slate-400 hover:text-white text-[11px]">
+            <button onclick="editCharacter('${escapeHtml(c.id)}')" title="Edit character" class="p-1 text-slate-400 hover:text-white text-[11px]">
               ✎
             </button>
-            <button onclick="deleteCharacter('${c.id}')" title="Delete character" class="p-1 text-red-400 hover:text-red-300 text-[11px]">
+            <button onclick="deleteCharacter('${escapeHtml(c.id)}')" title="Delete character" class="p-1 text-red-400 hover:text-red-300 text-[11px]">
               ✕
             </button>
           </div>
@@ -704,6 +762,8 @@
 
       renderProfessions();
       renderParty();
+      renderRaceStats();
+      renderClassStats();
     }
 
     function renderParty() {
@@ -735,9 +795,9 @@
                   <span class="text-[8px] font-bold ${faction === 'alliance' ? 'text-sky-400' : 'text-red-400'}">${faction === 'alliance' ? 'Alliance' : 'Horde'}</span>
                 </div>
               </div>
-              <div class="font-bold text-sm text-slate-100 truncate mt-0.5">${char.name}</div>
-              <div class="text-xs font-semibold ${color.split(' ')[0]}">${char.class}</div>
-              <div class="text-[10px] text-slate-400">${char.player} • ${char.race}</div>
+              <div class="font-bold text-sm text-slate-100 truncate mt-0.5">${escapeHtml(char.name)}</div>
+              <div class="text-xs font-semibold ${color.split(' ')[0]}">${escapeHtml(char.class)}</div>
+              <div class="text-[10px] text-slate-400">${escapeHtml(char.player)} • ${escapeHtml(char.race)}</div>
             </div>
             <button onclick="removeFromPartyIndex(${i})" class="text-[10px] text-red-400 hover:text-red-300 mt-1.5 text-left">Remove</button>
           `;
@@ -806,7 +866,7 @@
     }
 
     function autoFillDungeonGroup() {
-      const pool = characters.filter(c => currentFilter === 'all' ? true : c.track === currentFilter);
+      const pool = getFilteredCharacters();
 
       if (pool.length === 0) {
         const groupName = currentFilter === 'all' ? 'All' : currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1);
@@ -905,7 +965,7 @@
 
     function renderProfessions() {
       const container = document.getElementById('profession-tags');
-      const activeTrackChars = characters.filter(c => currentFilter === 'all' ? true : c.track === currentFilter);
+      const activeTrackChars = getFilteredCharacters();
 
       const counts = {};
       ALL_PROFESSIONS.forEach(p => counts[p] = []);
@@ -925,7 +985,7 @@
           <div class="p-2 rounded border ${isCovered ? 'bg-amber-950/20 border-amber-600/40' : 'bg-slate-950/40 border-slate-800/60 opacity-60'}">
             <div class="font-bold text-[11px] ${isCovered ? 'text-amber-300' : 'text-slate-400'}">${p}</div>
             <div class="text-[9px] text-slate-400 mt-0.5 truncate">
-              ${isCovered ? players.join(', ') : '<span class="text-red-400/80">Unassigned</span>'}
+              ${isCovered ? players.map(escapeHtml).join(', ') : '<span class="text-red-400/80">Unassigned</span>'}
             </div>
           </div>
         `;
@@ -933,6 +993,70 @@
 
       const pct = Math.round((covered / ALL_PROFESSIONS.length) * 100);
       document.getElementById('prof-coverage-pct').innerText = `${pct}% Guild Coverage (${covered}/${ALL_PROFESSIONS.length})`;
+    }
+
+    // The one place the Squad Filter is applied, so the roster grid, the profession
+    // matrix and both distribution panels can never disagree about the active squad.
+    function getFilteredCharacters() {
+      return characters.filter(c => currentFilter === 'all' ? true : c.track === currentFilter);
+    }
+
+    // Counted by character, not by player: race and class belong to the character.
+    function tallyBy(chars, keyFn) {
+      const counts = new Map();
+      chars.forEach(c => {
+        const key = keyFn(c);
+        if (!key) return;
+        counts.set(key, (counts.get(key) || 0) + 1);
+      });
+      return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    }
+
+    function raceStyle(race) {
+      return getFaction(race) === 'alliance'
+        ? { bar: RACE_BAR.alliance, text: 'text-sky-300' }
+        : { bar: RACE_BAR.horde, text: 'text-red-300' };
+    }
+
+    function classStyle(cls) {
+      const colors = CLASS_COLORS[cls];
+      const bar = CLASS_BAR[cls];
+      if (colors && bar) return { bar: bar, text: colors.split(' ')[0] };
+      return { bar: 'bg-slate-600', text: 'text-slate-300' };
+    }
+
+    function renderDistribution(containerId, summaryId, unitLabel, rows, total, styleFor) {
+      const container = document.getElementById(containerId);
+      document.getElementById(summaryId).innerText = `${rows.length} ${unitLabel} / ${total} Chars`;
+
+      if (total === 0) {
+        container.innerHTML = `<div class="text-[11px] text-slate-500 italic p-3 text-center bg-slate-900/40 rounded border border-slate-800">No characters in this filter.</div>`;
+        return;
+      }
+
+      container.innerHTML = rows.map(([label, count]) => {
+        const pct = (count / total) * 100;
+        const style = styleFor(label);
+        return `
+          <div class="flex items-center gap-2">
+            <span class="w-[120px] shrink-0 text-[11px] font-semibold truncate ${style.text}" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
+            <div class="flex-1 h-3 rounded bg-slate-800/70 border border-slate-700/60 overflow-hidden">
+              <div class="h-full ${style.bar}" style="width:${pct.toFixed(2)}%"></div>
+            </div>
+            <span class="w-[64px] shrink-0 text-right text-[10px] font-semibold text-slate-400">${count} (${Math.round(pct)}%)</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderRaceStats() {
+      const chars = getFilteredCharacters();
+      renderDistribution('race-stats', 'race-summary', 'Races', tallyBy(chars, c => c.race), chars.length, raceStyle);
+    }
+
+    function renderClassStats() {
+      const chars = getFilteredCharacters();
+      renderDistribution('class-stats', 'class-summary', 'Classes', tallyBy(chars, c => c.class), chars.length, classStyle);
     }
 
     function openModal() {
