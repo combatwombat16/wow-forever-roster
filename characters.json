@@ -62,14 +62,14 @@
   {
     "id": "1791928548067",
     "player": "ninjapirate",
-    "name": "Shock Nawe",
+    "name": "Hallowed Bonez",
     "track": "family",
-    "role": "Healer",
-    "roleSec": "DPS",
-    "race": "Troll",
-    "class": "Shaman",
-    "prof1": "Skinning",
-    "prof2": "Leatherworking"
+    "role": "DPS",
+    "roleSec": "Tank",
+    "race": "Undead",
+    "class": "Paladin",
+    "prof1": "Alchemy",
+    "prof2": "Herbalism"
   },
   {
     "id": "1791928613248",
