@@ -226,5 +226,17 @@
     "class": "Shaman",
     "prof1": "Mining",
     "prof2": "Blacksmithing"
+  },
+  {
+    "id": "1793073514718",
+    "player": "ninjapirate",
+    "name": "Heal Yeah",
+    "track": "family",
+    "role": "Healer",
+    "roleSec": "DPS",
+    "race": "Troll",
+    "class": "Priest",
+    "prof1": "Tailoring",
+    "prof2": "Enchanting"
   }
 ]
