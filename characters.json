@@ -113,9 +113,9 @@
     "name": "Vlinder Stormveil",
     "track": "family",
     "role": "DPS",
-    "roleSec": "Tank",
+    "roleSec": "None",
     "race": "Horde Skyborne",
-    "class": "Druid",
+    "class": "Shaman",
     "prof1": "Alchemy",
     "prof2": "Herbalism"
   },
