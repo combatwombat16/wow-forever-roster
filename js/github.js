@@ -503,11 +503,10 @@ function lookupNameHint(run) {
 export async function dispatchAndAwaitSync(lookupName, opts = {}) {
   const onPhase = typeof opts.onPhase === 'function' ? opts.onPhase : () => {};
   const actor = await ghUserLogin();
-  onPhase('Dispatching the Battle.net sync…');
-  const dispatch = await dispatchSyncWorkflow(lookupName, actor);
-  if (!dispatch.ok) return dispatch;
-  // The dispatch is a 202 with no body, so the run can only be identified afterwards, by the
-  // workflow's own id. No id, no attribution: say so rather than report somebody else's run.
+  // The dispatch is a 202 with no body, so the run can only be identified by the workflow's own
+  // id. Resolve it BEFORE dispatching: no id means no attribution, and failing closed here means
+  // we never start a run we cannot watch. (Reviewer nit 263cb99: resolving it after the dispatch
+  // also pushed `since` behind any slow id lookup, risking our own run falling outside the window.)
   const workflowId = await syncWorkflowId();
   if (workflowId === null) {
     return {
@@ -516,6 +515,9 @@ export async function dispatchAndAwaitSync(lookupName, opts = {}) {
       message: `GitHub did not report ${SYNC_WORKFLOW_FILE} for ${ghConfig.owner}/${ghConfig.repo}, so its run cannot be identified. Check the Actions tab.`
     };
   }
+  onPhase('Dispatching the Battle.net sync…');
+  const dispatch = await dispatchSyncWorkflow(lookupName, actor);
+  if (!dispatch.ok) return dispatch;
   // The one and only clock-skew correction: `since` already carries the allowance, and
   // candidateRuns() re-checks against this same instant instead of subtracting it again.
   const since = new Date(Date.now() - REFRESH_CLOCK_SKEW_MS).toISOString().replace(/\.\d{3}Z$/, 'Z');

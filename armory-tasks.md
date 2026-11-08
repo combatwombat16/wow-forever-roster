@@ -314,6 +314,16 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
       Blocked on: push `main`, confirm/perform the Pages setting flip, then dispatch once from the UI and once
       from Actions and read the badge/lifecycle transitions on a `needs_review` and a `fetch_error` row.
 
+## Known residual nits (verification review of `263cb99`, all accepted 2026-11-08)
+
+- Confirm/candidate commits intentionally erase an upstream mismatch `note` posted after page load
+  (a completed validation supersedes the objection it answers); `reportMismatch` merges instead.
+  Documented at `js/detail.js` `commitValidation`.
+- `deleteCharacter` clears the party slot before the push settles: a refused push leaves the slot
+  empty while the row survives. UI-only; next edit restores it.
+- Lookup-mode `floor_entries` snapshot has nightly + write-pair coverage but no dedicated unit test.
+- The GET→PUT window on roster commits (≈200 ms) stays optimistic-concurrency: 409 → "pull first".
+
 ## Standing security scope (binding for every phase)
 
 - `client_id`/`client_secret`: only ever in Actions secrets; never in the repo, the sidecar, logs, commit messages, or client JS.
