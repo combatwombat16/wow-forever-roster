@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-08T19:05:35Z",
+  "updatedAt": "2026-11-08T19:13:58Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -251,7 +251,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "note": "no match: direct lookup 404ed and no reachable guild roster lists this name",
       "candidates": []
     }
   }
