@@ -28,10 +28,10 @@
 // sidecar landing, a roster edit — keeps an open modal consistent instead of stale.
 
 import { LIFECYCLE, characters, deriveLifecycleState, isLifecycleEditable, registerRenderHook, renderAll } from './state.js';
-import { byRosterId, formatSyncedAt, isSidecarFresh, reloadSidecars } from './data.js';
+import { byRosterId, ensureTalentTrees, formatSyncedAt, isSidecarFresh, reloadSidecars, talentTreeFor, talentTreesLoading, talentTreesStaticNamespace } from './data.js';
 import { commitValidationOnFresh, dispatchAndAwaitSync, ghHasPat, ghUserLogin, openGhModal, updateRosterInMemory } from './github.js';
 import { getLifecycleBadge } from './roster.js';
-import { CLASS_COLORS, escapeHtml, getFaction, ownString, showToast } from './util.js';
+import { CLASS_COLORS, escapeHtml, getFaction, ownString, ownValue, showToast } from './util.js';
 
 // Blizzard's own media hosts. A committed sidecar is untrusted input (the sync writes what
 // the API returned, and any of these files can be hand-edited), so the check is on the
@@ -154,33 +154,829 @@ function numberOr(value) {
   return Number.isFinite(n) ? n : null;
 }
 
-// ---------- gear ----------
+// ---------- Phase 2 (T2.1): the tabbed shell ----------
+//
+// Six tabs, always all six (decision #5): a tab is never hidden, disabled or added because of
+// what a sidecar row happens to carry, so the bar cannot tell one character's data from
+// another's and never reflows between rows. The active tab is per-open module state — reset by
+// openCharacterDetail()/closeDetail(), never persisted: the modal is a view, and pi-warden keeps
+// the two storage keys to their existing owners.
+//
+// Every panel is rendered on every paint and hidden with `display:none`, rather than only the
+// active one being built: the modal is one innerHTML string (the contract the verification
+// harnesses read), a repaint then cannot lose a panel's scroll state to a partial build, and the
+// tooltip registry below indexes into exactly the markup that is on screen.
+export const DETAIL_TABS = [
+  { id: 'gear', label: 'Gear' },
+  { id: 'talents', label: 'Talents' },
+  { id: 'professions', label: 'Professions' },
+  { id: 'reputation', label: 'Reputation' },
+  { id: 'stats', label: 'Stats' },
+  { id: 'progress', label: 'Progress' }
+];
+export const DEFAULT_DETAIL_TAB = 'gear';
 
-// One cell per gear entry: the Blizzard icon (only when its host is allowlisted) plus the
-// item's own name, slot and ilvl. A rejected icon URL is dropped silently — the row keeps
-// its text, nothing from that host is ever requested.
-export function gearGrid(sidecar) {
-  const gear = sidecar && typeof sidecar === 'object' && Array.isArray(sidecar.gear) ? sidecar.gear : null;
-  if (!gear || gear.length === 0) return '';
-  const cells = gear.map(item => {
-    if (!item || typeof item !== 'object') return '';
+// The tooltip is one element that is retargeted rather than rebuilt, so moving the cursor from a
+// slot to its neighbour swaps content in place: the hide is delayed just long enough that the
+// brief gap between two adjacent slots cannot take the tooltip away first.
+export const TOOLTIP_HIDE_MS = 120;
+export const TOOLTIP_GAP = 10;
+// Used when the element cannot be measured (no layout yet, or a DOM without geometry).
+export const TOOLTIP_FALLBACK_W = 320;
+export const TOOLTIP_FALLBACK_H = 200;
+
+const TAB_BUTTON_PREFIX = 'detail-tab-';
+const TAB_PANEL_PREFIX = 'detail-panel-';
+
+let activeTab = DEFAULT_DETAIL_TAB;
+// The current paint's tooltip payloads, addressed by the numeric index in the hover handler —
+// the same rule as the candidate radios: only an index crosses into a handler, never a
+// sidecar string.
+const tooltipTargets = [];
+let tooltipHideTimer = null;
+
+// Ids written by this module's own markup are composed by function rather than spelled out at a
+// call site: the invariant that every such lookup resolves is about index.html's shell, and these
+// nodes are born and die inside #detail-content (see reviewNoteFieldId above).
+function tabButtonId(id) { return TAB_BUTTON_PREFIX + id; }
+function tabPanelId(id) { return TAB_PANEL_PREFIX + id; }
+
+function isKnownTab(id) {
+  const key = String(id == null ? '' : id);
+  return DETAIL_TABS.some(tab => tab.id === key);
+}
+
+export function detailActiveTab() {
+  return isKnownTab(activeTab) ? activeTab : DEFAULT_DETAIL_TAB;
+}
+
+// The bar replaces the per-section <h4> the single-scroll modal stacked: a tab label IS its
+// section heading, so no panel repeats it. The label is kept on its own line, which also keeps
+// `>Gear<` meaning "a heading called Gear" — the verification scripts assert on exactly that for
+// rows with no gear, so reformatting this onto one line would look like a regression there.
+function tabBarHtml() {
+  const tabs = DETAIL_TABS.map(tab => {
+    const selected = tab.id === detailActiveTab();
+    return `<button type="button" role="tab"
+      id="${tabButtonId(tab.id)}"
+      data-detail-tab="${escapeHtml(tab.id)}"
+      aria-controls="${tabPanelId(tab.id)}"
+      aria-selected="${selected ? 'true' : 'false'}"
+      tabindex="${selected ? '0' : '-1'}"
+      class="wow-tab"
+      onclick="setDetailTab('${escapeHtml(tab.id)}')"
+      onkeydown="detailTabKeydown(event, '${escapeHtml(tab.id)}')"
+    >
+      ${escapeHtml(tab.label)}
+    </button>`;
+  }).join('');
+  return `<div role="tablist" aria-label="Character detail sections" class="wow-tabs shrink-0">${tabs}</div>`;
+}
+
+function tabPanel(id, body) {
+  const selected = id === detailActiveTab();
+  return `<div role="tabpanel" id="${tabPanelId(id)}" aria-labelledby="${tabButtonId(id)}"${selected ? ' tabindex="0"' : ''} class="wow-tab-panel min-h-0 flex-1 overflow-y-auto${selected ? '' : ' hidden'}">
+      ${body}
+    </div>`;
+}
+
+function focusDetailTab(id) {
+  const el = document.getElementById(tabButtonId(id));
+  // A repaint replaced the button, so focus has to be moved to the new one or the keyboard user
+  // lands back at the top of the document. Guarded because not every DOM in play here has focus.
+  if (el && typeof el.focus === 'function') el.focus();
+}
+
+export function setDetailTab(id) {
+  const next = String(id == null ? '' : id);
+  if (!isKnownTab(next)) return false;
+  if (next === activeTab) return true;
+  activeTab = next;
+  // The tree geometry is the one block the modal cannot render from the character sidecar, so
+  // asking for the tab is what asks for the file (data.js owns the fetch and repaints on arrival).
+  if (next === 'talents') ensureTalentTrees();
+  renderDetail();
+  focusDetailTab(next);
+  return true;
+}
+
+// Arrow/Home/End move the selected tab (the roving-tabindex pattern: one tab button is in the
+// tab sequence at a time, so Tab leaves the bar for the panel).
+export function detailTabKeydown(event, id) {
+  const key = event && typeof event.key === 'string' ? event.key : '';
+  const position = DETAIL_TABS.findIndex(tab => tab.id === String(id == null ? '' : id));
+  if (position === -1) return false;
+  let next = null;
+  if (key === 'ArrowRight') next = (position + 1) % DETAIL_TABS.length;
+  else if (key === 'ArrowLeft') next = (position - 1 + DETAIL_TABS.length) % DETAIL_TABS.length;
+  else if (key === 'Home') next = 0;
+  else if (key === 'End') next = DETAIL_TABS.length - 1;
+  if (next === null) return false;
+  if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  return setDetailTab(DETAIL_TABS[next].id);
+}
+
+// ---------- shared hover/focus tooltip (T2.3, T2.4) ----------
+
+function tooltipEl() {
+  return document.getElementById('detail-tooltip');
+}
+
+// Called from detailHtml() before any panel is built: the registry is only meaningful for the
+// markup that is currently on screen, and a stale index must never show another row's item.
+function resetTooltipTargets() {
+  tooltipTargets.length = 0;
+}
+
+function registerTooltipTarget(payload) {
+  tooltipTargets.push(payload && typeof payload === 'object' ? payload : null);
+  return tooltipTargets.length - 1;
+}
+
+// An item stat line's colour is three numbers off the wire, so it is rebuilt into rgba() from
+// validated, clamped components instead of interpolated: a poisoned `color` object can never put
+// arbitrary text into a style attribute, and a missing one falls back to the class colour.
+export function rgbaColor(color) {
+  if (!color || typeof color !== 'object' || Array.isArray(color)) return '';
+  const r = numberOr(color.r);
+  const g = numberOr(color.g);
+  const b = numberOr(color.b);
+  if (r === null || g === null || b === null) return '';
+  const alpha = numberOr(color.a);
+  const clamp255 = v => Math.min(255, Math.max(0, Math.round(v)));
+  const a = alpha === null ? 1 : Math.min(1, Math.max(0, Math.round(alpha * 1000) / 1000));
+  return `rgba(${clamp255(r)}, ${clamp255(g)}, ${clamp255(b)}, ${a})`;
+}
+
+// The API spells qualities as vocabulary strings; the colour lives in css/app.css keyed by the
+// lower-case key so no dynamic colour ever leaves the stylesheet.
+const ITEM_QUALITY_KEYS = {
+  POOR: 'poor', COMMON: 'common', UNCOMMON: 'uncommon', RARE: 'rare',
+  EPIC: 'epic', LEGENDARY: 'legendary', ARTIFACT: 'artifact', HEIRLOOM: 'heirloom'
+};
+
+export function qualityKey(value) {
+  return ownString(ITEM_QUALITY_KEYS, scalarText(value).toUpperCase());
+}
+
+function namedThing(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? scalarText(value.name) : '';
+}
+
+// One gear tooltip: quality-coloured name, ilvl, slot, class/subclass, enchant strings and the
+// stat lines the equipment endpoint carries. Gem/socket lines are absent by design — this API has
+// no gem data (Phase 0), and an item with no stats renders only what it does have.
+function itemTooltipHtml(item) {
+  if (!item || typeof item !== 'object') return '';
+  const name = scalarText(item.name);
+  if (name === '') return '';
+  const quality = qualityKey(item.quality);
+  const title = quality === ''
+    ? `<div class="text-[13px] font-bold leading-snug">${escapeHtml(name)}</div>`
+    : `<div class="wow-quality text-[13px] font-bold leading-snug" data-wow-quality="${quality}">${escapeHtml(name)}</div>`;
+  const ilvl = numberOr(item.ilvl);
+  const sub = namedThing(item.itemSubclass);
+  const cls = namedThing(item.itemClass);
+  const meta = [
+    ilvl !== null ? `Item Level ${ilvl}` : '',
+    scalarText(item.slot),
+    [cls, sub].filter(Boolean).join(' ')
+  ].filter(Boolean);
+  const enchants = (Array.isArray(item.enchants) ? item.enchants : [])
+    .map(entry => scalarText(entry)).filter(text => text !== '');
+  const stats = (Array.isArray(item.stats) ? item.stats : []).map(statLineHtml).filter(Boolean);
+  const lines = [
+    meta.length === 0 ? '' : `<div class="text-[10px] text-slate-400 leading-snug pt-0.5">${escapeHtml(meta.join(' · '))}</div>`,
+    enchants.length === 0 ? '' : enchants.map(text => `<div class="wow-tooltip-text text-[11px] text-sky-300 leading-snug">${escapeHtml(text)}</div>`).join(''),
+    stats.length === 0 ? '' : `<div class="pt-1 space-y-0.5">${stats.join('')}</div>`,
+    ilvl === null && enchants.length === 0 && stats.length === 0
+      ? '<div class="text-[10px] text-slate-500 italic pt-1">No further item data synced.</div>' : ''
+  ].filter(Boolean).join('');
+  return `<div class="space-y-0.5">${title}${lines}</div>`;
+}
+
+function statLineHtml(stat) {
+  if (!stat || typeof stat !== 'object') return '';
+  const text = scalarText(stat.displayString);
+  if (text === '') return '';
+  const color = rgbaColor(stat.color);
+  const equip = stat.isEquipBonus === true ? ' text-emerald-300/90' : ' text-slate-300';
+  // Only the rebuilt rgba() reaches the style attribute; the display string stays text.
+  return `<div class="text-[11px] leading-snug${color === '' ? equip : ''}"${color === '' ? '' : ` style="color:${color}"`}>${escapeHtml(text)}</div>`;
+}
+
+function talentTooltipHtml(payload) {
+  const entry = payload && payload.entry;
+  if (!entry || typeof entry !== 'object') return '';
+  const name = scalarText(entry.spellName);
+  if (name === '') return '';
+  const description = scalarText(entry.description);
+  const cast = scalarText(entry.castTime);
+  const rank = numberOr(payload.rank);
+  const max = numberOr(payload.maxRanks);
+  const rankLine = rank !== null && max !== null ? `Rank ${rank}/${max}` : (rank !== null ? `Rank ${rank}` : '');
+  return `<div class="space-y-1">
+    <div class="flex items-baseline justify-between gap-2">
+      <span class="text-[13px] font-bold text-amber-200 leading-snug cinzel">${escapeHtml(name)}</span>
+      ${rankLine === '' ? '' : `<span class="text-[10px] text-slate-400 shrink-0">${escapeHtml(rankLine)}</span>`}
+    </div>
+    ${cast === '' ? '' : `<div class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">${escapeHtml(cast)}</div>`}
+    ${description === '' ? '<div class="text-[11px] text-slate-500 italic">No description synced for this rank.</div>' : `<div class="wow-tooltip-text text-[11px] text-slate-300 leading-snug">${escapeHtml(description)}</div>`}
+  </div>`;
+}
+
+function tooltipHtmlFor(index) {
+  const position = Number(index);
+  if (!Number.isInteger(position) || position < 0 || position >= tooltipTargets.length) return '';
+  const target = tooltipTargets[position];
+  if (!target) return '';
+  return target.kind === 'gear' ? itemTooltipHtml(target.item) : talentTooltipHtml(target);
+}
+
+function triggerFromEvent(event) {
+  if (!event || typeof event !== 'object') return null;
+  const node = event.currentTarget || event.target;
+  return node && typeof node.getBoundingClientRect === 'function' ? node : null;
+}
+
+// Right of the trigger, flipping to the left when that would run off the viewport, then clamped
+// vertically so a tooltip on the bottom row of the tree stays readable.
+function positionTooltip(trigger) {
+  const tip = tooltipEl();
+  if (!tip || !trigger) return;
+  const rect = trigger.getBoundingClientRect();
+  const viewportW = numberOr(typeof window === 'undefined' ? null : window.innerWidth);
+  const viewportH = numberOr(typeof window === 'undefined' ? null : window.innerHeight);
+  const tipW = numberOr(tip.offsetWidth) || TOOLTIP_FALLBACK_W;
+  const tipH = numberOr(tip.offsetHeight) || TOOLTIP_FALLBACK_H;
+  let left = rect.right + TOOLTIP_GAP;
+  if (viewportW !== null && left + tipW > viewportW - 8) left = rect.left - tipW - TOOLTIP_GAP;
+  left = Math.max(8, left);
+  let top = Math.max(8, rect.top);
+  if (viewportH !== null && top + tipH > viewportH - 8) top = Math.max(8, viewportH - tipH - 8);
+  tip.style.left = `${Math.round(left)}px`;
+  tip.style.top = `${Math.round(top)}px`;
+}
+
+export function showDetailTooltip(event, index) {
+  const tip = tooltipEl();
+  if (!tip) return false;
+  const html = tooltipHtmlFor(index);
+  if (html === '') return false;
+  if (tooltipHideTimer !== null) {
+    clearTimeout(tooltipHideTimer);
+    tooltipHideTimer = null;
+  }
+  const trigger = triggerFromEvent(event);
+  tip.innerHTML = html;
+  tip.classList.remove('hidden');
+  tip.setAttribute('aria-hidden', 'false');
+  positionTooltip(trigger);
+  // Point the hovered node at the tooltip while it is up: the shared element can only describe
+  // the one it belongs to, so the reference is set on the live node rather than baked into the
+  // markup of all nineteen slots.
+  if (trigger && typeof trigger.setAttribute === 'function') trigger.setAttribute('aria-describedby', 'detail-tooltip');
+  return true;
+}
+
+export function hideDetailTooltip() {
+  if (tooltipHideTimer !== null) clearTimeout(tooltipHideTimer);
+  tooltipHideTimer = setTimeout(() => {
+    tooltipHideTimer = null;
+    dismissDetailTooltip();
+  }, TOOLTIP_HIDE_MS);
+  return true;
+}
+
+// Immediate, for the paths where the trigger is already gone (a repaint, a close): leaving a
+// tooltip open over different content would be worse than a tooltip that never appeared.
+function dismissDetailTooltip() {
+  if (tooltipHideTimer !== null) {
+    clearTimeout(tooltipHideTimer);
+    tooltipHideTimer = null;
+  }
+  const tip = tooltipEl();
+  if (tip) {
+    tip.classList.add('hidden');
+    tip.innerHTML = '';
+    tip.setAttribute('aria-hidden', 'true');
+  }
+}
+
+// ---------- gear tab (T2.3) ----------
+
+// The paper doll in fixed order: the fifteen body slots, drawn as three rows of five, then the
+// weapon/ranged row. The frame is drawn whether or not the row has any gear in it — the layout is
+// the character sheet, not a list of whatever arrived.
+export const GEAR_BODY_SLOTS = ['Head', 'Neck', 'Shoulders', 'Back', 'Chest', 'Shirt', 'Waist', 'Legs',
+  'Feet', 'Wrist', 'Hands', 'Ring 1', 'Ring 2', 'Trinket 1', 'Trinket 2'];
+export const GEAR_HAND_SLOTS = ['Main Hand', 'Off Hand', 'Ranged', 'Ammo'];
+
+// The sidecar spells a slot the way the API returned it, and the shape has moved across patches
+// (a lone "Trinket", a "Weapon" for a one-hander). Anything that still maps onto the doll lands
+// in its cell; anything else renders in the "Other" row rather than silently disappearing.
+const GEAR_SLOT_ALIASES = {
+  trinket: 'Trinket 1', ring: 'Ring 1', weapon: 'Main Hand', mainhand: 'Main Hand',
+  'one-hand': 'Main Hand', offhand: 'Off Hand', 'off-hand': 'Off Hand', 'ranged left': 'Off Hand',
+  bow: 'Ranged', gun: 'Ranged', crossbow: 'Ranged', wand: 'Ranged', thrown: 'Ranged',
+  relic: 'Ranged', missile: 'Ammo', bolt: 'Ammo'
+};
+
+function frameSlotFor(item) {
+  const raw = scalarText(item.slot);
+  if (GEAR_BODY_SLOTS.indexOf(raw) !== -1 || GEAR_HAND_SLOTS.indexOf(raw) !== -1) return raw;
+  const alias = ownString(GEAR_SLOT_ALIASES, raw.toLowerCase());
+  return GEAR_BODY_SLOTS.indexOf(alias) !== -1 || GEAR_HAND_SLOTS.indexOf(alias) !== -1 ? alias : '';
+}
+
+// A rejected icon URL renders the empty socket and nothing else: no <img>, no src, and the URL is
+// never echoed into a title or data attribute, so a foreign host is not even named on the page.
+function gearIconHtml(item, name) {
+  return isSafeIconUrl(item.iconUrl)
+    ? `<img src="${escapeHtml(item.iconUrl)}" loading="lazy" alt="${escapeHtml(name)}" class="w-full h-full object-cover rounded">`
+    : '<span class="wow-slot-glyph" aria-hidden="true"></span>';
+}
+
+function gearSlotHtml(slot, item) {
+  if (!item) {
+    return `<div class="wow-slot wow-slot-empty" data-wow-slot="${escapeHtml(slot)}">
+      <span class="wow-slot-face"></span>
+      <span class="wow-slot-name">${escapeHtml(slot)}</span>
+    </div>`;
+  }
+  const name = scalarText(item.name);
+  const index = registerTooltipTarget({ kind: 'gear', item });
+  const quality = qualityKey(item.quality);
+  const nameAttrs = quality === '' ? 'class="wow-slot-name"' : `class="wow-slot-name wow-quality" data-wow-quality="${quality}"`;
+  const ilvl = numberOr(item.ilvl);
+  return `<button type="button" class="wow-slot wow-slot-filled" data-wow-slot="${escapeHtml(slot)}"
+    onmouseenter="showDetailTooltip(event, ${index})" onmouseleave="hideDetailTooltip()"
+    onfocus="showDetailTooltip(event, ${index})" onblur="hideDetailTooltip()">
+      <span class="wow-slot-face">${gearIconHtml(item, name)}</span>
+      <span ${nameAttrs}>${escapeHtml(name)}</span>
+      ${ilvl === null ? '' : `<span class="wow-slot-ilvl">${escapeHtml(String(ilvl))}</span>`}
+    </button>`;
+}
+
+function gearChipsHtml(items) {
+  return items.map(item => {
     const name = scalarText(item.name);
-    const slot = scalarText(item.slot);
-    const ilvl = numberOr(item.ilvl);
-    const icon = isSafeIconUrl(item.iconUrl)
-      ? `<img src="${escapeHtml(item.iconUrl)}" loading="lazy" alt="${escapeHtml(name)}" class="w-8 h-8 rounded border border-slate-700 bg-slate-950 object-cover shrink-0">`
+    const index = registerTooltipTarget({ kind: 'gear', item });
+    return `<button type="button" class="wow-gear-chip" onmouseenter="showDetailTooltip(event, ${index})"
+      onmouseleave="hideDetailTooltip()" onfocus="showDetailTooltip(event, ${index})" onblur="hideDetailTooltip()">
+      ${escapeHtml(name === '' ? 'Unnamed item' : name)}
+    </button>`;
+  }).join('');
+}
+
+export function gearTabHtml(sidecar) {
+  const gear = sidecar && typeof sidecar === 'object' && Array.isArray(sidecar.gear) ? sidecar.gear : null;
+  if (!gear || gear.length === 0) return emptyState('No gear data synced yet.');
+  const bySlot = new Map();
+  const other = [];
+  gear.forEach(item => {
+    if (!item || typeof item !== 'object') return;
+    const slot = frameSlotFor(item);
+    // A second item claiming the same cell keeps its own row in the "Other" strip: the doll shows
+    // one item per slot, but nothing in the sidecar is dropped on the floor.
+    if (slot === '' || bySlot.has(slot)) {
+      other.push(item);
+      return;
+    }
+    bySlot.set(slot, item);
+  });
+  const cells = slots => slots.map(slot => gearSlotHtml(slot, bySlot.get(slot) || null)).join('');
+  const known = [...bySlot.values()].length;
+  if (known === 0 && other.length === 0) return emptyState('No gear data synced yet.');
+  return `<div class="space-y-1.5">
+    <div class="grid grid-cols-5 gap-1.5">${cells(GEAR_BODY_SLOTS)}</div>
+    <div class="grid grid-cols-4 gap-1.5">${cells(GEAR_HAND_SLOTS)}</div>
+    ${other.length === 0 ? '' : `<div class="pt-0.5">
+      <div class="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Unslotted</div>
+      <div class="flex flex-wrap gap-1.5 pt-1">${gearChipsHtml(other)}</div>
+    </div>`}
+    <div class="text-[10px] text-slate-500 italic pt-0.5">Hover or focus an item for its stats, enchant and quality.</div>
+  </div>`;
+}
+
+// ---------- talents tab (T2.4): the visual tree ----------
+
+// Geometry is a grid, not a free canvas: displayRow/displayCol give the cell, and the tree is
+// normalised to its own bounding box because the API numbers the columns across the whole class
+// (Arms occupies 1–4, Feral 7–10, Protection 14–17). Rendering each spec inside its own box is
+// what lets two specs of one class sit side by side in one modal.
+export const TREE_CELL = 68;      // px between node centres — must match .wow-tree in app.css
+export const TREE_NODE = 52;      // px node size — must match .wow-tree-node in app.css
+
+function treeNumber(value) {
+  const n = numberOr(value);
+  return n === null ? null : Math.round(n);
+}
+
+// { talentId → rank } plus { spellId → rank } of one spec group's selection. Both keys, because a
+// tree rank and a selection entry are only guaranteed to agree on one of them depending on which
+// id the payload carried.
+function selectionMaps(entries) {
+  const byTalent = new Map();
+  const bySpell = new Map();
+  entries.forEach(entry => {
+    const rank = numberOr(entry.rank);
+    if (rank === null || rank <= 0) return;
+    const talentId = numberOr(entry.talentId);
+    const spellId = numberOr(entry.spellId);
+    if (talentId !== null) byTalent.set(talentId, Math.max(byTalent.get(talentId) || 0, rank));
+    if (spellId !== null) bySpell.set(spellId, Math.max(bySpell.get(spellId) || 0, rank));
+  });
+  return { byTalent, bySpell };
+}
+
+function nodeRankState(node, selection) {
+  const ranks = (Array.isArray(node.ranks) ? node.ranks : []).filter(r => r && typeof r === 'object');
+  let taken = 0;
+  ranks.forEach(rank => {
+    const talentId = numberOr(rank.talentId);
+    const spellId = numberOr(rank.spellId);
+    const chosen = talentId !== null ? selection.byTalent.get(talentId) : undefined;
+    const bySpelled = chosen === undefined && spellId !== null ? selection.bySpell.get(spellId) : chosen;
+    if (typeof bySpelled === 'number' && bySpelled > taken) taken = Math.min(bySpelled, ranks.length);
+  });
+  // Rank N is the rank the player is paying for; with nothing spent, rank 1 is what the node
+  // would do, which is the useful thing to show on hover.
+  const shown = ranks.length === 0 ? null : ranks[Math.max(0, Math.min(taken, ranks.length) - (taken > 0 ? 1 : 0))];
+  return { taken, maxRanks: ranks.length, shown };
+}
+
+function treeNodeHtml(node, ctx) {
+  const row = treeNumber(node.displayRow);
+  const col = treeNumber(node.displayCol);
+  if (row === null || col === null) return '';
+  const state = nodeRankState(node, ctx.selection);
+  const entry = state.shown;
+  const locked = (Array.isArray(node.lockedBy) ? node.lockedBy : []).some(parent => {
+    const blocker = ctx.byId.get(parent);
+    return blocker ? nodeRankState(blocker, ctx.selection).taken === 0 : false;
+  });
+  const visual = state.taken > 0 ? 'selected' : (locked ? 'locked' : 'open');
+  const name = scalarText(entry && entry.spellName);
+  const index = registerTooltipTarget({
+    kind: 'talent',
+    entry,
+    rank: state.taken > 0 ? state.taken : (state.maxRanks > 0 ? 1 : null),
+    maxRanks: state.maxRanks
+  });
+  const icon = isSafeIconUrl(entry && entry.iconUrl)
+    ? `<img src="${escapeHtml(entry.iconUrl)}" loading="lazy" alt="${escapeHtml(name)}" class="w-full h-full object-cover">`
+    : `<span class="wow-tree-glyph">${escapeHtml(name === '' ? '?' : name.charAt(0))}</span>`;
+  const offset = (TREE_CELL - TREE_NODE) / 2;
+  const left = (col - ctx.minCol) * TREE_CELL + offset;
+  const top = (row - ctx.minRow) * TREE_CELL + offset;
+  const fill = state.maxRanks === 0 ? 0 : Math.round((state.taken / state.maxRanks) * 100);
+  return `<button type="button" class="wow-tree-node" data-wow-state="${visual}"
+    style="left:${left}px;top:${top}px"
+    aria-label="${escapeHtml(name === '' ? 'Talent node' : `${name}, rank ${state.taken} of ${state.maxRanks}`)}"
+    onmouseenter="showDetailTooltip(event, ${index})" onmouseleave="hideDetailTooltip()"
+    onfocus="showDetailTooltip(event, ${index})" onblur="hideDetailTooltip()">
+      ${icon}
+      <span class="wow-tree-rank">${state.taken}/${state.maxRanks}</span>
+      <span class="wow-tree-fill" style="width:${Math.min(100, Math.max(0, fill))}%"></span>
+    </button>`;
+}
+
+function talentTreeHtml(tree, selection) {
+  const nodes = (Array.isArray(tree.nodes) ? tree.nodes : []).filter(n => n && typeof n === 'object');
+  const placed = nodes.filter(n => treeNumber(n.displayRow) !== null && treeNumber(n.displayCol) !== null);
+  if (placed.length === 0) return '';
+  const rowValues = placed.map(n => treeNumber(n.displayRow));
+  const colValues = placed.map(n => treeNumber(n.displayCol));
+  const minRow = Math.min.apply(null, rowValues);
+  const maxRow = Math.max.apply(null, rowValues);
+  const minCol = Math.min.apply(null, colValues);
+  const maxCol = Math.max.apply(null, colValues);
+  const width = (maxCol - minCol + 1) * TREE_CELL;
+  const height = (maxRow - minRow + 1) * TREE_CELL;
+  const byId = new Map();
+  nodes.forEach(node => {
+    const id = numberOr(node.id);
+    if (id !== null) byId.set(id, node);
+  });
+  const centre = node => ({
+    x: (treeNumber(node.displayCol) - minCol) * TREE_CELL + TREE_CELL / 2,
+    y: (treeNumber(node.displayRow) - minRow) * TREE_CELL + TREE_CELL / 2
+  });
+  // Connector lines come from the payload's own unlock edges, so the picture is the API's
+  // dependency graph rather than a guess from positions.
+  const links = [];
+  placed.forEach(node => {
+    (Array.isArray(node.unlocks) ? node.unlocks : []).forEach(targetId => {
+      const child = byId.get(numberOr(targetId));
+      if (!child || treeNumber(child.displayRow) === null || treeNumber(child.displayCol) === null) return;
+      const from = centre(node);
+      const to = centre(child);
+      links.push(`<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" class="wow-tree-link"></line>`);
+    });
+  });
+  const ctx = { selection, byId, minRow, minCol };
+  return `<div class="wow-tree overflow-hidden" style="width:${width}px;height:${height}px">
+      <svg class="wow-tree-links" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" aria-hidden="true">${links.join('')}</svg>
+      ${placed.map(node => treeNodeHtml(node, ctx)).join('')}
+    </div>`;
+}
+
+// The fallback the task calls for: a selection whose spec has no entry in data/talent-trees.json
+// still shows every talent it holds, ranks and descriptions included.
+function talentCompactListHtml(entries) {
+  const rows = entries.map(entry => {
+    const name = scalarText(entry.spellName);
+    const rank = numberOr(entry.rank);
+    const description = scalarText(entry.description);
+    const cast = scalarText(entry.castTime);
+    const icon = isSafeIconUrl(entry.iconUrl)
+      ? `<img src="${escapeHtml(entry.iconUrl)}" loading="lazy" alt="${escapeHtml(name)}" class="w-8 h-8 rounded border border-slate-700 bg-slate-950 object-cover shrink-0">`
       : '<span class="w-8 h-8 rounded border border-slate-800 bg-slate-950/60 shrink-0" aria-hidden="true"></span>';
-    const meta = [slot, ilvl !== null ? `ilvl ${ilvl}` : ''].filter(Boolean).join(' • ');
-    return `<div class="flex items-center gap-1.5 min-w-0 rounded border border-slate-800 bg-slate-950/50 p-1.5" title="${escapeHtml(name)}">
+    return `<div class="flex items-start gap-2 rounded border border-slate-800 bg-slate-950/50 p-1.5">
       ${icon}
       <div class="min-w-0">
-        <div class="text-[11px] text-slate-200 truncate">${escapeHtml(name)}</div>
-        <div class="text-[9px] text-slate-500 truncate">${escapeHtml(meta)}</div>
+        <div class="text-[11px] text-slate-200 truncate">${escapeHtml(name === '' ? 'Unnamed talent' : name)}${rank === null ? '' : ` <span class="text-slate-500">(${escapeHtml(String(rank))})</span>`}</div>
+        ${cast === '' ? '' : `<div class="text-[9px] uppercase tracking-wider text-slate-500 font-bold truncate">${escapeHtml(cast)}</div>`}
+        ${description === '' ? '' : `<div class="text-[10px] text-slate-400 leading-snug">${escapeHtml(description)}</div>`}
       </div>
     </div>`;
   }).join('');
-  if (cells === '') return '';
-  return section('Gear', `<div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">${cells}</div>`);
+  return `<div class="space-y-1.5">${rows}</div>`;
+}
+
+function talentSpecHtml(group, sidecar) {
+  const specId = numberOr(group.specId);
+  const specName = scalarText(group.specName);
+  const spent = numberOr(group.spentPoints);
+  const entries = (Array.isArray(group.talents) ? group.talents : []).filter(t => t && typeof t === 'object');
+  const active = specName !== '' && specName === scalarText(sidecar && sidecar.activeSpec);
+  const heading = `<div class="flex flex-wrap items-center gap-1.5">
+      <h4 class="cinzel text-[12px] font-bold text-amber-200/90">${escapeHtml(specName === '' ? `Spec ${specId === null ? '?' : specId}` : specName)}</h4>
+      ${active ? '<span class="text-[9px] uppercase tracking-wider font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded px-1 py-0.5">Active</span>' : ''}
+      <span class="text-[9px] uppercase tracking-wider text-slate-500">${spent === null ? `${entries.length} talents` : `${spent} points spent`}</span>
+    </div>`;
+  if (entries.length === 0) {
+    return `<div class="space-y-1.5">${heading}${emptyState('No talents spent in this spec yet.')}</div>`;
+  }
+  const tree = specId === null ? null : talentTreeFor(specId);
+  const selection = selectionMaps(entries);
+  if (!tree || !Array.isArray(tree.nodes) || tree.nodes.length === 0) {
+    return `<div class="space-y-1.5">${heading}
+      <div class="text-[10px] text-slate-500 italic">No tree geometry synced for this spec, so its selected talents are listed.</div>
+      ${talentCompactListHtml(entries)}</div>`;
+  }
+  const built = talentTreeHtml(tree, selection);
+  if (built === '') {
+    return `<div class="space-y-1.5">${heading}${talentCompactListHtml(entries)}</div>`;
+  }
+  const className = scalarText(tree.className);
+  return `<div class="space-y-1.5">${heading}
+      ${className === '' ? '' : `<div class="text-[9px] uppercase tracking-wider text-slate-500 font-bold">${escapeHtml(className)} tree</div>`}
+      <div class="overflow-x-auto pb-1">${built}</div>
+    </div>`;
+}
+
+export function talentsTabHtml(sidecar) {
+  const hasSidecar = sidecar && typeof sidecar === 'object';
+  const raw = hasSidecar ? sidecar.talents : null;
+  if (!hasSidecar || !Array.isArray(raw)) return emptyState('No talents data synced yet.');
+  if (raw.length === 0) return emptyState('No spec chosen yet — this character has no talent specialization selected.');
+  const groups = raw.filter(g => g && typeof g === 'object');
+  if (groups.length === 0) return emptyState('No spec chosen yet — this character has no talent specialization selected.');
+  const loading = talentTreesLoading();
+  const sections = groups.map(group => talentSpecHtml(group, sidecar)).join('<div class="pt-2 border-t border-slate-800"></div>');
+  const notice = loading
+    ? '<div class="text-[10px] text-slate-400 italic pb-1">Loading talent tree data…</div>'
+    : '';
+  const provenance = talentTreesStaticNamespace();
+  return `<div class="space-y-2">${notice}${sections}
+      ${provenance === '' ? '' : `<div class="text-[9px] text-slate-600">Tree geometry: ${escapeHtml(provenance)}</div>`}
+    </div>`;
+}
+
+// The trees file is version-pinned to a Blizzard static namespace and the modal says so, the way
+// the rest of the site states the provenance of anything the sync produced.
+
+// ---------- professions tab (T2.5) ----------
+
+// A recipe is a plain string in some payloads and an object in others (and the sync keeps what the
+// API gave), so the name is read defensively and an unusable entry contributes nothing.
+function recipeName(entry) {
+  if (typeof entry === 'string') return entry.trim();
+  if (entry && typeof entry === 'object') return scalarText(entry.name);
+  return '';
+}
+
+function barHtml(value, max, kind) {
+  const pct = max !== null && max > 0 && value !== null
+    ? Math.min(100, Math.max(0, Math.round((value / max) * 100)))
+    : 0;
+  return `<span class="wow-bar"><span class="wow-bar-fill" data-wow-kind="${escapeHtml(kind)}" style="width:${pct}%"></span></span>`;
+}
+
+function professionHtml(profession) {
+  if (!profession || typeof profession !== 'object') return '';
+  const name = scalarText(profession.name);
+  const tiers = (Array.isArray(profession.tiers) ? profession.tiers : []).filter(t => t && typeof t === 'object');
+  const tierBlocks = tiers.map(tier => {
+    const skill = numberOr(tier.skillPoints);
+    const max = numberOr(tier.maxSkillPoints);
+    const tierName = scalarText(tier.tierName);
+    const recipes = (Array.isArray(tier.knownRecipes) ? tier.knownRecipes : []).map(recipeName).filter(Boolean);
+    return `<div class="space-y-1">
+      <div class="flex items-baseline justify-between gap-2">
+        <span class="text-[11px] text-slate-300 truncate">${escapeHtml(tierName === '' ? 'Skill' : tierName)}</span>
+        <span class="text-[10px] text-slate-400 shrink-0">${skill === null ? '—' : escapeHtml(String(skill))}${max === null ? '' : ` / ${escapeHtml(String(max))}`}</span>
+      </div>
+      ${barHtml(skill, max, 'skill')}
+      ${recipes.length === 0 ? '<div class="text-[10px] text-slate-500 italic">No recipes known.</div>' : `<div class="flex flex-wrap gap-1 pt-0.5">${recipes.map(recipe => `<span class="wow-recipe">${escapeHtml(recipe)}</span>`).join('')}</div>`}
+    </div>`;
+  }).join('');
+  return `<div class="rounded border border-slate-800 bg-slate-950/50 p-2 space-y-2">
+      <div class="cinzel text-[12px] font-bold text-amber-200/90">${escapeHtml(name === '' ? 'Profession' : name)}</div>
+      ${tierBlocks === '' ? '<div class="text-[10px] text-slate-500 italic">No skill tiers synced.</div>' : tierBlocks}
+    </div>`;
+}
+
+function professionGroupHtml(heading, list) {
+  const entries = (Array.isArray(list) ? list : []).filter(p => p && typeof p === 'object');
+  const body = entries.length === 0
+    ? emptyState(`${heading}: none synced.`)
+    : `<div class="space-y-1.5">${entries.map(professionHtml).join('')}</div>`;
+  return `<div class="space-y-1">
+      <h4 class="text-[10px] uppercase font-bold tracking-wider text-slate-400">${escapeHtml(heading)}</h4>
+      ${body}
+    </div>`;
+}
+
+export function professionsTabHtml(sidecar) {
+  const professions = sidecar && typeof sidecar === 'object' && sidecar.professions
+    && typeof sidecar.professions === 'object' && !Array.isArray(sidecar.professions) ? sidecar.professions : null;
+  if (!professions) return emptyState('No professions data synced yet.');
+  const primaries = Array.isArray(professions.primaries) ? professions.primaries : [];
+  const secondaries = Array.isArray(professions.secondaries) ? professions.secondaries : [];
+  if (primaries.length === 0 && secondaries.length === 0) return emptyState('No professions data synced yet.');
+  return `<div class="space-y-2.5">
+      ${professionGroupHtml('Primary professions', primaries)}
+      ${professionGroupHtml('Secondary professions', secondaries)}
+    </div>`;
+}
+
+// ---------- reputation tab (T2.6) ----------
+
+// The classic standing table, zero-based: the forever-us namespace numbers Neutral as tier 3,
+// Friendly 4, Honored 5, which only lines up with a 0-based list. The payload's own `name` wins
+// where it carries one — the label is the API's, the table is only the fallback.
+export const REP_TIER_NAMES = ['Hated', 'Hostile', 'Unfriendly', 'Neutral', 'Friendly', 'Honored', 'Revered', 'Exalted'];
+
+const REP_TIER_KEYS = {
+  Hated: 'hated', Hostile: 'hostile', Unfriendly: 'unfriendly', Neutral: 'neutral',
+  Friendly: 'friendly', Honored: 'honored', Revered: 'revered', Exalted: 'exalted'
+};
+
+export function reputationTierLabel(standing) {
+  const named = standing && typeof standing === 'object' ? scalarText(standing.name) : '';
+  if (ownString(REP_TIER_KEYS, named) !== '') return named;
+  const tier = numberOr(standing && standing.tier);
+  return tier === null || tier < 0 || tier >= REP_TIER_NAMES.length ? '' : REP_TIER_NAMES[tier];
+}
+
+function reputationRowHtml(entry) {
+  if (!entry || typeof entry !== 'object') return '';
+  const name = scalarText(entry.factionName);
+  const standing = entry.standing && typeof entry.standing === 'object' && !Array.isArray(entry.standing)
+    ? entry.standing : null;
+  const tierLabel = reputationTierLabel(standing);
+  const tierKey = ownString(REP_TIER_KEYS, tierLabel);
+  // The bar is value/max — the progress *inside the current standing* — never raw/max, which
+  // would paint a Honored character three quarters full against a bar that means something else.
+  const value = numberOr(standing && standing.value);
+  const max = numberOr(standing && standing.max);
+  const raw = numberOr(standing && standing.raw);
+  return `<div class="rounded border border-slate-800 bg-slate-950/50 p-1.5 space-y-1">
+      <div class="flex items-baseline justify-between gap-2">
+        <span class="text-[11px] text-slate-200 truncate">${escapeHtml(name === '' ? 'Unknown faction' : name)}</span>
+        <span class="wow-rep-tier text-[10px] shrink-0${tierKey === '' ? ' text-slate-400' : ''}"${tierKey === '' ? '' : ` data-wow-tier="${tierKey}"`}>${escapeHtml(tierLabel === '' ? 'Unknown standing' : tierLabel)}</span>
+      </div>
+      ${barHtml(value, max, tierKey === '' ? 'rep' : `rep-${tierKey}`)}
+      <div class="text-[9px] text-slate-500">${value === null ? '—' : escapeHtml(String(value))}${max === null ? '' : ` / ${escapeHtml(String(max))}`}${raw === null ? '' : ` · total ${escapeHtml(String(raw))}`}</div>
+    </div>`;
+}
+
+export function reputationTabHtml(sidecar) {
+  const rows = sidecar && typeof sidecar === 'object' && Array.isArray(sidecar.reputations)
+    ? sidecar.reputations : null;
+  if (!rows || rows.length === 0) return emptyState('No reputation data synced yet.');
+  const body = rows.map(reputationRowHtml).filter(Boolean).join('');
+  if (body === '') return emptyState('No reputation data synced yet.');
+  return `<div class="space-y-1.5">${body}</div>`;
+}
+
+// ---------- stats tab (T2.7) ----------
+
+// The classic /statistics contract, grouped the way a player reads a paper doll. A key that the
+// payload does not carry is skipped outright (no zero, no dash, no invented row), so the panel
+// shrinks to exactly the data that was synced.
+export const STAT_GROUPS = [
+  ['Attributes', [
+    ['strength', 'Strength'], ['agility', 'Agility'], ['intellect', 'Intellect'], ['stamina', 'Stamina'],
+    ['spirit', 'Spirit'], ['health', 'Health'], ['power', 'Power'], ['powerType', 'Power type'],
+    ['armor', 'Armor'], ['bonusArmor', 'Bonus armor'], ['movementSpeed', 'Movement speed']
+  ]],
+  ['Combat', [
+    ['attackPower', 'Attack power'], ['rangedAttackPower', 'Ranged attack power'],
+    ['spellPower', 'Spell power'], ['spellHealing', 'Spell healing'], ['spellPenetration', 'Spell penetration'],
+    ['manaRegen', 'Mana regen (out of combat)'], ['manaRegenCombat', 'Mana regen (in combat)'],
+    ['mainHandDamageMin', 'Main hand damage min'], ['mainHandDamageMax', 'Main hand damage max'],
+    ['mainHandSpeed', 'Main hand speed'], ['mainHandDps', 'Main hand DPS'],
+    ['offHandDamageMin', 'Off hand damage min'], ['offHandDamageMax', 'Off hand damage max'],
+    ['offHandSpeed', 'Off hand speed'], ['offHandDps', 'Off hand DPS'],
+    ['rangedDamageMin', 'Ranged damage min'], ['rangedDamageMax', 'Ranged damage max'],
+    ['speed', 'Attack speed haste'], ['meleeHaste', 'Melee haste'], ['rangedHaste', 'Ranged haste'],
+    ['spellHaste', 'Spell haste'], ['versatility', 'Versatility'],
+    ['versatilityDamageDoneBonus', 'Versatility damage bonus'],
+    ['versatilityHealingDoneBonus', 'Versatility healing bonus'],
+    ['versatilityDamageTakenBonus', 'Versatility damage taken']
+  ]],
+  ['Crit, Hits & Ratings', [
+    ['meleeCrit', 'Melee crit'], ['rangedCrit', 'Ranged crit'], ['spellCrit', 'Spell crit'],
+    ['meleeHit', 'Melee hit'], ['offHandHit', 'Off hand hit'], ['rangedHit', 'Ranged hit'],
+    ['spellHit', 'Spell hit'], ['dodge', 'Dodge'], ['parry', 'Parry'], ['block', 'Block'],
+    ['defense', 'Defense'], ['expertise', 'Expertise'], ['offHandExpertise', 'Off hand expertise'],
+    ['armorPenetration', 'Armor penetration'], ['mastery', 'Mastery'], ['lifesteal', 'Lifesteal'],
+    ['avoidance', 'Avoidance']
+  ]],
+  ['Resistances', [
+    ['fireResistance', 'Fire resistance'], ['shadowResistance', 'Shadow resistance'],
+    ['natureResistance', 'Nature resistance'], ['arcaneResistance', 'Arcane resistance'],
+    ['frostResistance', 'Frost resistance']
+  ]]
+];
+
+function fmtStat(value) {
+  const n = numberOr(value);
+  if (n === null) return '';
+  return Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100);
+}
+
+// The three shapes the endpoint uses: a scalar, a {base, effective} pair and a
+// {value, ratingBonus, ratingNormalized} triple. Anything else is not rendered — the panel shows
+// numbers it can name, never a stringified object.
+function statValueParts(raw) {
+  if (typeof raw === 'number' || typeof raw === 'string') {
+    const text = typeof raw === 'string' ? raw.trim() : fmtStat(raw);
+    return text === '' ? null : { value: text, detail: '' };
+  }
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const base = numberOr(ownValue(raw, 'base'));
+  const effective = numberOr(ownValue(raw, 'effective'));
+  if (base !== null && effective !== null) {
+    return { value: fmtStat(effective), detail: base === effective ? '' : `base ${fmtStat(base)}` };
+  }
+  const value = ownValue(raw, 'value');
+  if (value !== undefined) {
+    const main = fmtStat(value);
+    if (main === '') return null;
+    const bonus = numberOr(ownValue(raw, 'ratingBonus'));
+    return { value: `${main}%`, detail: bonus !== null && bonus !== 0 ? `${bonus > 0 ? '+' : ''}${fmtStat(bonus)} rating` : '' };
+  }
+  const named = namedThing(raw);
+  return named === '' ? null : { value: named, detail: '' };
+}
+
+function statRowHtml(key, label, stats) {
+  const raw = ownValue(stats, key);
+  if (raw === undefined || raw === null) return '';
+  const parts = statValueParts(raw);
+  if (parts === null || parts.value === '') return '';
+  return `<div class="flex items-baseline justify-between gap-2 text-[11px]">
+      <span class="text-slate-400 truncate">${escapeHtml(label)}</span>
+      <span class="text-slate-200 font-semibold text-right shrink-0">${escapeHtml(parts.value)}${parts.detail === '' ? '' : ` <span class="text-slate-500 font-normal">(${escapeHtml(parts.detail)})</span>`}</span>
+    </div>`;
+}
+
+export function statsTabHtml(sidecar) {
+  const stats = sidecar && typeof sidecar === 'object' && sidecar.stats
+    && typeof sidecar.stats === 'object' && !Array.isArray(sidecar.stats) ? sidecar.stats : null;
+  if (!stats) return emptyState('No combat statistics synced yet.');
+  const groups = STAT_GROUPS.map(([heading, rows]) => {
+    const lines = rows.map(([key, label]) => statRowHtml(key, label, stats)).filter(Boolean);
+    if (lines.length === 0) return '';
+    return `<div class="rounded border border-slate-800 bg-slate-950/50 p-2 space-y-0.5">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-amber-200/80">${escapeHtml(heading)}</div>
+        ${lines.join('')}
+      </div>`;
+  }).filter(Boolean).join('');
+  if (groups === '') return emptyState('No combat statistics synced yet.');
+  return `<div class="space-y-1.5">${groups}</div>`;
+}
+
+// ---------- progress tab (T2.8) ----------
+
+function progressTabHtml(sidecar) {
+  const built = progressSections(sidecar);
+  return built === '' ? emptyState('No raid, Mythic+ or PvP progress synced yet.') : built;
 }
 
 // ---------- progress ----------
@@ -299,6 +1095,14 @@ function resetReviewView() {
   chosenSlug = null;
   chosenFor = null;
   lastResult = null;
+}
+
+// Per-open view state (T2.1): the active tab and any open tooltip. Neither is persisted, and both
+// are dropped when the row changes — a tab chosen on one character is not a fact about the next,
+// and a tooltip left open across a row switch would show the previous character's item.
+function resetDetailView() {
+  activeTab = DEFAULT_DETAIL_TAB;
+  dismissDetailTooltip();
 }
 
 function refreshFor(character) {
@@ -821,6 +1625,22 @@ function trackLabel(track) {
   return text === '' ? '' : text.charAt(0).toUpperCase() + text.slice(1);
 }
 
+// The character render (T2.2): avatar-sd, then avatar, then the initial-framed placeholder the
+// modal showed before media existed. Both URLs go through the same host allowlist as every other
+// icon, and a rejected URL renders the placeholder rather than the URL.
+function avatarHtml(sidecar, name) {
+  const media = sidecar && typeof sidecar === 'object' && sidecar.media
+    && typeof sidecar.media === 'object' && !Array.isArray(sidecar.media) ? sidecar.media : null;
+  const sd = media ? scalarText(media.avatarSd) : '';
+  const small = media ? scalarText(media.avatar) : '';
+  const url = isSafeIconUrl(sd) ? sd : (isSafeIconUrl(small) ? small : '');
+  if (url !== '') {
+    return `<img src="${escapeHtml(url)}" loading="lazy" alt="${escapeHtml(name)}" class="wow-avatar wow-border">`;
+  }
+  const initial = name === '' ? '?' : name.charAt(0).toUpperCase();
+  return `<span class="wow-avatar wow-avatar-none cinzel" title="No character render synced">${escapeHtml(initial)}</span>`;
+}
+
 // The whole modal body for one row. Exported for the verification harness: it is pure over
 // (roster row, sidecar row, map entry, badge markup), so the escaping and the section-omission
 // rules can be asserted without a click.
@@ -828,6 +1648,9 @@ function trackLabel(track) {
 // review action area for the row, a string replaces it.
 export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = null, actionsHtml = null) {
   if (!character || typeof character !== 'object') return emptyState('No such character.');
+  // The tooltip registry belongs to the markup this call produces: an index handed to a hover
+  // handler must never resolve against the previous row's items.
+  resetTooltipTargets();
   const hasCands = Array.isArray(mapEntry && mapEntry.candidates) && mapEntry.candidates.length > 0;
   const badge = badgeHtml || getLifecycleBadge(character, lifecycle, null, hasCands);
   const cls = scalarText(character.class);
@@ -842,9 +1665,12 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
   const note = mapEntry && typeof mapEntry === 'object' ? scalarText(mapEntry.note) : '';
   const achievement = numberOr(sidecar && sidecar.achievementPoints);
 
+  const fullName = displayName(sidecar, mapEntry, character);
   const header = `<div class="flex items-start justify-between gap-3 pb-2.5 border-b border-slate-800">
-    <div class="min-w-0">
-      <h3 class="cinzel text-lg font-bold text-amber-300 truncate">${escapeHtml(displayName(sidecar, mapEntry, character))}</h3>
+    <div class="flex items-start gap-2.5 min-w-0">
+      ${avatarHtml(sidecar, fullName)}
+      <div class="min-w-0">
+      <h3 class="cinzel text-lg font-bold truncate ${classColor}">${escapeHtml(fullName)}</h3>
       <div class="text-[11px] text-slate-400 truncate">Roster: <span class="text-slate-200 font-semibold">${escapeHtml(scalarText(character.name))}</span>${scalarText(character.player) !== '' ? ` <span class="text-slate-500">(${escapeHtml(scalarText(character.player))})</span>` : ''}</div>
       <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-[10px]">
         ${factionTag}
@@ -855,6 +1681,7 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
         <span class="text-slate-500">•</span>
         <span class="text-slate-400">${escapeHtml(trackLabel(character.track))}</span>
         ${badge}
+      </div>
       </div>
     </div>
     <button onclick="closeDetail()" title="Close" class="shrink-0 p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded border border-slate-700 text-xs transition-all">✕</button>
@@ -877,6 +1704,11 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
     ? emptyState('No Battle.net data')
     : `<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2.5">${fields}</div>`;
 
+  // ---------- T2.9: the pinned footer ----------
+  // The review workflow is never behind a tab: the sync note, the reviewer's own report, the
+  // candidate picker and the action buttons live below the panel and outside its scroll region.
+  // The footer itself scrolls internally past a cap, so a long candidate list cannot push the
+  // action buttons off a short screen ("always visible" is the point, not "always fully tall").
   const noteSection = note === '' ? '' : section('Sync note',
     `<div class="rounded border border-slate-800 bg-slate-950/50 p-2 text-[11px] text-slate-300">${escapeHtml(note)}</div>`);
 
@@ -886,9 +1718,18 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
 
   const actions = actionsHtml === null ? reviewHtml(character, mapEntry, lifecycle) : actionsHtml;
 
-  return header + body + gearGrid(sidecar) + progressSections(sidecar) + noteSection
-    + reviewNoteSection(character)
+  const foot = noteSection + reviewNoteSection(character)
     + candidatesIfOpen(lifecycle, mapEntry, character) + actions + noSidecar;
+
+  return `<div class="shrink-0">${header}${body}</div>
+    ${tabBarHtml()}
+    ${tabPanel('gear', gearTabHtml(sidecar))}
+    ${tabPanel('talents', talentsTabHtml(sidecar))}
+    ${tabPanel('professions', professionsTabHtml(sidecar))}
+    ${tabPanel('reputation', reputationTabHtml(sidecar))}
+    ${tabPanel('stats', statsTabHtml(sidecar))}
+    ${tabPanel('progress', progressTabHtml(sidecar))}
+    ${foot === '' ? '' : `<div class="wow-detail-foot shrink-0 overflow-y-auto pt-2 mt-1 border-t border-slate-800">${foot}</div>`}`;
 }
 
 // The reviewer's own report, shown whenever the roster row carries one (with or without a PAT:
@@ -950,6 +1791,7 @@ export function openCharacterDetail(id, openSection) {
   if (!modal) return;
   openId = id == null ? null : String(id);
   resetReviewView();
+  resetDetailView();
   const character = characters.find(c => c.id === openId);
   if (!character) {
     closeDetail();
@@ -967,6 +1809,7 @@ export function openCharacterDetail(id, openSection) {
 export function closeDetail() {
   openId = null;
   resetReviewView();
+  resetDetailView();
   const modal = modalEl();
   if (modal) modal.classList.add('hidden');
 }
@@ -1010,7 +1853,16 @@ export function renderDetail() {
   const badge = lifecycle === LIFECYCLE.NEEDS_RESOLUTION && hasCands
     ? `<button type="button" onclick="toggleDetailCandidates()" title="Toggle candidate list" class="cursor-pointer">${getLifecycleBadge(character, lifecycle, null, true)}</button>`
     : getLifecycleBadge(character, lifecycle, null, hasCands);
+  // A repaint replaces every node, so the panel's scroll offset and any open tooltip are
+  // re-established by hand: without this, a background Refresh would throw a reader back to the
+  // top of a long reputation list with the tooltip still showing a row that no longer exists.
+  const panelId = TAB_PANEL_PREFIX + detailActiveTab();
+  const before = document.getElementById(panelId);
+  const scrollTop = before ? Number(before.scrollTop) || 0 : 0;
+  dismissDetailTooltip();
   content.innerHTML = detailHtml(character, sidecar, mapEntry, lifecycle, badge);
+  const after = document.getElementById(panelId);
+  if (after && scrollTop > 0) after.scrollTop = scrollTop;
 }
 
 // Backdrop click closes; clicks inside the panel do not (the target is the backdrop itself).
@@ -1042,3 +1894,7 @@ window.toggleMismatchForm = toggleMismatchForm;
 window.reportMismatch = reportMismatch;
 window.reopenForEditing = reopenForEditing;
 window.refreshFromBattleNet = refreshFromBattleNet;
+window.setDetailTab = setDetailTab;
+window.detailTabKeydown = detailTabKeydown;
+window.showDetailTooltip = showDetailTooltip;
+window.hideDetailTooltip = hideDetailTooltip;

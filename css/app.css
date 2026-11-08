@@ -14,3 +14,214 @@ body {
   border: 1px solid #d4af37;
   box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
 }
+
+/* ---------- Phase 2 detail modal: tabs, paper doll, tooltip, talent tree ---------- */
+
+/* The tab bar stands in for the section headings the single-scroll modal used to stack, so it
+   wears the Cinzel/amber heading language rather than plain button styling. The bar is a fixed
+   height and every tab is always present (decision #5), which is also why the skin must not
+   depend on content: an empty tab and a full tab are the same size. */
+.wow-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.28);
+}
+.wow-tab {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  padding: 6px 10px 5px;
+  color: rgb(148 163 184);
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(30, 41, 59, 0.9);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.wow-tab:hover { color: rgb(252 211 77); background: rgba(30, 41, 59, 0.85); }
+.wow-tab:focus-visible { outline: 2px solid rgba(252, 211, 77, 0.85); outline-offset: 2px; }
+.wow-tab[aria-selected="true"] {
+  color: #fcd34d;
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.24), rgba(15, 23, 42, 0.92));
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: inset 0 1px 0 rgba(212, 175, 55, 0.4);
+}
+/* No `display` here on purpose: the inactive panels are hidden with Tailwind's `hidden`, and a
+   display declaration in this rule would take the cascade fight away from it. */
+.wow-tab-panel { scrollbar-width: thin; }
+
+/* The footer is pinned below the panel by the modal's flex column; the cap is what keeps the
+   action buttons on screen for a row with a long candidate list. */
+.wow-detail-foot { max-height: 34vh; scrollbar-width: thin; }
+
+.wow-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #0b0f16;
+  flex-shrink: 0;
+}
+.wow-avatar-none {
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(212, 175, 55, 0.65);
+  border: 1px dashed rgba(212, 175, 55, 0.35);
+}
+
+/* The paper doll. An empty slot keeps its frame so the doll is the character sheet rather than a
+   list of whatever the sync happened to return. */
+.wow-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  background: rgba(2, 6, 23, 0.6);
+  text-align: center;
+  min-width: 0;
+}
+.wow-slot-empty { border-style: dashed; border-color: rgba(100, 116, 139, 0.35); }
+.wow-slot-filled { cursor: pointer; transition: border-color 0.12s ease, box-shadow 0.12s ease; }
+.wow-slot-filled:hover,
+.wow-slot-filled:focus-visible {
+  border-color: rgba(212, 175, 55, 0.75);
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.25);
+  outline: none;
+}
+.wow-slot-face {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.wow-slot-glyph { width: 100%; height: 100%; }
+.wow-slot-name {
+  font-size: 9px;
+  line-height: 1.15;
+  color: rgb(203 213 225);
+  max-width: 100%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+.wow-slot-ilvl { font-size: 9px; font-weight: 700; color: rgb(148 163 184); }
+.wow-gear-chip {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  background: rgba(2, 6, 23, 0.6);
+  color: rgb(203 213 225);
+  cursor: pointer;
+}
+.wow-gear-chip:hover { border-color: rgba(212, 175, 55, 0.7); color: #fcd34d; }
+
+/* One shared tooltip element (index.html), positioned fixed by js/detail.js so it can flip to
+   the other side of a slot near an edge. pointer-events:none is what stops the tooltip itself
+   from stealing the hover and strobing. */
+.wow-tooltip {
+  position: fixed;
+  z-index: 70;
+  max-width: 320px;
+  pointer-events: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
+}
+/* Blizzard's own descriptions carry hard line breaks ("Requires Bear Form, Dire Bear Form\r\n…")
+   that read as a run-on sentence once HTML collapses them. Applied to the text lines rather than
+   the tooltip box, because pre-line would also promote the markup's own indentation to blank
+   lines between the blocks. */
+.wow-tooltip-text { white-space: pre-line; }
+
+/* Item quality is vocabulary off the wire, so the colour lives here keyed by the lowercased
+   quality and never leaves the stylesheet as a computed value. */
+.wow-quality { color: rgb(226 232 240); }
+.wow-quality[data-wow-quality="poor"] { color: #8a8a8a; }
+.wow-quality[data-wow-quality="common"] { color: #e6e6e6; }
+.wow-quality[data-wow-quality="uncommon"] { color: #1eff00; }
+.wow-quality[data-wow-quality="rare"] { color: #0070dd; }
+.wow-quality[data-wow-quality="epic"] { color: #a335ee; }
+.wow-quality[data-wow-quality="legendary"] { color: #ff8000; }
+.wow-quality[data-wow-quality="artifact"] { color: #e6cc80; }
+.wow-quality[data-wow-quality="heirloom"] { color: #40c7eb; }
+
+.wow-bar {
+  display: block;
+  height: 8px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: rgba(2, 6, 23, 0.9);
+  border: 1px solid rgb(30 41 59);
+}
+.wow-bar-fill { display: block; height: 100%; background: rgb(71 85 105); }
+.wow-bar-fill[data-wow-kind="skill"] { background: linear-gradient(90deg, #1d4ed8, #60a5fa); }
+.wow-bar-fill[data-wow-kind="rep"] { background: rgb(148 163 184); }
+.wow-bar-fill[data-wow-kind="rep-hated"] { background: #8b1a1a; }
+.wow-bar-fill[data-wow-kind="rep-hostile"] { background: #b32424; }
+.wow-bar-fill[data-wow-kind="rep-unfriendly"] { background: #c2622c; }
+.wow-bar-fill[data-wow-kind="rep-neutral"] { background: #a3a3a3; }
+.wow-bar-fill[data-wow-kind="rep-friendly"] { background: #2f9e44; }
+.wow-bar-fill[data-wow-kind="rep-honored"] { background: #2b8a3e; }
+.wow-bar-fill[data-wow-kind="rep-revered"] { background: #1c7ed6; }
+.wow-bar-fill[data-wow-kind="rep-exalted"] { background: #d4af37; }
+.wow-recipe {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  background: rgba(15, 23, 42, 0.7);
+  color: rgb(203 213 225);
+}
+
+/* Talent tree: absolute cells at displayRow/displayCol (CELL matches TREE_CELL in detail.js),
+   with the payload's own unlock edges drawn underneath as the dependency graph. */
+.wow-tree { position: relative; }
+.wow-tree-links { position: absolute; left: 0; top: 0; pointer-events: none; }
+.wow-tree-link { stroke: rgba(148, 163, 184, 0.35); stroke-width: 2; }
+.wow-tree-node {
+  position: absolute;
+  width: 52px;                 /* TREE_NODE in js/detail.js */
+  height: 52px;
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: #0b0f16;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.wow-tree-node[data-wow-state="selected"] {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.55), 0 0 12px rgba(212, 175, 55, 0.25);
+}
+.wow-tree-node[data-wow-state="open"] { border-color: rgba(212, 175, 55, 0.35); }
+.wow-tree-node[data-wow-state="locked"] { opacity: 0.4; filter: grayscale(1); }
+.wow-tree-node:focus-visible { outline: 2px solid #fcd34d; outline-offset: 2px; }
+.wow-tree-glyph { font-size: 20px; font-weight: 700; color: rgba(212, 175, 55, 0.6); }
+.wow-tree-rank {
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #e2e8f0;
+  text-shadow: 0 1px 2px #000;
+}
+.wow-tree-fill { position: absolute; left: 0; bottom: 0; height: 3px; background: #d4af37; }

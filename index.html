@@ -371,13 +371,20 @@
   </div>
 
   <!-- Character Detail Modal (read-only): opens on roster card click, closes on ✕, backdrop
-       or ESC. Same shell language as #char-modal: wow-border-gold panel, cinzel heading. -->
+       or ESC. Same shell language as #char-modal: wow-border-gold panel, cinzel heading.
+       Phase 2 makes the panel a flex column instead of one long scroller, so the tab bar and
+       the review footer stay put and only the tab panel between them scrolls (T2.9). -->
   <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" role="dialog" aria-modal="true" aria-label="Character detail">
-    <div class="wow-border-gold bg-slate-900 rounded-xl max-w-2xl w-full p-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+    <div class="wow-border-gold bg-slate-900 rounded-xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
       <!-- Filled by js/detail.js: everything in here is escaped, and gear icons only render
            from render.worldofwarcraft.com / us.api.blizzard.com. -->
-      <div id="detail-content"></div>
+      <div id="detail-content" class="flex flex-col min-h-0 flex-1"></div>
     </div>
+    <!-- One shared hover tooltip for gear and talent nodes (T2.3). It is a sibling of the panel
+         rather than part of #detail-content so a repaint cannot rebuild it mid-hover (the flicker
+         the per-item tooltip had), and js/detail.js positions it fixed so it can flip sides when
+         a slot sits near a viewport edge. -->
+    <div id="detail-tooltip" class="wow-tooltip wow-border bg-slate-950/95 rounded-lg p-2.5 hidden" role="tooltip" aria-hidden="true"></div>
   </div>
 
   <!-- Transient status line for the Phase 3d write paths (review commit accepted / rejected,

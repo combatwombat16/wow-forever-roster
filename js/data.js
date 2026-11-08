@@ -19,6 +19,11 @@ import { escapeHtml } from './util.js';
 export const ROSTER_PATH = 'data/characters.json';
 export const CHARACTER_DATA_PATH = 'data/character-data.json';
 export const BATTLE_NET_MAP_PATH = 'data/battle-net-map.json';
+// Talent-tree geometry is static-namespace data (the file pins its own staticNamespace), not
+// per-character data, so it is fetched lazily on the first Talents tab instead of on every page
+// view: it is the largest committed artifact (~200 KB) and only the handful of characters that
+// actually have a talent selection ever read it.
+export const TALENT_TREES_PATH = 'data/talent-trees.json';
 
 // The sync runs once a day; anything fetched longer ago than this is shown stale.
 export const SIDECAR_FRESH_HOURS = 36;
@@ -135,6 +140,57 @@ export function isSidecarFresh(sidecar, now = Date.now()) {
   return age !== null && age < SIDECAR_FRESH_HOURS;
 }
 
+// ---------- talent trees (lazy, one request, never persisted) ----------
+
+// Like the other sidecars this lives in module scope only: a tree file in localStorage would
+// outlive the static namespace it was generated against. `talentTreesLoad` memoises the request
+// so twenty tab switches are one fetch, and a failed load clears it so the next open retries
+// (a transient 404 must not strand the Talents tab on its degrade path for the session).
+let talentTrees = null;
+let talentTreesLoad = null;
+
+export function talentTreesDoc() {
+  return talentTrees;
+}
+
+// True while the first request is still in flight, which is what the Talents tab renders
+// instead of a tree ("loading", not "no data" — the two read very differently).
+export function talentTreesLoading() {
+  return talentTrees === null && talentTreesLoad !== null;
+}
+
+export function ensureTalentTrees() {
+  if (talentTrees) return Promise.resolve(talentTrees);
+  if (talentTreesLoad) return talentTreesLoad;
+  talentTreesLoad = loadSidecar(TALENT_TREES_PATH).then(doc => {
+    talentTrees = doc && typeof doc === 'object' && !Array.isArray(doc) ? doc : null;
+    if (talentTrees === null) talentTreesLoad = null;
+    else renderAll();
+    return talentTrees;
+  });
+  return talentTreesLoad;
+}
+
+// The static namespace the committed geometry was built against, for the modal's provenance
+// line. '' until the file has loaded (the panel then says nothing rather than guessing).
+export function talentTreesStaticNamespace() {
+  return talentTrees && typeof talentTrees === 'object' ? scalarOwnText(talentTrees, 'staticNamespace') : '';
+}
+
+function scalarOwnText(source, key) {
+  const value = ownValue(source, key);
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+// spec id → that spec's tree, or null. Own-data lookup: both the file and the spec id are
+// committed/response data, so `specs['constructor']` must not hand back Object.prototype.
+export function talentTreeFor(specId) {
+  const specs = talentTrees && typeof talentTrees === 'object' ? talentTrees.specs : null;
+  if (!specs || typeof specs !== 'object') return null;
+  const tree = ownValue(specs, specId);
+  return tree && typeof tree === 'object' && !Array.isArray(tree) ? tree : null;
+}
+
 // ---------- header provenance line ----------
 
 // 'schedule' (the nightly cron) reads as "nightly"; anything else is the github.actor
@@ -219,8 +275,13 @@ export async function loadSidecar(path, opts = {}) {
   }
 }
 
-// Both sidecars, in parallel, then one repaint. Never rejects, and never touches
+// Both character sidecars, in parallel, then one repaint. Never rejects, and never touches
 // localStorage: sidecar state lives only for the lifetime of the page.
+//
+// The talent trees are deliberately absent from this pair (and from reloadSidecars()): a sync run
+// rewrites that file byte-identically unless the static namespace moves, and a namespace move
+// arrives with a new deploy, so a cache-busting re-read of ~200 KB after every Refresh would buy
+// nothing. ensureTalentTrees() owns it instead.
 export async function loadSidecars(opts = {}) {
   const [data, map] = await Promise.all([
     loadSidecar(CHARACTER_DATA_PATH, opts),
