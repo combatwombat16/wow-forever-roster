@@ -93,7 +93,13 @@ class RosterShape(unittest.TestCase):
 
     def test_load_roster_reads_the_migrated_file(self):
         records = roster.load_roster(config.ROSTER_FILE)
-        self.assertEqual(len(records), 20)
+        # Data-independent on purpose: the roster is living data (the external tracker adds
+        # rows — a hard-coded count burned CI run #4 the day after deploy). The invariant is
+        # that the loader agrees with the committed file, ids exist and are unique.
+        raw = json.loads(config.ROSTER_FILE.read_text(encoding="utf-8"))
+        self.assertGreater(len(records), 0)
+        self.assertEqual(len(records), len(raw["characters"]))
+        self.assertEqual(len({r["id"] for r in records}), len(records))
         self.assertTrue(all(r.get("id") for r in records))
 
     def test_trust_helpers(self):
