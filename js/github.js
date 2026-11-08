@@ -1,8 +1,15 @@
-// github.js — repo status widgets, the PAT settings modal, and the Contents API
-// pull/push for data/characters.json.
+// github.js — repo status widgets, the PAT settings modal, the Contents API
+// pull/push for data/characters.json, and (Phase 3d, design §1/§4) the review commit,
+// the sync-bnet.yml workflow_dispatch and the run polling that backs "Refresh from
+// Battle.net".
+//
+// Every call to api.github.com goes through ghApi(): it is the one place that attaches
+// the PAT, the one place that sets Accept/Content-Type, and it never sends the token
+// anywhere else (the URL is built from GH_API plus a literal path, and owner/repo/branch
+// come from the user's own settings, not from response data).
 
 import { STORAGE_KEY, getCharacters, setCharacters, renderAll } from './state.js';
-import { ROSTER_PATH, rosterCharactersFrom, serializeRoster, setFetchedWrapper } from './data.js';
+import { ROSTER_PATH, ensureRosterEnvelope, rosterCharactersFrom, serializeRoster, setFetchedWrapper } from './data.js';
 
 export let ghConfig = JSON.parse(localStorage.getItem('wow_gh_config') || 'null') || {
   owner: '',
@@ -12,6 +19,288 @@ export let ghConfig = JSON.parse(localStorage.getItem('wow_gh_config') || 'null'
 };
 
 let currentSha = null;
+
+// The GitHub REST origin. Nothing in this module may fetch any other host with the PAT.
+export const GH_API = 'https://api.github.com';
+// The workflow the Refresh action dispatches (design §4). The file name is the API's
+// workflow_id, so it is a constant rather than something read from the repo.
+export const SYNC_WORKFLOW_FILE = 'sync-bnet.yml';
+// Poll cadence for a dispatched run (design §4: poll until completion, then refetch).
+export const REFRESH_POLL_INTERVAL_MS = 10000;
+export const REFRESH_POLL_TIMEOUT_MS = 180000;
+// Tolerance between this browser's clock and GitHub's created_at stamps: the run we are
+// waiting for is dispatched microseconds after we record `since`, so a client running a
+// little ahead of GitHub's clock must not filter the only run that matters out.
+export const REFRESH_CLOCK_SKEW_MS = 90000;
+
+// ---------- the one GitHub API helper ----------
+
+// The origin can never move: every URL is GH_API plus a path that starts with '/', so even a
+// hostile repo or branch value stays on api.github.com. This guard is the second belt — the path
+// is also restricted to path- and query-safe characters, so a value that tried to reach a
+// different endpoint by way of a fragment or a stray backslash is refused before fetch().
+const GH_PATH_RE = /^\/[A-Za-z0-9\-._~/?&=%]*$/;
+
+// ghApi(path, opts) -> {ok, status, data}. Never throws and never rejects: a review
+// commit needs to tell 409 (upstream moved) apart from 403 (PAT missing actions:write),
+// so the status code is returned rather than flattened into an exception. No response
+// body is trusted here — callers pick the fields they use, and every string they render
+// is escaped at the point of use.
+export async function ghApi(path, opts = {}) {
+  if (!GH_PATH_RE.test(path)) {
+    return { ok: false, status: 0, data: null, error: 'bad-path', message: 'Refusing to call an unexpected GitHub path.' };
+  }
+  if (!ghConfig.owner || !ghConfig.repo) {
+    return { ok: false, status: 0, data: null, error: 'no-repo' };
+  }
+  const headers = { 'Accept': 'application/vnd.github.v3+json' };
+  if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
+  if (ghConfig.token) headers['Authorization'] = `token ${ghConfig.token}`;
+
+  let res;
+  try {
+    res = await fetch(`${GH_API}${path}`, {
+      method: opts.method || 'GET',
+      headers,
+      body: opts.body === undefined ? undefined : JSON.stringify(opts.body)
+    });
+  } catch (err) {
+    return { ok: false, status: 0, data: null, error: 'network', message: `Could not reach GitHub (${err && err.name ? err.name : 'network error'}).` };
+  }
+
+  let data = null;
+  try {
+    data = await res.json();
+  } catch (err) {
+    data = null;   // 204 No Content, or a non-JSON error page
+  }
+  const status = Number(res.status);
+  return { ok: status >= 200 && status < 300, status: Number.isFinite(status) ? status : 0, data };
+}
+
+// The shortest human-readable explanation GitHub gave, with a status fallback. Returned
+// as text: the caller renders it through the toast (textContent) or escapeHtml.
+export function ghMessage(res) {
+  const message = res && res.data && typeof res.data.message === 'string' ? res.data.message.trim() : '';
+  return message === '' ? (res && res.status ? `HTTP ${res.status}` : 'no response from GitHub') : message;
+}
+
+// A PAT plus a configured repo is what every write path needs; the review actions are not
+// even rendered without it, and each handler re-checks it as a belt for the disabled button.
+export function ghHasPat() {
+  return Boolean(ghConfig.owner && ghConfig.repo && ghConfig.token);
+}
+
+// ---------- reviewer identity (design §2 reviewedBy) ----------
+
+// The login of the PAT's owner. Cached in memory only — an audit field that names the
+// wrong person is worse than one that is missing, so it is never guessed from localStorage
+// and never derived from the roster.
+let cachedLogin = null;
+
+export function resetGhLoginCache() {
+  cachedLogin = null;
+}
+
+export async function ghUserLogin() {
+  if (cachedLogin !== null) return cachedLogin;
+  if (!ghConfig.token) return null;
+  const res = await ghApi('/user');
+  const login = res.ok && res.data && typeof res.data.login === 'string' ? res.data.login.trim() : '';
+  if (login === '') return null;
+  cachedLogin = login;
+  return cachedLogin;
+}
+
+// ---------- Phase 3d: the review commit ----------
+
+// Commit the whole roster to data/characters.json in the v2 envelope.
+//
+// The sha is fetched immediately before the PUT, every time, and the cached currentSha is
+// deliberately NOT used as the base: the nightly sync commits to the same branch, so a sha
+// from page-load time is exactly the stale base that would either 409 or (worse, if the
+// file moved and GitHub still accepted the write) clobber the sync's commit. A 409 is the
+// honest answer when the file moved between the GET and the PUT, and it maps to a "pull
+// first" message rather than a silent local fallback.
+//
+// Returns {ok, sha} or {ok:false, error, message} where error is one of
+// 'no-repo' | 'no-pat' | 'bad-payload' | 'conflict' | 'http' | 'network'.
+export async function commitRosterFile(message, charactersArray) {
+  if (!ghConfig.owner || !ghConfig.repo) {
+    return { ok: false, error: 'no-repo', message: 'No GitHub repository is configured — open ⚙️ Settings and set owner and repo first.' };
+  }
+  if (!ghConfig.token) {
+    return { ok: false, error: 'no-pat', message: 'A GitHub PAT is required to commit the roster.' };
+  }
+  if (!Array.isArray(charactersArray) || charactersArray.length === 0) {
+    return { ok: false, error: 'bad-payload', message: 'Refusing to commit an empty roster.' };
+  }
+
+  const contentsPath = `/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${ROSTER_PATH}`;
+  const fresh = await ghApi(`${contentsPath}?ref=${encodeURIComponent(ghConfig.branch)}`);
+  // 404 means the file does not exist on this branch yet, which is a create, not an error.
+  if (!fresh.ok && fresh.status !== 404) {
+    return { ok: false, error: fresh.error || 'http', message: `Could not read the current roster: ${ghMessage(fresh)}` };
+  }
+  const baseSha = fresh.ok && fresh.data && typeof fresh.data.sha === 'string' && fresh.data.sha !== ''
+    ? fresh.data.sha : null;
+
+  // Never emit a bare v1 array: main holds the v2 envelope, and a browser that only ever
+  // had localStorage would otherwise rewrite the file back to the pre-migration shape.
+  ensureRosterEnvelope();
+  const body = {
+    message: String(message == null ? '' : message),
+    content: btoa(unescape(encodeURIComponent(serializeRoster(charactersArray)))),
+    branch: ghConfig.branch
+  };
+  if (baseSha) body.sha = baseSha;
+
+  const put = await ghApi(contentsPath, { method: 'PUT', body });
+  if (put.ok) {
+    const written = put.data && put.data.content && typeof put.data.content.sha === 'string'
+      ? put.data.content.sha : null;
+    if (written) currentSha = written;
+    return { ok: true, sha: written, data: put.data };
+  }
+  if (put.status === 409) {
+    return { ok: false, error: 'conflict', message: 'The roster changed upstream — pull first, then repeat this review action.' };
+  }
+  if (put.status === 401 || put.status === 403) {
+    return { ok: false, error: 'forbidden', message: `GitHub refused the commit (the PAT needs Contents: read & write): ${ghMessage(put)}` };
+  }
+  return { ok: false, error: 'http', message: `Commit failed: ${ghMessage(put)}` };
+}
+
+// Apply a committed roster to this browser: state is the source of truth, localStorage is
+// the offline mirror (the same two writes every other roster mutation in this file does),
+// and the repaint goes through the one dispatcher.
+export function updateRosterInMemory(nextCharacters) {
+  setCharacters(nextCharacters);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(getCharacters()));
+  renderAll();
+}
+
+// ---------- Phase 3d: on-demand Battle.net refresh (design §4) ----------
+
+// POST …/actions/workflows/sync-bnet.yml/dispatches.
+//
+// The inputs are exactly the two the workflow declares (`lookup_name`, `force`); the
+// workflow_dispatch API rejects undeclared input keys with 422, so nothing else goes in
+// there. Values are strings because REST input values are strings — the workflow reads
+// them as github.event.inputs.force == "true", which is the comparison it already does.
+//
+// `force` is always false: a refresh is a request for this character's current data, not
+// a request to bypass the Last-Modified cache (and design §2 keeps --force out of the
+// trust rules entirely).
+//
+// `client_payload` is sent because design §4 asks for it, and it is inert here:
+// client_payload is a repository_dispatch field, so a workflow_dispatch run cannot read
+// it. That is the safer direction — the provenance the sync records (artifacts.triggered_by)
+// comes from the runner's own GITHUB_ACTOR, i.e. from the authenticated actor, and never
+// from a client-supplied string a browser could forge.
+export async function dispatchSyncWorkflow(lookupName, actor) {
+  const path = `/repos/${ghConfig.owner}/${ghConfig.repo}/actions/workflows/${SYNC_WORKFLOW_FILE}/dispatches`;
+  const res = await ghApi(path, {
+    method: 'POST',
+    body: {
+      ref: ghConfig.branch,
+      inputs: { lookup_name: String(lookupName == null ? '' : lookupName), force: 'false' },
+      client_payload: { actor: String(actor == null ? '' : actor) }
+    }
+  });
+  if (res.ok) return { ok: true, status: res.status };
+  if (res.status === 401 || res.status === 403) {
+    return { ok: false, error: 'forbidden', message: 'Your PAT needs Actions: write to refresh from Battle.net. Add the scope in GitHub, then paste the token again in ⚙️ Settings.' };
+  }
+  if (res.status === 404) {
+    return { ok: false, error: 'not-found', message: `GitHub has no ${SYNC_WORKFLOW_FILE} in ${ghConfig.owner}/${ghConfig.repo} (${ghConfig.branch}).` };
+  }
+  if (res.status === 422) {
+    return { ok: false, error: 'unprocessable', message: `GitHub rejected the dispatch: ${ghMessage(res)}` };
+  }
+  return { ok: false, error: res.error || 'http', message: `Could not start the sync: ${ghMessage(res)}` };
+}
+
+// The list-runs query. `created=>T` is GitHub's greater-than form for that filter; it is
+// percent-encoded, and candidateRuns() re-checks created_at locally, so a run older than T
+// can never be mistaken for ours even if the server ignored the filter.
+export function recentDispatchRunsPath(sinceIso) {
+  return `/repos/${ghConfig.owner}/${ghConfig.repo}/actions/runs`
+    + `?event=workflow_dispatch&created=${encodeURIComponent(`>${sinceIso}`)}`;
+}
+
+// Newest first, workflow_dispatch only, created at or after `sinceIso` (minus the clock
+// allowance). Anything unshapely is dropped rather than guessed about.
+export function candidateRuns(res, sinceIso) {
+  const raw = res && res.data && Array.isArray(res.data.workflow_runs) ? res.data.workflow_runs : [];
+  const since = Date.parse(sinceIso) - REFRESH_CLOCK_SKEW_MS;
+  return raw.filter(run => {
+    if (!run || typeof run !== 'object') return false;
+    if (typeof run.event === 'string' && run.event !== 'workflow_dispatch') return false;
+    const created = Date.parse(run.created_at);
+    return Number.isFinite(created) && Number.isFinite(since) ? created >= since : false;
+  }).sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
+}
+
+// Wait for the dispatched run to complete. One request per interval, bounded by timeoutMs,
+// so a hung workflow costs a message and not an open-ended spinner (the workflow itself
+// has a 15 minute job timeout, which is why the client gives up first).
+export async function pollSyncRun(sinceIso, opts = {}) {
+  const intervalMs = Number.isFinite(opts.intervalMs) && opts.intervalMs > 0 ? opts.intervalMs : REFRESH_POLL_INTERVAL_MS;
+  const timeoutMs = Number.isFinite(opts.timeoutMs) && opts.timeoutMs > 0 ? opts.timeoutMs : REFRESH_POLL_TIMEOUT_MS;
+  const wait = opts.wait || (ms => new Promise(resolve => setTimeout(resolve, ms)));
+  const deadline = Date.now() + timeoutMs;
+  let sawRun = false;
+
+  for (;;) {
+    await wait(intervalMs);
+    const res = await ghApi(recentDispatchRunsPath(sinceIso));
+    if (!res.ok) {
+      return { ok: false, error: 'http', message: `Could not check the sync run: ${ghMessage(res)}` };
+    }
+    const runs = candidateRuns(res, sinceIso);
+    if (runs.length > 0) sawRun = true;
+    const completed = runs.find(run => run.status === 'completed');
+    if (completed) {
+      const conclusion = typeof completed.conclusion === 'string' ? completed.conclusion : 'unknown';
+      if (conclusion === 'success') return { ok: true, conclusion, run: completed };
+      return {
+        ok: false,
+        error: 'run-failed',
+        conclusion,
+        run: completed,
+        message: `The Battle.net sync run finished as "${conclusion}". Nothing was published for ${lookupNameHint(completed)}.`
+      };
+    }
+    if (Date.now() >= deadline) {
+      return {
+        ok: false,
+        error: 'timeout',
+        message: sawRun
+          ? 'The Battle.net sync is still running after 3 minutes. Try again in a moment — the nightly run may be occupying the sync queue.'
+          : 'No dispatch was recorded after 3 minutes. The workflow may not have started; check the Actions tab.'
+      };
+    }
+  }
+}
+
+function lookupNameHint(run) {
+  const title = run && typeof run.display_title === 'string' ? run.display_title.trim() : '';
+  return title === '' ? 'this character' : title;
+}
+
+// The whole Refresh flow: who am I, dispatch, then poll. Returns the poll verdict (or the
+// dispatch failure), so the caller only decides what to render.
+export async function dispatchAndAwaitSync(lookupName, opts = {}) {
+  const onPhase = typeof opts.onPhase === 'function' ? opts.onPhase : () => {};
+  const actor = await ghUserLogin();
+  onPhase('Dispatching the Battle.net sync…');
+  const dispatch = await dispatchSyncWorkflow(lookupName, actor);
+  if (!dispatch.ok) return dispatch;
+  const since = new Date(Date.now() - REFRESH_CLOCK_SKEW_MS).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  onPhase('Sync queued — waiting for the run to finish…');
+  return pollSyncRun(since, opts);
+}
 
 export function setSyncStatus(msg, isError = false) {
   const el = document.getElementById('sync-status');
@@ -37,19 +326,17 @@ export async function pullFromGitHub() {
   }
 
   setSyncStatus('Pulling...');
-  const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${ROSTER_PATH}?ref=${ghConfig.branch}`;
-  const headers = { 'Accept': 'application/vnd.github.v3+json' };
-  if (ghConfig.token) headers['Authorization'] = `token ${ghConfig.token}`;
+  const path = `/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${ROSTER_PATH}?ref=${encodeURIComponent(ghConfig.branch)}`;
 
   try {
-    const res = await fetch(url, { headers });
+    const res = await ghApi(path);
     if (res.status === 404) {
       setSyncStatus('File missing', true);
       return;
     }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const data = await res.json();
+    const data = res.data;
     currentSha = data.sha;
     const decoded = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
     const doc = JSON.parse(decoded);
@@ -90,22 +377,15 @@ export async function pushToGitHub(newCharacters) {
   }
 
   setSyncStatus('Committing...');
-  const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${ROSTER_PATH}`;
+  const contentsPath = `/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${ROSTER_PATH}`;
 
   try {
     if (!currentSha) {
-      const checkRes = await fetch(`${url}?ref=${ghConfig.branch}`, {
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'Authorization': `token ${ghConfig.token}`
-        }
-      });
-      if (checkRes.ok) {
-        const checkData = await checkRes.json();
-        currentSha = checkData.sha;
-      }
+      const check = await ghApi(`${contentsPath}?ref=${encodeURIComponent(ghConfig.branch)}`);
+      if (check.ok && check.data && typeof check.data.sha === 'string') currentSha = check.data.sha;
     }
 
+    ensureRosterEnvelope();
     const jsonString = serializeRoster(newCharacters);
     const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
 
@@ -116,22 +396,13 @@ export async function pushToGitHub(newCharacters) {
     };
     if (currentSha) bodyData.sha = currentSha;
 
-    const putRes = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/vnd.github.v3+json',
-        'Authorization': `token ${ghConfig.token}`
-      },
-      body: JSON.stringify(bodyData)
-    });
+    const put = await ghApi(contentsPath, { method: 'PUT', body: bodyData });
 
-    if (!putRes.ok) {
-      const errData = await putRes.json();
-      throw new Error(errData.message || `HTTP ${putRes.status}`);
+    if (!put.ok) {
+      throw new Error(ghMessage(put));
     }
 
-    const result = await putRes.json();
+    const result = put.data;
     currentSha = result.content.sha;
     setCharacters(newCharacters);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(getCharacters()));
@@ -161,6 +432,9 @@ export function closeGhModal() {
 
 export function saveGhConfig(e) {
   e.preventDefault();
+  // A new token can be a different person. The review audit field is read back from GitHub and
+  // cached for the session, so the cache has to die with the token it belongs to.
+  resetGhLoginCache();
   ghConfig = {
     owner: document.getElementById('gh-owner').value.trim(),
     repo: document.getElementById('gh-repo').value.trim(),

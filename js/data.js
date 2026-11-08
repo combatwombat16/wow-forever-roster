@@ -33,6 +33,17 @@ export function setFetchedWrapper(doc) {
   fetchedWrapper = Array.isArray(doc) ? null : doc;
 }
 
+// The roster on main is the v2 envelope, so every commit this site makes must keep it that
+// way. A browser that never completed the fetch (offline start, or a roster read straight
+// out of localStorage) has no wrapper to copy, and serializeRoster would then emit the bare
+// v1 array the migration removed. Declare the envelope instead of downgrading the file.
+export function ensureRosterEnvelope() {
+  if (!fetchedWrapper || typeof fetchedWrapper !== 'object') {
+    fetchedWrapper = { schemaVersion: 2 };
+  }
+  return fetchedWrapper;
+}
+
 // v1 array or v2 envelope → the characters list, or null when neither is usable.
 export function rosterCharactersFrom(doc) {
   const list = Array.isArray(doc) ? doc : (doc && doc.characters);
@@ -150,9 +161,15 @@ export async function loadRoster() {
 
 // One sidecar file, or null on any failure. Degrading silently is the point: the
 // sidecars are enrichment, and a 404 or a truncated file must not change the roster.
-export async function loadSidecar(path) {
+export async function loadSidecar(path, opts = {}) {
+  // A cache-busting query is only ever appended by reloadSidecars(), after a sync run the
+  // user asked for: the committed JSON is immutable per deploy, so without it a caching
+  // proxy (or Pages' own max-age) can hand back the file the run replaced.
+  const url = opts.cacheBust
+    ? `${path}${path.indexOf('?') === -1 ? '?' : '&'}cb=${encodeURIComponent(String(opts.cacheBust))}`
+    : path;
   try {
-    const res = await fetch(path, { headers: { 'Accept': 'application/json' } });
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const doc = await res.json();
     return doc && typeof doc === 'object' && !Array.isArray(doc) ? doc : null;
@@ -164,15 +181,22 @@ export async function loadSidecar(path) {
 
 // Both sidecars, in parallel, then one repaint. Never rejects, and never touches
 // localStorage: sidecar state lives only for the lifetime of the page.
-export async function loadSidecars() {
+export async function loadSidecars(opts = {}) {
   const [data, map] = await Promise.all([
-    loadSidecar(CHARACTER_DATA_PATH),
-    loadSidecar(BATTLE_NET_MAP_PATH)
+    loadSidecar(CHARACTER_DATA_PATH, opts),
+    loadSidecar(BATTLE_NET_MAP_PATH, opts)
   ]);
   characterData = data;
   battleNetMap = map;
   renderSyncLine();
   renderAll();
+}
+
+// Re-read both sidecars past the HTTP cache, for the caller that just watched a sync run
+// publish them (design §4: poll to completion, then refetch data/). Same assignment path as
+// the first load — the sidecars stay in module scope and out of localStorage.
+export function reloadSidecars() {
+  return loadSidecars({ cacheBust: Date.now() });
 }
 
 // Repaints keep the header line and the badges consistent after any setCharacters().

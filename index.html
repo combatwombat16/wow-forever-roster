@@ -207,6 +207,8 @@
       <h3 class="cinzel text-lg font-bold text-amber-300 mb-1.5">GitHub Sync Settings</h3>
       <p class="text-xs text-slate-400 mb-3">
         Configure your repository to read and write <code class="text-amber-300">characters.json</code> directly.
+        Every value below stays in this browser's local storage, and the token is sent to
+        <code class="text-amber-300">api.github.com</code> and nowhere else.
       </p>
 
       <form id="gh-form" onsubmit="saveGhConfig(event)" class="space-y-3 text-xs">
@@ -227,6 +229,14 @@
             Personal Access Token (PAT) <span class="text-slate-500 font-normal">(Required to write updates)</span>
           </label>
           <input type="password" id="gh-token" placeholder="github_pat_... or ghp_..." class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-white focus:outline-none focus:border-amber-400">
+          <p class="text-[10px] text-slate-500 mt-1 leading-snug">
+            Fine-grained token scopes: <span class="text-slate-300 font-semibold">Contents: read &amp; write</span>
+            for roster commits and the review actions (confirm / resolve / report mismatch / re-open), and
+            <span class="text-slate-300 font-semibold">Actions: read &amp; write</span> for
+            <span class="text-slate-300 font-semibold">Refresh from Battle.net</span>, which starts the
+            <code>sync-bnet.yml</code> run on this repository. Without <span class="text-slate-300">Actions: write</span>
+            the refresh button answers with a 403 and explains itself; everything else keeps working.
+          </p>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
@@ -362,6 +372,10 @@
       <div id="detail-content"></div>
     </div>
   </div>
+
+  <!-- Transient status line for the Phase 3d write paths (review commit accepted / rejected,
+       Battle.net refresh progress). Filled with textContent only, and hidden by default. -->
+  <div id="app-toast" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] max-w-[92vw] px-4 py-2 rounded-lg border text-[12px] font-semibold shadow-2xl bg-slate-900/95 border-slate-600 text-slate-100" role="status" aria-live="polite"></div>
 
   <script type="module" src="js/main.js"></script>
 </body>

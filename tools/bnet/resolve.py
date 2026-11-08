@@ -5,7 +5,8 @@ Provenance: the frozen §2/§7.1 name and URL helpers (``norm_slug``,
 ``member_norm_key``) and the two resolution passes (direct GET ladder, guild
 lever) come from ``tools/sync_bnet.py``.
 
-Two behaviour changes land here with Phase 2 (docs/refactor-design.md §3):
+Three behaviour changes land here: the two Phase 2 ones of docs/refactor-design.md §3, plus
+the reviewer-report rule of §2:
 
 * **No auto-pick.** Any pass that finds more than one distinct profile emits
   ``status: "ambiguous"`` with every plausible profile in ``candidates``; the
@@ -14,6 +15,11 @@ Two behaviour changes land here with Phase 2 (docs/refactor-design.md §3):
 * **Trusted slugs.** A roster row whose ``validation.state == "validated"`` or
   that carries ``validation.confirmedSlug`` is never re-resolved: the recorded
   slug is fetched directly and the map keeps it with ``note: "user-confirmed"``.
+* **Reported mismatches.** A roster row carrying ``validation.note`` (the UI's "report
+  mismatch" action) is forced to ``status: "needs_review"`` with that note passed through
+  on every run — keeping the identity it resolved to — until a
+  ``validation.state == "validated"`` commit replaces the report (§2, and
+  ``reported_note_entry`` below).
 """
 
 import re
@@ -90,6 +96,44 @@ def member_slug(member):
     ch = member.get("character") if isinstance(member.get("character"), dict) else {}
     slug = ch.get("slug")
     return slug if isinstance(slug, str) and slug.strip() else None
+
+
+# --------------------------------------------------------------------------- #
+# The user-reported mismatch rule (design §2)
+# --------------------------------------------------------------------------- #
+def reported_note_entry(rec, entry):
+    """The ``needs_review`` verdict an open ``validation.note`` forces, or ``entry`` itself.
+
+    A reviewer who pressed "report mismatch" wrote a note on the roster row and left the row a
+    draft; the note is the only durable form of that objection, so every run has to honour it —
+    otherwise the next nightly silently re-publishes the identity a human just rejected.
+
+    Only the verdict and the note change. The resolved identity is carried across on purpose: an
+    ``ok`` row keeps the slug it resolved to (so the reviewer can see what it was mapped to, and
+    so nothing has to be re-resolved once the report is cleared), and an ``ambiguous`` row keeps
+    the candidates the review modal needs in order to offer a pick. ``note`` is the reviewer's
+    own text passed through, not the sync's diagnosis — the sync's previous reason for this row is
+    reported in the run summary instead, where it helps the maintainer without overwriting the
+    human. Returns ``entry`` unchanged when there is no open report, so identity comparisons stay
+    meaningful to the caller.
+    """
+    if not isinstance(entry, dict):
+        return entry
+    note = roster.reported_note(rec)
+    if not note:
+        return entry
+    if entry.get("status") == "needs_review" and entry.get("note") == note:
+        return entry          # already exactly the row the report asks for: idempotent
+    return artifacts.map_entry(
+        rec, "needs_review",
+        slug=entry.get("slug"),
+        href=entry.get("href"),
+        bnet_name=entry.get("bnetName"),
+        surname=entry.get("surname"),
+        matched_form=entry.get("matchedForm"),
+        mapped_via=entry.get("mappedVia"),
+        note=note,
+        candidates=entry.get("candidates"))
 
 
 # --------------------------------------------------------------------------- #
@@ -489,3 +533,31 @@ class Resolver:
                 # publishing enriched data under an ambiguous mapping.
                 w["profile"] = None
                 self.f.warnings.append(f"slug collision {slug}: ids {', '.join(ids)} demoted to needs_review")
+
+    # -- post-pass: reviewer-reported mismatches -------------------------------- #
+    def apply_reported_notes(self, work, ordered_ids):
+        """Force every row carrying ``validation.note`` to ``needs_review`` (§2).
+
+        Runs after resolution, the guild lever and the slug-collision pass, and before
+        enrichment: a character whose identity a human disputed is exactly the case where
+        publishing a fully enriched sidecar row under that mapping would lend it credibility it
+        has not earned (the same reasoning ``dedupe_slugs`` applies to a collided slug). The map
+        row keeps the slug it resolved to, so clearing the report costs nothing but a commit.
+
+        Returns the ids it changed, so a caller can report the rule rather than infer it."""
+        changed = []
+        for rid in ordered_ids:
+            w = work.get(rid)
+            if not isinstance(w, dict):
+                continue
+            before = w.get("entry")
+            after = reported_note_entry(w.get("rec"), before)
+            if after is before:
+                continue
+            w["entry"] = after
+            changed.append(rid)
+            reason = (before or {}).get("note") or "no note"
+            self.f.warnings.append(
+                f"id {rid}: reviewer note keeps this row needs_review "
+                f"(sync verdict was {(before or {}).get('status') or 'unset'}: {reason})")
+        return changed

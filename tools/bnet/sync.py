@@ -171,6 +171,11 @@ class Sync:
                 w["entry"] = artifacts.map_entry(w["rec"], "not_found", note=note)
 
         self.resolver.dedupe_slugs(work, ordered_ids)
+        # A reviewer's open report outranks whatever this run resolved: the row stays
+        # needs_review until a validated commit clears it (design §2). Deliberately before the
+        # enrichment loop, so no fully enriched sidecar row is published under a mapping a human
+        # has rejected — the map row keeps the slug it resolved to, the sidecar row stays minimal.
+        self.resolver.apply_reported_notes(work, ordered_ids)
 
         characters_out = {}
         for rid in ordered_ids:
@@ -273,8 +278,15 @@ class Sync:
                 and (prev_entries.get(rows[0]["id"]) or {}).get("status") not in ("ok",):
             entry = artifacts.ok_entry(rows[0], slug=resolve.slug_from_href(href), href=href, payload=payload,
                                        matched_form=matched, mapped_via=via)
+            # The same rule as the nightly run — a lookup is a sync run too: an open reviewer note
+            # keeps the map row needs_review. Here the sidecar row is still written from the fresh
+            # profile, because a lookup is an explicit maintainer action and the pair must stay
+            # joinable by id; the map, not the sidecar, is what the UI derives lifecycle from.
+            entry = resolve.reported_note_entry(rows[0], entry)
             if self.args.dry_run:
-                lines.append(f"map: would update id {rows[0]['id']} -> ok ({via}) (dry-run, not written)")
+                # entry["status"] not a literal "ok": a reviewer note on this row keeps it
+                # needs_review even though the lookup itself resolved cleanly.
+                lines.append(f"map: would update id {rows[0]['id']} -> {entry['status']} ({via}) (dry-run, not written)")
             else:
                 # Both artifacts or neither, even for one row: the UI joins map and
                 # sidecar by roster id, so publishing the ok map row while
@@ -309,7 +321,7 @@ class Sync:
                         triggered_by_value=artifacts.triggered_by(),
                         dry_run=self.args.dry_run)
                     if write_refusal is None:
-                        lines.append(f"map: updated id {rid} -> ok ({via}); "
+                        lines.append(f"map: updated id {rid} -> {entry['status']} ({via}); "
                                      "character-data row written in the same write_pair")
                     else:
                         lines.append(write_refusal)

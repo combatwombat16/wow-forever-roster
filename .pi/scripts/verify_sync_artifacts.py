@@ -46,7 +46,16 @@ MAP_KEYS = {"rosterName", "status", "slug", "href", "bnetName", "surname",
 CANDIDATE_KEYS = {"slug", "name", "surname", "matchedForm", "href"}
 MAPPED_VIA = {"direct", "guild_roster", "confirmed"}
 ROSTER_FIELDS = {"id", "player", "name", "track", "role", "roleSec", "race", "class", "prof1", "prof2"}
-VALIDATION_KEYS = {"state", "confirmedSlug", "reviewedBy", "reviewedAt"}
+# The validation block has two legitimate shapes (design §2, Phase 3d): the review verdict
+# ``{state: validated, confirmedSlug, reviewedBy, reviewedAt}`` and the reviewer's *open report*
+# ``{note, reportedBy, reportedAt}`` written by the detail modal's "report mismatch" action. The
+# report carries no ``state`` key — that is what keeps the row a draft — and ``state`` stays the
+# only stored lifecycle value (checked below, unchanged).
+VALIDATION_KEYS = {"state", "confirmedSlug", "reviewedBy", "reviewedAt",
+                   "note", "reportedBy", "reportedAt"}
+# Same ceiling as ``bnet.roster.REPORT_NOTE_MAX`` and ``js/detail.js REVIEW_NOTE_MAX``: the form
+# caps it, the sync caps it, and a longer note is a hand-edit rather than something the UI wrote.
+REPORT_NOTE_MAX = 240
 ROSTER_KEYS = ROSTER_FIELDS | {"validation"}
 CHAR_KEYS = {"status", "bnet", "level", "guild", "activeSpec", "itemLevel",
              "gear", "progress", "achievementPoints", "fetchedAt"}
@@ -184,6 +193,7 @@ def main():
     check(isinstance(roster, list) and bool(roster), "roster characters is a non-empty list")
     check(set(roster_doc) == {"schemaVersion", "characters"}, "roster top-level keys are exactly schemaVersion/characters")
     check(roster_doc.get("schemaVersion") == 2, "roster schemaVersion == 2")
+    reported_ids = set()      # rows carrying an open reviewer note; filled below, read per entry
     for rec in roster or []:
         check(isinstance(rec, dict) and isinstance(rec.get("id"), str) and bool(rec["id"]),
               f"roster record has a string id ({rec.get('id')})")
@@ -195,6 +205,17 @@ def main():
                   f"roster {rec.get('id')} validation block has no unknown keys")
             check(v.get("state") in (None, "validated"),
                   f"roster {rec.get('id')} validation.state is the only stored value (validated)")
+            note = v.get("note")
+            if note is not None:
+                check(isinstance(note, str) and 0 < len(note.strip()) <= REPORT_NOTE_MAX,
+                      f"roster {rec.get('id')} validation.note is a non-empty string of at most "
+                      f"{REPORT_NOTE_MAX} characters")
+            # An open report: not validated, and carrying a usable note. The sync turns exactly
+            # this into a map needs_review row on every run (bnet.roster.reported_note /
+            # bnet.resolve.reported_note_entry), and the map-side mirror below keeps the two
+            # documents honest about it.
+            if v.get("state") != "validated" and isinstance(note, str) and note.strip():
+                reported_ids.add(rec["id"])
     roster_ids = [rec["id"] for rec in roster]
     by_id = {rec["id"]: rec for rec in roster}
     collision_ids = {rid for norm, ids
@@ -275,6 +296,13 @@ def main():
                   f"non-ok entry {rid} carries a human-readable note")
         if rid in collision_ids:
             check(status != "ok", f"duplicate-normalization id {rid} is not auto-mapped (policy)")
+        if rid in reported_ids:
+            # Design §2, mirrored here exactly as the trust rule above is: a row a reviewer
+            # reported must not be published as a settled ``ok`` identity. ``slug`` may survive —
+            # the sync keeps the resolved identity so clearing the report costs nothing but a
+            # commit — and the note itself is required of every non-ok row above.
+            check(status == "needs_review",
+                  f"reported id {rid} is needs_review in the map, not {status} (the note rule of §2)")
         if rid in trusted_slug and status == "ok":
             # Design §3: a confirmedSlug is authoritative; sync never re-resolves it.
             if trusted_slug[rid]:
@@ -504,6 +532,24 @@ def main():
     check(re.search(r"def roster_records\(document\):", ROSTER_MOD) is not None
           and '"characters"' in ROSTER_MOD,
           "roster reads both the v1 array and the v2 {schemaVersion, characters} envelope")
+
+    # --- lifecycle: a reviewer's note forces needs_review -------------------------------------- #
+    note_body = body_of(ROSTER_MOD, r"\ndef reported_note\(rec\):(.*?)\ndef ")
+    check(re.search(r"def reported_note\(rec\):", ROSTER_MOD) is not None
+          and 'v.get("state") == "validated"' in note_body,
+          "roster reads validation.note, and a validated row clears the report")
+    entry_body = body_of(RESOLVE, r"\ndef reported_note_entry\(rec, entry\):(.*?)\n# ")
+    check(re.search(r"def reported_note_entry\(rec, entry\):", RESOLVE) is not None
+          and 'rec, "needs_review"' in entry_body and 'note=note' in entry_body
+          and 'slug=entry.get("slug")' in entry_body,
+          "resolve forces a reported row to needs_review, note passed through and slug kept")
+    check("self.resolver.apply_reported_notes(work, ordered_ids)" in SYNC,
+          "the nightly sync applies the reported-note rule on every run")
+    check("resolve.reported_note_entry(rows[0], entry)" in SYNC,
+          "the single-row lookup path applies the same rule (a lookup is a sync run too)")
+    check(re.search(r"REPORT_NOTE_MAX\s*=\s*240", ROSTER_MOD) is not None
+          and re.search(r"REVIEW_NOTE_MAX = 240", read(ROOT / "js" / "detail.js") or "") is not None,
+          "the note cap is 240 in the sync and in the UI form that writes it")
 
     # --- lifecycle: ambiguous verdicts exist and are candidate-bearing ---------------- #
     check('def ambiguous_entry(' in ARTIFACTS and '"ambiguous"' in ARTIFACTS,

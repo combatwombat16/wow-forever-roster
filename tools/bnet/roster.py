@@ -14,6 +14,12 @@ track, role, roleSec, race, class, prof1, prof2``) and may carry an optional
 Only ``validated`` is ever stored; every other lifecycle state is derived by
 the UI from the Battle.net map status. A record with no ``validation`` is a
 draft.
+
+A draft may carry the reviewer's *open report* instead —
+``{"note": "...", "reportedBy": "...", "reportedAt": "..."}`` (no ``state`` key, which is
+what keeps it a draft). ``reported_note()`` reads it and ``resolve.reported_note_entry()``
+turns it into a map ``needs_review`` entry on every sync run until a ``validated`` commit
+replaces it (design §2).
 """
 
 import json
@@ -81,6 +87,32 @@ def confirmed_slug(rec):
     """The user's chosen slug, authoritative over any future name resolution."""
     slug = validation_of(rec).get("confirmedSlug")
     return slug.strip() if isinstance(slug, str) and slug.strip() else None
+
+
+# The review form caps the note at 240 characters (``js/detail.js`` REVIEW_NOTE_MAX); the same
+# ceiling here means a hand-edited roster cannot put a longer note into a public artifact than
+# the UI would ever have written.
+REPORT_NOTE_MAX = 240
+
+
+def reported_note(rec):
+    """The reviewer's open "not my character" report (design §2), or None.
+
+    Written by the detail modal as ``validation.note`` alongside ``reportedBy`` /
+    ``reportedAt``, and deliberately written *without* a ``state`` key so the row stays a draft.
+    A row whose ``state`` is ``validated`` is signed off — its note, if one survived, is history
+    rather than an open report, which is exactly what the UI's "re-open for editing" removes.
+    Whitespace-only notes are not reports either: they would force ``needs_review`` forever on a
+    row nobody actually objected to.
+    """
+    v = validation_of(rec)
+    if v.get("state") == "validated":
+        return None
+    note = v.get("note")
+    if not isinstance(note, str):
+        return None
+    text = note.strip()
+    return text[:REPORT_NOTE_MAX] if text else None
 
 
 def is_trusted(rec):

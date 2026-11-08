@@ -2,6 +2,39 @@
 // maps that more than one panel needs (class colours, faction, profession abbrevs).
 // Leaf module: it imports nothing.
 
+// ---------- transient one-line status (Phase 3d: review commits, Battle.net refresh) ----------
+
+// The write paths need feedback that is not an alert() dialog (a commit takes a second or
+// two, and a modal-blocking dialog stacked on the detail modal is unusable). The toast is
+// written with textContent, never innerHTML, so no call site can inject markup through it —
+// a GitHub error string is response data like any other. The layout classes belong to the
+// markup (#app-toast); this function only swaps the tone, so it can never fight the shell.
+export const TOAST_MS = 4000;
+
+export const TOAST_TONES = {
+  info: 'bg-slate-900/95 border-slate-600 text-slate-100',
+  success: 'bg-emerald-950/95 border-emerald-500 text-emerald-200',
+  error: 'bg-red-950/95 border-red-500 text-red-200'
+};
+
+let toastTimer = null;
+
+export function showToast(message, tone = 'info') {
+  const el = document.getElementById('app-toast');
+  if (!el) return;
+  el.textContent = String(message == null ? '' : message);
+  Object.keys(TOAST_TONES).forEach(name => el.classList.remove(...TOAST_TONES[name].split(' ')));
+  el.classList.add(...(TOAST_TONES[tone] || TOAST_TONES.info).split(' '));
+  el.classList.remove('hidden');
+  if (toastTimer !== null) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toastTimer = null;
+    el.classList.add('hidden');
+  }, TOAST_MS);
+}
+
+// ---------- styling constants ----------
+
 // Faction mapping for styling
 const ALLIANCE_RACES = ["Human", "Dwarf", "Night Elf", "Gnome", "Alliance Skyborne"];
 export function getFaction(race) {

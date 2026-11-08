@@ -349,9 +349,8 @@ ok(/card\.addEventListener\('click'/.test(rosterSrc)
   'the card click is bound, and its buttons stopPropagation');
 ok(/event\.key === 'Escape'/.test(detailSrc), 'ESC closes the detail modal');
 ok(/event\.target === modal/.test(detailSrc), 'a backdrop click closes the detail modal');
-ok(/Confirm\/resolve coming with validation/.test(detailSrc), 'the candidate list carries the read-only hint');
-ok(!/confirmCandidate|resolveCandidate|selectCandidate|workflow_dispatch/.test(detailSrc),
-  'no resolve/confirm action is wired yet (that is Phase 3d)');
+ok(/Confirm\/resolve coming with validation|CANDIDATES_READ_ONLY_HINT = 'Confirm\/resolve coming with validation'/.test(detailSrc),
+  'the candidate list still carries the read-only hint (the no-PAT rendering)');
 
 // behaviour: composition, panels, empty state, modal, escaping
 const { api: api6, registry: reg6 } = runApp(repoChars);
@@ -405,6 +404,76 @@ ok([...reg7.values()].map(el => el.innerHTML).join('').split('<img src=x').lengt
   ['//render.worldofwarcraft.com/a.jpg', false], ['javascript:alert(1)', false],
   ['https://render.worldofwarcraft.com@evil.tld/', false], ['', false], [null, false], [42, false]]
   .forEach(([url, want]) => ok(api7.isSafeIconUrl(url) === want, `isSafeIconUrl(${JSON.stringify(url)}) -> ${want}`));
+
+// ---------- 8. Phase 3d: interactive write paths ----------
+console.log('\n[8] Phase 3d review actions + on-demand refresh (static wiring)');
+const githubSrc = moduleSrc['github.js'];
+
+// every handler the modal renders is published, because inline on*="…" resolves against window
+const reviewHandlers = ['confirmMatch', 'selectCandidate', 'confirmSelectedCandidate', 'toggleMismatchForm',
+  'reportMismatch', 'reopenForEditing', 'refreshFromBattleNet'];
+const unpublished = reviewHandlers.filter(fn => !new RegExp(`window\\.${fn} = ${fn}`).test(detailSrc));
+ok(unpublished.length === 0, `every review handler is published on window (missing: ${unpublished.join(',') || 'none'})`);
+const undeclared = reviewHandlers.filter(fn => !new RegExp(`(function|async function) ${fn}\\(`).test(detailSrc));
+ok(undeclared.length === 0, `every review handler is a declared function (missing: ${undeclared.join(',') || 'none'})`);
+
+// the network stays in github.js: detail.js renders and delegates, never fetches
+ok(!/fetch\(/.test(detailSrc) && !/api\.github\.com/.test(detailSrc),
+  'detail.js makes no request of its own and names no API host (all writes go through github.js)');
+ok(!/localStorage\s*\.\s*(setItem|getItem|removeItem)/.test(detailSrc),
+  'the review actions still write nothing to localStorage from the modal module');
+// the review section is gated on a PAT in both directions: render and handler
+ok(/if \(!ghHasPat\(\)\) return '';/.test(detailSrc), 'the action area renders only when a PAT is configured');
+ok((detailSrc.match(/ghHasPat\(\)/g) || []).length >= 3,
+  `handlers re-check the PAT as a belt for the disabled button (${(detailSrc.match(/ghHasPat\(\)/g) || []).length} checks)`);
+
+// payload guards stated once, in the module that applies them
+ok(/REVIEW_NOTE_MAX = 240/.test(detailSrc), 'the mismatch note cap is 240');
+ok(/maxlength="\$\{REVIEW_NOTE_MAX\}"/.test(detailSrc), 'the note textarea declares the cap to the browser too');
+ok(/HANDLER_ARG_RE|handlerArg\(value\)/.test(detailSrc) && /SLUG_RE = \//.test(detailSrc),
+  'handler ids and confirmed slugs are shape-checked before they reach markup');
+
+// the three payload shapes of design §2, as built by the module
+ok(/state: LIFECYCLE\.VALIDATED,\s*confirmedSlug: slug,\s*reviewedBy,\s*reviewedAt: nowStamp\(\)/.test(detailSrc),
+  'confirm/resolve build {state: validated, confirmedSlug, reviewedBy, reviewedAt}');
+ok(/note: raw, reportedBy, reportedAt: nowStamp\(\)/.test(detailSrc),
+  'report mismatch builds {note, reportedBy, reportedAt} and no state key');
+ok(/delete copy\.validation;/.test(detailSrc), 're-open removes the validation block entirely');
+
+// github.js owns the write API: fresh sha before the PUT, 409 mapped, dispatch + poll
+ok(/async function commitRosterFile\(message, charactersArray\)/.test(githubSrc), 'commitRosterFile(message, characters) exists');
+ok(/ensureRosterEnvelope\(\)/.test(githubSrc), 'a commit writes the v2 envelope even with no fetched wrapper');
+ok(/const fresh = await ghApi\(`/.test(githubSrc) && githubSrc.indexOf('const fresh = await ghApi(') < githubSrc.indexOf('const put = await ghApi(contentsPath'),
+  'the current sha is fetched immediately before the PUT (never the cached one)');
+ok(/put\.status === 409/.test(githubSrc) && /changed upstream/.test(githubSrc), 'a 409 sha conflict maps to a pull-first message');
+ok(/async function ghApi\(path, opts = \{\}\)/.test(githubSrc), 'ghApi(path, opts) is the shared helper');
+ok((githubSrc.match(/Authorization/g) || []).length === 1,
+  `the Authorization header is built in exactly one place (${(githubSrc.match(/Authorization/g) || []).length})`);
+ok(/actions\/workflows\/.+dispatches/.test(githubSrc), 'the refresh dispatches the sync-bnet.yml workflow_dispatch endpoint');
+ok(/lookup_name:/.test(githubSrc) && /force: 'false'/.test(githubSrc) && /client_payload: \{ actor:/.test(githubSrc),
+  'the dispatch body carries inputs.lookup_name, inputs.force and client_payload.actor');
+ok(/event=workflow_dispatch/.test(githubSrc) && /created=/.test(githubSrc), 'the poll lists workflow_dispatch runs since the dispatch');
+ok(/REFRESH_POLL_INTERVAL_MS = 10000/.test(githubSrc) && /REFRESH_POLL_TIMEOUT_MS = 180000/.test(githubSrc),
+  'the poll is 10 s / 3 min bounded');
+ok(/Actions: write/.test(githubSrc), 'a 403 on dispatch explains the actions: write scope');
+
+// data.js: cache-busted reload, for the caller that just watched a run publish the files
+ok(/function reloadSidecars\(\)/.test(dataSrc) && /cb=\$\{encodeURIComponent/.test(dataSrc),
+  'reloadSidecars() re-reads both sidecars past the HTTP cache');
+ok(/function ensureRosterEnvelope\(\)/.test(dataSrc), 'data.js can guarantee the v2 envelope for a commit');
+
+// the transient status line: declared, hidden by default, and written as text only
+ok(declaredIds.includes('app-toast') && (declaredClasses.get('app-toast') || '').includes('hidden'),
+  'the toast element is declared in the markup and starts hidden');
+ok(/el\.textContent = String\(message/.test(moduleSrc['util.js'])
+  && !/function showToast\([\s\S]{0,700}innerHTML/.test(moduleSrc['util.js']),
+  'the toast is written with textContent only (a GitHub error string cannot become markup)');
+
+// editchar.js: the validated row refuses to open or save, and delete warns
+ok(/refuseIfValidated\(c, 'Edit'\)/.test(moduleSrc['editchar.js']), 'editCharacter refuses a validated row');
+ok(/refuseIfValidated\(existing, 'Save'\)/.test(moduleSrc['editchar.js']), 'saveCharacter refuses to overwrite a validated row');
+ok(/re-creation and re-validation/.test(moduleSrc['editchar.js']), 'deleting a validated row warns it will need re-creation');
+
 
 console.log(`\n${fails === 0 ? 'ALL CHECKS PASSED' : 'FAILURES PRESENT'}: ${passes} passed, ${fails} failed`);
 process.exit(fails === 0 ? 0 : 1);

@@ -223,6 +223,124 @@ class TrustedSlugs(unittest.TestCase):
         self.assertEqual(len(f.client.urls), 1)
 
 
+class ReportedMismatchNotes(unittest.TestCase):
+    """Design §2: a reviewer's ``validation.note`` keeps a row needs_review every run.
+
+    The report is written by the detail modal as ``{note, reportedBy, reportedAt}`` with no
+    ``state`` key, so the roster row stays a draft; the map entry is what carries the objection
+    into the artifacts, and it has to survive every nightly run until someone validates the row
+    (or re-opens it, which deletes the block). Nothing here needs the network: the fake client
+    answers the profile GETs the resolution would have made anyway.
+    """
+
+    def test_a_note_overrides_an_ok_resolution_and_keeps_the_slug(self):
+        f, r = make_sync()
+        slug = "beef-pho"
+        f.client.table = {slug: profile("Beef", "Pho", slug)}
+        rec = {"id": "1", "name": "Beef Pho",
+               "validation": {"note": "that is the other server's Beefpho", "reportedBy": "octocat"}}
+        w = work_for(rec)
+        r.resolve(rec, w, None)
+        self.assertEqual(w["entry"]["status"], "ok")          # the sync itself still resolves it
+        self.assertEqual(r.apply_reported_notes({"1": w}, ["1"]), ["1"])
+        self.assertEqual(w["entry"]["status"], "needs_review")
+        self.assertEqual(w["entry"]["note"], "that is the other server's Beefpho")   # passed through
+        self.assertEqual(w["entry"]["slug"], slug)             # identity kept, not blanked
+        self.assertEqual(w["entry"]["mappedVia"], "direct")
+        self.assertEqual(set(w["entry"]), set(artifacts.MAP_ENTRY_KEYS))
+        self.assertTrue(any("reviewer note" in line for line in f.warnings))
+
+    def test_a_report_on_a_user_confirmed_row_still_forces_review(self):
+        f, r = make_sync()
+        slug = "confirmed-then-disputed"
+        f.client.table = {slug: profile("Beef", "Pho", slug)}
+        rec = {"id": "1", "name": "Beef Pho",
+               "validation": {"confirmedSlug": slug, "note": "renamed since I confirmed it"}}
+        w = work_for(rec)
+        r.resolve(rec, w, None)
+        self.assertEqual(w["entry"]["status"], "ok")           # trusted fetch by identity
+        r.apply_reported_notes({"1": w}, ["1"])
+        self.assertEqual(w["entry"]["status"], "needs_review")
+        self.assertEqual(w["entry"]["slug"], slug)
+        self.assertEqual(w["entry"]["note"], "renamed since I confirmed it")
+
+    def test_validated_clears_the_rule(self):
+        """``state: validated`` is the end of the report: the row is signed off again."""
+        f, r = make_sync()
+        slug = "beef-pho"
+        f.client.table = {slug: profile("Beef", "Pho", slug)}
+        rec = {"id": "1", "name": "Beef Pho",
+               "validation": {"state": "validated", "confirmedSlug": slug, "note": "old report"}}
+        w = work_for(rec)
+        r.resolve(rec, w, None)
+        self.assertEqual(r.apply_reported_notes({"1": w}, ["1"]), [])
+        self.assertEqual(w["entry"]["status"], "ok")
+        self.assertEqual(w["entry"]["note"], "user-confirmed")
+
+    def test_no_note_or_blank_note_changes_nothing(self):
+        f, r = make_sync()
+        slug = "beef-pho"
+        f.client.table = {slug: profile("Beef", "Pho", slug)}
+        for validation in (None, {}, {"reportedBy": "octocat"}, {"note": "   "}, {"note": None}):
+            rec = {"id": "1", "name": "Beef Pho"}
+            if validation is not None:
+                rec["validation"] = validation
+            w = work_for(rec)
+            r.resolve(rec, w, None)
+            self.assertEqual(r.apply_reported_notes({"1": w}, ["1"]), [], json.dumps(validation))
+            self.assertEqual(w["entry"]["status"], "ok")
+
+    def test_an_ambiguous_row_keeps_its_candidates_so_the_modal_can_still_offer_a_pick(self):
+        f, r = make_sync()
+        f.client.table = {"beef-pho": profile("Beef", "Pho", "beef-pho"),
+                          "beefpho": profile("Beefpho", "Alt", "beefpho")}
+        rec = {"id": "1", "name": "Beef Pho", "validation": {"note": "neither of these"}}
+        w = work_for(rec)
+        r.resolve(rec, w, None)
+        self.assertEqual(w["entry"]["status"], "ambiguous")
+        r.apply_reported_notes({"1": w}, ["1"])
+        self.assertEqual(w["entry"]["status"], "needs_review")
+        self.assertIsNone(w["entry"]["slug"])                  # never picked, still not picked
+        self.assertEqual({c["slug"] for c in w["entry"]["candidates"]}, {"beef-pho", "beefpho"})
+        self.assertEqual(w["entry"]["note"], "neither of these")
+
+    def test_the_rule_is_idempotent_across_runs_and_capped_at_240_chars(self):
+        f, r = make_sync()
+        slug = "beef-pho"
+        f.client.table = {slug: profile("Beef", "Pho", slug)}
+        note = "n" * 300
+        rec = {"id": "1", "name": "Beef Pho", "validation": {"note": note}}
+        w = work_for(rec)
+        r.resolve(rec, w, None)
+        r.apply_reported_notes({"1": w}, ["1"])
+        self.assertEqual(w["entry"]["note"], "n" * roster.REPORT_NOTE_MAX)
+        self.assertEqual(len(w["entry"]["note"]), 240)
+        # a second run over the row it already produced changes nothing (no note drift, no churn)
+        again = dict(w["entry"])
+        self.assertIs(resolve.reported_note_entry(rec, again), again)
+
+    def test_lookup_mode_applies_the_same_rule(self):
+        """The single-row write path cannot publish an ok row over an open report either."""
+        rec = {"id": "1", "name": "Beef Pho", "validation": {"note": "wrong character"}}
+        entry = artifacts.ok_entry(rec, slug="beef-pho",
+                                   href="https://us.api.blizzard.com/profile/wow/character/beef-pho"
+                                        "?namespace=profile-forever-us",
+                                   payload={"name": "Beef"}, matched_form="lower", mapped_via="direct")
+        after = resolve.reported_note_entry(rec, entry)
+        self.assertEqual(after["status"], "needs_review")
+        self.assertEqual(after["note"], "wrong character")
+        self.assertEqual(after["slug"], "beef-pho")
+        self.assertIsNone(resolve.reported_note_entry({"id": "1", "name": "x"}, entry).get("note"))
+
+    def test_reported_note_helper_boundaries(self):
+        self.assertIsNone(roster.reported_note({"id": "1", "name": "x"}))
+        self.assertEqual(roster.reported_note({"id": "1", "validation": {"note": " a "}}), "a")
+        self.assertIsNone(roster.reported_note({"id": "1", "validation": {"state": "validated",
+                                                                         "note": "a"}}))
+        # a non-string note (hand-edited JSON) is not a report, and never reaches an artifact
+        self.assertIsNone(roster.reported_note({"id": "1", "validation": {"note": {"x": 1}}}))
+
+
 class ArtifactsSchema(unittest.TestCase):
     def test_map_entry_always_carries_candidates(self):
         entry = artifacts.map_entry({"name": "x"}, "not_found", note="404 on all forms")
