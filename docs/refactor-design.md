@@ -164,6 +164,17 @@ pages.yml  (new)            on: push(main) + workflow_run(sync-bnet: completed, 
 > `Last-Modified` cache). `verify_writes.mjs` §8 pins that body shape — rejecting anything outside
 > `{ref, inputs}` the way the endpoint does — plus the 403 → "PAT needs Actions: write" guidance and the
 > bounded poll. Nothing in `tools/` reads `client_payload` either.
+>
+> **Amended again on top of `0ab1fcb` — what a refresh publishes.** The poll's premise (a completed run has
+> republished `data/`) now holds for every attributable verdict, not just a resolved name:
+> `tools/bnet/sync.py::run_lookup` writes through the same `write_pair` the nightly uses — resolved → `ok`,
+> multi-hit → `ambiguous` with every candidate (the review modal renders the committed map; the previous
+> report-only path was the bug-wave gap "lookup publishes nothing when ambiguous"), and a definite miss →
+> `not_found` — whenever exactly one untrusted roster row carries the normalized name. Unresolved verdicts
+> publish the minimal, no-gear sidecar row (no gear is fetched under an unresolved identity); `--dry-run` writes
+> nothing; transient HTTP anomalies and multi-row names stay report-only; and the H4 floor guards every lookup
+> write. The browser poll itself is unchanged — it waits for run completion and refetches, which never claims a
+> commit that did not happen.
 
 ## 5. Python modularization
 

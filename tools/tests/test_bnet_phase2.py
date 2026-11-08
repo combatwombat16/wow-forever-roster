@@ -19,6 +19,7 @@ import sys
 import tempfile
 import unittest
 import urllib.request
+from unittest import mock
 from contextlib import redirect_stdout
 from pathlib import Path
 
@@ -510,7 +511,10 @@ class LookupVerdicts(unittest.TestCase):
     options. Both wrong shapes are asserted against here: first-hit-wins (an ``ok`` for whichever
     spelling answered first, which is the sync picking a human's character) and a bare
     ``needs_review`` with no candidates (a row with no way out). A single hit must still be a plain
-    ``ok``, or the refresh that resolves an unambiguous name stops being useful. Offline stubs only:
+    ``ok``, or the refresh that resolves an unambiguous name stops being useful. And the verdict has
+    to reach the COMMITTED artifacts, not just the run summary: the review modal renders the map on
+    disk, so a lookup that printed candidates and wrote nothing left the Refresh flow dead for
+    ambiguous characters until a nightly happened to cover them. Offline stubs only:
     the fake client answers the profile GETs and the artifacts are redirected into a temp directory.
     """
 
@@ -526,8 +530,8 @@ class LookupVerdicts(unittest.TestCase):
         if self._step_summary is not None:
             os.environ["GITHUB_STEP_SUMMARY"] = self._step_summary
 
-    def make(self):
-        args = argparse.Namespace(dry_run=False, lookup=None, force=False, state_dir=self.tmp / "state")
+    def make(self, dry_run=False):
+        args = argparse.Namespace(dry_run=dry_run, lookup=None, force=False, state_dir=self.tmp / "state")
         s = sync.Sync(args)
         f, resolver = make_sync()
         # Gear/progress enrichment is not what a verdict is about; the pair still gets a row.
@@ -543,6 +547,36 @@ class LookupVerdicts(unittest.TestCase):
             code = s.run_lookup(name, records or [{"id": "1", "name": name}],
                                 prev if prev is not None else {})
         return code, out.getvalue(), f
+
+    def run_lookup_watching_write_pair(self, name, table, records=None, prev=None):
+        """Run a lookup with a spy wrapped around the single writer.
+
+        The REAL ``artifacts.write_pair`` still executes (H4 floor included, artifacts still land
+        in the temp directory); the spy only records the arguments so a test can name the exact
+        call the lookup made instead of inferring it from the printed report."""
+        s, f = self.make()
+        f.client.table = dict(table)
+        calls = []
+        real = artifacts.write_pair
+
+        def spy(entries, characters, **kwargs):
+            result = real(entries, characters, **kwargs)
+            calls.append({"entries": entries, "characters": characters, "kwargs": kwargs,
+                          "refusal": result})
+            return result
+
+        out = io.StringIO()
+        with redirect_stdout(out), mock.patch.object(artifacts, "write_pair", spy):
+            code = s.run_lookup(name, records if records is not None else [{"id": "1", "name": name}],
+                                prev if prev is not None else {})
+        return code, out.getvalue(), calls
+
+    def prev_ok_rows(self, *ids):
+        """A previous map with every id ok: the state the H4 floor protects."""
+        return {rid: artifacts.map_entry({"name": rid}, "ok", slug=rid,
+                                         href=f"https://us.api.blizzard.com/profile/wow/character/{rid}"
+                                              f"?namespace=profile-forever-us")
+                for rid in ids}
 
     def test_two_distinct_profiles_are_ambiguous_with_both_candidates(self):
         f, r = make_sync()
@@ -576,10 +610,171 @@ class LookupVerdicts(unittest.TestCase):
         self.assertIn("candidates (2):", out)
         self.assertIn("beef-pho", out)
         self.assertIn("beefpho", out)
-        self.assertIn("map: unchanged", out)
-        # Nothing is published for a verdict nobody chose: the map keeps its silence rather than
-        # publishing an identity, or an empty needs_review row the UI can do nothing with.
-        self.assertFalse(self.map_file.exists() or self.data_file.exists(), out)
+        self.assertIn("map: updated id 1 -> ambiguous", out)
+        # The verdict is PUBLISHED, not merely reported: the review modal renders candidates from
+        # the committed map, so a lookup that printed the list and wrote nothing left the user
+        # waiting for a nightly run. Nothing is picked: slug/href stay null and the candidates
+        # carry every profile.
+        written = json.loads(self.map_file.read_text())["entries"]["1"]
+        self.assertEqual(written["status"], "ambiguous")
+        self.assertIsNone(written["slug"])
+        self.assertIsNone(written["href"])
+        self.assertEqual({c["slug"] for c in written["candidates"]}, {"beef-pho", "beefpho"})
+        self.assertTrue(written["note"].strip())
+        sidecar = json.loads(self.data_file.read_text())["characters"]["1"]
+        self.assertEqual(sidecar["status"], "ambiguous")
+        self.assertNotIn("gear", sidecar, "no gear is fetched under an unresolved identity")
+
+    def test_lookup_ambiguous_calls_write_pair_with_the_verdict_and_candidates(self):
+        # The publication path itself, asserted at the single writer: one write_pair call, the
+        # ambiguous row with every candidate, the minimal sidecar row, and the H4 floor handed the
+        # resolver-verdict snapshot ({rid: ambiguous}) exactly as the ok lookup path does.
+        table = {"beef-pho": profile("Beef", "Pho", "beef-pho"),
+                 "beefpho": profile("Beefpho", "Alt", "beefpho")}
+        code, out, calls = self.run_lookup_watching_write_pair("Beef Pho", table)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(len(calls), 1, out)
+        call = calls[0]
+        self.assertIsNone(call["refusal"])
+        entry = call["entries"]["1"]
+        self.assertEqual(entry["status"], "ambiguous")
+        self.assertIsNone(entry["slug"])
+        self.assertIsNone(entry["href"])
+        self.assertEqual({c["slug"] for c in entry["candidates"]}, {"beef-pho", "beefpho"})
+        self.assertTrue(all(set(c) <= set(artifacts.CANDIDATE_KEYS) for c in entry["candidates"]))
+        self.assertEqual(call["characters"]["1"]["status"], "ambiguous")
+        self.assertNotIn("gear", call["characters"]["1"])
+        self.assertEqual(call["kwargs"]["floor_entries"], {"1": {"status": "ambiguous"}})
+        self.assertEqual(call["kwargs"]["ordered_ids"], ["1"])
+        self.assertIs(call["kwargs"]["dry_run"], False)
+        # and the artifacts on disk contain exactly that row
+        written = json.loads(self.map_file.read_text())["entries"]["1"]
+        self.assertEqual(written["status"], "ambiguous")
+        self.assertEqual({c["slug"] for c in written["candidates"]}, {"beef-pho", "beefpho"})
+        self.assertEqual(json.loads(self.data_file.read_text())["characters"]["1"]["status"], "ambiguous")
+
+    def test_lookup_not_found_publishes_the_not_found_row(self):
+        # A definite miss (every direct form 404s and no guild lever was reachable) commits a
+        # not_found row for the one matching roster row, with a human-readable note and no
+        # candidates. The run-summary-only shapes — an HTTP anomaly that stopped the walk — stay
+        # report-only and are covered by test_lookup_transient_anomaly_writes_nothing.
+        code, out, calls = self.run_lookup_watching_write_pair("Beef Pho", {})
+        self.assertEqual(code, 0, out)
+        self.assertEqual(len(calls), 1, out)
+        entry = calls[0]["entries"]["1"]
+        self.assertEqual(entry["status"], "not_found")
+        self.assertIsNone(entry["slug"])
+        self.assertEqual(entry["candidates"], [])
+        self.assertIn("no match", entry["note"])
+        self.assertEqual(calls[0]["characters"]["1"]["status"], "not_found")
+        written = json.loads(self.map_file.read_text())["entries"]["1"]
+        self.assertEqual(written["status"], "not_found")
+        self.assertEqual(json.loads(self.data_file.read_text())["characters"]["1"]["status"], "not_found")
+
+    def test_lookup_transient_anomaly_writes_nothing(self):
+        # HTTP 500 on a lookup form stops the walk: that is a transport anomaly, not a verdict on
+        # the character. Publishing not_found over a previous ok row on one 5xx is exactly the
+        # amendment-8 fragility, so the walk-stop status stays report-only.
+        stop_url = resolve.character_url("beef-pho")
+        s, f = self.make()
+        f.client.extra = {stop_url: (500, None)}
+        calls = []
+        real = artifacts.write_pair
+
+        def spy(entries, characters, **kwargs):
+            result = real(entries, characters, **kwargs)
+            calls.append(entries)
+            return result
+
+        out = io.StringIO()
+        with redirect_stdout(out), mock.patch.object(artifacts, "write_pair", spy):
+            code = s.run_lookup("Beef Pho", [{"id": "1", "name": "Beef Pho"}],
+                                self.prev_ok_rows("1"))
+        printed = out.getvalue()
+        self.assertEqual(code, 0, printed)
+        self.assertIn("HTTP 500", printed)
+        self.assertIn("map: unchanged", printed)
+        self.assertEqual(calls, [])
+        self.assertFalse(self.data_file.exists())
+
+    def test_lookup_dry_run_publishes_nothing_for_every_verdict(self):
+        # All three publishable verdicts under --dry-run: the report says "would update", the two
+        # artifacts keep every byte (the sentinel timestamps included).
+        prev_entries = {"1": artifacts.map_entry({"name": "Beef Pho"}, "not_found", note="previous run")}
+        for label, table in (("ambiguous", {"beef-pho": profile("Beef", "Pho", "beef-pho"),
+                                            "beefpho": profile("Beefpho", "Alt", "beefpho")}),
+                             ("ok", {"beef-pho": profile("Beef", "Pho", "beef-pho")}),
+                             ("not_found", {})):
+            with self.subTest(verdict=label):
+                self.map_file.write_text(json.dumps(
+                    {"schemaVersion": 2, "updatedAt": "2026-01-01T00:00:00Z", "entries": prev_entries}) + "\n",
+                    encoding="utf-8")
+                self.data_file.write_text(json.dumps(
+                    {"schemaVersion": 2, "syncedAt": "2026-01-01T00:00:00Z", "triggeredBy": "schedule",
+                     "characters": {"1": {"status": "not_found", "fetchedAt": "2026-01-01T00:00:00Z"}}}) + "\n",
+                    encoding="utf-8")
+                before = (self.map_file.read_bytes(), self.data_file.read_bytes())
+                s, f = self.make(dry_run=True)
+                f.client.table = dict(table)
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    code = s.run_lookup("Beef Pho", [{"id": "1", "name": "Beef Pho"}],
+                                        json.loads(json.dumps(prev_entries)))
+                printed = out.getvalue()
+                self.assertEqual(code, 0, printed)
+                self.assertIn("(dry-run, not written)", printed)
+                self.assertNotIn("map: updated", printed)
+                self.assertEqual((self.map_file.read_bytes(), self.data_file.read_bytes()), before)
+
+    def test_lookup_ambiguous_demotion_of_an_ok_row_still_writes(self):
+        # A stale ok row — the nightly revalidates the mapped href and never re-walks the ladder,
+        # while the lookup always walks it — is demoted to ambiguous by the refresh. The H4 floor
+        # is intact (same function, same snapshot path) and still allows it: one row cannot move
+        # ok_now more than one step, so no single lookup can ever drop below half of ok_prev.
+        ids = ("r1", "r2", "r3", "r4")
+        prev = self.prev_ok_rows(*ids)
+        records = [{"id": "r1", "name": "Beef Pho"}] + [{"id": rid, "name": rid} for rid in ids[1:]]
+        table = {"beef-pho": profile("Beef", "Pho", "beef-pho"),
+                 "beefpho": profile("Beefpho", "Alt", "beefpho")}
+        code, out, calls = self.run_lookup_watching_write_pair("Beef Pho", table, records, prev)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("mass status flip", out)
+        self.assertEqual(len(calls), 1)
+        self.assertIsNone(calls[0]["refusal"])
+        self.assertEqual(artifacts.ok_count(calls[0]["kwargs"]["floor_entries"], list(ids)), 3)
+        written = json.loads(self.map_file.read_text())["entries"]
+        self.assertEqual(written["r1"]["status"], "ambiguous")
+        self.assertEqual({c["slug"] for c in written["r1"]["candidates"]}, {"beef-pho", "beefpho"})
+        self.assertEqual([written[rid]["status"] for rid in ids[1:]], ["ok", "ok", "ok"],
+                         "the other characters' rows are carried forward untouched")
+
+    def test_h4_floor_still_refuses_a_mass_flip_at_the_lookup_writer(self):
+        # The floor lives inside the single writer, so the lookup path cannot bypass it. A correct
+        # single-row lookup can only ever move one verdict (previous test); the mass-outage shape
+        # it could reach is a write that dropped the other rows' ok statuses. Attempted here with
+        # the very kwargs (ordered_ids, prev_entries) the lookup captured: the writer refuses, and
+        # the artifacts on disk — still holding the lookup's legitimate write — do not move.
+        ids = ("r1", "r2", "r3", "r4")
+        prev = self.prev_ok_rows(*ids)
+        records = [{"id": "r1", "name": "Beef Pho"}] + [{"id": rid, "name": rid} for rid in ids[1:]]
+        table = {"beef-pho": profile("Beef", "Pho", "beef-pho"),
+                 "beefpho": profile("Beefpho", "Alt", "beefpho")}
+        code, out, calls = self.run_lookup_watching_write_pair("Beef Pho", table, records, prev)
+        self.assertEqual(code, 0, out)
+        captured = calls[0]["kwargs"]
+        written_before = (self.map_file.read_bytes(), self.data_file.read_bytes())
+        # 4 ok rows published, a candidate write with none: the 404-storm shape amendment 8 fears.
+        outage = {rid: artifacts.map_entry({"name": rid}, "not_found", note="404 storm") for rid in ids}
+        outage["r1"] = calls[0]["entries"]["r1"]
+        refusal = artifacts.write_pair(
+            outage, {rid: {"status": "not_found", "fetchedAt": http.iso_now()} for rid in ids},
+            ordered_ids=captured["ordered_ids"], prev_entries=captured["prev_entries"],
+            triggered_by_value="manual", dry_run=False,
+            floor_entries=artifacts.resolver_verdict(outage, captured["ordered_ids"]))
+        self.assertIsNotNone(refusal)
+        self.assertIn("mass status flip", refusal)
+        self.assertIn("4 ok rows published before this run, 0 ok now", refusal)
+        self.assertEqual((self.map_file.read_bytes(), self.data_file.read_bytes()), written_before)
 
     def test_run_lookup_single_hit_writes_the_ok_pair_for_that_one_row(self):
         code, out, _ = self.run_lookup("Beef Pho", {"beef-pho": profile("Beef", "Pho", "beef-pho")})

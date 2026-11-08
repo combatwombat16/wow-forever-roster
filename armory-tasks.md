@@ -165,7 +165,16 @@ Files: `.github/workflows/sync-bnet.yml`, `tools/sync_bnet.py` (or `.mjs`), `bat
 - [x] 2.6 Commit both files with `[skip ci]`, dedicated bot identity; skip commit when unchanged.
       NOTE: the commit step now runs only after `python3 .pi/scripts/verify_sync_artifacts.py` succeeds (no `if:`/`continue-on-error` on that gate).
 - [x] 2.7 Maintainer lookup mode (`lookup_name` input): direct-GET the name, write the match + result into the run summary (workflow summary markdown), update map if unambiguous.
-      NOTE: lookup writes the **map only** (never `character-data.json` — enrichment is a full-run concern), and only when exactly one roster row carries the normalized name.
+      NOTE (amended on top of `0ab1fcb`): the original note — lookup writes the **map only** and **only when
+      unambiguous** — is obsolete on both halves. A lookup publishes through the same `write_pair` as the nightly
+      (both artifacts or neither, H4 floor included, every other character's rows carried forward untouched)
+      whenever exactly one untrusted roster row carries the normalized name: resolved → `ok` (map + enriched
+      sidecar row), multi-hit → `ambiguous` (slug/href null, every candidate published — the review modal renders
+      the committed map, so the old report-only path was exactly the bug-wave gap "lookup publishes nothing when
+      ambiguous", leaving Refresh dead until a nightly happened to cover the name), and a definite miss →
+      `not_found`. An unresolved verdict gets the same minimal, no-gear sidecar row as any non-ok nightly row
+      (no gear is fetched under an unresolved identity); transient anomalies (an HTTP 5xx that stops the walk) and
+      multi-row names stay report-only; `--dry-run` writes nothing.
 - [x] 2.8 Failure policy: one character failing never aborts the run; per-character `fetch_error` + run annotation. If ALL fail (e.g. creds/quota), leave the previous sidecar untouched and fail the job loudly.
       NOTE: extended with the H4 mass-flip floor — `ok_prev >= 3 and ok_now * 2 < ok_prev` refuses BOTH artifact writes, prints FATAL + a `GITHUB_STEP_SUMMARY` line and exits 1. A Blizzard-wide 404 storm is a live upstream bug (amendment 8) and lands as `not_found`, which the all-`fetch_error` guard cannot see.
 
@@ -270,7 +279,9 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
       `f2d4edd` (post fix-wave: verify_writes 140→220, verify_stats 181→197, unit suite 35→44), then again
       after the **live bug-fix wave on top of `9822da1`** (the phantom "roster changed upstream" drift, the
       422-rejected dispatch body, and the `needs_review` row with no way out: verify_writes 220→256,
-      verify_stats 197→199, unit suite 44→49; the other three verifiers unchanged):
+      verify_stats 197→199, unit suite 44→49; the other three verifiers unchanged), and again for the
+      **lookup-publishing fix on top of `0ab1fcb`** (unit suite 49→55 — lookup now publishes `ok`/`ambiguous`/
+      `not_found` through `write_pair` in lookup mode; all five verifiers unchanged):
 
       | Script | Checks | Owns |
       |---|---|---|
@@ -279,7 +290,7 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
       | `.pi/scripts/verify_writes.mjs` | 256 | the browser write paths under a DOM stub: no-PAT gating, action set per lifecycle state (**all three `needs_review` shapes, and the pick-candidate badge**), fresh-sha GET before PUT + v2 envelope + design §2 payload shape, 409 → pull-first with nothing applied locally, **§4d: the baseline after a commit, run against a branch that keeps what was PUT plus GitHub's 60 s max-age cache**, RESOLVE/REPORT/RE-OPEN + the needs_review exits, refresh dispatch body (**only `ref` + the two declared inputs — the harness 422s anything else, as the API does**) + 403 guidance + bounded poll, editchar gating, and an origin allowlist of `api.github.com` + same-origin only |
       | `.pi/scripts/verify_search_detail.mjs` | 97 | search AND track composition, every panel repaints on query change, debounce/clear, modal open paths, gear host allowlisting (foreign host, `javascript:`, look-alike host), section omission, escaping, ESC/backdrop close, no localStorage growth |
       | `.pi/scripts/verify_bnet_probe.py` | 42 | Phase 1 contract: every JSON path cited in `docs/bnet-api-notes.md` exists in the captured probe payloads; workflows allowlist |
-      | `python3 -m unittest discover -s tools -p "test_*"` | 49 tests | offline stdlib-only unit tests for the sync package (allowlist, redactor, H4 floor incl. the resolver-verdict/note ordering, artifact schemas, `validation.note` → `needs_review`, log hygiene, **the `--lookup` verdicts a Refresh depends on: multi-hit → `ambiguous` + every candidate, single hit → `ok`, and neither published without a human**) |
+      | `python3 -m unittest discover -s tools -p "test_*"` | 49 tests | offline stdlib-only unit tests for the sync package (allowlist, redactor, H4 floor incl. the resolver-verdict/note ordering, artifact schemas, `validation.note` → `needs_review`, log hygiene, **the `--lookup` verdicts a Refresh depends on, published through `write_pair` in lookup mode: multi-hit → `ambiguous` + every candidate, single hit → `ok`, definite miss → `not_found`; an unresolved verdict never carries gear, `--dry-run` writes no bytes, and the H4 floor still guards the lookup write**) |
 
       Deltas against the original 4.1 wording: (a) the `characters.json` byte-identical clause moved into the
       migration — `tools/migrate_v2.py` compares bytes and rewrites nothing when the target is already v2
@@ -331,6 +342,8 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
 - `deleteCharacter` clears the party slot before the push settles: a refused push leaves the slot
   empty while the row survives. UI-only; next edit restores it.
 - Lookup-mode `floor_entries` snapshot has nightly + write-pair coverage but no dedicated unit test.
+  **Retired on top of `0ab1fcb`:** the lookup-publishing tests assert the exact `floor_entries` snapshot
+  `run_lookup` hands the writer and drive a mass-flip refusal through the same single-writer call.
 - The GET→PUT window on roster commits (≈200 ms) stays optimistic-concurrency: 409 → "pull first".
 
 ## Standing security scope (binding for every phase)

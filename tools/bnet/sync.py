@@ -22,10 +22,17 @@ Usage:
 
 Options:
     --lookup NAME   maintainer lookup: GET the name, also try the guild-roster
-                    lever, print the full result, and — only when the name
-                    resolves to exactly one profile — flip that one row through the
-                    same write_pair as the nightly run, so the map row and its
-                    character-data row land together or not at all
+                    lever, print the full result, and — whenever exactly one
+                    untrusted roster row carries the normalized name — flip that
+                    one row through the same write_pair as the nightly run: a
+                    resolved name publishes ok (with the enriched sidecar row), a
+                    multi-hit publishes the ambiguous verdict with every candidate
+                    (the review modal renders the committed map, so a Refresh that
+                    only printed the list left the user waiting for nightly), and a
+                    definite miss publishes not_found. An unresolved verdict never
+                    fetches gear: its sidecar row gets the same minimal treatment
+                    the nightly gives every non-ok id. The map row and its
+                    character-data row land together or not at all.
     --force         ignore cached Last-Modified timestamps and refetch
     --dry-run       compute everything but write no files
     --state-dir P   cache directory (default ~/.cache/wow-bnet-sync; the cache
@@ -318,24 +325,50 @@ class Sync:
         rows = [rec for rec in roster_records if resolve.norm_slug(rec["name"]) == norm]
         trusted_rows = [rec for rec in rows if roster.is_trusted(rec)]
         write_refusal = None
-        if isinstance(payload, dict) and len(rows) == 1 and trusted_rows:
+        # A lookup publishes through the same write_pair as the nightly run whenever the verdict
+        # can be attributed to exactly one untrusted roster row: resolved -> ok, several distinct
+        # profiles -> ambiguous (the candidates are what the review modal renders, and the modal
+        # reads the committed map, so printing them and writing nothing left the Refresh flow dead
+        # for ambiguous characters until a nightly happened to cover them), and a definite miss ->
+        # not_found. Everything else stays report-only: a trusted row is never rewritten by a
+        # lookup, two roster rows sharing one normalized name cannot be told apart by the profile,
+        # and an HTTP anomaly that stopped the walk (or a guild member whose profile GET failed)
+        # says nothing trustworthy about this character's identity — writing it as not_found would
+        # let one transient 5xx erase a mapped ok row that only the nightly's full pass may judge.
+        verdict_entry = None
+        if len(rows) == 1 and not trusted_rows:
+            if isinstance(payload, dict):
+                if (prev_entries.get(rows[0]["id"]) or {}).get("status") not in ("ok",):
+                    verdict_entry = artifacts.ok_entry(rows[0], slug=resolve.slug_from_href(href), href=href,
+                                                       payload=payload, matched_form=matched, mapped_via=via)
+            elif result["candidates"] and str(result.get("status") or "").startswith("ambiguous"):
+                verdict_entry = artifacts.ambiguous_entry(
+                    rows[0], candidates=list(result["candidates"]),
+                    note=str(result["status"]), matched_via=via)
+            elif str(result.get("status") or "").startswith("no match"):
+                verdict_entry = artifacts.map_entry(rows[0], "not_found", note=str(result["status"]))
+        if len(rows) == 1 and trusted_rows:
             lines.append("map: unchanged — this row is user-confirmed/validated; a lookup never rewrites a trusted slug")
-        elif isinstance(payload, dict) and len(rows) == 1 \
-                and (prev_entries.get(rows[0]["id"]) or {}).get("status") not in ("ok",):
-            entry = artifacts.ok_entry(rows[0], slug=resolve.slug_from_href(href), href=href, payload=payload,
-                                       matched_form=matched, mapped_via=via)
+        elif len(rows) > 1:
+            lines.append(f"map: unchanged — {len(rows)} roster rows share the normalized name {norm}; "
+                         "never auto-pick between them")
+        elif verdict_entry is not None:
+            rid = rows[0]["id"]
             # The same rule as the nightly run — a lookup is a sync run too: an open reviewer note
-            # keeps the map row needs_review. Here the sidecar row is still written from the fresh
-            # profile, because a lookup is an explicit maintainer action and the pair must stay
-            # joinable by id; the map, not the sidecar, is what the UI derives lifecycle from.
+            # keeps the map row needs_review (carrying the identity or the candidates across, so
+            # the review modal still has something to offer). Here the ok sidecar row is still
+            # written from the fresh profile, because a lookup is an explicit maintainer action
+            # and the pair must stay joinable by id; the map, not the sidecar, is what the UI
+            # derives lifecycle from.
             # `verdict_entry` is what this run actually resolved, kept for the H4 floor: the note
             # is applied after the verdict and before the write, exactly as in the nightly path.
-            verdict_entry = entry
+            entry = verdict_entry
             entry = resolve.reported_note_entry(rows[0], entry)
+            verdict_via = entry.get("mappedVia") or via or "no match"
             if self.args.dry_run:
                 # entry["status"] not a literal "ok": a reviewer note on this row keeps it
                 # needs_review even though the lookup itself resolved cleanly.
-                lines.append(f"map: would update id {rows[0]['id']} -> {entry['status']} ({via}) (dry-run, not written)")
+                lines.append(f"map: would update id {rid} -> {entry['status']} ({verdict_via}) (dry-run, not written)")
             else:
                 # Both artifacts or neither, even for one row: the UI joins map and
                 # sidecar by roster id, so publishing the ok map row while
@@ -344,20 +377,26 @@ class Sync:
                 # sidecar row first and writes through the same write_pair the
                 # nightly sync uses (H4 floor included), carrying every other
                 # character's previous row forward untouched.
-                rid = rows[0]["id"]
-                w = {"rec": rows[0], "entry": entry, "profile": payload,
-                     "profile_url": href, "unchanged": False}
                 char_row = None
-                try:
-                    char_row = self.f.enrich(w)
-                except http.UnsafeUrl:
-                    # H1: an off-allowlist href outranks a lookup report. Propagate:
-                    # main() refuses the run, writes nothing, never sends the token.
-                    raise
-                except Exception as exc:
-                    lines.append(f"map: NOT updated for id {rid} — the sidecar row could not be built "
-                                 f"({type(exc).__name__}: {http.redact(str(exc))[:160]}); "
-                                 "both artifacts or neither, so nothing was written")
+                if isinstance(payload, dict):
+                    w = {"rec": rows[0], "entry": entry, "profile": payload,
+                         "profile_url": href, "unchanged": False}
+                    try:
+                        char_row = self.f.enrich(w)
+                    except http.UnsafeUrl:
+                        # H1: an off-allowlist href outranks a lookup report. Propagate:
+                        # main() refuses the run, writes nothing, never sends the token.
+                        raise
+                    except Exception as exc:
+                        lines.append(f"map: NOT updated for id {rid} — the sidecar row could not be built "
+                                     f"({type(exc).__name__}: {http.redact(str(exc))[:160]}); "
+                                     "both artifacts or neither, so nothing was written")
+                else:
+                    # ambiguous / not_found: the same minimal sidecar row the nightly gives every
+                    # non-ok id. Gear is never fetched under an identity nobody resolved — an
+                    # enriched row would publish character data under a mapping (or a missing
+                    # one) the reviewer has not confirmed.
+                    char_row = {"status": entry["status"], "fetchedAt": http.iso_now()}
                 if char_row is not None:
                     entries = dict(prev_entries)
                     entries[rid] = entry
@@ -373,13 +412,10 @@ class Sync:
                             {**prev_entries, rid: verdict_entry},
                             [rec["id"] for rec in roster_records]))
                     if write_refusal is None:
-                        lines.append(f"map: updated id {rid} -> {entry['status']} ({via}); "
+                        lines.append(f"map: updated id {rid} -> {entry['status']} ({verdict_via}); "
                                      "character-data row written in the same write_pair")
                     else:
                         lines.append(write_refusal)
-        elif isinstance(payload, dict) and len(rows) > 1:
-            lines.append(f"map: unchanged — {len(rows)} roster rows share the normalized name {norm}; "
-                         "never auto-pick between them")
         else:
             lines.append("map: unchanged")
 
