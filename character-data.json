@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "syncedAt": "2026-11-08T05:05:48Z",
+  "syncedAt": "2026-11-08T12:32:03Z",
   "characters": {
     "1791919748959": {
       "status": "ok",
@@ -9,10 +9,10 @@
         "surname": "Stroganoff",
         "href": "https://us.api.blizzard.com/profile/wow/character/shiftybeef-stroganoff?namespace=profile-forever-us"
       },
-      "level": 20,
+      "level": 22,
       "guild": "Flowmasters",
       "activeSpec": "Feral Combat",
-      "itemLevel": 13,
+      "itemLevel": 14,
       "gear": [
         {
           "slot": "Shoulders",
@@ -34,9 +34,9 @@
         },
         {
           "slot": "Waist",
-          "name": "Aquarius Belt",
-          "ilvl": 16,
-          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132515.jpg"
+          "name": "Deviate Scale Belt",
+          "ilvl": 23,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132498.jpg"
         },
         {
           "slot": "Legs",
@@ -58,9 +58,9 @@
         },
         {
           "slot": "Hands",
-          "name": "Bard's Gloves of the Bear",
-          "ilvl": 17,
-          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132949.jpg"
+          "name": "Gloves of the Moon",
+          "ilvl": 20,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132952.jpg"
         },
         {
           "slot": "Ring 1",
@@ -88,15 +88,15 @@
         }
       ],
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-08T05:05:22Z"
+      "fetchedAt": "2026-11-08T12:31:36Z"
     },
     "1791919870010": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:22Z"
+      "fetchedAt": "2026-11-08T12:31:36Z"
     },
     "1791919950805": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:22Z"
+      "fetchedAt": "2026-11-08T12:31:36Z"
     },
     "1791922047617": {
       "status": "ok",
@@ -189,7 +189,7 @@
         }
       ],
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-08T05:05:31Z"
+      "fetchedAt": "2026-11-08T12:31:46Z"
     },
     "1791928493125": {
       "status": "ok",
@@ -289,27 +289,27 @@
         }
       ],
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-08T05:05:41Z"
+      "fetchedAt": "2026-11-08T12:31:56Z"
     },
     "1791928548067": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:41Z"
+      "fetchedAt": "2026-11-08T12:31:56Z"
     },
     "1791928613248": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:41Z"
+      "fetchedAt": "2026-11-08T12:31:56Z"
     },
     "1791928676823": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:41Z"
+      "fetchedAt": "2026-11-08T12:31:56Z"
     },
     "1791928771432": {
       "status": "needs_review",
-      "fetchedAt": "2026-11-08T05:05:41Z"
+      "fetchedAt": "2026-11-08T12:31:56Z"
     },
     "1791928813281": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:41Z"
+      "fetchedAt": "2026-11-08T12:31:56Z"
     },
     "1791928886528": {
       "status": "ok",
@@ -385,43 +385,43 @@
           "pvpRank": 0
         }
       },
-      "fetchedAt": "2026-11-08T05:05:48Z"
+      "fetchedAt": "2026-11-08T12:32:03Z"
     },
     "1791928967366": {
       "status": "needs_review",
-      "fetchedAt": "2026-11-08T05:05:48Z"
+      "fetchedAt": "2026-11-08T12:32:03Z"
     },
     "1791929013125": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:48Z"
+      "fetchedAt": "2026-11-08T12:32:03Z"
     },
     "1791929106142": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:48Z"
+      "fetchedAt": "2026-11-08T12:32:03Z"
     },
     "1791929283993": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:48Z"
+      "fetchedAt": "2026-11-08T12:32:03Z"
     },
     "1791929450071": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:48Z"
+      "fetchedAt": "2026-11-08T12:32:03Z"
     },
     "1791929660455": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:48Z"
+      "fetchedAt": "2026-11-08T12:32:03Z"
     },
     "1791945705052": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:48Z"
+      "fetchedAt": "2026-11-08T12:32:03Z"
     },
     "1791945790634": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:48Z"
+      "fetchedAt": "2026-11-08T12:32:03Z"
     },
     "1793073514718": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T05:05:48Z"
+      "fetchedAt": "2026-11-08T12:32:03Z"
     }
   }
 }
