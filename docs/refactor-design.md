@@ -1,14 +1,14 @@
 # Refactor Design — Pipeline ↔ Data ↔ Modular UI (rev 2 — as built)
 
-Status: **IMPLEMENTED (rev 2)**, 2026-11-08. Rev 1 was signed off in `cab0c06` and landed as
-`1280185` (Phase 2: `tools/bnet` package + `data/` migration) → `e7e53f6` (3a: ES modules) → `404c70f` (3b:
-sidecar layer) → `8e593c7` (3c: search + detail modal) → `c3815b7` (3d: review write paths + on-demand
-refresh) → `b378b29` (Phase 4: Pages via Actions build). Sections below describe the design; **where the
+Status: **IMPLEMENTED (rev 2)**, 2026-11-08. Rev 1 was signed off in `28fadc5` and landed as
+`ee1eb52` (Phase 2: `tools/bnet` package + `data/` migration) → `8e04e54` (3a: ES modules) → `f3cb9b6` (3b:
+sidecar layer) → `63bab1a` (3c: search + detail modal) → `26c3dc1` (3d: review write paths + on-demand
+refresh) → `722c428` (Phase 4: Pages via Actions build). Sections below describe the design; **where the
 implementation differs, the divergence is recorded in §10 and is authoritative.** Rev 2 changed no decision —
 it records what was built, plus one design correction in §4 (client-supplied provenance is not honoured).
 
 Unverified by the tree, and therefore still open: the manual end-to-end run (armory-tasks 4.3) — all of
-`1280185..b378b29` is unpushed, so neither workflow has executed on Actions and the Pages `build_type` flip
+`ee1eb52..722c428` is unpushed, so neither workflow has executed on Actions and the Pages `build_type` flip
 is unconfirmed.
 
 ## 0. Goals
@@ -191,7 +191,7 @@ Behavior changes (lifecycle-aware):
 
 ## 9. Open decisions needing your explicit sign-off
 
-> Resolved at sign-off (`cab0c06`); all three landed as drafted — see §10 for the details that changed around them.
+> Resolved at sign-off (`28fadc5`); all three landed as drafted — see §10 for the details that changed around them.
 
 1. **`characters.json` becomes an object** `{schemaVersion, characters:[…]}` instead of a bare array (breaking for any forgotten consumer; only sync tool + UI consume it today). Agree?
 2. **Stored states minimal**: only `validated` is ever stored; everything else derived from map status (§2 table). Alternative: store every state explicitly (more audit, more drift risk). Agree with derived?
@@ -199,11 +199,11 @@ Behavior changes (lifecycle-aware):
 
 ## 10. Implementation deltas (what differs from rev 1 as written)
 
-Checked against the working tree at `263cb99` on 2026-11-08. Nothing here reverses a signed-off decision; each
+Checked against the working tree at `f2d4edd` on 2026-11-08. Nothing here reverses a signed-off decision; each
 entry is either a naming/plumbing change or a place where the build is stricter or lazier than drafted.
 
 1. **Roster write path: read-modify-write for review mutations, compare-and-replace for bulk push** — shipped
-   in the fix wave (`263cb99`) after the write-path review flagged whole-file overwrite as MAJOR.
+   in the fix wave (`f2d4edd`) after the write-path review flagged whole-file overwrite as MAJOR.
    - *Review commits* — `commitValidationOnFresh(message, id, mutateFn)` → one commit core
      (`commitRosterFile`): fresh GET of `data/characters.json`, `setValidationOnFresh` re-applies the mutation
      (set/clear validation block, candidate choice, mismatch note) **onto the freshly fetched document**
@@ -244,7 +244,7 @@ entry is either a naming/plumbing change or a place where the build is stricter 
    exists (`verify_search_detail.mjs` §6).
 7. **No `verify_armory.mjs`** (§6). The 4.1 coverage was split per surface instead, so a failure names the
    surface: `verify_sync_artifacts.py` (486), `verify_stats.mjs` (197), `verify_writes.mjs` (220, new in
-   `c3815b7`), `verify_search_detail.mjs` (97, new in `8e593c7`), `verify_bnet_probe.py` (42) and 44 unit tests
+   `26c3dc1`), `verify_search_detail.mjs` (97, new in `63bab1a`), `verify_bnet_probe.py` (42) and 44 unit tests
    in `tools/tests/`. `verify_sync_artifacts.py` additionally absorbed the `pages.yml` shape checks
    (secret-free, permissions, Tailwind build, official Pages actions, allowlisted bundle,
    build → size-gate → stage → upload → deploy order); the two-workflows-only allowlist for

@@ -505,7 +505,7 @@ export async function dispatchAndAwaitSync(lookupName, opts = {}) {
   const actor = await ghUserLogin();
   // The dispatch is a 202 with no body, so the run can only be identified by the workflow's own
   // id. Resolve it BEFORE dispatching: no id means no attribution, and failing closed here means
-  // we never start a run we cannot watch. (Reviewer nit 263cb99: resolving it after the dispatch
+  // we never start a run we cannot watch. (Reviewer nit f2d4edd: resolving it after the dispatch
   // also pushed `since` behind any slow id lookup, risking our own run falling outside the window.)
   const workflowId = await syncWorkflowId();
   if (workflowId === null) {

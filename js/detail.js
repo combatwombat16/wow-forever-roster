@@ -501,7 +501,7 @@ async function commitValidation(character, nextValidation, { message, success })
   const result = await commitValidationOnFresh(message, character.id, copy => {
     if (nextValidation === null) delete copy.validation;
     else copy.validation = typeof nextValidation === 'function' ? nextValidation(copy) : nextValidation;
-    // Deliberate asymmetry (review 263cb99 nit): confirm/candidate actions pass a whole block,
+    // Deliberate asymmetry (review f2d4edd nit): confirm/candidate actions pass a whole block,
     // so a mismatch note reported upstream after this page loaded is erased by a successful
     // confirm — a completed validation supersedes the objection it answers. reportMismatch
     // passes a function and merges, so notes coexist. Other row keys are always preserved

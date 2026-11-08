@@ -4,7 +4,10 @@ Battle.net real-character-data integration for the WoW: Forever roster site.
 Written 2026-11-08 from a verified recon session. Execute in a subsequent session,
 or hand individual phases to worker agents. Follow `pi-warden.md` at all times.
 
-**Status as of 2026-11-08, aligned to commit `b378b29`:** Phase 0 partial (0.4 open), Phase 1 ✅, Phase 2 ✅,
+**Deployed 2026-11-08:** pushed to `main`, Pages flipped to the Actions build system; first
+`Deploy GitHub Pages` run green on the rebased tip and the site verified live (zero CDN scripts,
+module entry + built `css/tailwind.css` + `data/` served). Hashes in this file are post-rebase.
+**Status as of 2026-11-08, aligned to commit `14eab90`:** Phase 0 partial (0.4 open), Phase 1 ✅, Phase 2 ✅,
 Phase 3 ✅ (offline-verified — see its acceptance note), Phase 3bis ✅, Phase 4: 4.1 ✅ and 4.2 ✅, **4.3 open**
 (manual end-to-end needs a push plus an owner PAT). Amendments are marked inline as `NOTE` / `AMENDED` /
 `SUPERSEDED`; the design-level record of those amendments is `docs/refactor-design.md`.
@@ -47,7 +50,7 @@ Phase 3 ✅ (offline-verified — see its acceptance note), Phase 3bis ✅, Phas
       still stand and are enforced (`pages.yml`, `verify_sync_artifacts.py`).
 - `characters.json` is **machine-owned** by the external tracker (commits with `[skip ci]`). Schema fixed: `id, player, name, track, role, roleSec, race, class, prof1, prof2`. **Never write or reformat it.** No realm field — that's why `battle-net-map.json` exists.
       **SUPERSEDED 2026-11-08** — the file moved to `data/characters.json` in the v2 envelope
-      `{schemaVersion, characters:[…]}` (design §2, commit `1280185`); the last tracker commit to the old
+      `{schemaVersion, characters:[…]}` (design §2, commit `ee1eb52`); the last tracker commit to the old
       root path is `c49af62`, and the root copy no longer exists (`verify_sync_artifacts.py` forbids one).
       The ten user-authored fields are still fixed and are still not edited by the sync tool — but the file
       is now also written by the site's own PAT write paths (`validation` blocks) and by the bulk-push
@@ -58,10 +61,10 @@ Phase 3 ✅ (offline-verified — see its acceptance note), Phase 3bis ✅, Phas
 - All strings from the sidecar are untrusted input: escape before `innerHTML`, same as existing roster strings.
 - Existing GitHub PAT sync feature stays as is; do not entangle it with Blizzard data.
       **AMENDED 2026-11-08** — the PAT path is now also the review-commit path and can dispatch a Battle.net
-      refresh (`c3815b7`, design §4). The entanglement that remains forbidden is credential entanglement: no
+      refresh (`26c3dc1`, design §4). The entanglement that remains forbidden is credential entanglement: no
       Blizzard secret ever reaches the browser, and the dispatch carries only `lookup_name`/`force`.
 
-### Repo layout as built (2026-11-08, at `b378b29`)
+### Repo layout as built (2026-11-08, at `722c428`)
 
 ```
 index.html                 # 389-line markup shell; only script is <script type="module" src="js/main.js">
@@ -169,17 +172,17 @@ Acceptance: a successful manual run commits both JSON files; second run is cheap
 ## Phase 3 — UI (~~index.html only, single file~~ modular static ES modules, existing style)
 
 > **AMENDED 2026-11-08 — owner decision lifts the "index.html only, single file" half of this header**
-> (drafted as `docs/refactor-design.md` §7, implemented in `e7e53f6`, re-confirmed by `8e593c7`/`c3815b7`/
-> `b378b29`). The UI is modular static: `index.html` is a 389-line markup shell whose only script is
+> (drafted as `docs/refactor-design.md` §7, implemented in `8e04e54`, re-confirmed by `63bab1a`/`26c3dc1`/
+> `722c428`). The UI is modular static: `index.html` is a 389-line markup shell whose only script is
 > `<script type="module" src="js/main.js">`; the app is twelve ES modules under `js/` plus `css/app.css`.
 > What survives of the original constraint, and is enforced: **no bundler, no build step in the repo, no new
 > CDN scripts, existing visual language.** Tailwind is compiled at Pages deploy from `tailwind.config.js`
-> (`pages.yml`, `b378b29`) and `index.html` loads the committed `css/tailwind.css` in place of the Play CDN.
+> (`pages.yml`, `722c428`) and `index.html` loads the committed `css/tailwind.css` in place of the Play CDN.
 > Modules publish their inline handlers with explicit `window.fn = fn` assignments, so the old
 > "every `on*` handler is global" invariant still holds — it just lives in the modules now.
 
 - [x] 3.1 Load `character-data.json` at startup (fetch + timeout + graceful fallback: no sidecar → everything renders exactly as today). Do not persist it in localStorage.
-      DONE (`404c70f`): `js/data.js` — `loadSidecars()` fetches both sidecars in parallel through
+      DONE (`f3cb9b6`): `js/data.js` — `loadSidecars()` fetches both sidecars in parallel through
       `loadSidecar(path)`; every failure path (non-2xx, truncated body, non-object, network error) returns
       `null` independently per file, `byRosterId(id)` is the null-safe join, and
       `SIDECAR_FRESH_HOURS = 36` is the freshness rule. Sidecars stay in module scope and are never written
@@ -193,7 +196,7 @@ Acceptance: a successful manual run commits both JSON files; second run is cheap
       the guarantee is that a rejection or a bad body degrades to `null`, so a hung request holds its panel
       in the no-sidecar shape rather than blocking the page.
 - [x] 3.2 Compact badges on existing roster rows: level, ilvl, guild (truncate long guilds) + status dot: green fresh / amber stale (>36 h) / grey unmapped / red error. Use existing panel classes (`wow-border bg-slate-900/70 …`, `CLASS_COLORS`, amber cinzel headings) — no inline-style colors.
-      DONE (`404c70f`): `js/roster.js` — `getSidecarDot()` maps the four dot states (`bg-emerald-400` fresh /
+      DONE (`f3cb9b6`): `js/roster.js` — `getSidecarDot()` maps the four dot states (`bg-emerald-400` fresh /
       `bg-amber-400` stale past 36 h / `bg-slate-600` unmapped-or-no-match-or-no-data-yet / `bg-red-500`
       fetch error) with a `title` explaining each; `getSidecarMeta()` renders the Lv / iLvl / guild chips;
       `getLifecycleBadge()` adds the always-on lifecycle badge (all six states of design §2, shown with or
@@ -201,7 +204,7 @@ Acceptance: a successful manual run commits both JSON files; second run is cheap
       class strings only — no inline-style colors. Validated rows render their edit button disabled
       (`isLifecycleEditable`).
 - [x] 3.3 Detail modal (new, same visual language): header (name, surname, guild, level, race/class, active spec), gear grid with Blizzard icon `<img>`s (icon URLs from sidecar; `loading="lazy"`, alt text), progress sections (omit sections absent from data), per-character sync timestamp.
-      DONE (`8e593c7`, extended by `c3815b7`): `js/detail.js` — `openCharacterDetail()`/`detailHtml()` on card
+      DONE (`63bab1a`, extended by `26c3dc1`): `js/detail.js` — `openCharacterDetail()`/`detailHtml()` on card
       click, `gearGrid()` with `loading="lazy"` + `alt` on every icon, gated by `isSafeIconUrl()` (exact
       `https` hosts `render.worldofwarcraft.com` / `us.api.blizzard.com` only; anything else renders a
       placeholder `<span>`), `progressSections()` omitting any section the data does not carry, per-character
@@ -209,14 +212,14 @@ Acceptance: a successful manual run commits both JSON files; second run is cheap
       review actions added in Phase 3bis (`confirmMatch`, `selectCandidate`/`confirmSelectedCandidate`,
       `reportMismatch`, `reopenForEditing`, `refreshFromBattleNet`).
 - [x] 3.4 Roster search box next to the Squad Filter: instant filter over name, player, class, role, guild (and realm/lookup name). Must compose with the existing track filter (search AND filter) and drive all panels through `renderRoster()` per the "characters + currentFilter is the single source of truth" rule — extend, don't fork, the filtering path.
-      DONE (`8e593c7`): `js/search.js` (`onSearchInput` debounced `SEARCH_DEBOUNCE_MS = 120`, `clearSearch`,
+      DONE (`63bab1a`): `js/search.js` (`onSearchInput` debounced `SEARCH_DEBOUNCE_MS = 120`, `clearSearch`,
       `#search-input`/`#clear-search` in `index.html`) feeding `setQuery()` in `js/state.js`. The path was
       extended, not forked: `getFilteredCharacters()` is now track AND query and every panel (roster, race,
       class, professions, party pool/synergy) repaints through `renderAll()`. Guild and the resolved Battle.net
       lookup name are searchable via the `registerSearchProvider()` hook (`data.js` supplies it, so `state.js`
       stays a leaf module with no sidecar import).
 - [x] 3.5 "Last synced …" line near the header repo-status widget; falls back to "No Battle.net data" when sidecar missing.
-      DONE (`404c70f`): `#bnet-sync-line` in `index.html` (next to `#sync-status`), written by
+      DONE (`f3cb9b6`): `#bnet-sync-line` in `index.html` (next to `#sync-status`), written by
       `renderSyncLine()` in `js/data.js` — `formatSyncedAt(syncedAt)` plus `syncTriggerLabel(triggeredBy)`
       (nightly vs the dispatching GitHub login), and the literal `No Battle.net data` fallback when the
       sidecar is absent or carries no `syncedAt`. Registered as a render hook so repaints keep it consistent.
@@ -236,10 +239,10 @@ Acceptance: a successful manual run commits both JSON files; second run is cheap
 Acceptance: with the sidecar deleted, the site behaves identically to today; with it, badges/modal/search work on Pages; no new localStorage keys; no new CDN scripts; every new `on*="fn("` handler is global and every `getElementById` target exists.
 ACCEPTED for everything verifiable offline: `verify_stats.mjs` (197 checks) + `verify_search_detail.mjs` (97 checks)
 prove the id/handler/escaping/no-new-localStorage keys and the search/detail behaviour under a DOM stub. The
-"work on Pages" half is **not yet proven** — `b378b29` and its six predecessors are still unpushed
+"work on Pages" half is **not yet proven** — `722c428` and its six predecessors are still unpushed
 (`git log origin/main..HEAD`), and the one-time Pages `build_type` flip has not been confirmed from the tree.
 
-### Phase 3bis — validation lifecycle + on-demand refresh (added by the refactor design; done `c3815b7`)
+### Phase 3bis — validation lifecycle + on-demand refresh (added by the refactor design; done `26c3dc1`)
 
 Not in the original Phase 3 list; tracked here so this file stays the roster of what the UI does.
 
@@ -262,7 +265,7 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
 - [x] 4.1 Extend `.pi/scripts/` checks (or add `verify_armory.mjs`): sidecar + map JSON parse and schema-validate; every `getElementById` id present & unique; every inline handler resolves to a global function; sidecar-derived interpolations all pass through the escaper; `rg` scan proving no token/secret patterns in the repo or workflow logs; `characters.json` byte-identical to before the change.
       DONE — deliberately **not** as one `verify_armory.mjs`: the coverage was split into five verifiers that
       each own a surface, so a failure names the surface. Counts below are the current totals, re-run at
-      `263cb99` (post fix-wave; the fix wave raised verify_writes 140→220, verify_stats 181→197 and the unit
+      `f2d4edd` (post fix-wave; the fix wave raised verify_writes 140→220, verify_stats 181→197 and the unit
       suite 35→44):
 
       | Script | Checks | Owns |
@@ -296,17 +299,17 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
          **H4** the mass-flip floor refuses to publish a wipe, and the commit step runs only after
          `verify_sync_artifacts.py` exits 0 (no `if:`/`continue-on-error` on that gate).
          Zero PR/push triggers, `permissions: contents: write` only, secrets via `env:` never interpolated.
-      2. **Write-path review** (`c3815b7`, the new surface: `js/github.js`, `js/detail.js`, `js/editchar.js`):
+      2. **Write-path review** (`26c3dc1`, the new surface: `js/github.js`, `js/detail.js`, `js/editchar.js`):
          PAT attached in exactly one place against a fixed origin; fresh-sha GET before every PUT with 409 →
          pull-first; failures never mutate local state; handler arguments shape-checked so untrusted strings
          never reach `on*` attributes and `confirmedSlug` must match `SLUG_RE`; the refresh dispatch carries
          only the two declared workflow inputs. `verify_writes.mjs` (220 checks after the fix wave, new in
          that commit) is the executable record of these guards.
-      Not in scope for either pass: `pages.yml` arrived after them (`b378b29`) and was gated by its shape
+      Not in scope for either pass: `pages.yml` arrived after them (`722c428`) and was gated by its shape
       checks in `verify_sync_artifacts.py` instead; the `workflow_run`/`head_sha` reasoning is documented in
       the workflow's own comment block.
 - [ ] 4.3 Manual end-to-end: dispatch the workflow, watch first commit, hard-refresh the Pages site, check badges/modal/search/status-dot states incl. `needs_review` and `fetch_error` characters.
-      **OPEN — intentionally unticked.** Every commit from `1280185` (Phase 2's data layout) through `b378b29`
+      **OPEN — intentionally unticked.** Every commit from `ee1eb52` (Phase 2's data layout) through `722c428`
       is still unpushed (`git log origin/main..HEAD` = 7 commits), so nothing new has ever run on Actions:
       the Actions-side existence of `BLIZZARD_CLIENT_ID`/`BLIZZARD_CLIENT_SECRET` has never been proven by a
       run, the one-time Pages `build_type: legacy → workflow` flip is unconfirmed, and the browser write paths
@@ -314,7 +317,7 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
       Blocked on: push `main`, confirm/perform the Pages setting flip, then dispatch once from the UI and once
       from Actions and read the badge/lifecycle transitions on a `needs_review` and a `fetch_error` row.
 
-## Known residual nits (verification review of `263cb99`, all accepted 2026-11-08)
+## Known residual nits (verification review of `f2d4edd`, all accepted 2026-11-08)
 
 - Confirm/candidate commits intentionally erase an upstream mismatch `note` posted after page load
   (a completed validation supersedes the objection it answers); `reportMismatch` merges instead.
@@ -328,7 +331,7 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
 
 - `client_id`/`client_secret`: only ever in Actions secrets; never in the repo, the sidecar, logs, commit messages, or client JS.
 - Workflow has zero PR triggers; only default-branch scheduled/manual runs can touch secrets. Repo write token scoped to `contents: write`.
-- Browser talks only to same-origin GitHub Pages + `api.github.com` + Blizzard media image URLs. No Blizzard API calls from the browser. No Blizzard OAuth tokens anywhere (login phase deferred by design decision #1). The `api.github.com` origin is the new one added by the review-commit and refresh-dispatch paths (`c3815b7`) and is the only non-image third-party origin the client may contact; `verify_writes.mjs` fails the run on any other origin.
+- Browser talks only to same-origin GitHub Pages + `api.github.com` + Blizzard media image URLs. No Blizzard API calls from the browser. No Blizzard OAuth tokens anywhere (login phase deferred by design decision #1). The `api.github.com` origin is the new one added by the review-commit and refresh-dispatch paths (`26c3dc1`) and is the only non-image third-party origin the client may contact; `verify_writes.mjs` fails the run on any other origin.
 - **PAT scopes (amended 2026-11-08):** a maintainer PAT needs `contents: read/write` for roster pull/commit,
   and — new since Phase 3d — **Actions read/write** to dispatch a `workflow_dispatch` refresh
   (`POST /repos/{owner}/{repo}/actions/workflows/sync-bnet.yml/dispatches`). A fine-grained token additionally
@@ -364,7 +367,7 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
   exactly — `wow_forever_roster` and `wow_gh_config` are the only two keys ever written, and
   `verify_search_detail.mjs` §6 fails the build if a third appears.
 - **On-demand sync note:** the "nightly only" interim UX is superseded by the in-page **Refresh from
-  Battle.net** button (`c3815b7`, design §4): a maintainer dispatches the same `sync-bnet.yml` from the browser
+  Battle.net** button (`26c3dc1`, design §4): a maintainer dispatches the same `sync-bnet.yml` from the browser
   with their own PAT, the UI polls the run to completion (10 s interval, 180 s cap) and reloads the sidecars
   past the HTTP cache. Nightly `schedule` remains the default data path and the only path that refreshes every
   character; dispatch with `lookup_name` refreshes one. Deferred inside this area: honouring a client-supplied
