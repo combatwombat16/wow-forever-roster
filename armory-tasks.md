@@ -45,26 +45,41 @@ or hand individual phases to worker agents. Follow `pi-warden.md` at all times.
 
 ## Prerequisites (Phase 0 — human, one-time, ~10 min)
 
-- [ ] 0.1 Battle.net account with authenticator (2FA) + Developer ToU accepted.
-- [ ] 0.2 Create client at https://develop.battle.net/access/clients :
+- [x] 0.1 Battle.net account with authenticator (2FA) + Developer ToU accepted.
+- [x] 0.2 Create client at https://develop.battle.net/access/clients :
       name globally unique, Redirect URI exactly `https://combatwombat16.github.io/wow-forever-roster/` (registered now for the future login phase), Service URL = the same site, intended use = "display WoW: Forever character info for our guild roster".
-- [ ] 0.3 Save repo secrets (Settings → Secrets and variables → Actions): `BLIZZARD_CLIENT_ID`, `BLIZZARD_CLIENT_SECRET`. Never commit values; never echo in logs.
-- [ ] 0.4 Roster members: in-game privacy "Community Sites and Apps" = shared, profiles public. Characters must log in at least once post-launch.
+- [x] 0.3 Save repo secrets (Settings and variables → Actions): `BLIZZARD_CLIENT_ID`, `BLIZZARD_CLIENT_SECRET`. Never commit values; never echo in logs. (Confirmed 2026-11-08: local client mints tokens; exact secret names confirmed by user. Actions-side existence gets proven by the first workflow run.)
+- [ ] 0.4 Roster members: in-game privacy "Community Sites and Apps" = shared, profiles public. Characters must log in at least once post-launch. (OPEN — ongoing: only 4/20 roster entries resolve on the live API as of 2026-11-08; the rest 404 pending member opt-in/login.)
 
 ## Phase 1 — Endpoint probe (script, run once with real creds)
 
 Goal: freeze the forever-API contract before building anything on it.
 
-- [ ] 1.1 Write `tools/probe_bnet.py` (or `.mjs`): reads creds from env, mints token, probes with a REAL character name supplied at invocation:
+- [x] 1.1 Write `tools/probe_bnet.py` (or `.mjs`): reads creds from env, mints token, probes with a REAL character name supplied at invocation:
+      REPLACED: the script reads names from `characters.json` itself (re-runnable after tracker renames — which happened mid-Phase-1) instead of taking a name at invocation.
       - `profile/wow/character/{name}?namespace=profile-forever-us` (also try `{name}-{surname}`, lowercase/uppercase, URL-encoded accents)
       - `…/equipment`, `…/achievements`, `…/statistics`, `…/summary`, any `progression*`/`media` variants discoverable from links in responses
       - `dynamic-forever-us` realm/ruleset/region indexes
       - static ns discovery: read `playable_class` href from a character response → extract version-pinned ns (do not hardcode)
-- [ ] 1.2 Record: which endpoints return 200, payload field inventory for level/guild/spec/ilvl/gear+icon URLs/raid progress/M+/PvP, whether names are `{name}` or `{name}-{surname}`, whether the `character` self `href` in responses is the canonical lookup form.
-- [ ] 1.3 Commit findings to `docs/bnet-api-notes.md`. Every later phase reads its paths from here.
-- [ ] 1.4 If a Tier-2 datum (raid/M+/PvP) does not exist yet: note it, design UI to omit that section cleanly, re-probe later.
+- [x] 1.2 Record: which endpoints return 200, payload field inventory for level/guild/spec/ilvl/gear+icon URLs/raid progress/M+/PvP, whether names are `{name}` or `{name}-{surname}`, whether the `character` self `href` in responses is the canonical lookup form.
+- [x] 1.3 Commit findings to `docs/bnet-api-notes.md`. Every later phase reads its paths from here.
+- [x] 1.4 If a Tier-2 datum (raid/M+/PvP) does not exist yet: note it, design UI to omit that section cleanly, re-probe later.
+      DONE: raid/M+/PvP endpoints route but carry no data (or are 404) — see notes §4. Sidecar and UI OMIT these sections entirely; re-probe is a scheduled later action, not a stub.
 
 Acceptance: `docs/bnet-api-notes.md` lists, per data field, the exact URL + JSON path; no guessed paths remain.
+ACCEPTED: met by commits `d8409fb` + `c7477d2`. `.pi/scripts/verify_bnet_probe.py` (41 checks) enforces that every cited JSON path exists in captured payloads and that the notes cover the current roster.
+
+### Phase 1 outcome & amendments carried into Phase 2 (2026-11-08, from live probes)
+
+1. **Slug rule**: canonical lookup slug is `lower(name)-lower(surname)`. Routes are **lowercase-only** — any capital letter 404s in exactly the same shape as "character missing". Normalization order: lowercase hyphenated form first, then legacy variants (space-removed, %20, original case) as fallbacks; record the matched form per character.
+2. **Key on roster id, never name.** `characters.json` currently holds the duplicate name `Tir Rheebeard` under two ids; both are `needs_review` by policy regardless of probe outcome.
+3. **Caching**: there are **no ETags** anywhere (0/114 responses). Use `Last-Modified` + `If-Modified-Since` → 304 (proven). Task 2.4's "ETag-aware" reads as "Last-Modified-aware".
+4. **Guild-roster-assisted mapping APPROVED by user** (was not in the original plan): every resolved character exposes `guild.slug`; `GET /data/wow/guild/{slug}/roster?namespace=profile-forever-us` lists members with `character.slug/name/surname/class` and is public (notes §7.2). Caveats from probes: guildless characters omit `guild` entirely (e.g. `morc-theorc`); guild rosters contain members NOT in our tracker (e.g. `healy-bones`) — the lever is one-directional (resolve tracker rows via guild membership; never assume tracker ⊇ guild); the guild doc's `member_count` is unreliable; roster is cached `max-age=10800`; guild slugs are only discoverable from an already-resolved member.
+5. **Static namespace**: version-pinned (`static-<ver>-forever-us`), discovered at runtime from `playable_class` hrefs; plain `static-forever-us` → 403; `dynamic-forever-us` class/race indexes are dead — read those from static.
+6. **Icons**: one extra request per item (`/data/wow/media/item/{id}` → `assets[].value`, `render.worldofwarcraft.com/forever-us/icons/56/...`). Locale strings are inline maps (`.en_US`), no indirection.
+7. **Drift tripwire**: responses carry `battlenet-schema` / `battlenet-schema-revision` headers — sync should log them to catch Blizzard schema changes.
+8. **Freshness**: 18/20 characters 404 pending owner opt-in (0.4 stays open); the nightly run must treat `not_found` as a normal state, and it can flip to `ok` without any change on our side.
+9. **Roster churn**: the tracker renames/edits characters frequently (a wave of renames landed mid-Phase-1). Every sync run must re-resolve against the CURRENT `characters.json`; stale map entries for removed ids should be pruned or marked, never block the run.
 
 ## Phase 2 — Nightly sync workflow
 

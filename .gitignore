@@ -1,2 +1,40 @@
+# Secrets — never commit credentials (Battle.net client, GitHub PATs, etc.)
 .env
+.env.*
+!.env.example
+
+# Local tooling state
 .zvec-grep/
+
+# Python (tools/, .pi/scripts/)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node (scripts use plain node; no build step in this repo)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ad-hoc artifacts (scratch output, logs, temp files)
+*.log
+tmp/
+.tmp/
+*.tmp
