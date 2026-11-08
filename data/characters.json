@@ -252,6 +252,18 @@
       "class": "Priest",
       "prof1": "Tailoring",
       "prof2": "Enchanting"
+    },
+    {
+      "id": "1794163010636",
+      "player": "Todd",
+      "name": "Shmorlock Gorelocke",
+      "track": "flowmasters",
+      "role": "DPS",
+      "roleSec": "None",
+      "race": "Orc",
+      "class": "Warlock",
+      "prof1": "Tailoring",
+      "prof2": "Enchanting"
     }
   ]
 }
