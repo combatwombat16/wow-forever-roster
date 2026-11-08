@@ -1,10 +1,14 @@
 // state.js — the single source of truth: the characters array, the active Squad
-// Filter, and the render dispatcher that repaints every dependent panel.
+// Filter, the derived Battle.net lifecycle, and the render dispatcher that repaints
+// every dependent panel.
 //
 // Leaf module (imports nothing) so anything may import it without creating a cycle.
 // Cross-module calls that used to be direct are now hook registries:
 //   registerRenderHook(fn) — panels repaint on renderAll()
 //   onFilterChange(fn)     — things that only follow the filter (party's button label)
+// deriveLifecycleState() stays pure for the same reason: the map entry arrives as an
+// argument, because the sidecar lookup lives in data.js and importing it here would
+// turn this leaf into a hub.
 
 export const STORAGE_KEY = 'wow_forever_roster';
 
@@ -50,6 +54,52 @@ if (stored) {
 
 export function getCharacters() {
   return characters;
+}
+
+// ---------- derived lifecycle (docs/refactor-design.md §2) ----------
+// Only `validated` is ever stored (in the roster's validation block); every other
+// state is derived from the battle-net-map status of the same roster id, so the map
+// can never drift out of sync with a stored state that the sync stopped writing.
+export const LIFECYCLE = Object.freeze({
+  AWAITING_SYNC: 'awaiting_sync',
+  AWAITING_CONFIRMATION: 'awaiting_confirmation',
+  NEEDS_RESOLUTION: 'needs_resolution',
+  NOT_FOUND: 'not_found',
+  FETCH_ERROR: 'fetch_error',
+  VALIDATED: 'validated'
+});
+
+// battle-net-map.json status → derived state. `needs_review` (the sync's duplicate /
+// collision verdict, and the state a user-reported mismatch lands in) is a human
+// "pick / re-point this" verdict, so it derives to needs_resolution like `ambiguous`.
+// Anything else, including an absent entry or an unknown status, is awaiting_sync.
+function lifecycleFromMapStatus(status) {
+  switch (status) {
+    case 'ok': return LIFECYCLE.AWAITING_CONFIRMATION;
+    case 'ambiguous': return LIFECYCLE.NEEDS_RESOLUTION;
+    case 'needs_review': return LIFECYCLE.NEEDS_RESOLUTION;
+    case 'not_found': return LIFECYCLE.NOT_FOUND;
+    case 'fetch_error': return LIFECYCLE.FETCH_ERROR;
+    default: return LIFECYCLE.AWAITING_SYNC;
+  }
+}
+
+// character: a roster entry; mapEntry: that id's battle-net-map.json entry or null.
+// A character with no validation block and no map entry (the state a hand-added draft
+// is in) derives to awaiting_sync, which is exactly how the site behaved before the
+// sidecars existed.
+export function deriveLifecycleState(character, mapEntry) {
+  const validation = character && typeof character === 'object' ? character.validation : null;
+  if (validation && typeof validation === 'object' && validation.state === LIFECYCLE.VALIDATED) {
+    return LIFECYCLE.VALIDATED;
+  }
+  const status = mapEntry && typeof mapEntry === 'object' ? mapEntry.status : null;
+  return lifecycleFromMapStatus(status);
+}
+
+// User-authored fields stay editable until a row is validated (§2 "Editable?").
+export function isLifecycleEditable(character, mapEntry) {
+  return deriveLifecycleState(character, mapEntry) !== LIFECYCLE.VALIDATED;
 }
 
 export function setCharacters(list) {

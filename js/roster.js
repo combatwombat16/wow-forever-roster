@@ -1,9 +1,27 @@
-// roster.js — the compact roster grid (faction backdrop, badges, micro-actions) and
-// the Export action. Repaints are driven by state.js's render dispatcher.
+// roster.js — the compact roster grid (faction backdrop, badges, Battle.net status
+// dot and lifecycle badge, micro-actions) and the Export action. Repaints are driven
+// by state.js's render dispatcher.
+//
+// Everything Battle.net-sourced is display-only (design §2): it is read through the
+// data.js join, escaped like any other untrusted string, and never written back.
 
-import { characters, currentFilter, registerRenderHook } from './state.js';
+import { LIFECYCLE, characters, currentFilter, deriveLifecycleState, isLifecycleEditable, registerRenderHook } from './state.js';
+import { byRosterId, formatSyncedAt, isSidecarFresh } from './data.js';
 import { party } from './party.js';
 import { CLASS_COLORS, PROF_ABBR, escapeHtml, getFaction } from './util.js';
+
+// Guild names are shown inline in a ~410px column; anything longer is elided with the
+// full value in the title attribute.
+export const SIDECAR_TEXT_MAX = 14;
+
+function truncateLabel(value, max = SIDECAR_TEXT_MAX) {
+  const text = String(value == null ? '' : value);
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+function statusDot(bg, title) {
+  return `<span title="${escapeHtml(title)}" class="w-1.5 h-1.5 rounded-full ${bg} shrink-0 inline-block"></span>`;
+}
 
 export function getTrackDot(track) {
   if (track === 'flowmasters') return `<span title="Flowmasters" class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>`;
@@ -15,6 +33,83 @@ export function getRoleIcon(role) {
   if (role === 'Tank') return '🛡️';
   if (role === 'Healer') return '💚';
   return '⚔️';
+}
+
+// The Battle.net freshness dot: red on a sync error, grey when there is no usable
+// mapping, otherwise green/amber on the age of the sidecar row. A mapped id whose data
+// has not landed yet is grey — there is nothing to date, which is not the same as stale.
+export function getSidecarDot(sidecar, mapEntry) {
+  const status = mapEntry && typeof mapEntry === 'object' ? mapEntry.status : null;
+  if (status === 'fetch_error') {
+    return statusDot('bg-red-500', 'Battle.net sync error — display data may be out of date');
+  }
+  if (!mapEntry) {
+    return statusDot('bg-slate-600', 'No Battle.net mapping for this character');
+  }
+  if (status === 'not_found') {
+    return statusDot('bg-slate-600', 'No Battle.net match found for this character');
+  }
+  const fetched = formatSyncedAt(sidecar && sidecar.fetchedAt);
+  if (!fetched) {
+    return statusDot('bg-slate-600', 'Mapped to Battle.net, no synced data yet');
+  }
+  return isSidecarFresh(sidecar)
+    ? statusDot('bg-emerald-400', `Battle.net data fresh (fetched ${fetched})`)
+    : statusDot('bg-amber-400', `Battle.net data stale (fetched ${fetched})`);
+}
+
+// The lifecycle badge, shown for every row whether or not a sidecar exists for it.
+export function getLifecycleBadge(character, lifecycle) {
+  const validation = character && typeof character === 'object' ? character.validation : null;
+  let label = 'unvalidated';
+  let tone = 'text-slate-400 border-slate-700 bg-slate-800';
+  let title = 'Not validated — editable draft, awaiting Battle.net sync';
+
+  if (lifecycle === LIFECYCLE.AWAITING_CONFIRMATION) {
+    label = 'confirm match';
+    tone = 'text-amber-300 border-amber-500/40 bg-amber-500/20';
+    title = 'Battle.net match resolved — confirm it in Review';
+  } else if (lifecycle === LIFECYCLE.NEEDS_RESOLUTION) {
+    label = 'pick candidate';
+    tone = 'text-amber-300 border-amber-500/40 bg-amber-500/20';
+    title = 'Battle.net mapping needs a human pick (ambiguous, or flagged for review)';
+  } else if (lifecycle === LIFECYCLE.NOT_FOUND) {
+    label = 'no bnet match';
+    tone = 'text-red-300 border-red-800/60 bg-red-950/40';
+    title = 'No Battle.net character matched this roster name';
+  } else if (lifecycle === LIFECYCLE.FETCH_ERROR) {
+    label = 'sync error';
+    tone = 'text-red-300 border-red-800/60 bg-red-950/40';
+    title = 'Battle.net sync errored on this character';
+  } else if (lifecycle === LIFECYCLE.VALIDATED) {
+    label = 'validated';
+    tone = 'text-emerald-300 border-emerald-700/60 bg-emerald-900/40';
+    const reviewedBy = validation && typeof validation === 'object' ? validation.reviewedBy : null;
+    title = reviewedBy ? `Validated by ${reviewedBy} — read-only` : 'Validated — read-only';
+  }
+
+  return `<span title="${escapeHtml(title)}" class="text-[9px] font-bold uppercase tracking-wider px-1 py-0.5 rounded border ${tone}">${escapeHtml(label)}</span>`;
+}
+
+// Level · item level · guild, straight off the sidecar. Numbers are rendered only when
+// the sidecar really carries a number; the guild string is truncated then escaped.
+export function getSidecarMeta(sidecar) {
+  if (!sidecar) return '';
+  const parts = [];
+  const level = Number(sidecar.level);
+  const itemLevel = Number(sidecar.itemLevel);
+  if (Number.isFinite(level) && level > 0) {
+    parts.push(`<span class="text-slate-200 font-semibold">Lv${escapeHtml(String(Math.round(level)))}</span>`);
+  }
+  if (Number.isFinite(itemLevel) && itemLevel > 0) {
+    parts.push(`<span class="text-slate-300">iLvl ${escapeHtml(String(Math.round(itemLevel)))}</span>`);
+  }
+  const guildRaw = sidecar.guild;
+  const guild = (typeof guildRaw === 'string' || typeof guildRaw === 'number') ? String(guildRaw).trim() : '';
+  if (guild) {
+    parts.push(`<span title="${escapeHtml(guild)}" class="text-amber-200/80 font-medium">${escapeHtml(truncateLabel(guild))}</span>`);
+  }
+  return parts.join('<span class="text-slate-600">•</span>');
 }
 
 // Dense, compact single-row card rendering with Faction background coloring
@@ -33,6 +128,12 @@ export function renderRoster() {
     const classBadge = CLASS_COLORS[c.class] || 'text-slate-300 border-slate-700 bg-slate-800';
     const isPartyMember = party.some(p => p && p.id === c.id);
     const faction = getFaction(c.race);
+
+    // Battle.net side of the row: null-safe join, then the state derived from it.
+    const { sidecar, mapEntry } = byRosterId(c.id);
+    const lifecycle = deriveLifecycleState(c, mapEntry);
+    const sidecarMeta = getSidecarMeta(sidecar);
+    const bnetLine = `${getSidecarDot(sidecar, mapEntry)}${sidecarMeta ? `<span class="flex items-center gap-1">${sidecarMeta}</span>` : ''}${getLifecycleBadge(c, lifecycle)}`;
 
     // Faction-based backdrop and border styling
     const factionStyles = faction === 'alliance'
@@ -68,6 +169,8 @@ export function renderRoster() {
             ${c.roleSec && c.roleSec !== 'None' ? `<span class="text-sky-300/80">(${getRoleIcon(c.roleSec)}${c.roleSec})</span>` : ''}
             ${profsFormatted ? `<span class="text-slate-600">•</span><span class="text-slate-400">${profsFormatted}</span>` : ''}
           </div>
+          <!-- Battle.net status dot, synced display data, lifecycle badge -->
+          <div class="flex items-center gap-1.5 text-[10px] mt-0.5 leading-none min-w-0 flex-wrap">${bnetLine}</div>
         </div>
       </div>
 
@@ -76,9 +179,13 @@ export function renderRoster() {
         <button onclick="togglePartyMember('${escapeHtml(c.id)}')" title="${isPartyMember ? 'Remove from party' : 'Add to party'}" class="px-1.5 py-0.5 rounded text-[11px] font-bold transition-all ${isPartyMember ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700'}">
           ${isPartyMember ? '✓' : '+'}
         </button>
-        <button onclick="editCharacter('${escapeHtml(c.id)}')" title="Edit character" class="p-1 text-slate-400 hover:text-white text-[11px]">
-          ✎
-        </button>
+        ${isLifecycleEditable(c, mapEntry)
+          ? `<button onclick="editCharacter('${escapeHtml(c.id)}')" title="Edit character" class="p-1 text-slate-400 hover:text-white text-[11px]">
+              ✎
+            </button>`
+          : `<button disabled title="Validated — use Review to re-open" class="p-1 text-slate-600 text-[11px] cursor-not-allowed opacity-50">
+              ✎
+            </button>`}
         <button onclick="deleteCharacter('${escapeHtml(c.id)}')" title="Delete character" class="p-1 text-red-400 hover:text-red-300 text-[11px]">
           ✕
         </button>

@@ -106,7 +106,7 @@ function runApp(seededChars) {
   const windowStub = {};
   const factory = new Function(
     'document', 'localStorage', 'setInterval', 'alert', 'confirm', 'prompt', 'fetch', 'console', 'window',
-    `${src}\nreturn { setFilter, renderRoster, get characters() { return characters; } };`
+    `${src}\nreturn { setFilter, renderRoster, deriveLifecycleState, get characters() { return characters; } };`
   );
   const api = factory(documentStub, storageStub, () => {}, () => {}, () => false, () => null,
     () => Promise.reject(new Error('network disabled in harness')), { error() {}, log() {} }, windowStub);
@@ -184,6 +184,63 @@ ok(all.includes('&lt;img src=x'), 'payload appears HTML-escaped');
 ok(reg3.get('race-stats').innerHTML.includes('>Troll<'), 'distribution still renders valid rows alongside');
 api3.renderRoster();
 ok(![...reg3.values()].map(el => el.innerHTML).join('').includes('<img src=x'), 'escaping holds on re-render');
+
+// ---------- 6. Phase 3b: Battle.net sidecars + derived lifecycle ----------
+console.log('\n[6] Battle.net sidecar wiring (Phase 3b)');
+const dataSrc = moduleSrc['data.js'];
+ok(/CHARACTER_DATA_PATH = 'data\/character-data\.json'/.test(dataSrc), 'data.js declares data/character-data.json');
+ok(/BATTLE_NET_MAP_PATH = 'data\/battle-net-map\.json'/.test(dataSrc), 'data.js declares data/battle-net-map.json');
+ok(/function byRosterId\(id\)[\s\S]{0,240}?sidecar:[\s\S]{0,160}?mapEntry:/.test(dataSrc), 'byRosterId joins the sidecar row and the map entry');
+ok(/SIDECAR_FRESH_HOURS = 36/.test(dataSrc), 'the 36h freshness threshold is stated exactly once');
+
+// The sidecars are display-only: nothing may persist them, so every localStorage write
+// in the app must be keyed by the roster key or the PAT settings key.
+const persistedKeys = [...new Set([...src.matchAll(/localStorage\.setItem\(\s*([^,)]+)/g)].map(m => m[1].trim()))];
+const strayWrites = persistedKeys.filter(k => k !== 'STORAGE_KEY' && k !== "'wow_gh_config'");
+ok(strayWrites.length === 0, `no sidecar data is persisted (keys written: ${persistedKeys.join(', ')})`);
+
+// Header provenance line: declared in markup, rendered by data.js, degraded when the
+// sidecar is absent.
+ok(declaredIds.includes('bnet-sync-line'), 'the header carries a bnet-sync-line element');
+ok(/getElementById\('bnet-sync-line'\)/.test(dataSrc), 'data.js renders the header provenance line');
+ok(/function renderSyncLine[\s\S]{0,700}?escapeHtml\(stamp\)[\s\S]{0,300}?escapeHtml\(trigger\)/.test(dataSrc), 'both dynamic halves of the sync line are escaped');
+
+const lifecycleCases = [
+  [null, null, 'awaiting_sync'],
+  [{}, null, 'awaiting_sync'],
+  [{}, { status: 'ok' }, 'awaiting_confirmation'],
+  [{}, { status: 'ambiguous' }, 'needs_resolution'],
+  [{}, { status: 'needs_review' }, 'needs_resolution'],
+  [{}, { status: 'not_found' }, 'not_found'],
+  [{}, { status: 'fetch_error' }, 'fetch_error'],
+  [{}, { status: 'who-knows' }, 'awaiting_sync'],
+  [{ validation: {} }, { status: 'ok' }, 'awaiting_confirmation'],
+  [{ validation: { state: 'validated' } }, null, 'validated'],
+  [{ validation: { state: 'validated' } }, { status: 'fetch_error' }, 'validated'],
+];
+const { api: api4, registry: reg4 } = runApp(repoChars);
+lifecycleCases.forEach(([lcChar, lcMap, want]) => {
+  ok(api4.deriveLifecycleState(lcChar, lcMap) === want,
+    `deriveLifecycleState(${JSON.stringify(lcChar)}, ${JSON.stringify(lcMap)}) -> ${want}`);
+});
+
+// Row-level consequences: the lifecycle badge is always rendered, and a validated row
+// loses its edit affordance (the Review modal that re-opens it is Phase 3c).
+const baseRow = { player: 'p', name: 'Row', track: 'family', role: 'DPS', roleSec: 'None', race: 'Troll', class: 'Mage', prof1: 'None', prof2: 'None' };
+const validatedRow = { ...baseRow, id: '901', name: 'Locked', validation: { state: 'validated', reviewedBy: 'pandamancer' } };
+const draftRow = { ...baseRow, id: '902', name: 'Draft' };
+const { api: api5, registry: reg5 } = runApp([validatedRow, draftRow]);
+api5.setFilter('family');
+const rows = reg5.get('character-grid').innerHTML;
+const lockedRowHtml = rows.slice(rows.indexOf('Locked'), rows.indexOf('Draft'));
+const draftRowHtml = rows.slice(rows.indexOf('Draft'));
+ok(lockedRowHtml.includes('>validated<'), 'validated row renders its lifecycle badge');
+ok(lockedRowHtml.includes('Validated — use Review to re-open') && lockedRowHtml.includes('disabled'), 'validated row renders a disabled edit button');
+ok(!lockedRowHtml.includes("editCharacter('901')"), 'validated row carries no edit handler');
+ok(lockedRowHtml.includes('Validated by pandamancer'), 'validated badge title names the reviewer');
+ok(draftRowHtml.includes("editCharacter('902')") && draftRowHtml.includes('>unvalidated<'), 'draft row keeps its edit handler and badge');
+ok(!draftRowHtml.includes('Validated — use Review to re-open'), 'draft row is not locked');
+ok(reg4.get('bnet-sync-line').innerHTML === 'No Battle.net data', 'sync line degrades to "No Battle.net data" with no sidecar');
 
 console.log(`\n${fails === 0 ? 'ALL CHECKS PASSED' : 'FAILURES PRESENT'}: ${passes} passed, ${fails} failed`);
 process.exit(fails === 0 ? 0 : 1);
