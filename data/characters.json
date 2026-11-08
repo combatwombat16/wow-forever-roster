@@ -65,7 +65,13 @@
       "race": "Tauren",
       "class": "Warrior",
       "prof1": "Mining",
-      "prof2": "Blacksmithing"
+      "prof2": "Blacksmithing",
+      "validation": {
+        "state": "validated",
+        "confirmedSlug": "beef-pho",
+        "reviewedBy": "combatwombat16",
+        "reviewedAt": "2026-11-08T17:00:19Z"
+      }
     },
     {
       "id": "1791928548067",
