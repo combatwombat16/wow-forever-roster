@@ -143,7 +143,13 @@
       "race": "Undead",
       "class": "Paladin",
       "prof1": "Mining",
-      "prof2": "Engineering"
+      "prof2": "Engineering",
+      "validation": {
+        "state": "validated",
+        "confirmedSlug": "voidlight-glows",
+        "reviewedBy": "combatwombat16",
+        "reviewedAt": "2026-11-08T19:45:35Z"
+      }
     },
     {
       "id": "1791928967366",
