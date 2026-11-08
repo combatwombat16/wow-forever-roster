@@ -1,6 +1,15 @@
-# Refactor Design — Pipeline ↔ Data ↔ Modular UI (rev 1, for sign-off)
+# Refactor Design — Pipeline ↔ Data ↔ Modular UI (rev 2 — as built)
 
-Status: DRAFT awaiting approval. Nothing here is implemented yet.
+Status: **IMPLEMENTED (rev 2)**, 2026-11-08. Rev 1 was signed off in `cab0c06` and landed as
+`1280185` (Phase 2: `tools/bnet` package + `data/` migration) → `e7e53f6` (3a: ES modules) → `404c70f` (3b:
+sidecar layer) → `8e593c7` (3c: search + detail modal) → `c3815b7` (3d: review write paths + on-demand
+refresh) → `b378b29` (Phase 4: Pages via Actions build). Sections below describe the design; **where the
+implementation differs, the divergence is recorded in §10 and is authoritative.** Rev 2 changed no decision —
+it records what was built, plus one design correction in §4 (client-supplied provenance is not honoured).
+
+Unverified by the tree, and therefore still open: the manual end-to-end run (armory-tasks 4.3) — all of
+`1280185..b378b29` is unpushed, so neither workflow has executed on Actions and the Pages `build_type` flip
+is unconfirmed.
 
 ## 0. Goals
 
@@ -111,11 +120,30 @@ pages.yml  (new)            on: push(main) + workflow_run(sync-bnet: completed, 
   → setup node → npx tailwindcss -c tailwind.config.js -o css/tailwind.css --minify
   → upload static bundle → actions/deploy-pages
 ```
-- Repo settings one-time flip: Pages `build_type: legacy → workflow` (done via `gh api` at phase ④, with your OK in the moment).
+- ~~Repo settings one-time flip: Pages `build_type: legacy → workflow` (done via `gh api` at phase ④, with your OK in the moment).~~ **Still an operator action, not a repo change.** `pages.yml` is committed and is the
+  deploy path; the flip itself is a repository setting that cannot be observed from the tree, so no commit here
+  claims it happened. Until it is flipped, Pages keeps serving `main` directly and `pages.yml` never runs —
+  which is also why `css/tailwind.css` is committed (§10). `pages.yml` declares `workflow_dispatch` precisely so
+  a manual redeploy is one click after the flip.
 - `workflow_run` chain guarantees nightly data is redeployed (the artifact-snapshot staleness trap).
 - Security posture of sync-bnet.yml unchanged: zero PR triggers, `contents: write`, bot identity, redaction, host allowlist, no-redirect, mass-flip floor.
 
-**On-demand refresh (browser):** `POST /repos/{owner}/{repo}/actions/workflows/sync-bnet.yml/dispatches` with the user's PAT and `inputs.lookup_name = <character>`, `client_payload.actor = <login>`; UI then polls `…/actions/runs?created=>` until completion and refetches `data/` (cache-busted). PAT scope additions documented: `actions: write` (existing flows keep `contents: write`).
+**On-demand refresh (browser):** `POST /repos/{owner}/{repo}/actions/workflows/sync-bnet.yml/dispatches` with the user's PAT and `inputs.lookup_name = <character>`, ~~`client_payload.actor = <login>`~~; UI then polls `…/actions/runs?created=>` until completion and refetches `data/` (cache-busted). PAT scope additions documented: `actions: write` (existing flows keep `contents: write`).
+
+> **AMENDED 2026-11-08 — the `client_payload` actor is NOT honoured, and cannot be.**
+> `client_payload` is a **`repository_dispatch`** field; a `workflow_dispatch` run does not read it at all, so the
+> drafted `client_payload.actor` would simply have been ignored by `sync-bnet.yml`. The implementation therefore
+> takes provenance from the runner environment alone: `tools/bnet/artifacts.py::triggered_by()` reads
+> `GITHUB_EVENT_NAME` first (so a cron run records `schedule` even though GitHub also sets `GITHUB_ACTOR`) and
+> otherwise `GITHUB_ACTOR`, falling back to `manual` at a shell. **This direction is strictly safer than
+> drafted:** `GITHUB_ACTOR` is set by GitHub from the authenticated caller, so a client cannot forge who caused a
+> run — a browser-supplied actor string in the recorded `triggeredBy` would have been an untrusted value written
+> into a committed artifact. Consequences: `js/github.js::dispatchSyncWorkflow()` still sends
+> `client_payload.actor` (inert, kept only so the call shape matches this document and so a future
+> `repository_dispatch` variant would have the field), sends exactly the two declared workflow inputs
+> (`lookup_name`, `force: 'false'` — a refresh never bypasses the `Last-Modified` cache), and
+> `verify_writes.mjs` §8 pins that body shape plus the 403 → "PAT needs Actions: write" guidance and the bounded
+> poll. Nothing in `tools/` reads `client_payload`.
 
 ## 5. Python modularization
 
@@ -163,6 +191,78 @@ Behavior changes (lifecycle-aware):
 
 ## 9. Open decisions needing your explicit sign-off
 
+> Resolved at sign-off (`cab0c06`); all three landed as drafted — see §10 for the details that changed around them.
+
 1. **`characters.json` becomes an object** `{schemaVersion, characters:[…]}` instead of a bare array (breaking for any forgotten consumer; only sync tool + UI consume it today). Agree?
 2. **Stored states minimal**: only `validated` is ever stored; everything else derived from map status (§2 table). Alternative: store every state explicitly (more audit, more drift risk). Agree with derived?
 3. **Auto-picks demoted to `ambiguous`**: existing map entries that were auto-resolved with one hit stay `ok`, but any future multi-hit is never auto-picked. Existing 4 `ok` entries therefore enter `awaiting_confirmation` on first load after refactor. Agree?
+
+## 10. Implementation deltas (what differs from rev 1 as written)
+
+Checked against the working tree at `b378b29` on 2026-11-08. Nothing here reverses a signed-off decision; each
+entry is either a naming/plumbing change or a place where the build is stricter or lazier than drafted.
+
+1. **Roster write path is still whole-file, on both routes (read-modify-write and compare-and-replace are NOT
+   in the tree).** Checked at report time: no merge/compare implementation exists in `js/github.js` at
+   `b378b29`, and the working tree is clean. Current behaviour, per the code:
+   - *Review commits* — `commitRosterFile(message, charactersArray)` PUTs the **whole serialized roster built
+     from the caller's in-memory array**, using a sha fetched immediately before the PUT as the base, so a 409
+     means "the file moved between this GET and this PUT" and surfaces as "pull first, then repeat this review
+     action". That is optimistic concurrency on the *file*, not a read-modify-write of the *remote document*: a
+     concurrent edit that lands before the GET is overwritten, not merged.
+   - *Bulk push* — `pushToGitHub()` PUTs the caller's array too, reusing the cached `currentSha` and only
+     fetching a sha when none is cached; there is no compare-and-replace step.
+   Mitigations that do exist: the sync never commits the roster (`sync-bnet.yml` stages only
+   `data/battle-net-map.json` and `data/character-data.json`), every write goes through the v2 envelope
+   (`ensureRosterEnvelope()`, so a browser that only ever had localStorage cannot downgrade the file to a bare
+   v1 array), and a failed write never mutates local state. **Residual risk until this lands:** two people
+   reviewing at once, or a human commit racing a review action, loses one side's change silently. **Re-check
+   this entry after the pending write-path worker (`2c7c8ebf`) commits:** while this document was being aligned,
+   an in-flight (uncommitted, and temporarily verifier-red) change to `js/github.js` appeared in the working
+   tree implementing exactly read-modify-write for review mutations and a compare-and-replace baseline check for
+   the bulk path. It is not part of `b378b29`, so it is deliberately not described here as shipped; once it
+   lands, replace this entry with its actual shape and drop the residual-risk sentence if the merge covers it.
+2. **`pages.yml` is the deploy path; the "settings flip TBD" of §4 is retired by it** rather than by the flip.
+   `push(main)` + `workflow_run(sync-bnet: completed, main)` + `workflow_dispatch`, zero secrets, least
+   privilege per job, a size gate that refuses a degenerate stylesheet, an allowlisted `_site` bundle (repo
+   docs, tools and `.pi/` are deliberately not published), and a documented decision **not** to deploy the
+   triggering `head_sha` — `workflow_run` checks out the default-branch head, which already contains the sync's
+   commit, so pinning the triggering sha would publish a stale UI over fresh data.
+3. **Tailwind is pinned exactly: `tailwindcss@3.4.19`.** No `package.json`/lockfile exists, so `npx --yes`
+   fetches the CLI; the exact pin is what makes the committed stub and the deployed stylesheet the product of
+   the same compiler. It is 3.4.x because `tailwind.config.js` is v3-style CommonJS — the v4 CLI would need
+   CSS-first config and would emit nothing.
+4. **`css/tailwind.css` is committed, contradicting §1's "GENERATED at deploy (gitignored)".** It is still
+   generated at deploy (and the deploy overwrites it), but the generated file is tracked on purpose: `index.html`
+   no longer loads the Play CDN, so a committed copy is what makes `python3 -m http.server` render without a
+   build step. Its header comment says it is generated and must not be hand-edited;
+   `verify_sync_artifacts.py` checks the workflow's build → size-gate → stage → upload → deploy order.
+5. **No `js/review.js`.** The §1 module list named one; the validation lifecycle shipped inside
+   `js/detail.js` (review block, candidates, `confirmMatch` / `selectCandidate` / `confirmSelectedCandidate` /
+   `reportMismatch` / `reopenForEditing` / `refreshFromBattleNet`), because those actions are only reachable from
+   the modal that renders their state. `js/detail.js` is therefore larger than the design implied and
+   `js/github.js` is the sole owner of transport.
+6. **`DEFAULT_CHARACTERS` and the `wow_forever_roster` key were not removed** (§1 proposed removing both).
+   They survive with a demoted role: localStorage first, `DEFAULT_CHARACTERS` on empty/parse failure, then
+   `data/characters.json`, then the Contents pull. That keeps the standing rule "the page must fully work with no
+   network" true without a build step. The sidecars are still never persisted, and no third localStorage key
+   exists (`verify_search_detail.mjs` §6).
+7. **No `verify_armory.mjs`** (§6). The 4.1 coverage was split per surface instead, so a failure names the
+   surface: `verify_sync_artifacts.py` (486), `verify_stats.mjs` (181), `verify_writes.mjs` (140, new in
+   `c3815b7`), `verify_search_detail.mjs` (97, new in `8e593c7`), `verify_bnet_probe.py` (42) and 35 unit tests
+   in `tools/tests/`. `verify_sync_artifacts.py` additionally absorbed the `pages.yml` shape checks
+   (secret-free, permissions, Tailwind build, official Pages actions, allowlisted bundle,
+   build → size-gate → stage → upload → deploy order); the two-workflows-only allowlist for
+   `.github/workflows/` lives in `verify_bnet_probe.py`.
+8. **v1 tolerance is loader-side only.** §8 expected the loader to tolerate a v1 array during the transition and
+   the verifier to forbid it afterwards: `rosterCharactersFrom()` still accepts either shape (harmless, and it
+   is what lets a stale browser cache render), while `verify_sync_artifacts.py` pins the committed file to the
+   exact v2 key set and fails if any root-level copy of the three JSON files reappears in the worktree.
+   `tools/migrate_v2.py` is byte-comparing and idempotent, so its second run rewrites nothing.
+9. **The rest of §2, §3 and §5 landed as named:** the `tools/bnet/` module split
+   (`config/http/roster/resolve/fetch/artifacts/sync/probe` + tests), the CLIs
+   (`python3 -m bnet sync [--lookup NAME] [--force] [--dry-run] [--state-dir DIR]`, `python3 -m bnet probe
+   [extra_name …]`), the `candidates`/`ambiguous` map rules, per-character `validation` blocks, and the
+   `triggeredBy` provenance key — with the §4 amendment above about where that value comes from. The
+   re-resolve rule recorded in §2 is implemented exactly as amended: `--force` bypasses the HTTP cache and never
+   the confirmed-slug trust rule.
