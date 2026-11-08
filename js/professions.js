@@ -1,7 +1,7 @@
 // professions.js — the guild profession matrix and its coverage headline.
 
 import { getFilteredCharacters, registerRenderHook } from './state.js';
-import { escapeHtml } from './util.js';
+import { escapeHtml, ownValue } from './util.js';
 
 export const ALL_PROFESSIONS = [
   "Alchemy", "Blacksmithing", "Enchanting", "Engineering",
@@ -15,9 +15,14 @@ export function renderProfessions() {
   const counts = {};
   ALL_PROFESSIONS.forEach(p => counts[p] = []);
 
+  // `counts` is keyed by profession, and a roster row's prof1/prof2 are user text: a plain
+  // `counts[c.prof1]` on the row "prof1: 'constructor'" resolves Object.prototype and the
+  // `.push` throws, blanking the panel. Only the map's own buckets are ever written.
   activeTrackChars.forEach(c => {
-    if (c.prof1 && counts[c.prof1]) counts[c.prof1].push(c.player);
-    if (c.prof2 && counts[c.prof2]) counts[c.prof2].push(c.player);
+    const first = ownValue(counts, c.prof1);
+    if (Array.isArray(first)) first.push(c.player);
+    const second = ownValue(counts, c.prof2);
+    if (Array.isArray(second)) second.push(c.player);
   });
 
   let covered = 0;

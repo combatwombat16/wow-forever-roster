@@ -41,11 +41,37 @@ Exit codes:
 
 import argparse
 import os
+import re
 import sys
 import time
 from collections import Counter
 
 from . import artifacts, config, fetch, http, resolve, roster
+
+
+# --------------------------------------------------------------------------- #
+# Log hygiene
+# --------------------------------------------------------------------------- #
+# CSI sequences (colour, cursor movement): everything from ESC [ plus the parameter/intermediate
+# bytes through the final byte.
+ANSI_RE = re.compile(r"\x1b\[[0-9:;<=>?]*[ -/]*[@-~]")
+LOG_LINE_MAX = 300
+
+
+def log_safe(value):
+    """One printable line, for stdout and for GITHUB_STEP_SUMMARY.
+
+    A roster note, a candidate name or an exception message is untrusted text. The committed
+    artifact field stays verbatim (and capped at roster.REPORT_NOTE_MAX), but the log is read by a
+    maintainer as line-oriented text: a value carrying a newline could start a fresh line that
+    looks like the sync's own output (a forged "FATAL" or a fake summary row), and an ANSI
+    sequence could recolour or overwrite what came before it. So every control character becomes a
+    space, runs of whitespace collapse, and the result is truncated. Applied at the log boundary
+    only — never to an artifact field.
+    """
+    text = ANSI_RE.sub("", str(value if value is not None else ""))
+    text = "".join(ch if ch >= " " and ch != "\x7f" else " " for ch in text)
+    return " ".join(text.split())[:LOG_LINE_MAX]
 
 
 class Sync:
@@ -98,11 +124,11 @@ class Sync:
 
     def emit_summary(self, lines, markdown_heading="## Battle.net sync summary"):
         for line in lines:
-            print(http.redact(line))
+            print(log_safe(http.redact(line)))
         step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
         if not step_summary:
             return
-        markdown = [markdown_heading, ""] + [f"- {http.redact(line)}" for line in lines]
+        markdown = [markdown_heading, ""] + [f"- {log_safe(http.redact(line))}" for line in lines]
         try:
             with open(step_summary, "a", encoding="utf-8") as handle:
                 handle.write("\n".join(markdown) + "\n")
@@ -171,10 +197,30 @@ class Sync:
                 w["entry"] = artifacts.map_entry(w["rec"], "not_found", note=note)
 
         self.resolver.dedupe_slugs(work, ordered_ids)
+
+        # H4 mass-flip floor, evaluated on the RESOLVER verdict and BEFORE the reviewer-note
+        # pass (artifacts.resolver_verdict). The floor exists for a Blizzard-wide 404 storm, and
+        # only this snapshot separates that from a mass "report mismatch", which says nothing
+        # about upstream health. The order matters twice over: the note rule runs after this
+        # check and still before the write, so the published map keeps every reported row at
+        # needs_review (the gate in .pi/scripts/verify_sync_artifacts.py), while user-driven
+        # demotions can neither freeze the nightly pipeline nor hide a real outage from the floor.
+        resolver_verdict = artifacts.resolver_verdict(
+            {rid: work[rid]["entry"] for rid in ordered_ids}, ordered_ids)
+        verdict_statuses = Counter(e["status"] for e in resolver_verdict.values())
+        refusal = artifacts.mass_flip_refusal(resolver_verdict, ordered_ids, prev_entries)
+        if refusal:
+            # Printed with the run summary as before; the statuses shown are the ones the floor
+            # was decided on, and nothing was enriched for a run that is about to refuse.
+            self.emit_summary(self.summary_lines(verdict_statuses, len(ordered_ids),
+                                                 time.monotonic() - started, [refusal]))
+            return 1
+
         # A reviewer's open report outranks whatever this run resolved: the row stays
-        # needs_review until a validated commit clears it (design §2). Deliberately before the
-        # enrichment loop, so no fully enriched sidecar row is published under a mapping a human
-        # has rejected — the map row keeps the slug it resolved to, the sidecar row stays minimal.
+        # needs_review until a validated commit clears it (design §2). Still deliberately before
+        # the enrichment loop, so no fully enriched sidecar row is published under a mapping a
+        # human has rejected — the map row keeps the slug it resolved to, the sidecar row stays
+        # minimal.
         self.resolver.apply_reported_notes(work, ordered_ids)
 
         characters_out = {}
@@ -212,25 +258,25 @@ class Sync:
         if statuses["fetch_error"] == len(ordered_ids):
             print("FATAL: every character failed to fetch; previous artifacts left untouched")
             for rid in ordered_ids[:5]:
-                print(f"  {rid}: {http.redact(work[rid]['entry']['note'] or '')}")
+                # A map note can be a reviewer's own text (the note rule passes it through), so it
+                # is printed as one sanitized line rather than verbatim.
+                print(f"  {rid}: {log_safe(http.redact(work[rid]['entry']['note'] or ''))}")
             return 1
 
-        # H4 mass-flip floor: asked for here so the refusal can be printed with the
-        # run summary, enforced again inside artifacts.write_pair (single writer).
-        # The criterion itself is not recomputed at this call site: both sides ask
-        # the artifacts layer, so the pre-check and the writer cannot drift.
-        refusal = artifacts.mass_flip_refusal(entries, ordered_ids, prev_entries)
-        if refusal:
+        # The write itself is the single-writer path in bnet.artifacts: it re-checks the floor,
+        # applies schema v2 and adds the triggeredBy provenance key. The floor is handed the same
+        # resolver-verdict snapshot the pre-check above used, so the writer cannot recompute the
+        # decision from the post-note map and deadlock a run the verdict cleared (and a refusal
+        # here still costs nothing: nothing has been written).
+        write_refusal = artifacts.write_pair(entries, characters_out, ordered_ids=ordered_ids,
+                                             prev_entries=prev_entries,
+                                             triggered_by_value=artifacts.triggered_by(),
+                                             dry_run=self.args.dry_run,
+                                             floor_entries=resolver_verdict)
+        if write_refusal:
             self.emit_summary(self.summary_lines(statuses, len(ordered_ids),
-                                                 time.monotonic() - started, [refusal]))
+                                                 time.monotonic() - started, [write_refusal]))
             return 1
-
-        # The write itself is the single-writer path in bnet.artifacts: it re-checks
-        # the floor, applies schema v2 and adds the triggeredBy provenance key.
-        artifacts.write_pair(entries, characters_out, ordered_ids=ordered_ids,
-                             prev_entries=prev_entries,
-                             triggered_by_value=artifacts.triggered_by(),
-                             dry_run=self.args.dry_run)
         self.cache.save()
 
         extra = []
@@ -282,6 +328,9 @@ class Sync:
             # keeps the map row needs_review. Here the sidecar row is still written from the fresh
             # profile, because a lookup is an explicit maintainer action and the pair must stay
             # joinable by id; the map, not the sidecar, is what the UI derives lifecycle from.
+            # `verdict_entry` is what this run actually resolved, kept for the H4 floor: the note
+            # is applied after the verdict and before the write, exactly as in the nightly path.
+            verdict_entry = entry
             entry = resolve.reported_note_entry(rows[0], entry)
             if self.args.dry_run:
                 # entry["status"] not a literal "ok": a reviewer note on this row keeps it
@@ -319,7 +368,10 @@ class Sync:
                         ordered_ids=[rec["id"] for rec in roster_records],
                         prev_entries=prev_entries,
                         triggered_by_value=artifacts.triggered_by(),
-                        dry_run=self.args.dry_run)
+                        dry_run=self.args.dry_run,
+                        floor_entries=artifacts.resolver_verdict(
+                            {**prev_entries, rid: verdict_entry},
+                            [rec["id"] for rec in roster_records]))
                     if write_refusal is None:
                         lines.append(f"map: updated id {rid} -> {entry['status']} ({via}); "
                                      "character-data row written in the same write_pair")
@@ -334,16 +386,10 @@ class Sync:
         stats = (f"requests: {self.client.requests_made} | 304 revalidations: {self.client.revalidations} | "
                  f"tokens minted: {self.client.tokens_minted} | runtime: {time.monotonic() - started:.1f}s")
         lines.append(stats)
-        markdown = ["## Battle.net lookup summary", ""] + [f"- {http.redact(line)}" for line in lines]
-        for line in lines:
-            print(http.redact(line))
-        step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
-        if step_summary:
-            try:
-                with open(step_summary, "a", encoding="utf-8") as handle:
-                    handle.write("\n".join(markdown) + "\n")
-            except OSError as exc:
-                print(f"  ! could not append to GITHUB_STEP_SUMMARY: {type(exc).__name__}")
+        # The same single log boundary as the nightly run: one printable, redacted line per
+        # summary row on stdout and in the step summary (the lookup report quotes a name, a note
+        # and an href, all of them untrusted).
+        self.emit_summary(lines, "## Battle.net lookup summary")
         if not self.args.dry_run:
             self.cache.save()
         if self.client.tokens_minted == 0:
@@ -379,8 +425,10 @@ def main(argv=None):
     try:
         roster_records = roster.load_roster()
     except (OSError, ValueError) as exc:
-        print(f"FATAL: cannot load {config.ROSTER_FILE.relative_to(config.REPO)}: {http.redact(str(exc))}",
-              file=sys.stderr)
+        # The message quotes a roster id or a JSON error, so it goes through the same one-line
+        # sanitizer as every other log write.
+        print(f"FATAL: cannot load {config.ROSTER_FILE.relative_to(config.REPO)}: "
+              f"{log_safe(http.redact(str(exc)))}", file=sys.stderr)
         return 1
     prev_entries = artifacts.load_previous_map()
 
@@ -392,13 +440,13 @@ def main(argv=None):
     except http.TokenMintFailed as exc:
         # Fatal by policy (2.8): no token means no trustworthy data, so the
         # previous artifacts stay exactly as they are.
-        print(f"FATAL: {http.redact(str(exc))} — previous artifacts left untouched", file=sys.stderr)
+        print(f"FATAL: {log_safe(http.redact(str(exc)))} — previous artifacts left untouched", file=sys.stderr)
         return 1
     except http.UnsafeUrl as exc:
         # H1 net: in sync mode every client.get sits behind a per-character handler,
         # so reaching here means lookup mode met a hostile href. Refuse, write
         # nothing, and never send the credential.
-        print(f"FATAL: {http.redact(str(exc))} — nothing was written", file=sys.stderr)
+        print(f"FATAL: {log_safe(http.redact(str(exc)))} — nothing was written", file=sys.stderr)
         return 1
 
 

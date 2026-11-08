@@ -13,6 +13,7 @@
 // did before they existed.
 
 import { STORAGE_KEY, getCharacters, normalizeRoster, registerRenderHook, registerSearchProvider, renderAll, setCharacters } from './state.js';
+import { ownValue } from './util.js';
 import { escapeHtml } from './util.js';
 
 export const ROSTER_PATH = 'data/characters.json';
@@ -28,6 +29,24 @@ let battleNetMap = null;
 
 // The v2 envelope as parsed, or null when the roster arrived as a bare v1 array.
 let fetchedWrapper = null;
+
+// The roster this browser is entitled to write back over: the characters array of the file it
+// last read from (or committed to) the repository, as a JSON string. github.js compares the
+// branch content against it before a whole-file PUT, which is what turns a bulk edit into a
+// compare-and-replace instead of a blind overwrite of rows this page never saw. It lives here
+// next to `fetchedWrapper` because both are "what the repository handed us", and github.js
+// already depends on this module (the other direction would be a cycle).
+let baselineRoster = null;
+
+export function getBaselineRoster() {
+  return baselineRoster;
+}
+
+// null clears the baseline, which is how the write paths say "this browser has no idea what is
+// on the branch" — and a whole-file push without one is refused rather than guessed at.
+export function setBaselineRoster(list) {
+  baselineRoster = Array.isArray(list) ? JSON.stringify(list) : null;
+}
 
 export function setFetchedWrapper(doc) {
   fetchedWrapper = Array.isArray(doc) ? null : doc;
@@ -67,9 +86,11 @@ function sidecarCollection(doc, key) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
 }
 
+// Own-data lookup: the collection is a parsed sidecar and the id comes from the roster, so
+// neither may resolve a member of Object.prototype into the join (see util.js ownValue).
 function sidecarEntry(collection, id) {
   if (!collection || id == null) return null;
-  const entry = collection[String(id)];
+  const entry = ownValue(collection, id);
   return entry && typeof entry === 'object' && !Array.isArray(entry) ? entry : null;
 }
 
@@ -151,6 +172,8 @@ export async function loadRoster() {
     if (!list) throw new Error('no characters in data/characters.json');
 
     setFetchedWrapper(doc);
+    // The file just read is the baseline every later whole-file commit is compared to.
+    setBaselineRoster(list);
     setCharacters(normalizeRoster(list));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(getCharacters()));
     renderAll();

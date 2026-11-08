@@ -538,8 +538,15 @@ class Resolver:
     def apply_reported_notes(self, work, ordered_ids):
         """Force every row carrying ``validation.note`` to ``needs_review`` (§2).
 
-        Runs after resolution, the guild lever and the slug-collision pass, and before
-        enrichment: a character whose identity a human disputed is exactly the case where
+        Runs after resolution, the guild lever, the slug-collision pass and the H4 floor check, and
+        before the write. The floor deliberately judges the resolver verdict taken before this
+        pass (``artifacts.resolver_verdict``): a reviewer note is a human action, so letting its
+        demotions trip the floor would freeze the pipeline on a mass report — while a real
+        upstream outage still trips it, because that is the verdict being counted. Being before
+        the write is what keeps the committed map honest: every reported id is ``needs_review`` in
+        the artifact the UI verifier reads.
+
+        A character whose identity a human disputed is exactly the case where
         publishing a fully enriched sidecar row under that mapping would lend it credibility it
         has not earned (the same reasoning ``dedupe_slugs`` applies to a collided slug). The map
         row keeps the slug it resolved to, so clearing the report costs nothing but a commit.

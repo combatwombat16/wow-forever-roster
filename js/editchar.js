@@ -6,7 +6,7 @@ import { LIFECYCLE, characters, currentFilter, deriveLifecycleState, isLifecycle
 import { byRosterId } from './data.js';
 import { dropPartyCharacter, syncPartyCharacter } from './party.js';
 import { pushToGitHub } from './github.js';
-import { showToast } from './util.js';
+import { ownValue, showToast } from './util.js';
 
 // The 6-space indentation of the race rows is load-bearing: verify_stats.mjs reads
 // the canonical race list straight out of this table.
@@ -26,7 +26,10 @@ export const FOREVER_RACE_CLASSES = {
 export function onRaceChange() {
   const race = document.getElementById('char-race').value;
   const classSelect = document.getElementById('char-class');
-  const validClasses = FOREVER_RACE_CLASSES[race] || [];
+  // Own-data lookup: `race` is a form value populated from the roster, so an inherited key must
+  // yield no class list at all rather than a member of Object.prototype (see util.js).
+  const ownClasses = ownValue(FOREVER_RACE_CLASSES, race);
+  const validClasses = Array.isArray(ownClasses) ? ownClasses : [];
   const currentSelected = classSelect.value;
 
   classSelect.innerHTML = '';

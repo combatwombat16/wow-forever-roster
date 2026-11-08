@@ -3,7 +3,7 @@
 // renderDistribution() renderer so they can never drift apart.
 
 import { getFilteredCharacters, registerRenderHook } from './state.js';
-import { CLASS_BAR, CLASS_COLORS, RACE_BAR, escapeHtml, getFaction } from './util.js';
+import { CLASS_BAR, CLASS_COLORS, RACE_BAR, escapeHtml, getFaction, ownString } from './util.js';
 
 // Counted by character, not by player: race and class belong to the character.
 export function tallyBy(chars, keyFn) {
@@ -22,9 +22,12 @@ export function raceStyle(race) {
     : { bar: RACE_BAR.horde, text: 'text-red-300' };
 }
 
+// Both lookups are own-data ones (see util.js ownString): the label reaching here is a class
+// name read out of the roster, so `cls === "constructor"` must fall back to the neutral bar
+// instead of resolving an inherited function.
 export function classStyle(cls) {
-  const colors = CLASS_COLORS[cls];
-  const bar = CLASS_BAR[cls];
+  const colors = ownString(CLASS_COLORS, cls);
+  const bar = ownString(CLASS_BAR, cls);
   if (colors && bar) return { bar: bar, text: colors.split(' ')[0] };
   return { bar: 'bg-slate-600', text: 'text-slate-300' };
 }

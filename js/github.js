@@ -6,10 +6,19 @@
 // Every call to api.github.com goes through ghApi(): it is the one place that attaches
 // the PAT, the one place that sets Accept/Content-Type, and it never sends the token
 // anywhere else (the URL is built from GH_API plus a literal path, and owner/repo/branch
-// come from the user's own settings, not from response data).
+// come from the user's own settings, not from response data — and even those are shape-
+// checked with OWNER_REPO_RE before a URL is assembled, so a configured value can only
+// ever be a path segment rather than something that moves the endpoint).
+//
+// Roster writes are read-modify-write (commitRosterFile): the file is GET first, the change is
+// applied to THAT content, and the PUT carries THAT sha. A review action rebases onto whatever
+// a second reviewer committed in the meantime; a whole-file bulk edit refuses instead of
+// overwriting it. A failed commit never touches characters or localStorage.
 
-import { STORAGE_KEY, getCharacters, setCharacters, renderAll } from './state.js';
-import { ROSTER_PATH, ensureRosterEnvelope, rosterCharactersFrom, serializeRoster, setFetchedWrapper } from './data.js';
+import { STORAGE_KEY, getCharacters, normalizeRoster, setCharacters, renderAll } from './state.js';
+import { ROSTER_PATH, ensureRosterEnvelope, getBaselineRoster, rosterCharactersFrom, serializeRoster,
+  setBaselineRoster, setFetchedWrapper } from './data.js';
+import { showToast } from './util.js';
 
 export let ghConfig = JSON.parse(localStorage.getItem('wow_gh_config') || 'null') || {
   owner: '',
@@ -18,12 +27,11 @@ export let ghConfig = JSON.parse(localStorage.getItem('wow_gh_config') || 'null'
   token: ''
 };
 
-let currentSha = null;
-
 // The GitHub REST origin. Nothing in this module may fetch any other host with the PAT.
 export const GH_API = 'https://api.github.com';
-// The workflow the Refresh action dispatches (design §4). The file name is the API's
-// workflow_id, so it is a constant rather than something read from the repo.
+// The workflow the Refresh action dispatches (design §4). The file name is accepted where a
+// workflow_id is called for (the dispatch and the single-workflow lookup), but the run list
+// reports the numeric id, so syncWorkflowId() resolves it before anything is attributed.
 export const SYNC_WORKFLOW_FILE = 'sync-bnet.yml';
 // Poll cadence for a dispatched run (design §4: poll until completion, then refetch).
 export const REFRESH_POLL_INTERVAL_MS = 10000;
@@ -53,6 +61,12 @@ export async function ghApi(path, opts = {}) {
   if (!ghConfig.owner || !ghConfig.repo) {
     return { ok: false, status: 0, data: null, error: 'no-repo' };
   }
+  // Shape-checked here, at the one choke point, so no caller can reach fetch() with a value
+  // that changes which endpoint is called. Nothing is sent on a bad shape.
+  if (!isOwnerRepoShape(ghConfig.owner) || !isOwnerRepoShape(ghConfig.repo)) {
+    return { ok: false, status: 0, data: null, error: 'bad-repo',
+      message: 'The configured owner/repo is not a valid GitHub name — open ⚙️ Settings and set them again.' };
+  }
   const headers = { 'Accept': 'application/vnd.github.v3+json' };
   if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
   if (ghConfig.token) headers['Authorization'] = `token ${ghConfig.token}`;
@@ -76,6 +90,17 @@ export async function ghApi(path, opts = {}) {
   }
   const status = Number(res.status);
   return { ok: status >= 200 && status < 300, status: Number.isFinite(status) ? status : 0, data };
+}
+
+// GitHub's own login and repository name shape (alphanumerics plus the . _ - a repository
+// name may carry), anchored, so a configured owner/repo can only ever be a path segment. The
+// origin was already immovable (every URL is GH_API plus a path), but `..` or `?` in a repo
+// name could steer the *endpoint* while still looking same-origin, so the value is checked
+// before a URL is assembled rather than classified afterwards.
+export const OWNER_REPO_RE = /^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,98}[A-Za-z0-9])?$/;
+
+export function isOwnerRepoShape(value) {
+  return typeof value === 'string' && OWNER_REPO_RE.test(value);
 }
 
 // The shortest human-readable explanation GitHub gave, with a status fallback. Returned
@@ -114,25 +139,133 @@ export async function ghUserLogin() {
 
 // ---------- Phase 3d: the review commit ----------
 
-// Commit the whole roster to data/characters.json in the v2 envelope.
+// ---------- reading the file back (the read side of read-modify-write) ----------
+
+// The Contents API returns base64 with a MIME newline every 60 characters. This is the same
+// decode pullFromGitHub has always used, factored out so the modify path reconciles against
+// exactly the bytes the browser loaded, and so a truncated or non-UTF-8 body produces null
+// ("unreadable") rather than a half-parsed roster.
+function contentsText(data) {
+  const encoded = data && typeof data.content === 'string' ? data.content : '';
+  if (encoded === '') return '';
+  try {
+    return decodeURIComponent(escape(atob(encoded.replace(/\s/g, ''))));
+  } catch (err) {
+    return '';
+  }
+}
+
+// The characters array the branch actually holds, or null when the response carries no
+// readable roster.
+function freshRosterFrom(res) {
+  const text = contentsText(res.data);
+  if (text === '') return null;
+  try {
+    return rosterCharactersFrom(JSON.parse(text));
+  } catch (err) {
+    return null;
+  }
+}
+
+// Keys sorted, so "the same roster" means the same JSON value rather than the same bytes: a
+// re-serialised row must not look like drift because one key moved or the indent changed.
+function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort()
+      .map(key => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value === undefined ? null : value);
+}
+
+export function rostersSemanticallyEqual(a, b) {
+  return canonicalJson(a) === canonicalJson(b);
+}
+
+// The compare-and-replace rule for the whole-file (bulk edit) path. The PUT replaces
+// characters.json outright, so it is allowed only while the branch still holds what this
+// browser loaded; anything else is "pull first". Without a baseline the comparison is
+// impossible, and overwriting rows this page never saw is precisely the failure the check
+// exists for, so that case refuses too (⚙️ Settings pulls, and Pull re-arms it).
+function baselineDriftMessage(freshList, upstreamMissing) {
+  if (upstreamMissing) return '';      // a create has nothing to drift from
+  const baseline = getBaselineRoster();
+  if (typeof baseline !== 'string' || baseline === '') {
+    return 'This browser has no copy of the roster on GitHub to compare against — pull first, then repeat this edit.';
+  }
+  let baselineList = null;
+  try {
+    baselineList = JSON.parse(baseline);
+  } catch (err) {
+    baselineList = null;
+  }
+  if (!Array.isArray(baselineList) || !Array.isArray(freshList)) {
+    return 'The roster on GitHub could not be read as JSON — pull first, then repeat this edit.';
+  }
+  if (rostersSemanticallyEqual(freshList, baselineList)) return '';
+  return 'Roster changed upstream — pull first, then repeat this edit. Nothing was committed, and your local roster was left untouched.';
+}
+
+// ---------- the review commit ----------
+
+// Apply one row's review mutation to the roster as the branch holds it (read-modify-write).
 //
-// The sha is fetched immediately before the PUT, every time, and the cached currentSha is
-// deliberately NOT used as the base: the nightly sync commits to the same branch, so a sha
-// from page-load time is exactly the stale base that would either 409 or (worse, if the
-// file moved and GitHub still accepted the write) clobber the sync's commit. A 409 is the
-// honest answer when the file moved between the GET and the PUT, and it maps to a "pull
-// first" message rather than a silent local fallback.
+// `mutateFn` receives a copy of the fresh row and mutates that copy's `validation` block in
+// place (detail.js owns the payload shape; this function owns the reconciliation). The row is
+// verified before anything is written: it has to exist exactly once and still look like a
+// roster row, because stamping a validation block onto a row this browser never saw would be a
+// review of nothing. Aborts return {ok:false, message} and the caller commits nothing.
+export function setValidationOnFresh(freshList, id, mutateFn) {
+  if (typeof mutateFn !== 'function') {
+    return { ok: false, message: 'The review action carried no mutation to apply.' };
+  }
+  if (!Array.isArray(freshList) || freshList.length === 0) {
+    return { ok: false, message: 'The roster on GitHub could not be read — pull first, then repeat this review action.' };
+  }
+  const key = String(id == null ? '' : id);
+  const matches = freshList.filter(c => c && typeof c === 'object' && String(c.id) === key);
+  if (matches.length === 0) {
+    return { ok: false, message: 'That character is no longer in the roster on GitHub — pull first, then repeat this review action.' };
+  }
+  if (matches.length > 1) {
+    return { ok: false, message: 'The roster on GitHub holds more than one row with that id — resolve the duplicate before reviewing.' };
+  }
+  const row = matches[0];
+  if (typeof row.name !== 'string' || row.name.trim() === '') {
+    return { ok: false, message: 'That row on GitHub has no character name — fix the roster before reviewing it.' };
+  }
+  const copy = { ...row };
+  mutateFn(copy);
+  const list = freshList.slice();
+  list[freshList.indexOf(row)] = copy;
+  return { ok: true, list };
+}
+
+// Commit the roster to data/characters.json in the v2 envelope. Every write path in the site
+// goes through here, and every one of them is read-modify-write over the branch content:
 //
-// Returns {ok, sha} or {ok:false, error, message} where error is one of
-// 'no-repo' | 'no-pat' | 'bad-payload' | 'conflict' | 'http' | 'network'.
-export async function commitRosterFile(message, charactersArray) {
+//   * the sha is fetched immediately before the PUT, every time, and no sha cached at page-load
+//     is ever used as the base — the nightly sync commits to the same branch, so a load-time sha
+//     is exactly the stale base that would either 409 or (worse) clobber the sync's commit;
+//   * `opts.mutate` (the review actions) applies the change to the roster that GET returned, so
+//     a commit that landed after this page loaded is rebased onto rather than reverted;
+//   * `opts.compareBaseline` (the bulk edit path) refuses a whole-file PUT when the branch
+//     content drifted semantically from the baseline this browser loaded.
+//
+// A 409 stays the honest answer for the file moving between the GET and the PUT, and maps to a
+// "pull first" message rather than a silent local fallback.
+//
+// Returns {ok, sha, list} or {ok:false, error, message} where error is one of
+// 'no-repo' | 'no-pat' | 'bad-payload' | 'conflict' | 'forbidden' | 'http' | 'network'.
+export async function commitRosterFile(message, charactersArray, opts = {}) {
   if (!ghConfig.owner || !ghConfig.repo) {
     return { ok: false, error: 'no-repo', message: 'No GitHub repository is configured — open ⚙️ Settings and set owner and repo first.' };
   }
   if (!ghConfig.token) {
     return { ok: false, error: 'no-pat', message: 'A GitHub PAT is required to commit the roster.' };
   }
-  if (!Array.isArray(charactersArray) || charactersArray.length === 0) {
+  const mutate = typeof opts.mutate === 'function' ? opts.mutate : null;
+  if (!mutate && (!Array.isArray(charactersArray) || charactersArray.length === 0)) {
     return { ok: false, error: 'bad-payload', message: 'Refusing to commit an empty roster.' };
   }
 
@@ -142,15 +275,35 @@ export async function commitRosterFile(message, charactersArray) {
   if (!fresh.ok && fresh.status !== 404) {
     return { ok: false, error: fresh.error || 'http', message: `Could not read the current roster: ${ghMessage(fresh)}` };
   }
+  const upstreamMissing = fresh.status === 404;
+  const freshList = upstreamMissing ? null : freshRosterFrom(fresh);
+  // Every write path here either mutates or compares against the branch content, so an
+  // unreadable file stops the commit rather than degrading to "commit the local copy anyway".
+  if (!upstreamMissing && freshList === null) {
+    return { ok: false, error: 'conflict', message: 'The roster on GitHub could not be read as JSON — pull first, then repeat this action.' };
+  }
   const baseSha = fresh.ok && fresh.data && typeof fresh.data.sha === 'string' && fresh.data.sha !== ''
     ? fresh.data.sha : null;
+
+  let listToCommit = charactersArray;
+  if (mutate) {
+    const rebased = setValidationOnFresh(freshList, opts.id, mutate);
+    if (!rebased.ok) return { ok: false, error: 'conflict', message: rebased.message };
+    listToCommit = rebased.list;
+  } else if (opts.compareBaseline === true) {
+    const drift = baselineDriftMessage(freshList, upstreamMissing);
+    if (drift !== '') return { ok: false, error: 'conflict', message: drift };
+  }
+  if (!Array.isArray(listToCommit) || listToCommit.length === 0) {
+    return { ok: false, error: 'bad-payload', message: 'Refusing to commit an empty roster.' };
+  }
 
   // Never emit a bare v1 array: main holds the v2 envelope, and a browser that only ever
   // had localStorage would otherwise rewrite the file back to the pre-migration shape.
   ensureRosterEnvelope();
   const body = {
     message: String(message == null ? '' : message),
-    content: btoa(unescape(encodeURIComponent(serializeRoster(charactersArray)))),
+    content: btoa(unescape(encodeURIComponent(serializeRoster(listToCommit)))),
     branch: ghConfig.branch
   };
   if (baseSha) body.sha = baseSha;
@@ -159,8 +312,9 @@ export async function commitRosterFile(message, charactersArray) {
   if (put.ok) {
     const written = put.data && put.data.content && typeof put.data.content.sha === 'string'
       ? put.data.content.sha : null;
-    if (written) currentSha = written;
-    return { ok: true, sha: written, data: put.data };
+    // The branch now holds exactly this list, so it is the baseline the next bulk edit compares to.
+    setBaselineRoster(listToCommit);
+    return { ok: true, sha: written, list: listToCommit, data: put.data };
   }
   if (put.status === 409) {
     return { ok: false, error: 'conflict', message: 'The roster changed upstream — pull first, then repeat this review action.' };
@@ -171,11 +325,18 @@ export async function commitRosterFile(message, charactersArray) {
   return { ok: false, error: 'http', message: `Commit failed: ${ghMessage(put)}` };
 }
 
+// The review commit used by detail.js: `mutateFn` mutates a copy of the row as the branch
+// holds it, so two reviewers editing different rows both land (read-modify-write).
+export function commitValidationOnFresh(message, id, mutateFn) {
+  return commitRosterFile(message, null, { id, mutate: mutateFn });
+}
+
 // Apply a committed roster to this browser: state is the source of truth, localStorage is
 // the offline mirror (the same two writes every other roster mutation in this file does),
-// and the repaint goes through the one dispatcher.
+// and the repaint goes through the one dispatcher. A rebased list arrives straight off the
+// branch, so it passes through the same normalizer as every other roster entering state.
 export function updateRosterInMemory(nextCharacters) {
-  setCharacters(nextCharacters);
+  setCharacters(normalizeRoster(Array.isArray(nextCharacters) ? nextCharacters : []));
   localStorage.setItem(STORAGE_KEY, JSON.stringify(getCharacters()));
   renderAll();
 }
@@ -221,6 +382,33 @@ export async function dispatchSyncWorkflow(lookupName, actor) {
   return { ok: false, error: res.error || 'http', message: `Could not start the sync: ${ghMessage(res)}` };
 }
 
+// The numeric id of the sync workflow, cached per repository.
+//
+// `run.workflow_id` is the only field that binds a polled run to the workflow we dispatched:
+// the dispatch answer is a 202 with no body, so there is nothing to compare at dispatch time,
+// and `event`/`created_at` alone would credit a colleague's dispatch of some other workflow. The
+// workflow lookup by file name is a single request, so the id is read once per owner/repo (and
+// re-read when the repository changes, which is why the key travels with the cached value).
+let syncWorkflowCache = { key: '', id: null, name: '' };
+
+export function resetSyncWorkflowCache() {
+  syncWorkflowCache = { key: '', id: null, name: '' };
+}
+
+// The workflow's id as a string, or null when GitHub does not report a workflow whose file is
+// sync-bnet.yml. Callers fail closed on null: an unidentified run is never reported as ours.
+export async function syncWorkflowId() {
+  const key = `${ghConfig.owner}/${ghConfig.repo}`;
+  if (syncWorkflowCache.key === key && syncWorkflowCache.id !== null) return syncWorkflowCache.id;
+  const res = await ghApi(`/repos/${key}/actions/workflows/${SYNC_WORKFLOW_FILE}`);
+  const data = res && res.ok && res.data && typeof res.data === 'object' ? res.data : null;
+  const path = data && typeof data.path === 'string' ? data.path : '';
+  const id = data && (typeof data.id === 'number' || typeof data.id === 'string') ? String(data.id).trim() : '';
+  if (id === '' || path.split('/').pop() !== SYNC_WORKFLOW_FILE) return null;
+  syncWorkflowCache = { key, id, name: data && typeof data.name === 'string' ? data.name : '' };
+  return id;
+}
+
 // The list-runs query. `created=>T` is GitHub's greater-than form for that filter; it is
 // percent-encoded, and candidateRuns() re-checks created_at locally, so a run older than T
 // can never be mistaken for ours even if the server ignored the filter.
@@ -229,14 +417,31 @@ export function recentDispatchRunsPath(sinceIso) {
     + `?event=workflow_dispatch&created=${encodeURIComponent(`>${sinceIso}`)}`;
 }
 
-// Newest first, workflow_dispatch only, created at or after `sinceIso` (minus the clock
-// allowance). Anything unshapely is dropped rather than guessed about.
-export function candidateRuns(res, sinceIso) {
+// Newest first, and only the runs that can actually be attributed to our dispatch:
+//
+//   * workflow_dispatch (a push, schedule or somebody else's workflow is never ours);
+//   * `run.workflow_id` equal to the dispatched workflow's id, when the caller supplied one —
+//     the attribution the 202 dispatch response cannot give us;
+//   * the workflow's display name, when one was read, has to agree: a belt for a response that
+//     names the run after something else;
+//   * `run.head_branch` equal to the branch we dispatched against;
+//   * created at or after `sinceIso`. The clock allowance is applied exactly once, by
+//     dispatchAndAwaitSync, so this re-checks the same bound instead of widening it again (the
+//     old double subtraction let 180 s of unrelated runs through).
+//
+// Anything unshapely is dropped rather than guessed about.
+export function candidateRuns(res, sinceIso, opts = {}) {
   const raw = res && res.data && Array.isArray(res.data.workflow_runs) ? res.data.workflow_runs : [];
-  const since = Date.parse(sinceIso) - REFRESH_CLOCK_SKEW_MS;
+  const since = Date.parse(sinceIso);
+  const workflowId = opts.workflowId == null || opts.workflowId === '' ? null : String(opts.workflowId);
+  const workflowName = typeof opts.workflowName === 'string' ? opts.workflowName : '';
+  const branch = typeof opts.branch === 'string' && opts.branch !== '' ? opts.branch : ghConfig.branch;
   return raw.filter(run => {
     if (!run || typeof run !== 'object') return false;
     if (typeof run.event === 'string' && run.event !== 'workflow_dispatch') return false;
+    if (workflowId !== null && String(run.workflow_id) !== workflowId) return false;
+    if (workflowName !== '' && typeof run.name === 'string' && run.name !== '' && run.name !== workflowName) return false;
+    if (typeof run.head_branch !== 'string' || run.head_branch !== branch) return false;
     const created = Date.parse(run.created_at);
     return Number.isFinite(created) && Number.isFinite(since) ? created >= since : false;
   }).sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
@@ -258,7 +463,11 @@ export async function pollSyncRun(sinceIso, opts = {}) {
     if (!res.ok) {
       return { ok: false, error: 'http', message: `Could not check the sync run: ${ghMessage(res)}` };
     }
-    const runs = candidateRuns(res, sinceIso);
+    const runs = candidateRuns(res, sinceIso, {
+      workflowId: opts.workflowId,
+      workflowName: syncWorkflowCache.name,
+      branch: ghConfig.branch
+    });
     if (runs.length > 0) sawRun = true;
     const completed = runs.find(run => run.status === 'completed');
     if (completed) {
@@ -297,9 +506,21 @@ export async function dispatchAndAwaitSync(lookupName, opts = {}) {
   onPhase('Dispatching the Battle.net sync…');
   const dispatch = await dispatchSyncWorkflow(lookupName, actor);
   if (!dispatch.ok) return dispatch;
+  // The dispatch is a 202 with no body, so the run can only be identified afterwards, by the
+  // workflow's own id. No id, no attribution: say so rather than report somebody else's run.
+  const workflowId = await syncWorkflowId();
+  if (workflowId === null) {
+    return {
+      ok: false,
+      error: 'workflow-unknown',
+      message: `GitHub did not report ${SYNC_WORKFLOW_FILE} for ${ghConfig.owner}/${ghConfig.repo}, so its run cannot be identified. Check the Actions tab.`
+    };
+  }
+  // The one and only clock-skew correction: `since` already carries the allowance, and
+  // candidateRuns() re-checks against this same instant instead of subtracting it again.
   const since = new Date(Date.now() - REFRESH_CLOCK_SKEW_MS).toISOString().replace(/\.\d{3}Z$/, 'Z');
   onPhase('Sync queued — waiting for the run to finish…');
-  return pollSyncRun(since, opts);
+  return pollSyncRun(since, { ...opts, workflowId });
 }
 
 export function setSyncStatus(msg, isError = false) {
@@ -337,13 +558,14 @@ export async function pullFromGitHub() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const data = res.data;
-    currentSha = data.sha;
     const decoded = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
     const doc = JSON.parse(decoded);
     const list = rosterCharactersFrom(doc);
     if (!list) throw new Error('no characters in data/characters.json');
 
     setFetchedWrapper(doc);
+    // What the branch holds right now, recorded as the baseline the bulk edit path compares to.
+    setBaselineRoster(list);
     setCharacters(list);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(getCharacters()));
     setSyncStatus(`Live (${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`);
@@ -354,11 +576,19 @@ export async function pullFromGitHub() {
   }
 }
 
+// The bulk edit path (the Add/Edit modal's save and delete). It replaces the whole file, so it
+// goes through the same shared commit as the review actions: a freshly read sha, and
+// `compareBaseline` — the branch must still hold what this browser loaded, or the commit is
+// refused with "pull first".
+//
+// A failed commit applies NOTHING locally. The old path wrote `characters` and localStorage in
+// its catch block, which showed an edit as saved here while the repository still said otherwise
+// (and let a reload silently undo it).
 export async function pushToGitHub(newCharacters) {
+  // No repository configured is not a failure: it is the documented local-only mode, and no
+  // request is possible, so the edit stays on this browser.
   if (!ghConfig.owner || !ghConfig.repo) {
-    setCharacters(newCharacters);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(getCharacters()));
-    renderAll();
+    updateRosterInMemory(newCharacters);
     return;
   }
 
@@ -366,56 +596,32 @@ export async function pushToGitHub(newCharacters) {
     const tokenPrompt = prompt("To commit changes to characters.json, enter your GitHub Personal Access Token (PAT):");
     if (tokenPrompt) {
       ghConfig.token = tokenPrompt.trim();
+      // A token typed here can belong to a different person than the cached one, and it becomes
+      // the reviewedBy audit field, so the cache dies with the token it belongs to — at the
+      // assignment, not only where the settings form happens to call it.
+      resetGhLoginCache();
       localStorage.setItem('wow_gh_config', JSON.stringify(ghConfig));
     } else {
-      setCharacters(newCharacters);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(getCharacters()));
-      renderAll();
+      updateRosterInMemory(newCharacters);
       alert("Saved locally only. Add a GitHub PAT in Settings to commit.");
       return;
     }
   }
 
   setSyncStatus('Committing...');
-  const contentsPath = `/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${ROSTER_PATH}`;
+  const result = await commitRosterFile('Update characters.json via WoW: Forever tracker [skip ci]',
+    newCharacters, { compareBaseline: true });
 
-  try {
-    if (!currentSha) {
-      const check = await ghApi(`${contentsPath}?ref=${encodeURIComponent(ghConfig.branch)}`);
-      if (check.ok && check.data && typeof check.data.sha === 'string') currentSha = check.data.sha;
-    }
-
-    ensureRosterEnvelope();
-    const jsonString = serializeRoster(newCharacters);
-    const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
-
-    const bodyData = {
-      message: `Update characters.json via WoW: Forever tracker [skip ci]`,
-      content: encodedContent,
-      branch: ghConfig.branch
-    };
-    if (currentSha) bodyData.sha = currentSha;
-
-    const put = await ghApi(contentsPath, { method: 'PUT', body: bodyData });
-
-    if (!put.ok) {
-      throw new Error(ghMessage(put));
-    }
-
-    const result = put.data;
-    currentSha = result.content.sha;
-    setCharacters(newCharacters);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(getCharacters()));
-    setSyncStatus(`Saved (${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`);
-    renderAll();
-  } catch (err) {
-    console.error('GitHub push failed:', err);
-    setCharacters(newCharacters);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(getCharacters()));
-    renderAll();
-    alert(`Failed to commit to GitHub: ${err.message}. Saved locally.`);
+  if (!result.ok) {
+    console.error('GitHub push failed:', result.error, result.message || '');
+    if (result.error === 'no-pat' || result.error === 'no-repo' || result.error === 'bad-repo') openGhModal();
     setSyncStatus('Commit failed', true);
+    showToast(result.message || 'The commit did not land. Your roster was left unchanged.', 'error');
+    return;
   }
+
+  updateRosterInMemory(result.list);
+  setSyncStatus(`Saved (${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`);
 }
 
 export function openGhModal() {
@@ -435,6 +641,8 @@ export function saveGhConfig(e) {
   // A new token can be a different person. The review audit field is read back from GitHub and
   // cached for the session, so the cache has to die with the token it belongs to.
   resetGhLoginCache();
+  // And a new owner/repo can be a different repository, whose sync workflow has a different id.
+  resetSyncWorkflowCache();
   ghConfig = {
     owner: document.getElementById('gh-owner').value.trim(),
     repo: document.getElementById('gh-repo').value.trim(),

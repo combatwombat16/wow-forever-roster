@@ -12,8 +12,10 @@
 //     human just chose (a slug from the candidate list, a free-text note, a reviewer login
 //     read back from GitHub);
 //   * nothing is persisted locally. There is still no localStorage access in this module —
-//     the write paths go through github.js's commitRosterFile, and the in-memory roster is
-//     updated by github.js's updateRosterInMemory so the storage key keeps one owner;
+//     the write paths go through github.js's commitValidationOnFresh (read-modify-write over
+//     the roster as the branch holds it, so a second reviewer's commit is rebased onto rather
+//     than reverted), and the in-memory roster is updated by github.js's updateRosterInMemory
+//     so the storage key keeps one owner. A commit that did not land applies nothing here.
 //   * the only values interpolated into an inline handler are a roster id matched against
 //     HANDLER_ARG_RE and a candidate's numeric index. Untrusted strings (slugs, names, notes)
 //     never become handler arguments, so no sidecar value can rewrite the handler it is
@@ -27,9 +29,9 @@
 
 import { LIFECYCLE, characters, deriveLifecycleState, isLifecycleEditable, registerRenderHook, renderAll } from './state.js';
 import { byRosterId, formatSyncedAt, isSidecarFresh, reloadSidecars } from './data.js';
-import { commitRosterFile, dispatchAndAwaitSync, ghHasPat, ghUserLogin, openGhModal, updateRosterInMemory } from './github.js';
+import { commitValidationOnFresh, dispatchAndAwaitSync, ghHasPat, ghUserLogin, openGhModal, updateRosterInMemory } from './github.js';
 import { getLifecycleBadge } from './roster.js';
-import { CLASS_COLORS, escapeHtml, getFaction, showToast } from './util.js';
+import { CLASS_COLORS, escapeHtml, getFaction, ownString, showToast } from './util.js';
 
 // Blizzard's own media hosts. A committed sidecar is untrusted input (the sync writes what
 // the API returned, and any of these files can be hand-edited), so the check is on the
@@ -80,8 +82,10 @@ const PROGRESS_LABELS = {
   faction: 'Faction'
 };
 
+// Label lookup is own-data too: the keys of a committed `progress` object are response data, and
+// a row that carries "constructor" must not have Object.prototype's members printed at it.
 export function humanizeKey(key) {
-  const name = PROGRESS_LABELS[key];
+  const name = ownString(PROGRESS_LABELS, key);
   if (name) return name;
   const spaced = String(key).replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').trim();
   return spaced === '' ? String(key) : spaced.charAt(0).toUpperCase() + spaced.slice(1);
@@ -219,6 +223,14 @@ export const HANDLER_ARG_RE = /^[A-Za-z0-9_.:-]{1,64}$/;
 // it, so an out-of-shape value is refused here rather than committed for the sync to fetch.
 export const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
 
+// The class colour for a roster row: an own-data lookup with a neutral fallback, so a row whose
+// class is not one of the nine (or is a prototype key such as "constructor") still renders its
+// badge instead of throwing on a function and blanking the modal. The fallback is a literal so
+// Tailwind can see it.
+export function classColorFor(value) {
+  return (ownString(CLASS_COLORS, value) || 'text-slate-300').split(' ')[0];
+}
+
 // The handler-argument form of a roster id: '' when the id is not usable, which is how every
 // action builder in this file fails closed.
 export function handlerArg(value) {
@@ -305,7 +317,7 @@ const ACTION_TONES = {
 
 function actionButton(label, call, tone = 'neutral', opts = {}) {
   const disabled = opts.disabled === true;
-  const classes = `px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-all ${ACTION_TONES[tone] || ACTION_TONES.neutral}`
+  const classes = `px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-all ${ownString(ACTION_TONES, tone) || ownString(ACTION_TONES, 'neutral')}`
     + (disabled ? ' opacity-50 cursor-not-allowed' : '');
   return `<button type="button"${disabled ? ' disabled' : ''} onclick="${escapeHtml(call)}"`
     + ` title="${escapeHtml(opts.title == null ? '' : opts.title)}" class="${classes}">${escapeHtml(label)}</button>`;
@@ -445,8 +457,10 @@ async function runAction(character, work) {
   }
 }
 
-// Guard shared by every commit: PAT present, row still in state, row still editable (or still
-// validated, for re-open). The disabled buttons are the UI's answer; this is ours.
+// Guard shared by every commit: PAT present, row still in state, and the row in the lifecycle
+// the action needs — editable for confirm/resolve/report, validated for re-open. The disabled
+// buttons are the UI's answer; this is ours, and reopenForEditing goes through it too rather
+// than re-deriving the same rule.
 function guardCommit(character, { requireValidated = false } = {}) {
   if (!ghHasPat()) {
     showToast('A GitHub PAT is required for review actions — add it in Settings.', 'error');
@@ -459,34 +473,43 @@ function guardCommit(character, { requireValidated = false } = {}) {
   }
   const { mapEntry } = byRosterId(character.id);
   const editable = isLifecycleEditable(character, mapEntry);
-  if (requireValidated && !editable) return null;
-  if (!requireValidated && !editable) {
+  if (requireValidated) {
+    if (editable) {
+      showToast('This row is not validated, so there is nothing to re-open.', 'error');
+      return 'unlocked';
+    }
+    return null;
+  }
+  if (!editable) {
     showToast('This row is validated — re-open it for editing first.', 'error');
     return 'locked';
   }
   return null;
 }
 
-// Commit a roster with one row's validation block changed, then make that roster the in-memory
-// truth. On failure nothing is applied locally: a review that did not reach the repository
-// would otherwise show as locked here and unlocked for everyone else.
+// Commit one row's validation change, and make the committed roster the in-memory truth.
+//
+// The mutation is applied by github.js to the row as the branch holds it (read-modify-write),
+// so a second reviewer's commit that landed after this page loaded survives: this browser only
+// rewrites the one row it was asked to change, and it rebases onto the rest. `nextValidation`
+// may be a function of the fresh row when the payload has to merge with what is already there
+// (the mismatch report keeps the other validation keys it did not touch).
+//
+// On failure nothing is applied locally: a review that did not reach the repository would
+// otherwise show as locked here and unlocked for everyone else.
 async function commitValidation(character, nextValidation, { message, success }) {
-  const next = characters.map(c => {
-    if (!c || c.id !== character.id) return c;
-    const copy = { ...c };
+  const result = await commitValidationOnFresh(message, character.id, copy => {
     if (nextValidation === null) delete copy.validation;
-    else copy.validation = nextValidation;
-    return copy;
+    else copy.validation = typeof nextValidation === 'function' ? nextValidation(copy) : nextValidation;
   });
-  const result = await commitRosterFile(message, next);
   if (!result.ok) {
-    if (result.error === 'no-pat' || result.error === 'no-repo') openGhModal();
+    if (result.error === 'no-pat' || result.error === 'no-repo' || result.error === 'bad-repo') openGhModal();
     const text = result.message || 'The commit did not land.';
     setLastResult(character, 'error', text);
     showToast(text, 'error');
     return false;
   }
-  updateRosterInMemory(next);
+  updateRosterInMemory(result.list);
   setLastResult(character, 'success', success);
   showToast(success, 'success');
   return true;
@@ -613,9 +636,11 @@ export async function reportMismatch(id) {
   return runAction(character, async () => {
     const reportedBy = await reviewerLogin();
     if (reportedBy === null) return false;
-    const existing = validationBlock(character) || {};
-    const nextValidation = { ...existing, note: raw, reportedBy, reportedAt: nowStamp() };
-    const ok = await commitValidation(character, nextValidation, {
+    // The keys merged under the note are the FRESH row's, not this browser's cache: another
+    // reviewer may have confirmed the row (or had it confirmed) since the modal was opened.
+    const ok = await commitValidation(character, row => ({
+      ...(validationBlock(row) || {}), note: raw, reportedBy, reportedAt: nowStamp()
+    }), {
       message: `Report mismatch on ${character.name} [skip ci]`,
       success: `Reported a mismatch on ${character.name}. The row stays editable.`
     });
@@ -634,20 +659,8 @@ export async function reportMismatch(id) {
 // see as verified.
 export async function reopenForEditing(id) {
   const character = rowById(id);
-  if (!ghHasPat()) {
-    showToast('A GitHub PAT is required for review actions — add it in Settings.', 'error');
-    openGhModal();
-    return false;
-  }
-  if (!character) {
-    showToast('That character is no longer in the roster.', 'error');
-    return false;
-  }
-  const { mapEntry } = byRosterId(character.id);
-  if (isLifecycleEditable(character, mapEntry)) {
-    showToast('This row is not validated, so there is nothing to re-open.', 'error');
-    return false;
-  }
+  // The same guard every commit runs, in its "must be validated" direction.
+  if (guardCommit(character, { requireValidated: true }) !== null) return false;
   if (!confirm('Re-open this validated character for editing? The validation block is removed and the row becomes editable again.')) {
     return false;
   }
@@ -779,7 +792,7 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
   if (!character || typeof character !== 'object') return emptyState('No such character.');
   const badge = badgeHtml || getLifecycleBadge(character, lifecycle);
   const cls = scalarText(character.class);
-  const classColor = (CLASS_COLORS[cls] || 'text-slate-300').split(' ')[0];
+  const classColor = classColorFor(cls);
   const faction = getFaction(character.race);
   const factionTag = faction === 'alliance'
     ? '<span class="text-[9px] font-bold uppercase tracking-wider text-sky-400 bg-blue-950/80 px-1 py-0.5 rounded border border-blue-800/60">Alliance</span>'

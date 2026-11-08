@@ -450,8 +450,36 @@ ok(/note: raw, reportedBy, reportedAt: nowStamp\(\)/.test(detailSrc),
   'report mismatch builds {note, reportedBy, reportedAt} and no state key');
 ok(/delete copy\.validation;/.test(detailSrc), 're-open removes the validation block entirely');
 
+// the grid escapes every roster string it interpolates — the role pair included — and no panel
+// reads the display maps by raw bracket lookup any more (a committed row whose class is
+// "constructor" must fall back to the neutral styling rather than resolve Object.prototype)
+const gridSrc = moduleSrc['roster.js'];
+ok(/\$\{getRoleIcon\(c\.role\)\}\$\{escapeHtml\(c\.role\)\}/.test(gridSrc)
+  && /\$\{getRoleIcon\(c\.roleSec\)\}\$\{escapeHtml\(c\.roleSec\)\}/.test(gridSrc),
+  'role and roleSec are escaped where the grid interpolates them');
+ok(!/\$\{c\.(role|roleSec|name|player|class|race|prof1|prof2)\}/.test(gridSrc)
+  && !/\$\{char\.(name|class|player|race|role)\}/.test(moduleSrc['party.js']),
+  'no raw roster string is interpolated into the grid or party markup');
+ok(/export function ownString\(map, key\)/.test(moduleSrc['util.js']) && /Object\.hasOwn/.test(moduleSrc['util.js']),
+  'util.js exposes an own-data map lookup built on Object.hasOwn');
+ok(!/CLASS_COLORS\[|CLASS_BAR\[|PROF_ABBR\[|RACE_BAR\[/.test(src),
+  'no module bracket-indexes a display map with a roster-sourced value');
+['roster.js', 'party.js', 'stats.js', 'professions.js', 'detail.js', 'editchar.js'].forEach(f =>
+  ok(/ownString\(|ownValue\(/.test(moduleSrc[f]), `${f} reads its maps through the own-data helper`));
+
 // github.js owns the write API: fresh sha before the PUT, 409 mapped, dispatch + poll
-ok(/async function commitRosterFile\(message, charactersArray\)/.test(githubSrc), 'commitRosterFile(message, characters) exists');
+ok(/async function commitRosterFile\(message, charactersArray, opts = \{\}\)/.test(githubSrc),
+  'commitRosterFile(message, characters, opts) exists (the one shared commit core)');
+ok(/commitRosterFile\('Update characters\.json via WoW: Forever tracker \[skip ci\]',\s*newCharacters, \{ compareBaseline: true \}\)/.test(githubSrc),
+  'the bulk edit path delegates to that same core with compareBaseline (no second PUT path left)');
+ok(/export function setValidationOnFresh\(freshList, id, mutateFn\)/.test(githubSrc)
+  && /return \{ ok: false, message: /.test(githubSrc),
+  'review mutations are applied to the freshly read roster, and abort with a message when the row is not there');
+ok(/function baselineDriftMessage\(freshList, upstreamMissing\)/.test(githubSrc)
+  && /Roster changed upstream — pull first/.test(githubSrc),
+  'a drifted baseline is refused with a pull-first message');
+ok(!/catch \(err\) \{[\s\S]{0,400}localStorage\.setItem\(STORAGE_KEY/.test(githubSrc.split('export async function pushToGitHub')[1] || ''),
+  'the bulk push has no failure path that writes the roster to localStorage');
 ok(/ensureRosterEnvelope\(\)/.test(githubSrc), 'a commit writes the v2 envelope even with no fetched wrapper');
 ok(/const fresh = await ghApi\(`/.test(githubSrc) && githubSrc.indexOf('const fresh = await ghApi(') < githubSrc.indexOf('const put = await ghApi(contentsPath'),
   'the current sha is fetched immediately before the PUT (never the cached one)');
@@ -463,6 +491,10 @@ ok(/actions\/workflows\/.+dispatches/.test(githubSrc), 'the refresh dispatches t
 ok(/lookup_name:/.test(githubSrc) && /force: 'false'/.test(githubSrc) && /client_payload: \{ actor:/.test(githubSrc),
   'the dispatch body carries inputs.lookup_name, inputs.force and client_payload.actor');
 ok(/event=workflow_dispatch/.test(githubSrc) && /created=/.test(githubSrc), 'the poll lists workflow_dispatch runs since the dispatch');
+ok(/run\.workflow_id/.test(githubSrc) && /run\.head_branch/.test(githubSrc),
+  'a polled run is re-validated by workflow id and ref before it is credited to this dispatch');
+ok(/async function syncWorkflowId\(\)/.test(githubSrc),
+  'the dispatched workflow id is resolved once (the 202 dispatch response carries no id)');
 ok(/REFRESH_POLL_INTERVAL_MS = 10000/.test(githubSrc) && /REFRESH_POLL_TIMEOUT_MS = 180000/.test(githubSrc),
   'the poll is 10 s / 3 min bounded');
 ok(/Actions: write/.test(githubSrc), 'a 403 on dispatch explains the actions: write scope');

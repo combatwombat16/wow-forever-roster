@@ -14,6 +14,12 @@
 //       the design §2 payload shape, GET /user as the source of reviewedBy (cached in memory),
 //       the in-memory + localStorage update, the repaint and the success flash
 //   [4] the 409 sha-conflict path — pull-first message, and NOTHING applied locally
+//  [4b] read-modify-write — a second reviewer's commit landing between the load and the PUT is
+//       rebased onto (both mutations survive), and a row that vanished or lost its shape upstream
+//       aborts the commit instead of being stamped with a validation block
+//  [4c] the bulk edit push is compare-and-replace — semantic drift upstream is refused with no
+//       PUT and no write to characters or localStorage; an identical (differently serialised)
+//       upstream still commits on the fresh sha
 //   [5] RESOLVE — the radio selection is the only thing CONFIRM SELECTED can commit
 //   [6] REPORT MISMATCH — note required, ≤240, escaped where it renders, {note, reportedBy,
 //       reportedAt} with no state key, and the row stays a draft
@@ -23,8 +29,15 @@
 //       and repaint, a failed run, a timeout, and no double dispatch while one is in flight
 //   [9] editchar gating — a validated row refuses to open the edit form and refuses to save,
 //       delete warns it will need re-creation, and a draft still saves
-//  [10] boundary — the only storage keys written are the roster and the PAT config, and no
-//       request left the harness for any other origin
+//  [10] boundary — the only storage keys written are the roster and the PAT config; a fixture
+//       read is only a fixture read when it is an exact `data/…` path that resolves inside the
+//       fixture directory (protocol-relative, absolute and traversing reads are violations); no
+//       request left the harness for any other origin; no endpoint outside the documented set
+//       was called (path AND query); and no token shape appears in any URL or in any fetch()
+//  [12] a committed row cannot poison the display maps (prototype keys fall back to the neutral
+//       styling, the grid never blanks) or the grid markup (role/roleSec are escaped)
+//  [13] the classifier's own self-tests: protocol-relative, absolute and traversing reads are
+//       recorded as violations, while the real data/ paths still load
 //
 //   node .pi/scripts/verify_writes.mjs [repo-root]
 
@@ -171,6 +184,29 @@ let runScript = [];
 function route(method, pattern, handler) { routes.push({ method, pattern, handler }); }
 function resetRoutes() { routes = []; }
 
+// A same-origin fixture read is a read of a file under <fixture-dir>/data/ and nothing else:
+// an exact 'data/' prefix, no protocol, no '//' anywhere, not absolute, no '.'/'..'/empty
+// segment, and the resolved target must still sit inside the fixture directory. Without all of
+// that, `//evil.com/steal` reads as a same-origin fixture fetch and
+// `data/../../../../etc/passwd` escapes the fixture dir — which would let a malicious github.js
+// rewrite pass the "no request left for an unexpected origin" boundary check below.
+function fixtureReadFor(raw) {
+  const clean = String(raw).split('?')[0];
+  if (/^[A-Za-z][A-Za-z0-9+.-]*:\/\//.test(clean)) return { ok: false, reason: 'absolute URL' };
+  if (clean.startsWith('//')) return { ok: false, reason: 'protocol-relative URL' };
+  if (clean.startsWith('/') || clean.startsWith('\\')) return { ok: false, reason: 'absolute path' };
+  if (clean.includes('\\')) return { ok: false, reason: 'backslash in path' };
+  if (!clean.startsWith('data/')) return { ok: false, reason: 'not an exact data/ path' };
+  if (clean.split('/').some(seg => seg === '' || seg === '.' || seg === '..')) {
+    return { ok: false, reason: 'traversal or empty segment' };
+  }
+  const file = path.resolve(sourceDir, clean);
+  if (!file.startsWith(path.resolve(sourceDir) + path.sep)) {
+    return { ok: false, reason: 'resolves outside the fixture directory' };
+  }
+  return { ok: true, file };
+}
+
 function replyFor(method, ghPath, body) {
   for (const entry of routes) {
     if (entry.method !== method) continue;
@@ -200,12 +236,12 @@ globalThis.fetch = async (url, opts = {}) => {
       json: async () => (reply.data === undefined ? null : reply.data)
     };
   }
-  const rel = raw.replace(/^\.?\//, '').split('?')[0];
-  if (!/^[A-Za-z0-9_./-]+$/.test(rel) || rel.startsWith('..')) {
-    violations.push(`non-origin fetch: ${raw}`);
+  const read = fixtureReadFor(raw);
+  if (!read.ok) {
+    violations.push(`non-fixture read (${read.reason}): ${raw}`);
     return { ok: false, status: 400, json: async () => null };
   }
-  const file = path.join(sourceDir, rel);
+  const file = read.file;
   if (raw.indexOf('?cb=') !== -1) net.push({ host: 'fixture', method, path: raw, reloaded: true });
   else net.push({ host: 'fixture', method, path: raw, reloaded: false });
   if (!fs.existsSync(file)) return { ok: false, status: 404, json: async () => null };
@@ -570,7 +606,12 @@ ok(ghCalls('GET', '/user').length === 1, 'the login is cached in memory across a
 console.log('\n[4] sha conflict: pull-first message, nothing applied locally');
 resetRoutes();
 route('GET', /^\/user$/, () => ({ status: 200, data: { login: 'octocat' } }));
-route('GET', new RegExp(CONTENTS), () => ({ status: 200, data: { sha: 'sha-nobody-saw' } }));
+// The file is readable (so the commit reaches the PUT at all) and the PUT is refused: this is
+// the file moving between the GET and the PUT, which no client-side check can close.
+route('GET', new RegExp(CONTENTS), () => ({
+  status: 200,
+  data: { sha: 'sha-nobody-saw', content: Buffer.from(JSON.stringify(fixtureRoster)).toString('base64') },
+}));
 route('PUT', new RegExp(CONTENTS), () => ({
   status: 409, data: { message: 'Pull request is required to push to this branch.' },
 }));
@@ -589,6 +630,159 @@ ok(JSON.stringify(state.getCharacters()) === before409,
   'the roster is byte-identical afterwards: a commit that did not land is not shown as landed');
 ok(rowIn(decodedRoster(lastCall('PUT', CONTENTS).body), ROWS.ambiguous).validation.state === 'validated',
   'the attempted payload was still well-formed (the conflict is about the base sha, not the shape)');
+
+// ---------------------------------------------------------------- 4b. rebase onto fresh
+console.log('\n[4b] read-modify-write: a commit landing upstream between the load and the PUT survives');
+resetRoster();
+const colleagueRoster = JSON.parse(JSON.stringify(fixtureRoster));
+colleagueRoster.characters.find(c => c.id === ROWS.draft).validation = {
+  state: 'validated', confirmedSlug: 'drafty', reviewedBy: 'other-reviewer', reviewedAt: stamp,
+};
+colleagueRoster.characters.push(character('r-newcomer', 'Newcomer'));
+
+function upstreamRoutes(doc) {
+  resetRoutes();
+  route('GET', /^\/user$/, () => ({ status: 200, data: { login: 'octocat' } }));
+  route('GET', new RegExp(`${CONTENTS}\\?ref=main$`), () => ({
+    status: 200, data: { sha: 'sha-after-colleague', content: Buffer.from(JSON.stringify(doc)).toString('base64') },
+  }));
+  route('PUT', new RegExp(`${CONTENTS}$`), ({ body }) => ({
+    status: 200, data: { content: { sha: `sha-after-${body.sha}` } },
+  }));
+}
+
+upstreamRoutes(colleagueRoster);
+net.length = 0;
+openRow(ROWS.ok);
+const rebased = await globalThis.confirmMatch(ROWS.ok);
+await settled();
+const rebasedPut = lastCall('PUT', CONTENTS);
+const rebasedDoc = rebasedPut ? decodedRoster(rebasedPut.body) : null;
+ok(rebased === true && rebasedPut !== null, 'CONFIRM MATCH still commits exactly once when upstream moved');
+ok(rebasedPut.body.sha === 'sha-after-colleague',
+  `and it is based on the sha of the commit that landed in the meantime (${rebasedPut.body.sha})`);
+const theirRow = rowIn(rebasedDoc, ROWS.draft);
+ok(theirRow && theirRow.validation && theirRow.validation.reviewedBy === 'other-reviewer',
+  'the other reviewer\u2019s validation is still in the committed file (not silently reverted)');
+ok(rowIn(rebasedDoc, ROWS.ok).validation.confirmedSlug === 'gear-man',
+  'and this browser\u2019s own change is applied on top of it');
+ok(rowIn(rebasedDoc, 'r-newcomer') !== undefined, 'a row added upstream is not dropped by the commit');
+ok(state.getCharacters().some(c => c.id === 'r-newcomer'), 'the in-memory roster adopts the rebased list');
+
+// A mismatch note merges with the keys another reviewer wrote on the same row upstream: the
+// fields are disjoint, so both survive.
+const noteRoster = JSON.parse(JSON.stringify(fixtureRoster));
+noteRoster.characters.find(c => c.id === ROWS.ambiguous).validation = { reviewedBy: 'other-reviewer', reviewedAt: stamp };
+upstreamRoutes(noteRoster);
+net.length = 0;
+openRow(ROWS.ambiguous);
+fire(findAction(/toggleMismatchForm/));
+byId(`mismatch-note-${ROWS.ambiguous}`).value = 'wrong realm entirely';
+const rebasedReport = await globalThis.reportMismatch(ROWS.ambiguous);
+await settled();
+const reportPut = lastCall('PUT', CONTENTS);
+const mergedRow = reportPut ? rowIn(decodedRoster(reportPut.body), ROWS.ambiguous) : null;
+ok(rebasedReport === true && mergedRow !== null, 'a mismatch report commits onto the moved upstream too');
+ok(mergedRow.validation.note === 'wrong realm entirely' && mergedRow.validation.reportedBy === 'octocat',
+  'the note and this reviewer\u2019s attribution are written');
+ok(mergedRow.validation.reportedBy === 'octocat' && mergedRow.validation.reviewedAt === stamp
+  && mergedRow.validation.state === undefined,
+  'and the unrelated key the other reviewer left upstream is carried, not clobbered');
+
+// A row that vanished upstream aborts the commit instead of recreating it from local state.
+const vanished = { schemaVersion: 2, characters: JSON.parse(JSON.stringify(fixtureRoster.characters)).filter(c => c.id !== ROWS.ok) };
+upstreamRoutes(vanished);
+net.length = 0;
+openRow(ROWS.ok);
+const vanishedResult = await globalThis.confirmMatch(ROWS.ok);
+await settled();
+ok(vanishedResult === false && ghCalls('PUT', CONTENTS).length === 0,
+  'a row deleted upstream aborts the commit and sends no PUT');
+ok(/no longer in the roster on GitHub/.test(toast().textContent),
+  `with a message that names the reason ("${toast().textContent}")`);
+
+// A row whose shape broke upstream is refused rather than stamped with a validation block.
+const broken = JSON.parse(JSON.stringify(fixtureRoster));
+broken.characters.find(c => c.id === ROWS.ok).name = '   ';
+upstreamRoutes(broken);
+net.length = 0;
+const brokenResult = await globalThis.confirmMatch(ROWS.ok);
+ok(brokenResult === false && ghCalls('PUT', CONTENTS).length === 0,
+  'a row that lost its name upstream is refused (no write of an unusable row)');
+ok(/no character name/.test(toast().textContent), `and says why ("${toast().textContent}")`);
+
+// A file that is not readable JSON stops the commit; it never degrades to "push the local copy".
+resetRoutes();
+route('GET', /^\/user$/, () => ({ status: 200, data: { login: 'octocat' } }));
+route('GET', new RegExp(`${CONTENTS}\\?ref=main$`), () => ({ status: 200, data: { sha: 'sha-unreadable' } }));
+route('PUT', new RegExp(`${CONTENTS}$`), () => ({ status: 200, data: { content: { sha: 'sha-nope' } } }));
+net.length = 0;
+const unreadable = await globalThis.confirmMatch(ROWS.ok);
+ok(unreadable === false && ghCalls('PUT', CONTENTS).length === 0
+  && /could not be read as JSON/.test(toast().textContent),
+  'an unreadable upstream roster aborts instead of overwriting it with the local cache');
+
+// ---------------------------------------------------------------- 4c. bulk compare-and-replace
+console.log('\n[4c] the bulk edit push compares before it replaces, and writes nothing on refusal');
+// Re-read the fixture file the way a page load does, so this browser has a baseline.
+await dataMod.loadRoster();
+upstreamRoutes(fixtureRoster);
+net.length = 0;
+const bulkLocal = JSON.parse(JSON.stringify(fixtureRoster.characters));
+bulkLocal[0].name = 'Gearman II';
+await github.pushToGitHub(bulkLocal);
+await settled();
+const bulkPut = lastCall('PUT', CONTENTS);
+ok(bulkPut !== null && rowIn(decodedRoster(bulkPut.body), ROWS.ok).name === 'Gearman II',
+  'an edit push commits when the branch still holds what this browser loaded');
+ok(bulkPut.body.sha === 'sha-after-colleague'
+  && net.findIndex(c => c.method === 'PUT') > net.findIndex(c => c.method === 'GET' && c.path.indexOf(CONTENTS) !== -1),
+  'the bulk path also reads the sha immediately before the PUT (no cached-sha path left)');
+ok(state.getCharacters().find(c => c.id === ROWS.ok).name === 'Gearman II'
+  && JSON.parse(store.get('wow_forever_roster')).find(c => c.id === ROWS.ok).name === 'Gearman II',
+  'a commit that landed is applied locally (state and the storage mirror)');
+
+// Same content, different serialisation (row keys reversed, envelope keys reordered): equality is
+// semantic, so a re-indented file is not "drift".
+function reorderedCopy(doc) {
+  const rows = doc.characters.map(c => {
+    const out = {};
+    Object.keys(c).reverse().forEach(k => { out[k] = c[k]; });
+    return out;
+  });
+  return { characters: rows, schemaVersion: doc.schemaVersion };
+}
+upstreamRoutes(reorderedCopy({ schemaVersion: 2, characters: bulkLocal }));
+net.length = 0;
+const bulkLocal2 = JSON.parse(JSON.stringify(bulkLocal));
+bulkLocal2[1].track = 'alts';
+await github.pushToGitHub(bulkLocal2);
+const reindentPut = lastCall('PUT', CONTENTS);
+ok(reindentPut !== null && rowIn(decodedRoster(reindentPut.body), ROWS.ambiguous).track === 'alts',
+  'a byte-different but semantically identical upstream is not treated as drift');
+
+// Now the branch moved: another reviewer changed a row this browser never saw.
+const drifted = JSON.parse(JSON.stringify(bulkLocal));
+drifted.find(c => c.id === ROWS.draft).validation = {
+  state: 'validated', confirmedSlug: 'drafty', reviewedBy: 'other-reviewer', reviewedAt: stamp,
+};
+upstreamRoutes(drifted);
+net.length = 0;
+const localBefore = JSON.stringify(state.getCharacters());
+const storageBeforeBulk = store.get('wow_forever_roster');
+const driftedEdit = JSON.parse(JSON.stringify(bulkLocal2));
+driftedEdit.find(c => c.id === ROWS.missing).name = 'Renamed while upstream moved';
+await github.pushToGitHub(driftedEdit);
+await settled();
+ok(ghCalls('PUT', CONTENTS).length === 0, 'a whole-file push whose baseline drifted upstream sends no PUT');
+ok(JSON.stringify(state.getCharacters()) === localBefore,
+  'the local roster is untouched by a refused push (no silent "saved" state)');
+ok(store.get('wow_forever_roster') === storageBeforeBulk,
+  'and localStorage is untouched too');
+ok(/changed upstream/i.test(toast().textContent) && /pull first/i.test(toast().textContent),
+  `the refusal says pull first ("${toast().textContent}")`);
+ok(byId('sync-status').textContent === 'Commit failed',
+  `and the status line reports it ("${byId('sync-status').textContent}")`);
 
 // ---------------------------------------------------------------- 5. resolve flow
 console.log('\n[5] RESOLVE: only a radio selection can be confirmed');
@@ -695,12 +889,30 @@ let htmlDuringPoll = '';
 let secondDispatch = null;
 const RUNS = '/actions/runs';
 const DISPATCH = '/actions/workflows/sync-bnet.yml/dispatches';
+const WORKFLOW = '/actions/workflows/sync-bnet.yml';
+const SYNC_WORKFLOW_ID = 4242;
 
-function refreshRoutes(conclusion = 'success') {
+// A run of the sync workflow on the configured branch, in the shape the runs API reports it:
+// everything candidateRuns() re-validates has to be present, or the harness would be asserting
+// against a fixture no real response looks like.
+function syncRun(extra = {}) {
+  return {
+    name: 'Sync Battle.net data', workflow_id: SYNC_WORKFLOW_ID, event: 'workflow_dispatch',
+    head_branch: 'main', run_id: 0, status: 'completed', conclusion: 'success',
+    created_at: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'), ...extra,
+  };
+}
+
+function refreshRoutes(conclusion = 'success', opts = {}) {
   resetRoutes();
   runsCallCount = 0;
   route('GET', /^\/user$/, () => ({ status: 200, data: { login: 'octocat' } }));
   route('POST', new RegExp(`${DISPATCH}$`), ({ body }) => { dispatched = body; return { status: 202 }; });
+  // The dispatch answer is a 202 with no body, so the workflow id the runs are attributed by has
+  // to be read from the workflow endpoint (and is then cached for the rest of the session).
+  route('GET', new RegExp(`${WORKFLOW}$`), () => (opts.listWorkflow === false
+    ? { status: 404, data: { message: 'Not Found' } }
+    : { status: 200, data: { id: SYNC_WORKFLOW_ID, name: 'Sync Battle.net data', path: '.github/workflows/sync-bnet.yml' } }));
   route('GET', new RegExp(`${RUNS}\\?`), () => {
     runsCallCount += 1;
     if (runsCallCount === 1) {
@@ -708,15 +920,16 @@ function refreshRoutes(conclusion = 'success') {
       // a second Refresh clicked while the first is in flight must not double-dispatch
       secondDispatch = net.filter(c => c.method === 'POST').length;
     }
-    if (runsCallCount < 2) return { status: 200, data: { workflow_runs: [{ status: 'queued' }] } };
+    if (runsCallCount < 2) return { status: 200, data: { workflow_runs: [syncRun({ status: 'queued', conclusion: null })] } };
     return {
       status: 200,
       data: {
         workflow_runs: [
-          { name: 'Sync Battle.net data', run_id: 2, status: 'completed', conclusion,
-            created_at: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'), display_title: 'Gearman' },
-          { name: 'Sync Battle.net data', run_id: 1, status: 'in_progress', conclusion: null,
-            created_at: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z') },
+          // somebody else's dispatch of a different workflow, NEWER than ours: crediting it would
+          // turn this refresh into "Battle.net refresh finished" for a run that never touched it
+          syncRun({ run_id: 99, workflow_id: 999, name: 'Deploy pages', conclusion: 'failure' }),
+          syncRun({ run_id: 2, conclusion, display_title: 'Gearman' }),
+          syncRun({ run_id: 1, status: 'in_progress', conclusion: null }),
         ],
       },
     };
@@ -762,6 +975,8 @@ ok(modalHtml().includes('Helm After Refresh'),
 ok(byId('bnet-sync-line').innerHTML.includes('octocat'),
   'the reloaded provenance renders too (the header sync line reads the new triggeredBy)');
 ok(/refresh finished/i.test(toast().textContent), `and the flash says so ("${toast().textContent}")`);
+ok(refreshed === true && net.filter(c => c.method === 'GET' && c.path.indexOf(WORKFLOW) !== -1).length === 1,
+  'the sync workflow id is read from GitHub exactly once (then cached for the session)');
 
 // 403 → actions: write
 resetRoutes();
@@ -786,7 +1001,10 @@ ok(failedRun === false && /failure/.test(toast().textContent),
 resetRoutes();
 route('GET', /^\/user$/, () => ({ status: 200, data: { login: 'octocat' } }));
 route('POST', new RegExp(`${DISPATCH}$`), () => ({ status: 202 }));
-route('GET', new RegExp(`${RUNS}\\?`), () => ({ status: 200, data: { workflow_runs: [{ status: 'in_progress', created_at: new Date().toISOString() }] } }));
+route('GET', new RegExp(`${WORKFLOW}$`), () => ({
+  status: 200, data: { id: SYNC_WORKFLOW_ID, name: 'Sync Battle.net data', path: '.github/workflows/sync-bnet.yml' },
+}));
+route('GET', new RegExp(`${RUNS}\\?`), () => ({ status: 200, data: { workflow_runs: [syncRun({ status: 'in_progress', conclusion: null })] } }));
 const pollsBefore = ghCalls('GET', RUNS).length;
 const started = Date.now();
 openRow(ROWS.ok);
@@ -797,16 +1015,52 @@ ok(timedOut === false && /3 minutes|still running/.test(toast().textContent),
 ok(ghCalls('GET', RUNS).length - pollsBefore <= 12 && elapsed < 3000,
   `the poll is bounded (3 calls in ${elapsed}ms with a 60 ms cap; production cap is 180 s)`);
 
-// runs older than the dispatch are never mistaken for ours
-ok(detail && github.candidateRuns({ data: { workflow_runs: [
-  { status: 'completed', conclusion: 'success', created_at: '2020-01-01T00:00:00Z' },
-  { status: 'completed', conclusion: 'success', event: 'push', created_at: new Date().toISOString() },
-] } }, new Date().toISOString()) .length === 0,
-  'a push run, or one older than the dispatch, is never treated as ours');
+// --- attribution: only our workflow, on our ref, inside ONE clock allowance ---
+const REFRESH_SKEW = github.REFRESH_CLOCK_SKEW_MS;
+const attributionNow = Date.now();
+const attributionSince = new Date(attributionNow - REFRESH_SKEW).toISOString().replace(/\.\d{3}Z$/, 'Z');
+const attribution = (runs, opts = {}) => github.candidateRuns({ data: { workflow_runs: runs } },
+  attributionSince, { workflowId: String(SYNC_WORKFLOW_ID), branch: 'main', ...opts });
+
+ok(attribution([
+  syncRun({ created_at: '2020-01-01T00:00:00Z' }),
+  syncRun({ event: 'push' }),
+]).length === 0, 'a push run, or one older than the dispatch, is never treated as ours');
+ok(attribution([syncRun({ workflow_id: 999, name: 'Deploy pages' })]).length === 0,
+  'a dispatch of a different workflow is never credited to the sync run');
+ok(attribution([syncRun({ workflow_id: '999' })]).length === 0,
+  'the workflow id is compared as a value, not merely required to be present');
+ok(attribution([syncRun({ head_branch: 'a-reviewers-branch' })]).length === 0,
+  'a dispatch against another ref is never credited to ours');
+ok(attribution([syncRun({ name: 'Something else entirely' })]).length === 1,
+  'a run on our workflow id and ref is credited (the name is a belt, not the only key)');
+ok(github.candidateRuns({ data: { workflow_runs: [
+  syncRun({ created_at: new Date(attributionNow - REFRESH_SKEW - 30000).toISOString().replace(/\.\d{3}Z$/, 'Z') }),
+] } }, attributionSince, { workflowId: String(SYNC_WORKFLOW_ID), branch: 'main' }).length === 0,
+  'the clock allowance is applied exactly ONCE: a run 30 s outside the corrected bound is not credited');
+ok(github.candidateRuns({ data: { workflow_runs: [
+  syncRun({ created_at: new Date(attributionNow - 60000).toISOString().replace(/\.\d{3}Z$/, 'Z') }),
+] } }, attributionSince, { workflowId: String(SYNC_WORKFLOW_ID), branch: 'main' }).length === 1,
+  'a run inside the single corrected bound is still credited (the skew allowance is real)');
+
+// A refresh whose workflow cannot be identified says so instead of guessing at a run. The id is
+// cached per repository, so this simulates a session that has never resolved it.
+github.resetSyncWorkflowCache();
+refreshRoutes('success', { listWorkflow: false });
+net.length = 0;
+openRow(ROWS.ok);
+const unidentified = await detail.refreshFromBattleNet(ROWS.ok, { intervalMs: 5, timeoutMs: 200 });
+ok(unidentified === false && /cannot be identified/.test(toast().textContent),
+  `an unidentifiable workflow fails closed ("${toast().textContent}")`);
+ok(ghCalls('GET', RUNS).length === 0, 'and no run at all is polled for it (nothing credited by accident)');
 
 // ---------------------------------------------------------------- 9. editchar gating
 console.log('\n[9] editCharacter / saveCharacter / deleteCharacter gating');
 resetRoster();
+// The save/delete path is the bulk (compare-and-replace) one, so this browser needs a baseline
+// that matches the branch the routes below serve. Reloading the fixture roster is exactly what a
+// page reload does.
+await dataMod.loadRoster();
 happyCommitRoutes();
 net.length = 0;
 const lockedRow = state.getCharacters().find(c => c.id === ROWS.locked);
@@ -872,20 +1126,32 @@ ok(hidden('detail-modal'), 'the modal closes cleanly after all of that');
 
 
 // The endpoint inventory runs at the very end, so it covers every call the whole harness made.
-const githubPaths = [...new Set(netAll.filter(c => c.host === 'github').map(c => c.method + ' ' + c.path.split('?')[0]
-  .replace(/\/repos\/acme\/wow-forever-roster/, '/repos/{owner}/{repo}')))].sort();
+const githubRecords = netAll.filter(c => c.host === 'github');
+const asTemplate = p => p.replace(/\/repos\/acme\/wow-forever-roster/, '/repos/{owner}/{repo}');
+const githubPaths = [...new Set(githubRecords.map(c => c.method + ' ' + asTemplate(c.path.split('?')[0])))].sort();
+// The same inventory with the query left IN: GH_PATH_RE admits ?, = and %, so an endpoint can
+// only be pinned once the query string is looked at too (see the token assertion below).
+const githubUrlsFull = [...new Set(githubRecords.map(c => asTemplate(`${c.method} ${c.path}`)))].sort();
 const ALLOWED_ENDPOINTS = [
   'GET /user',
   'GET /repos/{owner}/{repo}/contents/data/characters.json',
   'PUT /repos/{owner}/{repo}/contents/data/characters.json',
   'POST /repos/{owner}/{repo}/actions/workflows/sync-bnet.yml/dispatches',
+  'GET /repos/{owner}/{repo}/actions/workflows/sync-bnet.yml',
   'GET /repos/{owner}/{repo}/actions/runs',
 ];
 const unexpected = githubPaths.filter(p => ALLOWED_ENDPOINTS.indexOf(p) === -1);
 ok(unexpected.length === 0 && ALLOWED_ENDPOINTS.every(p => githubPaths.indexOf(p) !== -1),
-  `every GitHub call is one of the five documented endpoints (unexpected: ${unexpected.join(', ') || 'none'}; seen: ${githubPaths.join(' | ')})`);
+  `every GitHub call is one of the ${ALLOWED_ENDPOINTS.length} documented endpoints (unexpected: ${unexpected.join(', ') || 'none'}; seen: ${githubPaths.join(' | ')})`);
 ok(netAll.every(c => c.host !== 'github' || /^token ghp_test_token/.test(c.auth || '')),
   'and every one of them carried the PAT (no unauthenticated GitHub call)');
+// The credential belongs in the Authorization header and nowhere else: a rewrite that moved it
+// into a query string (`/user?access_token=<PAT>`) would still pass the path-only inventory, so
+// the FULL URL — query included — is searched for every GitHub token shape.
+ok(githubUrlsFull.every(url => !/ghp_|github_pat_|gho_|access_token|client_secret/i.test(url)),
+  `no token shape and no credential-shaped query parameter appears in any full request URL (${githubUrlsFull.length} distinct URLs)`);
+ok(githubRecords.every(c => c.auth === null || c.auth.indexOf('ghp_') === 'token '.length),
+  'the token is attached in exactly one way: the Authorization header value');
 
 // --------------------------------------------------------------- 11. PAT hygiene
 console.log('\n[11] PAT hygiene: one origin, one header, and a saved token drops the cached login');
@@ -910,6 +1176,141 @@ ok(userCalls === 1 && afterTokenChange === 'octocat',
   'a saved (possibly different) PAT drops the cached login, so reviewedBy is always the token\u2019s own owner');
 ok(byId('sync-status').textContent === 'File missing',
   'the pull after saving still degrades cleanly when the roster file is not there');
+
+// owner/repo are interpolated into the URL path, so they are shape-checked before assembly: the
+// origin was always immovable, but `..` or `?` could steer the endpoint while staying same-origin.
+github.ghConfig.owner = '';
+ok((await github.ghApi('/user')).error === 'no-repo', 'an empty owner is still the "no repository configured" case');
+github.ghConfig.owner = 'acme';
+for (const bad of ['//evil.com', '..', 'a/b', 'owner?x=1', 'own@evil', 'fr#tag', 'ow\\ner', 'a b', '-lead', 'trail-', '..', 'o%2f%2e%2e', 'x'.repeat(101)]) {
+  github.ghConfig.owner = bad;
+  const callsBefore = netAll.length;
+  const refused = await github.ghApi('/user');
+  ok(refused.ok === false && refused.error === 'bad-repo' && typeof refused.message === 'string'
+    && netAll.length === callsBefore,
+    `an owner of ${JSON.stringify(bad)} is refused with a message and no request`);
+}
+const seenBeforeShape = netAll.length;
+github.ghConfig.repo = 'bad..repo';
+await github.ghApi('/user');
+ok(netAll.length === seenBeforeShape, 'a repo out of shape sends nothing at all');
+github.ghConfig.owner = 'acme';
+github.ghConfig.repo = 'wow-forever-roster';
+ok(github.isOwnerRepoShape('acme') && github.isOwnerRepoShape('wow-forever-roster')
+  && github.isOwnerRepoShape('a.b-c_1'), 'the shape check accepts real GitHub names');
+
+// The token may appear in exactly one source construct: the Authorization header line. Nothing
+// else may interpolate it into a template (a URL, a log line, an element), which is the
+// source-level counterpart of the behavioural "no token in any URL" check above.
+const ghSrc = fs.readFileSync(path.join(ROOT, 'js', 'github.js'), 'utf8').split('\n');
+const tokenTemplates = ghSrc.filter(line => /`[^`]*ghConfig\.token[^`]*`/.test(line));
+ok(tokenTemplates.length === 1 && /headers\['Authorization'\] = `token \$\{ghConfig\.token\}`;/.test(tokenTemplates[0]),
+  `ghConfig.token is interpolated into exactly one template string, the header (${tokenTemplates.length})`);
+ok(!ghSrc.some(line => /fetch\(/.test(line) && /token/i.test(line)),
+  'no fetch() call builds its URL from the token');
+ok(ghSrc.filter(line => /Authorization/.test(line)).length === 1,
+  'the Authorization header is still built in exactly one place');
+ok((ghSrc.join('\n').match(/- REFRESH_CLOCK_SKEW_MS/g) || []).length === 1,
+  'the clock-skew allowance is subtracted in exactly one place (it is applied once, not twice)');
+
+// ---------------------------------------------------- 12. display maps and grid escaping
+console.log('\n[12] a committed row cannot poison the display maps or the grid markup');
+const POISONED = {
+  id: 'p-proto', player: 'pandamancer', name: 'Constructor', track: 'flowmasters',
+  role: 'DPS<img src=x onerror=alert(1)>', roleSec: 'Healer\" onmouseover=\"alert(2)',
+  race: 'Orc', class: 'constructor', prof1: 'toString', prof2: '__proto__',
+};
+let renderError = null;
+try {
+  state.setCharacters(JSON.parse(JSON.stringify([...fixtureRoster.characters, POISONED])));
+  state.renderAll();
+} catch (err) {
+  renderError = err;
+}
+ok(renderError === null, `a row whose class is a prototype key renders without throwing (${renderError ? renderError.message : 'no error'})`);
+ok(byId('character-grid').children.length === fixtureRoster.characters.length + 1,
+  'the grid still renders every row (one poisoned row cannot blank it for every visitor)');
+const poisonGrid = byId('character-grid').innerHTML;
+ok(poisonGrid.includes('font-semibold text-slate-300">constructor</span>'),
+  'the unknown class falls back to the neutral badge styling in its own row');
+ok(!/class="[^"]*function/.test(poisonGrid) && !poisonGrid.includes('function () { [native code] }'),
+  'no prototype member is ever interpolated into a class attribute');
+ok(poisonGrid.includes('&lt;img src=x') && !poisonGrid.includes('<img src=x'),
+  'a role that is markup renders escaped in the grid');
+ok(!poisonGrid.includes('onmouseover=\"alert(2)') && poisonGrid.includes('&quot;'),
+  'a roleSec carrying a quote break renders escaped too');
+ok(!poisonGrid.includes('[object Object]') && byId('profession-tags').innerHTML.length > 0,
+  'the profession matrix ignores prototype keys rather than calling push on one');
+ok(byId('class-stats').innerHTML.length > 0 && byId('buff-checklist').innerHTML.length > 0,
+  'the derived panels repaint in the same pass');
+
+const utilMod = await import(moduleUrl('util.js'));
+const statsMod = await import(moduleUrl('stats.js'));
+
+ok(utilMod.ownString({ Warrior: 'x' }, 'Warrior') === 'x'
+  && utilMod.ownString({ Warrior: 'x' }, 'constructor') === ''
+  && utilMod.ownString({ Warrior: 'x' }, '__proto__') === ''
+  && utilMod.ownString({ Warrior: 'x' }, 'toString') === ''
+  && utilMod.ownString(null, 'Warrior') === ''
+  && utilMod.ownString({ Warrior: () => 'x' }, 'Warrior') === '',
+  'ownString only ever returns a map\u2019s own string values');
+ok(statsMod.classStyle('constructor').text === 'text-slate-300'
+  && statsMod.classStyle('__proto__').bar === 'bg-slate-600'
+  && statsMod.classStyle('Warrior').text === 'text-[#C79C6E]',
+  'the distribution bars fall back to neutral for a prototype-shaped class');
+ok(detail.classColorFor('constructor') === 'text-slate-300'
+  && detail.classColorFor('Warrior') === 'text-[#C79C6E]',
+  'the detail modal\u2019s class colour falls back instead of throwing on a function');
+ok(detail.humanizeKey('constructor') === 'Constructor'
+  && detail.humanizeKey('keystoneScore') === 'Keystone score',
+  'a progress key that names a prototype member is humanised, not resolved');
+ok(JSON.stringify(dataMod.byRosterId('constructor')) === '{"sidecar":null,"mapEntry":null}',
+  'the sidecar join cannot resolve an inherited property either');
+let toastToneError = null;
+try {
+  utilMod.showToast('a tone that does not exist', 'constructor');
+} catch (err) {
+  toastToneError = err;
+}
+ok(toastToneError === null && hidden('app-toast') === false,
+  `an unknown toast tone falls back to info instead of resolving a prototype member (${toastToneError ? toastToneError.message : 'no error'})`);
+
+const editMod = await import(moduleUrl('editchar.js'));
+byId('char-race').value = 'constructor';
+let raceError = null;
+try {
+  editMod.onRaceChange();
+} catch (err) {
+  raceError = err;
+}
+ok(raceError === null && byId('char-class').children.length === 0,
+  `a poisoned race yields no class list rather than calling forEach on a prototype member (${raceError ? raceError.message : 'no error'})`);
+byId('char-race').value = 'Orc';
+editMod.onRaceChange();
+ok(byId('char-class').children.length > 0, 'and the real race list still populates');
+
+let poisonedModal = '';
+try {
+  poisonedModal = detail.detailHtml(POISONED, null, null, 'awaiting_sync');
+} catch (err) {
+  poisonedModal = `THREW ${err.message}`;
+}
+ok(!poisonedModal.startsWith('THREW') && poisonedModal.includes('text-slate-300')
+  && poisonedModal.includes('&lt;img src=x') && !poisonedModal.includes('<img src=x'),
+  'the detail modal renders the poisoned row (neutral class, escaped role) rather than failing');
+resetRoster();
+
+// ---------------------------------------------------- 13. fixture-read classifier self-tests
+console.log('\n[13] the same-origin read classifier refuses anything that is not a data/ file');
+for (const bad of ['//evil.com/steal', 'https://evil.tld/x', '/etc/passwd', 'data/../../../../etc/passwd',
+  'data//evil.com/x', './data/characters.json', 'data', 'data\\characters.json']) {
+  const violationsBefore = violations.length;
+  const res = await globalThis.fetch(bad);
+  ok(violations.length === violationsBefore + 1 && res.ok === false,
+    `a read of ${JSON.stringify(bad)} is classified as a violation, not a fixture read`);
+}
+const stillReadable = await globalThis.fetch('data/characters.json');
+ok(stillReadable.ok === true, 'the real same-origin fixture path still reads fine');
 
 console.log(`\n${fails === 0 ? 'ALL CHECKS PASSED' : 'FAILURES PRESENT'}: ${passes} passed, ${fails} failed`);
 process.exit(fails === 0 ? 0 : 1);

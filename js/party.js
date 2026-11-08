@@ -7,7 +7,7 @@
 // (that would close a cycle).
 
 import { characters, currentFilter, getFilteredCharacters, onFilterChange, registerRenderHook, renderAll } from './state.js';
-import { CLASS_COLORS, escapeHtml, getFaction } from './util.js';
+import { CLASS_COLORS, escapeHtml, getFaction, ownString } from './util.js';
 
 export let party = [null, null, null, null, null];
 
@@ -36,7 +36,9 @@ export function renderParty() {
       const factionBg = faction === 'alliance' 
         ? 'bg-gradient-to-b from-blue-950/60 to-slate-950/90 border-blue-900/60' 
         : 'bg-gradient-to-b from-red-950/60 to-slate-950/90 border-red-900/60';
-      const color = CLASS_COLORS[char.class] || 'text-slate-300';
+      // Own-data lookup (see util.js): a prototype-shaped class falls back to neutral rather
+      // than handing a function to `.split()`.
+      const color = ownString(CLASS_COLORS, char.class) || 'text-slate-300';
       const isOffspec = char.assignedRole && char.assignedRole === char.roleSec;
 
       slotEl.className = `${factionBg} border rounded-lg p-2.5 flex flex-col justify-between min-h-[95px] shadow-sm`;

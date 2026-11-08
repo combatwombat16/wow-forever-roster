@@ -11,6 +11,7 @@ Every test uses a fake client: nothing here touches the network, the credentials
 or the committed artifacts.
 """
 
+import argparse
 import io
 import json
 import os
@@ -23,7 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))          # tools/
 
-from bnet import artifacts, config, fetch, http, resolve, roster       # noqa: E402
+from bnet import artifacts, config, fetch, http, resolve, roster, sync  # noqa: E402
 
 
 class FakeResp:
@@ -339,6 +340,196 @@ class ReportedMismatchNotes(unittest.TestCase):
                                                                          "note": "a"}}))
         # a non-string note (hand-edited JSON) is not a report, and never reaches an artifact
         self.assertIsNone(roster.reported_note({"id": "1", "validation": {"note": {"x": 1}}}))
+
+
+class MassFlipFloorVersusReportedNotes(unittest.TestCase):
+    """D2: the H4 floor judges the resolver verdict; the note rule still applies before the write.
+
+    The interaction the reviewer flagged was untested: ``apply_reported_notes`` demotes ``ok`` rows
+    to ``needs_review``, and if the floor counted those demotions, notes on more than half of the
+    previously-ok rows would make every run refuse to publish (a frozen pipeline, and the report
+    silently unapplied in exactly the mass-report case the rule exists for). These tests drive the
+    real ``Sync.run_sync`` with a fake client: nothing here touches the network or the committed
+    artifacts (both are redirected into a temp directory).
+    """
+
+    ROWS = [("r1", "alpha"), ("r2", "bravo"), ("r3", "charlie"), ("r4", "delta")]
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.map_file, self.data_file = self.tmp / "battle-net-map.json", self.tmp / "character-data.json"
+        self._files = (config.MAP_FILE, config.DATA_FILE)
+        config.MAP_FILE, config.DATA_FILE = self.map_file, self.data_file
+        self._step_summary = os.environ.pop("GITHUB_STEP_SUMMARY", None)
+
+    def tearDown(self):
+        config.MAP_FILE, config.DATA_FILE = self._files
+        if self._step_summary is not None:
+            os.environ["GITHUB_STEP_SUMMARY"] = self._step_summary
+
+    @classmethod
+    def record(cls, rid, name, note=None):
+        rec = {"id": rid, "name": name}
+        if note is not None:
+            rec["validation"] = {"note": note, "reportedBy": "octocat",
+                                 "reportedAt": "2026-01-01T00:00:00Z"}
+        return rec
+
+    @classmethod
+    def published_ok(cls, ids):
+        """A previous map with every id ok: the state the floor protects."""
+        return {rid: {"status": "ok", "slug": rid, "href":
+                      f"https://us.api.blizzard.com/profile/wow/character/{rid}?namespace=profile-forever-us"}
+                for rid in ids}
+
+    def run_sync_with(self, records, prev_entries, table):
+        args = argparse.Namespace(dry_run=False, lookup=None, force=False,
+                                  state_dir=self.tmp / "state")
+        s = sync.Sync(args)
+        f, resolver = make_sync()                       # FakeClient + real Fetcher/Resolver
+        f.client.table = dict(table)
+        # Enrichment (gear, progress) is not what the floor is about; the pair still gets a row.
+        f.enrich = lambda w: {"status": "ok", "fetchedAt": http.iso_now()}
+        s.cache, s.client, s.f, s.resolver = f.cache, f.client, f, resolver
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = s.run_sync(records, prev_entries)
+        return code, out.getvalue()
+
+    def table_for(self, *names):
+        return {name: profile(name.capitalize(), None, name) for name in names}
+
+    def test_notes_on_every_previously_ok_row_do_not_trip_the_floor(self):
+        prev = self.published_ok([rid for rid, _ in self.ROWS])
+        records = [self.record(rid, name, note=f"that is the other server's {name}")
+                   for rid, name in self.ROWS]
+        code, out = self.run_sync_with(records, prev, self.table_for(*[n for _, n in self.ROWS]))
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("mass status flip", out)
+        self.assertTrue(self.map_file.exists() and self.data_file.exists())
+        written = json.loads(self.map_file.read_text())
+        self.assertEqual({e["status"] for e in written["entries"].values()}, {"needs_review"})
+        self.assertEqual(written["entries"]["r1"]["note"], "that is the other server's alpha")
+        self.assertEqual(written["entries"]["r1"]["slug"], "alpha")     # identity kept, not blanked
+        # 4 of 4 previously-ok rows demoted by hand: below the floor, and correctly published.
+        sidecar = json.loads(self.data_file.read_text())
+        self.assertEqual({e["status"] for e in sidecar["characters"].values()}, {"needs_review"})
+        self.assertTrue(all("gear" not in row for row in sidecar["characters"].values()),
+                        "no enriched sidecar row is published under a mapping a human rejected")
+
+    def test_a_genuine_mass_outage_still_trips_the_floor(self):
+        prev = self.published_ok([rid for rid, _ in self.ROWS])
+        # Nothing answers this run: exactly the upstream 404 storm the floor exists for.
+        self.map_file.write_text('{"sentinel": "previous map"}', encoding="utf-8")
+        self.data_file.write_text('{"sentinel": "previous data"}', encoding="utf-8")
+        code, out = self.run_sync_with([self.record(rid, name) for rid, name in self.ROWS], prev, {})
+        self.assertEqual(code, 1, out)
+        self.assertIn("mass status flip", out)
+        self.assertIn("4 ok rows published before this run, 0 ok now", out)
+        self.assertEqual(json.loads(self.map_file.read_text()), {"sentinel": "previous map"})
+        self.assertEqual(json.loads(self.data_file.read_text()), {"sentinel": "previous data"})
+
+    def test_the_floor_decision_is_driven_only_by_resolver_verdicts(self):
+        ids = [rid for rid, _ in self.ROWS]
+        prev = self.published_ok(ids)
+        # Two of four resolve (exactly half: the floor allows), and one of those two carries a
+        # reviewer note. The map that lands has a single ok row — below the floor — which is only
+        # possible because the decision was taken on the resolver verdict, before the note pass.
+        records = [self.record("r1", "alpha", note="wrong character entirely"),
+                   self.record("r2", "bravo"),
+                   self.record("r3", "charlie"),
+                   self.record("r4", "delta")]
+        code, out = self.run_sync_with(records, prev, self.table_for("alpha", "bravo"))
+        self.assertEqual(code, 0, out)
+        written = json.loads(self.map_file.read_text())["entries"]
+        self.assertEqual({rid: written[rid]["status"] for rid in ids},
+                         {"r1": "needs_review", "r2": "ok", "r3": "not_found", "r4": "not_found"})
+        self.assertEqual(sum(1 for e in written.values() if e["status"] == "ok"), 1)
+
+    def test_notes_cannot_rescue_a_run_the_verdicts_failed(self):
+        prev = self.published_ok([rid for rid, _ in self.ROWS])
+        self.map_file.write_text('{"sentinel": "previous map"}', encoding="utf-8")
+        # One row resolves and carries a note; the other three 404. The note is irrelevant to the
+        # floor: one ok against four published is below half, so the outage still refuses.
+        records = [self.record("r1", "alpha", note="looks right to me"),
+                   self.record("r2", "bravo"), self.record("r3", "charlie"), self.record("r4", "delta")]
+        code, out = self.run_sync_with(records, prev, self.table_for("alpha"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("mass status flip", out)
+        self.assertIn("1 ok now", out)
+        self.assertIn("sentinel", self.map_file.read_text())
+
+    def test_resolver_verdict_snapshot_is_immune_to_later_mutation(self):
+        ids = ["1", "2", "3", "4"]
+        entries = {"1": artifacts.map_entry({"name": "a"}, "ok"),
+                   "2": artifacts.map_entry({"name": "b"}, "ok"),
+                   "3": artifacts.map_entry({"name": "c"}, "needs_review", note="reported"),
+                   "4": artifacts.map_entry({"name": "d"}, "not_found", note="404")}
+        verdict = artifacts.resolver_verdict(entries, ids)
+        # The enrichment loop rewrites entries in place; the verdict the floor was decided on
+        # cannot move with them, so the pre-check and write_pair keep agreeing on one decision.
+        entries["1"].update({"status": "fetch_error", "note": "enrichment skipped"})
+        self.assertEqual(artifacts.ok_count(verdict, ids), 2)
+        self.assertEqual(artifacts.ok_count(entries, ids), 1)
+        prev = {rid: {"status": "ok"} for rid in ids}
+        self.assertIsNone(artifacts.mass_flip_refusal(verdict, ids, prev))
+        self.assertIsNotNone(artifacts.mass_flip_refusal(entries, ids, prev))
+        # An id with no entry at all is not ok, and never raises.
+        self.assertEqual(artifacts.ok_count(artifacts.resolver_verdict({}, ["9"]), ["9"]), 0)
+
+    def test_write_pair_takes_the_floor_from_the_snapshot_it_is_given(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            map_file, data_file = Path(tmp) / "m.json", Path(tmp) / "d.json"
+            prev = {"1": {"status": "ok"}, "2": {"status": "ok"}, "3": {"status": "ok"}}
+            # The write itself is below the floor (0 ok), the snapshot is not (3 ok).
+            entries = {rid: artifacts.map_entry({"name": rid}, "needs_review", note="reported")
+                       for rid in prev}
+            snapshot = {rid: {"status": "ok"} for rid in prev}
+            original = (config.MAP_FILE, config.DATA_FILE)
+            try:
+                config.MAP_FILE, config.DATA_FILE = map_file, data_file
+                self.assertIsNotNone(artifacts.write_pair(entries, {rid: {"status": "needs_review"} for rid in prev},
+                                                          ordered_ids=list(prev), prev_entries=prev,
+                                                          triggered_by_value="manual", dry_run=False))
+                self.assertFalse(map_file.exists())
+                self.assertIsNone(artifacts.write_pair(entries, {rid: {"status": "needs_review"} for rid in prev},
+                                                       ordered_ids=list(prev), prev_entries=prev,
+                                                       triggered_by_value="manual", dry_run=False,
+                                                       floor_entries=snapshot))
+                self.assertEqual(json.loads(map_file.read_text())["entries"]["1"]["status"], "needs_review")
+            finally:
+                config.MAP_FILE, config.DATA_FILE = original
+
+
+class LogHygiene(unittest.TestCase):
+    """NIT 9: untrusted text is one printable line at the log boundary, verbatim in the artifact."""
+
+    FORGED = "wrong realm\n\x1b[31mFATAL: forged by a reviewer note\x1b[0m"
+
+    def test_log_safe_collapses_newlines_and_ansi_to_one_printable_line(self):
+        safe = sync.log_safe(self.FORGED)
+        self.assertEqual(safe, "wrong realm FATAL: forged by a reviewer note")
+        self.assertNotIn("\n", safe)
+        self.assertNotIn("\x1b", safe)
+        self.assertEqual(sync.log_safe(None), "")
+        self.assertEqual(sync.log_safe("a\r\nb\x00c"), "a b c")
+        self.assertEqual(len(sync.log_safe("x" * 900)), sync.LOG_LINE_MAX)
+
+    def test_emit_summary_cannot_be_split_into_a_forged_log_line(self):
+        out = io.StringIO()
+        with redirect_stdout(out):
+            sync.Sync.emit_summary(object.__new__(sync.Sync), [f"id 7: {sync.log_safe(self.FORGED)}"])
+        printed = out.getvalue().splitlines()
+        self.assertTrue(any("forged by a reviewer note" in line for line in printed))
+        self.assertFalse([line for line in printed if line.startswith("FATAL")],
+                         f"a roster note forged its own log line: {printed}")
+
+    def test_the_committed_note_stays_verbatim(self):
+        # Sanitizing is for the log only: the artifact value is the reviewer's text, unchanged.
+        entry = artifacts.map_entry({"name": "a"}, "needs_review", note=self.FORGED)
+        self.assertEqual(entry["note"], self.FORGED)
+        self.assertEqual(roster.reported_note({"id": "1", "validation": {"note": self.FORGED}}),
+                         self.FORGED.strip()[:roster.REPORT_NOTE_MAX])
 
 
 class ArtifactsSchema(unittest.TestCase):

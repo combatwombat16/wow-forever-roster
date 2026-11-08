@@ -2,6 +2,35 @@
 // maps that more than one panel needs (class colours, faction, profession abbrevs).
 // Leaf module: it imports nothing.
 
+// ---------- own-data map lookups ----------
+
+// Every display map in this file (class colours, bar fills, profession abbreviations, toast
+// tones) — and the equivalents elsewhere, like the race→class table in editchar.js — is keyed by
+// a string that comes out of data/characters.json, a sidecar, or a form filled from a roster row,
+// i.e. from data any reviewer (or any commit) can edit. A plain `MAP[value]` also resolves members
+// of Object.prototype: a roster row with "class": "constructor" makes `MAP[c.class]` a *function*,
+// so `(MAP[c.class] || fallback).split(' ')[0]` throws and blanks the whole grid for every visitor
+// — one committed line, no PAT needed. These helpers only ever return the map's own data, so an
+// unknown key (or a prototype one) falls back to the caller's neutral styling instead of throwing.
+// Object.hasOwn where available, with the equivalent hasOwnProperty call as the fallback.
+const hasOwnData = typeof Object.hasOwn === 'function'
+  ? (map, key) => Object.hasOwn(map, key)
+  : (map, key) => Object.prototype.hasOwnProperty.call(map, key);
+
+export function ownValue(map, key) {
+  if (!map || typeof map !== 'object') return undefined;
+  if (typeof key !== 'string' && typeof key !== 'number') return undefined;
+  const name = String(key);
+  return hasOwnData(map, name) ? map[name] : undefined;
+}
+
+// The own-string form of a lookup: '' when the key is absent, inherited, or its value is
+// not a string. Callers `||` their own fallback, so the neutral case stays local to the panel.
+export function ownString(map, key) {
+  const value = ownValue(map, key);
+  return typeof value === 'string' ? value : '';
+}
+
 // ---------- transient one-line status (Phase 3d: review commits, Battle.net refresh) ----------
 
 // The write paths need feedback that is not an alert() dialog (a commit takes a second or
@@ -24,7 +53,7 @@ export function showToast(message, tone = 'info') {
   if (!el) return;
   el.textContent = String(message == null ? '' : message);
   Object.keys(TOAST_TONES).forEach(name => el.classList.remove(...TOAST_TONES[name].split(' ')));
-  el.classList.add(...(TOAST_TONES[tone] || TOAST_TONES.info).split(' '));
+  el.classList.add(...(ownString(TOAST_TONES, tone) || ownString(TOAST_TONES, 'info')).split(' '));
   el.classList.remove('hidden');
   if (toastTimer !== null) clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {

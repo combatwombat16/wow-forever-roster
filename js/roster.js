@@ -8,7 +8,7 @@
 import { LIFECYCLE, characters, deriveLifecycleState, getFilteredCharacters, getQuery, isLifecycleEditable, registerRenderHook } from './state.js';
 import { byRosterId, formatSyncedAt, isSidecarFresh } from './data.js';
 import { party } from './party.js';
-import { CLASS_COLORS, PROF_ABBR, escapeHtml, getFaction } from './util.js';
+import { CLASS_COLORS, PROF_ABBR, escapeHtml, getFaction, ownString } from './util.js';
 
 // Guild names are shown inline in a ~410px column; anything longer is elided with the
 // full value in the title attribute.
@@ -139,7 +139,9 @@ export function renderRoster() {
   }
 
   filtered.forEach(c => {
-    const classBadge = CLASS_COLORS[c.class] || 'text-slate-300 border-slate-700 bg-slate-800';
+    // Own-data lookup: an unknown (or prototype) class falls back to the neutral badge and
+    // the row still renders, so a poisoned roster row can never blank the grid.
+    const classBadge = ownString(CLASS_COLORS, c.class) || 'text-slate-300 border-slate-700 bg-slate-800';
     const isPartyMember = party.some(p => p && p.id === c.id);
     const faction = getFaction(c.race);
 
@@ -161,8 +163,8 @@ export function renderRoster() {
       ? '<span class="text-[9px] font-bold text-sky-400 bg-blue-950/80 px-1 py-0.2 rounded border border-blue-800/60">Alliance</span>'
       : '<span class="text-[9px] font-bold text-red-400 bg-red-950/80 px-1 py-0.2 rounded border border-red-800/60">Horde</span>';
 
-    const prof1Str = c.prof1 && c.prof1 !== 'None' ? (PROF_ABBR[c.prof1] || c.prof1) : '';
-    const prof2Str = c.prof2 && c.prof2 !== 'None' ? (PROF_ABBR[c.prof2] || c.prof2) : '';
+    const prof1Str = c.prof1 && c.prof1 !== 'None' ? (ownString(PROF_ABBR, c.prof1) || c.prof1) : '';
+    const prof2Str = c.prof2 && c.prof2 !== 'None' ? (ownString(PROF_ABBR, c.prof2) || c.prof2) : '';
     const profsFormatted = [prof1Str, prof2Str].filter(Boolean).map(escapeHtml).join('/');
 
     const card = document.createElement('div');
@@ -183,8 +185,8 @@ export function renderRoster() {
             <span class="text-slate-600">•</span>
             <span class="text-slate-300 font-normal">${escapeHtml(c.race)}</span>
             <span class="text-slate-600">•</span>
-            <span class="text-amber-300/90 font-medium">${getRoleIcon(c.role)}${c.role}</span>
-            ${c.roleSec && c.roleSec !== 'None' ? `<span class="text-sky-300/80">(${getRoleIcon(c.roleSec)}${c.roleSec})</span>` : ''}
+            <span class="text-amber-300/90 font-medium">${getRoleIcon(c.role)}${escapeHtml(c.role)}</span>
+            ${c.roleSec && c.roleSec !== 'None' ? `<span class="text-sky-300/80">(${getRoleIcon(c.roleSec)}${escapeHtml(c.roleSec)})</span>` : ''}
             ${profsFormatted ? `<span class="text-slate-600">•</span><span class="text-slate-400">${profsFormatted}</span>` : ''}
           </div>
           <!-- Battle.net status dot, synced display data, lifecycle badge -->

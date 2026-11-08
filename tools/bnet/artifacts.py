@@ -165,6 +165,27 @@ def ok_count(entries, ordered_ids):
                if isinstance(entries.get(rid), dict) and entries[rid].get("status") == "ok")
 
 
+def resolver_verdict(entries, ordered_ids):
+    """An immutable snapshot of each entry's status, taken before the reviewer-note pass.
+
+    The H4 floor evaluates the *resolver verdict* rather than the final entries. A reviewer's
+    open report is a deliberate human action: if its ``ok`` -> ``needs_review`` demotions counted
+    here, a mass report (more than half of the previously-ok rows) would make every later run
+    refuse to publish — the pipeline frozen by the very feature that is meant to be advisory — and
+    the report would then go unapplied in exactly the case it was written for. A genuine
+    Blizzard-side 404 storm still trips the floor, because that is the verdict being measured.
+
+    The snapshot copies the status instead of the entry, so the enrichment loop (which rewrites
+    entries in place on a budget stop or a crash) cannot reach back into the verdict the floor was
+    decided on, and ``write_pair`` re-checks that same verdict rather than the post-note map.
+    """
+    verdict = {}
+    for rid in ordered_ids:
+        entry = entries.get(rid)
+        verdict[rid] = {"status": entry.get("status") if isinstance(entry, dict) else None}
+    return verdict
+
+
 def mass_flip_refusal(entries, ordered_ids, prev_entries):
     """The H4 verdict for a candidate write: the fatal message, or None.
 
@@ -211,7 +232,8 @@ def write_data(characters, *, triggered_by_value, dry_run):
     return payload
 
 
-def write_pair(entries, characters, *, ordered_ids, prev_entries, triggered_by_value, dry_run):
+def write_pair(entries, characters, *, ordered_ids, prev_entries, triggered_by_value, dry_run,
+               floor_entries=None):
     """Both artifacts or neither, and never past the H4 floor.
 
     The floor lives inside the writer rather than in the caller so that no future
@@ -221,8 +243,14 @@ def write_pair(entries, characters, *, ordered_ids, prev_entries, triggered_by_v
     one place). The sidecar and the map are always written together because the UI
     joins them by roster id: a half-written pair is a broken site. Both the nightly
     sync and the single-row lookup write through here for that reason.
+
+    ``floor_entries`` is what the floor evaluates when given: the caller's ``resolver_verdict``
+    snapshot. It exists because ``entries`` is the map as published — after the reviewer-note pass
+    — and a human demotion must not be able to trip the outage floor (see ``resolver_verdict``).
+    Omitting it keeps the strict behaviour: the floor judges the write itself.
     """
-    refusal = mass_flip_refusal(entries, ordered_ids, prev_entries)
+    refusal = mass_flip_refusal(entries if floor_entries is None else floor_entries,
+                                ordered_ids, prev_entries)
     if refusal:
         return refusal
     write_map(entries, dry_run=dry_run)
