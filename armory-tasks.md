@@ -7,9 +7,13 @@ or hand individual phases to worker agents. Follow `pi-warden.md` at all times.
 **Deployed 2026-11-08:** pushed to `main`, Pages flipped to the Actions build system; first
 `Deploy GitHub Pages` run green on the rebased tip and the site verified live (zero CDN scripts,
 module entry + built `css/tailwind.css` + `data/` served). Hashes in this file are post-rebase.
-**Status as of 2026-11-08, aligned to commit `14eab90`:** Phase 0 partial (0.4 open), Phase 1 ✅, Phase 2 ✅,
-Phase 3 ✅ (offline-verified — see its acceptance note), Phase 3bis ✅, Phase 4: 4.1 ✅ and 4.2 ✅, **4.3 open**
-(manual end-to-end needs a push plus an owner PAT). Amendments are marked inline as `NOTE` / `AMENDED` /
+**Status as of 2026-11-08 (evening), aligned to commit `29d2a4d`:** Phase 0 partial (**0.4 open** — the one
+content blocker: 14 `not_found` + 2 `needs_review` of 21), Phase 1 ✅, Phase 2 ✅,
+Phase 3 ✅ **Pages-proven** (live-browser verified — see its acceptance note), Phase 3bis ✅ **proven on
+production data** (3 owner validation commits + first successful UI-initiated refresh, run 5),
+Phase 4: 4.1 ✅ and 4.2 ✅ (a third reviewer pass over the post-deploy bug wave is open, noted at 4.2),
+**4.3 substantially done** (remainder: observe a real `fetch_error` row; owner search/modal pass).
+Amendments are marked inline as `NOTE` / `AMENDED` /
 `SUPERSEDED`; the design-level record of those amendments is `docs/refactor-design.md`.
 
 ---
@@ -165,7 +169,7 @@ Files: `.github/workflows/sync-bnet.yml`, `tools/sync_bnet.py` (or `.mjs`), `bat
 - [x] 2.6 Commit both files with `[skip ci]`, dedicated bot identity; skip commit when unchanged.
       NOTE: the commit step now runs only after `python3 .pi/scripts/verify_sync_artifacts.py` succeeds (no `if:`/`continue-on-error` on that gate).
 - [x] 2.7 Maintainer lookup mode (`lookup_name` input): direct-GET the name, write the match + result into the run summary (workflow summary markdown), update map if unambiguous.
-      NOTE (amended on top of `0ab1fcb`): the original note — lookup writes the **map only** and **only when
+      NOTE (amended on top of `5d73f14`): the original note — lookup writes the **map only** and **only when
       unambiguous** — is obsolete on both halves. A lookup publishes through the same `write_pair` as the nightly
       (both artifacts or neither, H4 floor included, every other character's rows carried forward untouched)
       whenever exactly one untrusted roster row carries the normalized name: resolved → `ok` (map + enriched
@@ -248,10 +252,13 @@ Acceptance: a successful manual run commits both JSON files; second run is cheap
       panels are not counting.
 
 Acceptance: with the sidecar deleted, the site behaves identically to today; with it, badges/modal/search work on Pages; no new localStorage keys; no new CDN scripts; every new `on*="fn("` handler is global and every `getElementById` target exists.
-ACCEPTED for everything verifiable offline: `verify_stats.mjs` (197 checks) + `verify_search_detail.mjs` (97 checks)
-prove the id/handler/escaping/no-new-localStorage keys and the search/detail behaviour under a DOM stub. The
-"work on Pages" half is **not yet proven** — `722c428` and its six predecessors are still unpushed
-(`git log origin/main..HEAD`), and the one-time Pages `build_type` flip has not been confirmed from the tree.
+ACCEPTED offline: `verify_stats.mjs` + `verify_search_detail.mjs` prove the id/handler/escaping/no-new-
+localStorage keys and the search/detail behaviour under a DOM stub.
+**UPGRADED — PAGES-PROVEN (2026-11-08 evening):** pushed, Pages flipped to the Actions build, deploys green
+on every tip since. Real-browser verification (headless Chromium against the live URL): modules load,
+Tailwind served locally with zero CDN scripts and zero console errors, all 21 cards with correct lifecycle
+badges, detail modal rendering live sidecar data (Level/iLvl/gear from the 12:32 sync), search present,
+`Last synced … · nightly` line live, and the bundle lockdown holds (`docs/`, `tools/`, config files 404).
 
 ### Phase 3bis — validation lifecycle + on-demand refresh (added by the refactor design; done `26c3dc1`)
 
@@ -271,6 +278,23 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
       mismatch is forced back to `needs_review` on every run until a `validated` commit replaces it.
 - [x] `editchar.js` refuses to open or save the edit form for a validated row and warns on delete.
 
+**LIVE EVIDENCE (2026-11-08 evening, owner testing on the deployed site):**
+- Three real validation commits authored from the browser (`Validate shiftybeef stroganoff as
+  shiftybeef-stroganoff`, `Validate Beef Pho as beef-pho`, `Validate Healy Bones as healy-bones`); the sync
+  now marks all three rows `user-confirmed` and never re-resolves them — the full lifecycle works on
+  production data, and the badges read `3 validated · 2 confirm match · 2 review match · 14 no bnet match`.
+- **First successful on-demand refresh from the UI** (Actions run 5, `workflow_dispatch`): looked up
+  `Shmorlock Gorelocke`, published `not_found` via `write_pair` in lookup mode, gate green, committed —
+  `29d2a4d`. (Run 4 had failed *before* Battle.net was called: a unit test pinned the roster at exactly 20
+  and the tracker had added a 21st character; fixed data-independent in `9753bea`. NOTE: no pipeline output
+  anywhere says "wrong realm" — that run failed in CI, and the closest text is the honest lookup result
+  "direct lookup 404ed and no reachable guild roster lists this name", i.e. a 0.4 opt-in issue.)
+- Live bug-fix wave after the first deploy: `5d73f14` (phantom upstream-drift — GitHub's 60 s cache on
+  `GET …?ref=main` was never evicted by our PUT; fixed with `cache:'no-store'` + one canonical baseline; the
+  `client_payload` 422 — the API rejects the key, proven wire-level; `needs_review` action panel), `c8fbe39`
+  (badge honesty: `review match` when there are no candidates to pick), `9753bea` (data-independent gates).
+  All reproduce-first with failing scenarios, mutation-proofed, and re-verified in the real browser.
+
 ## Phase 4 — Verification & review
 
 - [x] 4.1 Extend `.pi/scripts/` checks (or add `verify_armory.mjs`): sidecar + map JSON parse and schema-validate; every `getElementById` id present & unique; every inline handler resolves to a global function; sidecar-derived interpolations all pass through the escaper; `rg` scan proving no token/secret patterns in the repo or workflow logs; `characters.json` byte-identical to before the change.
@@ -280,14 +304,19 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
       after the **live bug-fix wave on top of `9822da1`** (the phantom "roster changed upstream" drift, the
       422-rejected dispatch body, and the `needs_review` row with no way out: verify_writes 220→256,
       verify_stats 197→199, unit suite 44→49; the other three verifiers unchanged), and again for the
-      **lookup-publishing fix on top of `0ab1fcb`** (unit suite 49→55 — lookup now publishes `ok`/`ambiguous`/
-      `not_found` through `write_pair` in lookup mode; all five verifiers unchanged):
+      **lookup-publishing fix on top of `5d73f14`** (unit suite 49→55 — lookup now publishes `ok`/`ambiguous`/
+      `not_found` through `write_pair` in lookup mode; all five verifiers unchanged), then for the **badge
+      honesty fix `c8fbe39`** (verify_writes 256→259 — a needs_review row without candidates badges
+      "review match", never "pick candidate"; harness now picks an EDITABLE card for the ✎/✕ checks because
+      the committed roster legitimately carries validated rows) and the **data-independent gates `9753bea`**
+      (the pinned roster count is gone; `verify_bnet_probe` checks the frozen contract against the probe-era
+      roster via git history; `verify_sync_artifacts` counts now scale with the roster — 486→528 at 21 ids):
 
       | Script | Checks | Owns |
       |---|---|---|
-      | `.pi/scripts/verify_sync_artifacts.py` | 486 | map + data + roster parse and exact v2 key sets, ok-rows carry real identity, ambiguous rows carry candidates and no slug, whitelisted sidecar keys (no raw Blizzard blobs), href/iconUrl hosts, secret scan, no root-level JSON copies, sync-workflow trigger/permissions/step-order, **and the `pages.yml` shape (secret-free, minimally permitted, Tailwind-built, official Pages actions, allowlisted bundle)** |
+      | `.pi/scripts/verify_sync_artifacts.py` | 528 (scales with roster) | map + data + roster parse and exact v2 key sets, ok-rows carry real identity, ambiguous rows carry candidates and no slug, whitelisted sidecar keys (no raw Blizzard blobs), href/iconUrl hosts, secret scan, no root-level JSON copies, sync-workflow trigger/permissions/step-order, **and the `pages.yml` shape (secret-free, minimally permitted, Tailwind-built, official Pages actions, allowlisted bundle)** |
       | `.pi/scripts/verify_stats.mjs` | 199 | static structure across `js/**` (every `getElementById` target exists, no duplicate ids, every inline handler resolves **and** is assigned to `window` by a module), colour-map agreement, rendered stats vs an independent tally of `data/characters.json`, empty-filter placeholder, escaping, sidecar wiring (3b), search + detail (3c), review-action wiring (3d) |
-      | `.pi/scripts/verify_writes.mjs` | 256 | the browser write paths under a DOM stub: no-PAT gating, action set per lifecycle state (**all three `needs_review` shapes, and the pick-candidate badge**), fresh-sha GET before PUT + v2 envelope + design §2 payload shape, 409 → pull-first with nothing applied locally, **§4d: the baseline after a commit, run against a branch that keeps what was PUT plus GitHub's 60 s max-age cache**, RESOLVE/REPORT/RE-OPEN + the needs_review exits, refresh dispatch body (**only `ref` + the two declared inputs — the harness 422s anything else, as the API does**) + 403 guidance + bounded poll, editchar gating, and an origin allowlist of `api.github.com` + same-origin only |
+      | `.pi/scripts/verify_writes.mjs` | 259 | the browser write paths under a DOM stub: no-PAT gating, action set per lifecycle state (**all three `needs_review` shapes, and the pick-candidate badge**), fresh-sha GET before PUT + v2 envelope + design §2 payload shape, 409 → pull-first with nothing applied locally, **§4d: the baseline after a commit, run against a branch that keeps what was PUT plus GitHub's 60 s max-age cache**, RESOLVE/REPORT/RE-OPEN + the needs_review exits, refresh dispatch body (**only `ref` + the two declared inputs — the harness 422s anything else, as the API does**) + 403 guidance + bounded poll, editchar gating, and an origin allowlist of `api.github.com` + same-origin only |
       | `.pi/scripts/verify_search_detail.mjs` | 97 | search AND track composition, every panel repaints on query change, debounce/clear, modal open paths, gear host allowlisting (foreign host, `javascript:`, look-alike host), section omission, escaping, ESC/backdrop close, no localStorage growth |
       | `.pi/scripts/verify_bnet_probe.py` | 42 | Phase 1 contract: every JSON path cited in `docs/bnet-api-notes.md` exists in the captured probe payloads; workflows allowlist |
       | `python3 -m unittest discover -s tools -p "test_*"` | 49 tests | offline stdlib-only unit tests for the sync package (allowlist, redactor, H4 floor incl. the resolver-verdict/note ordering, artifact schemas, `validation.note` → `needs_review`, log hygiene, **the `--lookup` verdicts a Refresh depends on, published through `write_pair` in lookup mode: multi-hit → `ambiguous` + every candidate, single hit → `ok`, definite miss → `not_found`; an unresolved verdict never carries gear, `--dry-run` writes no bytes, and the H4 floor still guards the lookup write**) |
@@ -325,14 +354,18 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
       Not in scope for either pass: `pages.yml` arrived after them (`722c428`) and was gated by its shape
       checks in `verify_sync_artifacts.py` instead; the `workflow_run`/`head_sha` reasoning is documented in
       the workflow's own comment block.
+      **OPEN item:** the post-deploy bug wave (`5d73f14`, `c8fbe39`, `9753bea`) has had no independent
+      reviewer pass yet — every fix was reproduce-first with mutation-proofed harnesses, but a third
+      adversarial pass over these three commits is owed before further hardening of the write paths.
 - [ ] 4.3 Manual end-to-end: dispatch the workflow, watch first commit, hard-refresh the Pages site, check badges/modal/search/status-dot states incl. `needs_review` and `fetch_error` characters.
-      **OPEN — intentionally unticked.** Every commit from `ee1eb52` (Phase 2's data layout) through `722c428`
-      is still unpushed (`git log origin/main..HEAD` = 7 commits), so nothing new has ever run on Actions:
-      the Actions-side existence of `BLIZZARD_CLIENT_ID`/`BLIZZARD_CLIENT_SECRET` has never been proven by a
-      run, the one-time Pages `build_type: legacy → workflow` flip is unconfirmed, and the browser write paths
-      need a real owner PAT (`contents: read/write` + `actions: read/write`) exercised against the live repo.
-      Blocked on: push `main`, confirm/perform the Pages setting flip, then dispatch once from the UI and once
-      from Actions and read the badge/lifecycle transitions on a `needs_review` and a `fetch_error` row.
+      **SUBSTANTIALLY DONE (2026-11-08, owner + browser verification); left unticked for the remainder:**
+      proven live — dispatch from the UI (run 5, success, commit `29d2a4d` watched), validation commits
+      (three, incl. badge flip to `validated` and read-only locking), hard-refresh of the Pages site,
+      badges/modal on `needs_review` rows (action panel + Refresh hint), `Last synced` provenance line,
+      secrets proven present Actions-side by successful runs, Pages flip performed and deploys green.
+      Outstanding: (a) a `fetch_error` row has not occurred in current data to observe — the state is
+      pinned by unit/harness fixtures only; (b) a deliberate search-composition + gear-modal pass by the
+      owner (verified programmatically and by smoke in headless Chromium).
 
 ## Known residual nits (verification review of `f2d4edd`, all accepted 2026-11-08)
 
@@ -342,7 +375,7 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
 - `deleteCharacter` clears the party slot before the push settles: a refused push leaves the slot
   empty while the row survives. UI-only; next edit restores it.
 - Lookup-mode `floor_entries` snapshot has nightly + write-pair coverage but no dedicated unit test.
-  **Retired on top of `0ab1fcb`:** the lookup-publishing tests assert the exact `floor_entries` snapshot
+  **Retired on top of `5d73f14`:** the lookup-publishing tests assert the exact `floor_entries` snapshot
   `run_lookup` hands the writer and drive a mass-flip refusal through the same single-writer call.
 - The GET→PUT window on roster commits (≈200 ms) stays optimistic-concurrency: 409 → "pull first".
 
