@@ -199,29 +199,24 @@ Behavior changes (lifecycle-aware):
 
 ## 10. Implementation deltas (what differs from rev 1 as written)
 
-Checked against the working tree at `b378b29` on 2026-11-08. Nothing here reverses a signed-off decision; each
+Checked against the working tree at `263cb99` on 2026-11-08. Nothing here reverses a signed-off decision; each
 entry is either a naming/plumbing change or a place where the build is stricter or lazier than drafted.
 
-1. **Roster write path is still whole-file, on both routes (read-modify-write and compare-and-replace are NOT
-   in the tree).** Checked at report time: no merge/compare implementation exists in `js/github.js` at
-   `b378b29`, and the working tree is clean. Current behaviour, per the code:
-   - *Review commits* — `commitRosterFile(message, charactersArray)` PUTs the **whole serialized roster built
-     from the caller's in-memory array**, using a sha fetched immediately before the PUT as the base, so a 409
-     means "the file moved between this GET and this PUT" and surfaces as "pull first, then repeat this review
-     action". That is optimistic concurrency on the *file*, not a read-modify-write of the *remote document*: a
-     concurrent edit that lands before the GET is overwritten, not merged.
-   - *Bulk push* — `pushToGitHub()` PUTs the caller's array too, reusing the cached `currentSha` and only
-     fetching a sha when none is cached; there is no compare-and-replace step.
-   Mitigations that do exist: the sync never commits the roster (`sync-bnet.yml` stages only
-   `data/battle-net-map.json` and `data/character-data.json`), every write goes through the v2 envelope
-   (`ensureRosterEnvelope()`, so a browser that only ever had localStorage cannot downgrade the file to a bare
-   v1 array), and a failed write never mutates local state. **Residual risk until this lands:** two people
-   reviewing at once, or a human commit racing a review action, loses one side's change silently. **Re-check
-   this entry after the pending write-path worker (`2c7c8ebf`) commits:** while this document was being aligned,
-   an in-flight (uncommitted, and temporarily verifier-red) change to `js/github.js` appeared in the working
-   tree implementing exactly read-modify-write for review mutations and a compare-and-replace baseline check for
-   the bulk path. It is not part of `b378b29`, so it is deliberately not described here as shipped; once it
-   lands, replace this entry with its actual shape and drop the residual-risk sentence if the merge covers it.
+1. **Roster write path: read-modify-write for review mutations, compare-and-replace for bulk push** — shipped
+   in the fix wave (`263cb99`) after the write-path review flagged whole-file overwrite as MAJOR.
+   - *Review commits* — `commitValidationOnFresh(message, id, mutateFn)` → one commit core
+     (`commitRosterFile`): fresh GET of `data/characters.json`, `setValidationOnFresh` re-applies the mutation
+     (set/clear validation block, candidate choice, mismatch note) **onto the freshly fetched document**
+     (id must appear exactly once with a usable name, else abort with no PUT), then PUTs that array with that
+     sha. Concurrent validations by other reviewers survive; a row deleted or renamed upstream aborts the
+     commit instead of resurrecting it; the in-memory roster adopts the rebased result.
+   - *Bulk push* — `pushToGitHub()` delegates to the same core with `{compareBaseline: true}`: if the upstream
+     content semantically differs from what this browser loaded (baseline captured at load/pull/successful
+     commit), the push is refused with "roster changed upstream — pull first" and **nothing** is written
+     locally (the old failure-time localStorage write was removed). Byte-different but semantically identical
+     upstream content is not treated as drift.
+   Mitigations unchanged: sync never commits the roster; every write goes through the v2 envelope
+   (`ensureRosterEnvelope()`); failed writes never mutate local state.
 2. **`pages.yml` is the deploy path; the "settings flip TBD" of §4 is retired by it** rather than by the flip.
    `push(main)` + `workflow_run(sync-bnet: completed, main)` + `workflow_dispatch`, zero secrets, least
    privilege per job, a size gate that refuses a degenerate stylesheet, an allowlisted `_site` bundle (repo
@@ -248,8 +243,8 @@ entry is either a naming/plumbing change or a place where the build is stricter 
    network" true without a build step. The sidecars are still never persisted, and no third localStorage key
    exists (`verify_search_detail.mjs` §6).
 7. **No `verify_armory.mjs`** (§6). The 4.1 coverage was split per surface instead, so a failure names the
-   surface: `verify_sync_artifacts.py` (486), `verify_stats.mjs` (181), `verify_writes.mjs` (140, new in
-   `c3815b7`), `verify_search_detail.mjs` (97, new in `8e593c7`), `verify_bnet_probe.py` (42) and 35 unit tests
+   surface: `verify_sync_artifacts.py` (486), `verify_stats.mjs` (197), `verify_writes.mjs` (220, new in
+   `c3815b7`), `verify_search_detail.mjs` (97, new in `8e593c7`), `verify_bnet_probe.py` (42) and 44 unit tests
    in `tools/tests/`. `verify_sync_artifacts.py` additionally absorbed the `pages.yml` shape checks
    (secret-free, permissions, Tailwind build, official Pages actions, allowlisted bundle,
    build → size-gate → stage → upload → deploy order); the two-workflows-only allowlist for

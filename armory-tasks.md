@@ -234,7 +234,7 @@ Acceptance: a successful manual run commits both JSON files; second run is cheap
       panels are not counting.
 
 Acceptance: with the sidecar deleted, the site behaves identically to today; with it, badges/modal/search work on Pages; no new localStorage keys; no new CDN scripts; every new `on*="fn("` handler is global and every `getElementById` target exists.
-ACCEPTED for everything verifiable offline: `verify_stats.mjs` (181 checks) + `verify_search_detail.mjs` (97 checks)
+ACCEPTED for everything verifiable offline: `verify_stats.mjs` (197 checks) + `verify_search_detail.mjs` (97 checks)
 prove the id/handler/escaping/no-new-localStorage keys and the search/detail behaviour under a DOM stub. The
 "work on Pages" half is **not yet proven** — `b378b29` and its six predecessors are still unpushed
 (`git log origin/main..HEAD`), and the one-time Pages `build_type` flip has not been confirmed from the tree.
@@ -261,18 +261,18 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
 
 - [x] 4.1 Extend `.pi/scripts/` checks (or add `verify_armory.mjs`): sidecar + map JSON parse and schema-validate; every `getElementById` id present & unique; every inline handler resolves to a global function; sidecar-derived interpolations all pass through the escaper; `rg` scan proving no token/secret patterns in the repo or workflow logs; `characters.json` byte-identical to before the change.
       DONE — deliberately **not** as one `verify_armory.mjs`: the coverage was split into five verifiers that
-      each own a surface, so a failure names the surface. Counts below are the current totals, re-run against
-      `b378b29` while writing this file (and they match the "486/42/181/97/140/35 all green" line of the
-      Phase 4 commit message):
+      each own a surface, so a failure names the surface. Counts below are the current totals, re-run at
+      `263cb99` (post fix-wave; the fix wave raised verify_writes 140→220, verify_stats 181→197 and the unit
+      suite 35→44):
 
       | Script | Checks | Owns |
       |---|---|---|
       | `.pi/scripts/verify_sync_artifacts.py` | 486 | map + data + roster parse and exact v2 key sets, ok-rows carry real identity, ambiguous rows carry candidates and no slug, whitelisted sidecar keys (no raw Blizzard blobs), href/iconUrl hosts, secret scan, no root-level JSON copies, sync-workflow trigger/permissions/step-order, **and the `pages.yml` shape (secret-free, minimally permitted, Tailwind-built, official Pages actions, allowlisted bundle)** |
-      | `.pi/scripts/verify_stats.mjs` | 181 | static structure across `js/**` (every `getElementById` target exists, no duplicate ids, every inline handler resolves **and** is assigned to `window` by a module), colour-map agreement, rendered stats vs an independent tally of `data/characters.json`, empty-filter placeholder, escaping, sidecar wiring (3b), search + detail (3c), review-action wiring (3d) |
-      | `.pi/scripts/verify_writes.mjs` | 140 | the browser write paths under a DOM stub: no-PAT gating, action set per lifecycle state, fresh-sha GET before PUT + v2 envelope + design §2 payload shape, 409 → pull-first with nothing applied locally, RESOLVE/REPORT/RE-OPEN, refresh dispatch body + 403 guidance + bounded poll, editchar gating, and an origin allowlist of `api.github.com` + same-origin only |
+      | `.pi/scripts/verify_stats.mjs` | 197 | static structure across `js/**` (every `getElementById` target exists, no duplicate ids, every inline handler resolves **and** is assigned to `window` by a module), colour-map agreement, rendered stats vs an independent tally of `data/characters.json`, empty-filter placeholder, escaping, sidecar wiring (3b), search + detail (3c), review-action wiring (3d) |
+      | `.pi/scripts/verify_writes.mjs` | 220 | the browser write paths under a DOM stub: no-PAT gating, action set per lifecycle state, fresh-sha GET before PUT + v2 envelope + design §2 payload shape, 409 → pull-first with nothing applied locally, RESOLVE/REPORT/RE-OPEN, refresh dispatch body + 403 guidance + bounded poll, editchar gating, and an origin allowlist of `api.github.com` + same-origin only |
       | `.pi/scripts/verify_search_detail.mjs` | 97 | search AND track composition, every panel repaints on query change, debounce/clear, modal open paths, gear host allowlisting (foreign host, `javascript:`, look-alike host), section omission, escaping, ESC/backdrop close, no localStorage growth |
       | `.pi/scripts/verify_bnet_probe.py` | 42 | Phase 1 contract: every JSON path cited in `docs/bnet-api-notes.md` exists in the captured probe payloads; workflows allowlist |
-      | `python3 -m unittest discover -s tools -p "test_*"` | 35 tests | offline stdlib-only unit tests for the sync package (allowlist, redactor, H4 floor, artifact schemas, `validation.note` → `needs_review`) |
+      | `python3 -m unittest discover -s tools -p "test_*"` | 44 tests | offline stdlib-only unit tests for the sync package (allowlist, redactor, H4 floor incl. the resolver-verdict/note ordering, artifact schemas, `validation.note` → `needs_review`, log hygiene) |
 
       Deltas against the original 4.1 wording: (a) the `characters.json` byte-identical clause moved into the
       migration — `tools/migrate_v2.py` compares bytes and rewrites nothing when the target is already v2
@@ -300,8 +300,8 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
          PAT attached in exactly one place against a fixed origin; fresh-sha GET before every PUT with 409 →
          pull-first; failures never mutate local state; handler arguments shape-checked so untrusted strings
          never reach `on*` attributes and `confirmedSlug` must match `SLUG_RE`; the refresh dispatch carries
-         only the two declared workflow inputs. `verify_writes.mjs` (140 checks, new in that commit) is the
-         executable record of these guards.
+         only the two declared workflow inputs. `verify_writes.mjs` (220 checks after the fix wave, new in
+         that commit) is the executable record of these guards.
       Not in scope for either pass: `pages.yml` arrived after them (`b378b29`) and was gated by its shape
       checks in `verify_sync_artifacts.py` instead; the `workflow_run`/`head_sha` reasoning is documented in
       the workflow's own comment block.
