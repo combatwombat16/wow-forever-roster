@@ -346,9 +346,9 @@ ok(/loading="lazy"/.test(detailSrc) && /alt="\$\{escapeHtml\(name\)\}"/.test(det
 ok(!/localStorage\s*\.\s*(setItem|getItem|removeItem)/.test(detailSrc),
   'the detail module performs no localStorage access at all');
 // the click wiring on both sides of the roster/detail boundary
-ok(/getLifecycleBadge\(c, lifecycle, badgeClickId\)/.test(rosterSrc)
+ok(/getLifecycleBadge\(\s*c,\s*lifecycle,\s*badgeClickId,\s*\n?\s*Array\.isArray\(mapEntry && mapEntry\.candidates\)/.test(rosterSrc)
   && /lifecycle === LIFECYCLE\.NEEDS_RESOLUTION \? c\.id : null/.test(rosterSrc),
-  'the roster passes a candidate-click id for exactly the rows that need a pick');
+  'the roster passes a candidate-click id for exactly the rows that need a pick, and the hasCandidates flag comes from the map entry');
 ok(/window\.openCharacterDetail = openCharacterDetail/.test(detailSrc)
   && /window\.openCharacterDetail\(c\.id\)/.test(rosterSrc)
   && !/from '\.\/detail\.js'/.test(rosterSrc),

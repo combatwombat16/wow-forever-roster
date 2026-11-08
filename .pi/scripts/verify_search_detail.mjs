@@ -442,14 +442,18 @@ fire(toggle);
 ok(partyMod.party.filter(Boolean).length === 0, 'and still removes it');
 
 // ✎ edit and ✕ delete: work, and do not open the modal.
-const editBtn = cards()[0].children.find(c => c.tagName === 'BUTTON' && /editCharacter/.test(c.attrs.onclick || ''));
+// Pick an EDITABLE card: the committed roster legitimately carries validated rows whose ✎
+// refuses by design (3d gating) — the harness must not depend on which rows a human validated.
+const editableCard = cards().find(c => c.children.some(b => b.tagName === 'BUTTON'
+  && /editCharacter/.test(b.attrs.onclick || '') && !('disabled' in b.attrs))) || cards()[0];
+const editBtn = editableCard.children.find(c => c.tagName === 'BUTTON' && /editCharacter/.test(c.attrs.onclick || ''));
 const editModalWasHidden = hidden('char-modal');
 fire(editBtn);
 ok(editModalWasHidden && !hidden('char-modal'), '✎ opens the Add/Edit modal');
 ok(hidden('detail-modal'), '✎ does not also open the detail modal');
 globalThis.closeModal();
 ok(hidden('char-modal'), 'closeModal() restores it');
-const deleteBtn = cards()[0].children.find(c => c.tagName === 'BUTTON' && /deleteCharacter/.test(c.attrs.onclick || ''));
+const deleteBtn = editableCard.children.find(c => c.tagName === 'BUTTON' && /deleteCharacter/.test(c.attrs.onclick || ''));
 fire(deleteBtn);
 ok(hidden('detail-modal') && state.getCharacters().length === rosterChars.length,
   '✕ stays a delete (declined here) and never opens the detail modal');

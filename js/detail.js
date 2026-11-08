@@ -828,7 +828,8 @@ function trackLabel(track) {
 // review action area for the row, a string replaces it.
 export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = null, actionsHtml = null) {
   if (!character || typeof character !== 'object') return emptyState('No such character.');
-  const badge = badgeHtml || getLifecycleBadge(character, lifecycle);
+  const hasCands = Array.isArray(mapEntry && mapEntry.candidates) && mapEntry.candidates.length > 0;
+  const badge = badgeHtml || getLifecycleBadge(character, lifecycle, null, hasCands);
   const cls = scalarText(character.class);
   const classColor = classColorFor(cls);
   const faction = getFaction(character.race);
@@ -1005,9 +1006,10 @@ export function renderDetail() {
   const lifecycle = deriveLifecycleState(character, mapEntry);
   // Inside the modal the badge is the affordance that toggles the candidate list, so it
   // becomes a button; the card keeps it a plain (clickable) span.
-  const badge = lifecycle === LIFECYCLE.NEEDS_RESOLUTION
-    ? `<button type="button" onclick="toggleDetailCandidates()" title="Toggle candidate list" class="cursor-pointer">${getLifecycleBadge(character, lifecycle)}</button>`
-    : getLifecycleBadge(character, lifecycle);
+  const hasCands = mapEntry != null && Array.isArray(mapEntry.candidates) && mapEntry.candidates.length > 0;
+  const badge = lifecycle === LIFECYCLE.NEEDS_RESOLUTION && hasCands
+    ? `<button type="button" onclick="toggleDetailCandidates()" title="Toggle candidate list" class="cursor-pointer">${getLifecycleBadge(character, lifecycle, null, true)}</button>`
+    : getLifecycleBadge(character, lifecycle, null, hasCands);
   content.innerHTML = detailHtml(character, sidecar, mapEntry, lifecycle, badge);
 }
 

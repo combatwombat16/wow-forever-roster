@@ -62,7 +62,12 @@ export function getSidecarDot(sidecar, mapEntry) {
 // clickId is optional: a row that needs a human pick gets a badge that opens its candidate
 // list inside the detail modal (armory-tasks 3.3 — read-only there; the resolve action is
 // Phase 3d). Only the roster's own id is interpolated, escaped, and only into the handler.
-export function getLifecycleBadge(character, lifecycle, clickId = null) {
+// hasCandidates (default true): the NEEDS_RESOLUTION label promises a pick, so it may only
+// say 'pick candidate' when the map entry actually carries candidates. A needs_review row
+// with neither slug nor candidates gets 'review match' — its real action is Refresh, and a
+// badge that promises options it does not have is exactly the confusion this label caused
+// live (review of the bug wave, live browser check 2026-11-08).
+export function getLifecycleBadge(character, lifecycle, clickId = null, hasCandidates = true) {
   const validation = character && typeof character === 'object' ? character.validation : null;
   let label = 'unvalidated';
   let tone = 'text-slate-400 border-slate-700 bg-slate-800';
@@ -73,9 +78,14 @@ export function getLifecycleBadge(character, lifecycle, clickId = null) {
     tone = 'text-amber-300 border-amber-500/40 bg-amber-500/20';
     title = 'Battle.net match resolved — confirm it in Review';
   } else if (lifecycle === LIFECYCLE.NEEDS_RESOLUTION) {
-    label = 'pick candidate';
+    if (hasCandidates) {
+      label = 'pick candidate';
+      title = 'Battle.net mapping is ambiguous — make a human pick in Review';
+    } else {
+      label = 'review match';
+      title = 'Battle.net mapping flagged for review — refresh the lookup, or report a mismatch';
+    }
     tone = 'text-amber-300 border-amber-500/40 bg-amber-500/20';
-    title = 'Battle.net mapping needs a human pick (ambiguous, or flagged for review)';
   } else if (lifecycle === LIFECYCLE.NOT_FOUND) {
     label = 'no bnet match';
     tone = 'text-red-300 border-red-800/60 bg-red-950/40';
@@ -152,7 +162,8 @@ export function renderRoster() {
     // A row that needs a human pick gets a badge that opens the modal straight at its (read-only)
     // candidate list; every other badge is plain status display.
     const badgeClickId = lifecycle === LIFECYCLE.NEEDS_RESOLUTION ? c.id : null;
-    const bnetLine = `${getSidecarDot(sidecar, mapEntry)}${sidecarMeta ? `<span class="flex items-center gap-1">${sidecarMeta}</span>` : ''}${getLifecycleBadge(c, lifecycle, badgeClickId)}`;
+    const bnetLine = `${getSidecarDot(sidecar, mapEntry)}${sidecarMeta ? `<span class="flex items-center gap-1">${sidecarMeta}</span>` : ''}${getLifecycleBadge(c, lifecycle, badgeClickId,
+      Array.isArray(mapEntry && mapEntry.candidates) && mapEntry.candidates.length > 0)}`;
 
     // Faction-based backdrop and border styling
     const factionStyles = faction === 'alliance'

@@ -586,6 +586,10 @@ ok(reviewSlugHtml.includes('reviewer reported this mapping as wrong'),
 ok(reviewSlugHtml.includes('dup-row-slug'), 'and the slug being confirmed is named on screen');
 
 const bareHtml = openRow(ROWS.reviewBare);
+ok(bareHtml.includes('>review match<') && !bareHtml.includes('>pick candidate<'),
+  "a needs_review row WITHOUT candidates badges as 'review match' — the badge may not promise a pick it does not have (live finding 2026-11-08)");
+ok(!/toggleDetailCandidates\(/.test(decodeEntities(bareHtml)),
+  'and its badge is not a candidate-list toggle when there is nothing to toggle');
 ok(/Refresh/i.test(bareHtml) && bareHtml.includes('Refresh from Battle.net'),
   'a needs_review row with neither slug nor candidates is told to Refresh');
 ok(!/onclick="(confirmMatch|confirmSelectedCandidate)\(/.test(decodeEntities(bareHtml)),
@@ -597,6 +601,8 @@ ok(bareHtml.includes('two roster rows normalize to this name'), 'with the sync n
 const bothSlugs = openRow(ROWS.ambiguous);
 ok(bothSlugs.includes('value="tir-rheebeard"') && bothSlugs.includes('value="tir-rheebeard-two"'),
   'the radio panel offers both candidate slugs of an ambiguous entry');
+ok(bothSlugs.includes('>pick candidate<'),
+  "a row WITH candidates keeps the honest 'pick candidate' label");
 
 const missingHtml = openRow(ROWS.missing);
 ok(missingHtml.includes('use Refresh to query Battle.net'),
