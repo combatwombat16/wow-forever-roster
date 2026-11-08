@@ -1,5 +1,14 @@
 # Battle.net "WoW: Forever" API — frozen Phase 1 contract
 
+> **Read §9 first for the Character Modal Rework.** §§1–8 are the frozen Phase 1
+> contract and are unchanged below. §9 is the 2026-11-08 (21:02–21:20 UTC) Phase 0
+> addendum: it settles the equipment-stat question, documents `reputations` and
+> `professions` (both 200, previously `not probed`), and **supersedes three claims
+> below** — the "no talent tree data in any API" premise (§3.4, decision #3), the
+> `inset`/`headshot` media assumption (§6 recorded 2 of 4 asset keys; the assumption
+> lived in the plan's P0.5/T1.5), and the unpinned-`static-forever-us`
+> 403 note (§5). Corrections are listed in §9.7.
+
 Produced by `tools/probe_bnet.py` against the live US API on **2026-11-08 (02:30 UTC)**.
 Raw evidence: `docs/bnet-probe-raw.json` (same run). Every statement below carries the
 HTTP status that was actually observed; anything not observed is explicitly marked
@@ -546,3 +555,382 @@ collapses the steady-state cost to ~0.
 * Single-token names were each tried in `as_is` and lowercase only; because no single-token
   character resolved, "single-token lowercase always works" is extrapolated from the
   four resolved spaced names, **not** directly verified for e.g. `boomster`.
+
+---
+
+## 9. Phase 0 addendum — reputations, professions, talents, item stats (2026-11-08, 21:02–21:20 UTC)
+
+Produced for the Character Modal Rework (`character-tasks.md` P0.1–P0.6) by four targeted
+probe passes driven through the frozen transport (`bnet.http.ProbeHttp`: host-pinned, 0.25 s
+pacing, credential-masking) plus the probe's own `path_inventory` helper, so the notation
+below matches §§1–8 exactly. **`python3 -m bnet probe` was deliberately not run**: it would
+overwrite `docs/bnet-probe-raw.json`, the FROZEN Phase 1 evidence file that
+`.pi/scripts/verify_bnet_probe.py` grounds every cited path against, and its roster-coverage
+check is pinned to the probe-era `characters.json` blob (20 names) that no longer matches
+today's 22-name roster. Raw Phase 0 evidence therefore lives outside the repo
+(`/tmp/p0/evidence{,2,3,4}.json`, same schema, credential-masked) and the new payload shapes
+are recorded below as fenced trees rather than inline path citations — an inline
+`` `new.path` `` would be ungrounded against the frozen raw file and would fail that
+verifier's §5 check. Statuses below are the observed ones; nothing here is inferred.
+
+Run totals for the four scripted passes, read from their saved meta blocks: **414 requests /
+4 token mints**, statuses `225 × 200`, `170 × 404`, `15 × 403`. A dozen short interactive
+follow-up sweeps (≈40 further requests, one mint each) covered the talent-tree, spell-icon,
+reputation-tier, namespace and 404-signature controls. **No 429 and no retry anywhere** (max
+attempts on any request: 1), zero warnings, and no rate-limit headers on any response. Static namespace
+re-discovered from live hrefs, unchanged: **`static-1.60.1_70399-forever-us`** (10 href
+occurrences, sole candidate).
+
+Five live characters (up from four; `healy-bones` joined the map since the 02:30 run):
+**`shiftybeef-stroganoff`** (Druid, lvl 22, Feral Combat), **`beef-pho`** (Warrior, lvl 20,
+Arms + Protection), **`morc-theorc`** (Hunter, lvl 19, Beast Mastery), **`healy-bones`**
+(Priest, lvl 22, id 10740225 — last run's unmatched `flowmasters` roster member, §8), and
+**`voidlight-glows`** (Paladin, lvl 15, Holy). Schemas observed this run, with revisions:
+`character/1`, `character-equipment/1`, `character-reputations/1`, `character-professions/1`,
+`character-specializations/1`, `character-statistics/2`, `character-media/1`, `item/1`,
+`spell/1`, `talent/2`, `talent-tree/2`, `playable-specialization/2`, `playable-class/1`,
+`profession/2`, `recipe/2`, `reputation-faction/1`, `reputation-tiers/1`, `media/2`.
+
+### 9.1 P0.1 `/reputations` — `character-reputations`, revision 1 — **AVAILABLE (4/4 200)**
+
+Routed (`reputations.href` on every profile). 6855–8633 bytes; **11 factions** on every
+sampled character. Flat list: **there is no category grouping in this payload** — the only
+grouping primitive is the standing tier plus the static faction doc (§9.1.1).
+
+```
+character.{id,name,surname,slug,key.href}
+reputations[len]                                  = 11 on all four probes
+reputations[].faction.id                          e.g. 577, 81, 609
+reputations[].faction.name                        localized_string (12 locales, read .en_US)
+reputations[].faction.key.href                    → /data/wow/reputation-faction/{id} (static ns)
+reputations[].standing.raw                        cumulative total (10382)
+reputations[].standing.value                      value within the current tier (1382)
+reputations[].standing.max                        current-tier width (3000 | 6000 | 12000)
+reputations[].standing.tier                       int 3 | 4 | 5 observed (Neutral/Friendly/Honored)
+reputations[].standing.name                       localized_string ("Neutral", "Friendly", "Honored")
+```
+
+Renderer facts: a bar is `standing.value / standing.max` (both same-tier), **not** `raw / max`
+— `raw` is cumulative and exceeds `max` whenever `tier` > 1 (4 of 11 rows on `healy-bones`
+disagreed). The standing tier (int) is the stable key for colour/label; standing name is the label.
+`max` is tier-dependent (3000 Neutral, 6000 Friendly, 12000 Honored observed), so never
+hardcode a single denominator.
+
+#### 9.1.1 Reputation static docs
+| Endpoint | Status | Note |
+|---|---|---|
+| `/data/wow/reputation-faction/577` (static ns) | **200** `reputation-faction/1` | `id`, `name`, `description`, and a reputation-tiers reference (`id` plus its document href) |
+| `/data/wow/reputation-tiers/0` (static ns) | **200** `reputation-tiers/1` | `tiers[len]` = 8, `tiers[].{id,name,min_value,max_value}` — Hated `-42000/-6000` … (the full classic ladder) |
+| `/data/wow/reputation-category/index` (static ns) | **404** — **0-byte gateway 404**, no namespace header | route does not exist: **reputation categories do not exist in Forever** |
+| `/data/wow/reputation-category/1` (static ns) | **404** — 0-byte, unrouted | same |
+
+So the Reputation tab groups by `tier` (or renders flat, ordered by `value/max`) and cannot
+group by Blizzard category. `reputation-tiers` is the one doc needed if the UI ever wants the
+canonical 8-rung ladder with names.
+
+### 9.2 P0.2 `/professions` — `character-professions`, revision 1 — **AVAILABLE (4/4 200)**
+
+Routed (`professions.href`). 89–92 inventory paths per payload. Primary and secondary live in
+**two sibling arrays**, each carrying skill points and **known recipes**.
+
+```
+character.{id,name,surname,slug,key.href}
+primaries[len]                                    = 2 (beef-pho: Mining, Blacksmithing)
+primaries[].profession.id                         186 Mining / 164 Blacksmithing
+primaries[].profession.name                       PLAIN STRING (not a locale map)
+primaries[].profession.key.href                   → /data/wow/profession/{id} (static ns)
+primaries[].tiers[len]                            = 1 on every sampled profession
+primaries[].tiers[].skill_points                  127 (current skill)
+primaries[].tiers[].max_skill_points              225 (cap for the tier)
+primaries[].tiers[].tier.id                       2946
+primaries[].tiers[].tier.name                     PLAIN STRING ("Mining")
+primaries[].tiers[].known_recipes[len]            8 | 37 (Blacksmithing carries 37)
+primaries[].tiers[].known_recipes[].id            1847
+primaries[].tiers[].known_recipes[].name          PLAIN STRING ("Smelt Iron")
+primaries[].tiers[].known_recipes[].key.href      → /data/wow/recipe/{id} (static ns)
+secondaries[len]                                  = 3 (Cooking, Fishing, First Aid)
+secondaries[].…                                   same shape as primaries[]
+```
+
+Observed values: Mining 127/225, Blacksmithing 112/150, Cooking 49/75, Fishing 1/75,
+First Aid 75/150 — so `max_skill_points` varies per profession and per tier; render
+`skill_points / max_skill_points`. The known-recipes list is **name + id only** — no icons,
+no reagents inline. **Three names are plain strings here** — the profession name, the tier
+name and each known-recipe name — the same exception class as `achievements[].achievement.name` (§7.9)
+— do not `.en_US` them. Professions tab can list known recipe names with zero extra
+requests; per-recipe reagents/crafted item cost one static-ns request each.
+
+| Supporting doc | Status | Fields |
+|---|---|---|
+| `/data/wow/recipe/1798` (static ns) | **200** `recipe/2` | `id`, `name`, `media`, `crafted_item`, `crafted_quantity`, `reagents` |
+| `/data/wow/profession/164` (static ns) | **200** `profession/2` | `id`, `name`, `description`, `type`, `skill_tiers`, `media` |
+| `/data/wow/media/profession/164` (static ns) | **200** `media/2` | `assets[].key` = `icon` → `…/forever-us/icons/56/136241.jpg` |
+
+### 9.3 P0.3 `/specializations` full payload — talents confirmed, spell icons YES, tree data YES
+
+**Confirmed on 5/5 characters** (200, `character-specializations/1`, 12 589–17 560 bytes).
+The §3.4 table still holds; the deep payload adds things the leaf-capped Phase 1 inventory
+missed.
+
+```
+specialization_groups[len]                        = 1 (all five characters, incl. both multi-spec)
+specialization_groups[].is_active                 true
+specialization_groups[].specializations[len]      1 | 2  ← multi-spec is REAL (see below)
+  .specialization.{id,name,key.href}              26 Arms / 257 Protection / 613 Discipline
+  .specialization_name                            localized_string
+  .spent_points                                   5 | 6 | 7 | 10 | 11
+  .talents[len]                                   1 | 2 | 3
+  .talents[].talent_rank                          int (1..5)                       ✔ confirmed
+  .talents[].talent.id                            int, e.g. 135489                  ✔ (Phase 1 saw only "<2 keys>")
+  .talents[].talent.name                          localized_string                  ✔
+  .talents[].spell_tooltip.spell.id               int, e.g. 12282                   ← NEW: the spell id
+  .talents[].spell_tooltip.spell.name             localized_string                  ← NEW
+  .talents[].spell_tooltip.description            localized_string                  ✔
+  .talents[].spell_tooltip.cast_time              localized_string ("Passive")      ✔
+  .talents[].spell_tooltip.power_cost             dict — EMPTY ({}) on every observed talent
+  .talents[].spell_tooltip.range                  present on some talents           ← union of keys seen
+  .talents[].spell_tooltip.cooldown               present on some talents           ← union of keys seen
+```
+
+`spell_tooltip` key union across all sampled talents: `spell`, `description`, `cast_time`,
+`power_cost`, `range`, `cooldown`. `power_cost` was `{}` in every sample, so treat it as
+present-but-useless and do not render an empty cost row.
+
+**Multi-spec correction (matters for T2.4):** a group carries **more than one**
+specialization when the character has spent points in more than one tree — `beef-pho`
+returned Arms (5 pts, 2 talents) **and** Protection (6 pts, 2 talents); `healy-bones`
+returned Discipline and Shadow Magic. Phase 1 read `specializations[0]` only; the Talents tab
+must iterate the array and group by spec. `is_active` sits on the **group**, not on a
+specification, so this payload does **not** identify which of the two specs is currently
+active — the profile carries no active-spec field either (§3.1). The sidecar's existing
+`activeSpec` is a Phase 1 inference from index 0 and should be relabelled or dropped.
+
+#### 9.3.1 Spell icons: **RESOLVABLE** — one request per spell, static ns only
+
+The spell id nested at `spell_tooltip` → `spell` → `id` (§9.3) is the id the icon route
+wants. 16 distinct spell ids were drawn from four characters; 8 were probed end-to-end:
+
+| Endpoint | Status | Evidence |
+|---|---|---|
+| `/data/wow/spell/{id}` **@ static ns** | **200 × 8/8** `spell/1` | keys `id`, `name`, `description`, `media`, `_links` |
+| `/data/wow/media/spell/{id}` **@ static ns** | **200 × 8/8** `media/2` | `assets[].key` = `icon`, `assets[].file_data_id`, `assets[].value` |
+| `/data/wow/media/spell/{id}` @ `dynamic-forever-us` | **404 × 8/8** | JSON 404 — routed, wrong namespace |
+| `/data/wow/media/spell/{id}` @ `profile-forever-us` | **404 × 8/8** | JSON 404 — routed, wrong namespace |
+| `/data/wow/spell/{id}/media` @ static ns | **404** — 0-byte | unrouted; only the `/data/wow/media/spell/` form exists |
+
+Icon URL form is identical to item icons and passes the current allowlist:
+
+```
+GET /data/wow/media/spell/12282?namespace=static-1.60.1_70399-forever-us   200
+assets[0] = { key: "icon", file_data_id: 132282,
+              value: "https://render.worldofwarcraft.com/forever-us/icons/56/132282.jpg" }
+```
+
+**Trap recorded so Phase 1 does not repeat it:** the icon route takes the **spell id**
+(`spell_tooltip` → spell → id, e.g. 12282), not the **talent id**
+(`specialization_groups[].specializations[].talents[]` → talent → id, e.g. 135489). Every
+`/data/wow/media/spell/{talent_id}` probe returned **404** (6 ids, 18 requests, 3 namespaces). The same talent ids DO resolve at `/data/wow/talent/{id}`
+(§9.3.2) — two different id spaces.
+
+#### 9.3.2 Talent-tree data **EXISTS** — supersedes the "no tree structure in any API" premise
+
+Decision #3 / M1 assumed a visual tree needed embedded community data. **That assumption is
+now false.** The static namespace serves full, version-pinned talent trees, including node
+positions and prerequisite edges, and the selected-talent ids from §9.3 map onto them
+directly (talent 135489 is a node's ranks/tooltip/talent id inside tree 1117 (spec 26)).
+
+| Endpoint | Status | Evidence |
+|---|---|---|
+| `/data/wow/playable-specialization/{id}` @ static | **200** `playable-specialization/2` | keys now include **`spec_talent_tree`** (`{key.href, name}`) — Phase 1 recorded this doc as 200 but never listed the key |
+| `/data/wow/talent-tree/index` @ static | **200** `talent-tree/2`, 13 806 bytes | `class_talent_trees[len]` = **9**, `spec_talent_trees[len]` = **27**, each `{key.href, name}` |
+| `/data/wow/talent-tree/{treeId}/playable-specialization/{specId}` @ static | **200** `talent-tree/2`, 127 697 (Arms) / 171 121 (Feral) bytes | full node list, see tree below |
+| `/data/wow/talent/{talentId}` @ static | **200 × 7/7** `talent/2` | `id`, `rank_descriptions[].{rank,description}`, `spell.{id,name,key.href}`, `playable_class`, `playable_specialization` |
+| `/data/wow/media/talent-tree/{treeId}/playable-specialization/{specId}` @ static | **404** — 0-byte | unrouted: **no tree background artwork**, despite the `media.key.href` the tree doc serves |
+| `/data/wow/playable-class/{id}/specializations` @ static | **404** — 0-byte | unrouted; read specs off `playable-class.specializations` instead |
+
+Tree document shape (Arms, tree 1117 / spec 26 — 17 nodes; Feral, tree 1089 / spec 134 — 20
+nodes):
+
+```
+id                                                  1117
+playable_class.{id,name,key.href}                   1 Warrior
+playable_specialization.{id,name,key.href}          26 Arms
+name                                                localized_string
+media.key.href                                      served but the route 404s (row above)
+spec_talent_nodes[len]                              17 (Arms) / 20 (Feral)
+spec_talent_nodes[].id                              node id, e.g. 105958
+spec_talent_nodes[].node_type.{id,type}             0 / "ACTIVE" (only value seen; 37/37 nodes)
+spec_talent_nodes[].display_row                     1..n   ← grid position
+spec_talent_nodes[].display_col                     1..n   ← grid position
+spec_talent_nodes[].raw_position_x                  1020 … 5620
+spec_talent_nodes[].raw_position_y                  2130 …
+spec_talent_nodes[].unlocks[len]                    node ids this node opens (4/17 Arms nodes)
+spec_talent_nodes[].locked_by[len]                  node ids gating this node (5/17 Arms nodes)
+spec_talent_nodes[].ranks[len]                      up to 5
+spec_talent_nodes[].ranks[].rank                    1..5
+spec_talent_nodes[].ranks[].tooltip.talent.{id,name,key.href}
+spec_talent_nodes[].ranks[].tooltip.spell_tooltip.{spell,description,cast_time,power_cost}
+```
+
+`display_row` + `display_col` + `raw_position_x/y` are present on **37/37** nodes sampled and
+`unlocks`/`locked_by` give the prerequisite graph, so a real WoW-style tree is buildable from
+Blizzard data alone — **M1 no longer needs third-party tree definitions**. Cost is one static
+request per spec tree (~130–170 KB each), cacheable forever (`max-age=86400`, version-pinned
+ns). `talent-tree` is at revision **2** while `character-specializations` is at **1** —
+log both to the §7.5 drift tripwire.
+
+Two honest caveats for M1: the node-type value was `"ACTIVE"` on every one of the 37 sampled
+nodes, so the predicted-in-game gating is unproven, and no node carries a class-tree
+(`playable-specialization`-less) variant that our characters have points in — the class-tree
+routes were not enumerated beyond the index (9 entries observed, not fetched).
+
+### 9.4 P0.4 Item-stat hunt — **VERDICT: AVAILABLE, from one source only (`/equipment`)**
+
+This is the decision the user asked for. Equipment stat numbers **are** available
+authoritatively from Blizzard, but **only inside `/profile/wow/character/{slug}/equipment`**
+(schema `character-equipment/1`, already GET by the sync and thrown away at `fetch.py`
+~L273–295). The item *dictionary* endpoints carry **no** stat numbers at top level, the
+bonus-list route does not exist, and every classic-era namespace is closed to this client.
+
+**Verdict table — what answers, and with what:**
+
+| Source | Status | Stat numbers? | Evidence |
+|---|---|---|---|
+| `/profile/wow/character/{slug}/equipment` | **200 × 5/5** | **YES — authoritative** | 48 of 61 sampled equipped items carry `equipped_items[].stats[]` (**104 stat entries**, each with a stat-type enum, a numeric `value`, a display `display_string` and an RGBA `color`); 41 `equipped_items[].armor.value`, 10 `weapon.damage.{min_value,max_value,display_string}` + `attack_speed` + `dps`, 1 shield-block value ("1,320 Block"), 24 stats flagged `is_equip_bonus`, 4 `equipped_items[].enchantments[].display_string`, 3 item-spell descriptions, 1 plain `description` |
+| `/data/wow/item/{id}` @ static (pinned **or** unpinned) | **200 × 32 / 404 × 25** of 57 real gear ids | **NO at top level** — `stats` present on **0 of 32** | top-level keys are only `id`, `name`, `quality`, `level`, `required_level`, `media`, `item_class`, `item_subclass`, `inventory_type`, `purchase_price`, `sell_price`, `max_count`, `is_equippable`, `is_stackable`, `appearances`, `preview_item`, `_links` |
+| — same doc, nested **`preview_item`** | same 200s | **YES, but partial and id-404-gated** | 28 of the 32 answering docs carry a `preview_item` with a stats array / armor / weapon; 23 carry preview durability, 20 preview requirements, 1 preview spells; **0** sockets/gems |
+| `/data/wow/item/{id}` @ `dynamic-forever-us` | **404 × 57/57** | no | JSON `BLZWEBAPI00000404` |
+| `/data/wow/item/{id}` @ `profile-forever-us` | **404** | no | JSON 404 |
+| `/data/wow/item/{id}/bonus-list` (static / profile / dynamic) | **404 × 0-byte, unrouted** | **route does not exist** | no `battlenet-namespace` echo, no `Content-Type` — the §1 unrouted signature |
+| `/data/wow/item/{id}/bonuses` | **404 × 0-byte** | no | unrouted |
+| `/data/wow/bonus-list/index` @ static | **404 × 0-byte** | no | unrouted |
+| `/data/wow/item/{id}` @ `classic-era-1/2/3/4-us`, `classic-us`, `classic-mainline-us`, `profile-classic-era-1-us`, `dynamic-classic-era-1-us`, `static-classic-era-1-us` | **403 × 15/15** | **namespace closed** | `{"code":403,"type":"BLZWEBAPI00000403","detail":"Forbidden"}` — byte-identical to the §1 unknown-namespace control, i.e. **the classic-era namespace family is not licensed to this client at all**, so no era-specific stat dictionary is reachable |
+| `/data/wow/playable-class/index` @ the same 9 classic-era namespaces | **403 × 9/9** | n/a | same 403 — the whole namespaces, not the item route, are the blocker |
+
+**Definitive answer for decision #1: stats are AVAILABLE.** Ship authoritative numbers in the
+gear tooltip, sourced from the `/equipment` payload the sync already fetches — no third-party
+item DB, and **no extra request per item** for the numbers themselves. Per §3.2 the same
+payload also carries quality, class/subclass, `equipped_items[].level.display_string`, enchant
+`display_string`s and durability, so the enriched tooltip needs exactly the one document it
+already gets.
+
+**Why the item dictionary is not a viable source** (this is what §8's `10657` note was
+reaching for, now measured): of the **57 distinct item ids the five characters are actually
+wearing**, only **32 (56 %)** resolve at `/data/wow/item/{id}` — **25 return 404**, including
+`10657` (an item Shiftybeef is wearing right now) and 24 more: `3288, 3645, 5404, 6449,
+6461, 6465, 6469, 6472, 6480, 6481, 6540, 6627, 8071, 9777, 10919, 12006, 13245, 14174,
+14745, 15011, 15450, 270008, 273088, 286744`. The pinned and unpinned static namespaces give
+the **identical** 32/25 split, so it is not a namespace-selection problem. And on the 32 that
+do answer, the top level still has **zero** stat fields. Building tooltips on item docs would
+therefore lose numbers for 44 % of real gear *and* for the remaining 56 % need the nested
+`preview_item` anyway. `preview_item` is still worth caching opportunistically (it is the
+only place a non-equipped item's stats exist), but it cannot be the primary source.
+
+**`bonus_list` is opaque.** 5 of 61 equipped items carry a `bonus_list` array (e.g. `[12745]`)
+but the only route that could decode it does not exist in any namespace (rows above), so
+bonus-list ids cannot be turned into extra stat lines. Render the item without them; the
+`is_equip_bonus` flag on 24 stat entries is the only bonus signal available.
+
+**Not available anywhere: sockets and gems.** Zero `socket*` / `gem*` keys across all 61
+equipped items and all 32 answering item documents (a 1 400-leaf / depth-16 inventory of
+every character's full equipment found nothing). **T1.1 and T2.3 must drop the
+gems/sockets requirement** — it is not a "not captured yet" gap, it is absent from the API.
+`set` and `cost` blocks were likewise absent on all 61 items.
+
+### 9.5 P0.5 `/statistics` and `character-media` — both 200, icons pass the host policy
+
+`/statistics` (**200** on every probe — three distinct characters: `shiftybeef-stroganoff`,
+`morc-theorc`, `beef-pho`; `character-statistics/2`, 2 964–2 997 bytes) confirms §3.5 and is
+unchanged in shape: **60 top-level keys** on the two characters inventoried in depth. Value shapes verified
+directly: plain scalars (`health` 857, `power` 787, `expertise` 0.0, `mana_regen` 61.0,
+`main_hand_damage_min` 58.04286), base/effective pairs (`strength` `{base: 38, effective: 53}`,
+`armor` `{base: 64, effective: 553}`), and rating triples (`dodge`
+`{value: 10.421599, rating_bonus: 0.0, rating_normalized: 0}`, same for `spell_crit`). The
+only route change worth noting: this run's payload carries **`expertise`** as a plain number
+— new relative to §3.5's list, which names only `off_hand_expertise`, so §3.5 is to be read
+as including `expertise` — and **no** `ranged_dps`/`spell_damage` keys (§3.5 never listed
+those either).
+`power_type.key.href` points at `/data/wow/power-type/0` in the static ns.
+
+`character-media` (**200 × 5/5**, `character-media/1`, 760–812 bytes) returns exactly four
+assets, **all four with `id` and `file_data_id` absent (`null`)** — only `key` and `value`
+are populated, and `value` is a finished URL:
+
+```
+assets[0].key = "main-raw"      value …/forever-us/character/{raceId}/{characterId}-main-raw.png
+assets[1].key = "main-sd-raw"   value …/character/{raceId}/{characterId}-main-sd-raw.png
+assets[2].key = "avatar"        value …/character/{raceId}/{characterId}-avatar.jpg
+assets[3].key = "avatar-sd"     value …/character/{raceId}/{characterId}-avatar-sd.jpg
+```
+
+**No `inset` and no `headshot` key exists** on any of the five characters (20 asset slots
+inspected). Those are retail key names; on Forever the header portrait must come from
+**`avatar` / `avatar-sd`** and the full render from `main-raw`. **T1.5 must target
+`avatar`, not `inset`/`headshot`.** Race ids seen: 1, 240, 53, 36, 69 — again the render path
+embeds race id + Battle.net id, never the slug (§6).
+
+**Safe-host verdict: PASS, and no allowlist change is needed.** Every URL harvested across
+all four passes — **633 URLs** — landed on exactly two hosts, and both are already in
+`ICON_HOSTS` in `js/detail.js`:
+
+| Host | URLs | `isSafeIconUrl()` |
+|---|---|---|
+| `us.api.blizzard.com` | 594 | **pass** (594/594) |
+| `render.worldofwarcraft.com` | 39 | **pass** (39/39) |
+
+Checked by executing the real `isSafeIconUrl`/`ICON_HOSTS` from `js/detail.js` under node
+(browser globals stubbed for the js/state.js import), not by reimplementing the rule. **T2.11
+is a no-op:** spell icons (§9.3.1), profession icons (§9.2) and character renders share the
+existing `/forever-us/` render host, so no new Blizzard host needs admitting.
+
+### 9.6 Phase 0 drift and sample notes
+
+* **Roster coverage grew**: `healy-bones` (id **10740225**, Priest lvl 22, Discipline) now
+  resolves and is mapped. That is the same id §8 recorded as a `flowmasters` guild-roster
+  member matching **no** tracker entry — it has since been added as roster id
+  `1791929106142` "Healy Bones", so the §8 concern is resolved for this id.
+* `morc-theorc` is still reported by the roster as **Shaman** while the API says
+  `character_class.id` 3 = **Hunter** (§8) — still unfixed, still the tracker owner's to fix.
+* Levels moved between runs (Shiftybeef 20 → 22, Morc 13 → 19), so §4's "re-probe on a
+  levelled character" is now partially satisfiable: **`healy-bones` at 22 and
+  `shiftybeef-stroganoff` at 22 are the best Tier-2 re-probe candidates**, though still far
+  from raid level.
+* The duplicate-name case (§2, `Tir Rheebeard` × 2) gained a **negative** result worth
+  recording: the guess that a realm suffix might separate the two ids is refuted —
+  `tir-rheebeard-nahbrah` returns **404** with the JSON `BLZWEBAPI00000404` body (routed,
+  no such character). There is no realm-qualified slug form; the `needs_review` rule stands.
+* Achievements criteria now carry a `child_criteria[].{id,amount,is_completed}` shape
+  (2/2 sampled achievements on 2 characters) and **no `ref_text`** was seen, so
+  `fetch.py`'s `ref_text`-driven "Linen Bandage"-style description extraction still has no
+  live evidence in this run — the only such description remains the one §3.3 observed inside
+  `/achievements/statistics`.
+* No `429`, no `Retry-After`, and no rate-limit headers again across the 414 scripted
+  requests (the ~40 interactive-sweep requests — including the talent-tree route statuses
+  cited above — were likewise under limit), so the §1 "quota is unreadable from responses"
+  finding is re-confirmed at a 2.6× larger volume.
+* No `ETag` observed on any 200 this run either — §7.3's `Last-Modified`-only rule holds.
+
+### 9.7 Corrections to §§1–8 caused by this run
+
+1. **§3.4 / decision #3 / M1:** "No tree structure/prerequisites in any API" is **withdrawn**.
+   `playable-specialization` carries `spec_talent_tree`, and `/data/wow/talent-tree/...`
+   serves positions (`display_row/col`, `raw_position_x/y`) and prerequisite edges
+   (`unlocks`, `locked_by`) — see §9.3.2.
+2. **§3.4:** a `specialization_group` can hold **several** specializations; reading
+   `specializations[0]` is not the active spec (§9.3). No API field marks the active spec.
+3. **§6 / T1.5:** `character-media` has **no** `inset`/`headshot`; the usable keys are
+   `main-raw`, `main-sd-raw`, `avatar`, `avatar-sd` (§9.5).
+4. **§8:** "even where it answers it carries no stat numbers" is **confirmed for the top
+   level** of `/data/wow/item/{id}` (0/32) but **incomplete** — the nested `preview_item`
+   carries `stats`/`armor`/`weapon` on 28/32 ids, and the authoritative numbers for worn gear
+   were always in `/equipment` (§9.4).
+5. **§5:** unpinned `static-forever-us` **is routable for item docs** — `/data/wow/item/127`
+   returned **200** with byte-identical size (5 331 B) to the pinned form, and the same
+   32/25 200/404 split. The old 403 note is superseded; still prefer the re-discovered
+   pinned value, because a pinned namespace is what makes `max-age=86400` caching safe.
+6. **§3 "not probed" list:** `reputations.href` and `professions.href` are now **probed and
+   200** (§9.1, §9.2). Still not fetched: `titles.href`, `collections.href`,
+   `appearance.href`, `quests.href`, `…/{slug}/guild`, `…/{slug}/hunter-pets`.
+7. **New drift tripwires:** `talent-tree/2`, `talent/2`, `spell/1`, `recipe/2`,
+   `profession/2`, `reputation-faction/1`, `reputation-tiers/1` are now load-bearing for the
+   rework and should join `config.DRIFT_SURFACES`.
