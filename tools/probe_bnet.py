@@ -1254,7 +1254,10 @@ def load_roster_names():
     names = []
     for record in records:
         name = record.get("name") if isinstance(record, dict) else None
-        if isinstance(name, str) and name.strip() and name not in names:
+        # Duplicates are kept: characters.json can hold the same character name under
+        # two roster ids, and the verifier requires one row per roster entry so that
+        # duplicate name -> slug mapping stays visible as Phase 2 needs_review evidence.
+        if isinstance(name, str) and name.strip():
             names.append(name)
     if not names:
         sys.exit(f"FATAL: no character names found in {ROSTER_FILE}")
