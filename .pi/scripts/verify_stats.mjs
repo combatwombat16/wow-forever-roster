@@ -6,7 +6,7 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 // Phase 2 migration: the roster lives at data/characters.json and is the v2
 // envelope {schemaVersion, characters:[...]}; the v1 bare array is still accepted
 // during the transition window (design §8). Path + shape only — no assertion here
-// changed, and index.html is still Phase 3's work.
+// changed. Since Phase 3a the UI itself is js/*.js modules (see [1]).
 const rosterDoc = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'characters.json'), 'utf8'));
 const repoChars = Array.isArray(rosterDoc) ? rosterDoc : rosterDoc.characters;
 
@@ -14,13 +14,30 @@ let fails = 0, passes = 0;
 const ok = (cond, msg) => { if (cond) { passes++; console.log(`  PASS ${msg}`); } else { fails++; console.log(`  FAIL ${msg}`); } };
 
 // ---------- 1. static structure ----------
-console.log('\n[1] script extraction + static structure');
-const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>\s*<\/body>/);
-ok(!!scriptMatch, 'inline app script located');
-const src = scriptMatch[1];
+console.log('\n[1] module extraction + static structure');
+// Phase 3a migration: the app moved out of index.html's inline <script> into js/*.js
+// ES modules, with <script type="module" src="js/main.js"> as the only entry. Path
+// following only: the same assertions now run over the concatenation of the module
+// sources, in dependency order, with import/export syntax stripped so the behavioural
+// harness below can still evaluate them as one script body.
+const MODULES = ['util.js', 'state.js', 'data.js', 'github.js', 'roster.js', 'party.js',
+  'professions.js', 'stats.js', 'editchar.js', 'main.js'];
+const moduleSrc = {};
+MODULES.forEach(f => {
+  const file = path.join(ROOT, 'js', f);
+  moduleSrc[f] = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+});
+ok(MODULES.every(f => moduleSrc[f].length > 0),
+  `all ${MODULES.length} js modules present (missing: ${MODULES.filter(f => !moduleSrc[f]).join(',') || 'none'})`);
+ok(/<script type="module" src="js\/main\.js"><\/script>/.test(html), 'module entry script located');
+ok(!/<script>[\s\S]*?<\/script>/.test(html), 'no inline app <script> logic remains in index.html');
+const stripModuleSyntax = (s) => s
+  .replace(/^\s*import\s[^;]*;\s*$/gm, '')
+  .replace(/^export\s+(?=(let|const|var|function|class|async)\b)/gm, '');
+const src = MODULES.map(f => stripModuleSyntax(moduleSrc[f])).join('\n');
 fs.writeFileSync('/tmp/app_extract.js', src);
 
-const markup = html.slice(0, html.indexOf('<script>'));
+const markup = html.replace(/<script[\s\S]*?<\/script>/g, '');
 const declaredIds = [...markup.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
 const dupIds = declaredIds.filter((id, i) => declaredIds.indexOf(id) !== i);
 ok(dupIds.length === 0, `no duplicate ids (found: ${dupIds.join(',') || 'none'})`);
@@ -36,6 +53,11 @@ const handlerNames = [...new Set([...html.matchAll(/\bon(?:click|submit|change|i
 const declaredFns = [...new Set([...src.matchAll(/function\s+([a-zA-Z_$][\w$]*)\s*\(/g)].map(m => m[1]))];
 const missingFns = handlerNames.filter(n => !declaredFns.includes(n));
 ok(missingFns.length === 0, `every inline handler resolves (${handlerNames.length} handlers, missing: ${missingFns.join(',') || 'none'})`);
+// Phase 3a: an inline handler only resolves if a module published it on the global
+// scope, so the invariant is now enforced where it lives — in the window.* assignments.
+const windowExposures = [...new Set([...src.matchAll(/window\.([a-zA-Z_$][\w$]*)\s*=/g)].map(m => m[1]))];
+const unexposedFns = handlerNames.filter(n => !windowExposures.includes(n));
+ok(unexposedFns.length === 0, `every inline handler is assigned to window by a module (missing: ${unexposedFns.join(',') || 'none'})`);
 
 const orphanIds = ['race-stats', 'class-stats', 'race-summary', 'class-summary'].filter(id => !usedIds.includes(id));
 ok(paramIds.length === 4, `both distribution panels are wired up (${paramIds.join(', ')})`);
@@ -81,12 +103,13 @@ function runApp(seededChars) {
     getItem(key) { return key === 'wow_forever_roster' ? JSON.stringify(seededChars) : null; },
     setItem() {},
   };
+  const windowStub = {};
   const factory = new Function(
-    'document', 'localStorage', 'setInterval', 'alert', 'confirm', 'prompt', 'fetch', 'console',
+    'document', 'localStorage', 'setInterval', 'alert', 'confirm', 'prompt', 'fetch', 'console', 'window',
     `${src}\nreturn { setFilter, renderRoster, get characters() { return characters; } };`
   );
   const api = factory(documentStub, storageStub, () => {}, () => {}, () => false, () => null,
-    () => Promise.reject(new Error('network disabled in harness')), { error() {}, log() {} });
+    () => Promise.reject(new Error('network disabled in harness')), { error() {}, log() {} }, windowStub);
   return { api, registry, missing };
 }
 

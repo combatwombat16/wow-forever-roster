@@ -1,0 +1,16 @@
+/* app.css — the hand-written classes the Tailwind utilities do not cover.
+   Moved verbatim out of index.html's inline <style> in Phase 3a. Loaded after the
+   Tailwind Play CDN, same order the inline block had. */
+body {
+  font-family: 'Inter', sans-serif;
+  background: radial-gradient(circle at 50% 0%, #151922 0%, #0a0c10 80%);
+}
+.cinzel { font-family: 'Cinzel', serif; }
+.wow-border {
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(212, 175, 55, 0.05);
+}
+.wow-border-gold {
+  border: 1px solid #d4af37;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+}

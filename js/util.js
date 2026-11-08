@@ -1,0 +1,60 @@
+// util.js — shared formatting: the single HTML escaper plus the display constant
+// maps that more than one panel needs (class colours, faction, profession abbrevs).
+// Leaf module: it imports nothing.
+
+// Faction mapping for styling
+const ALLIANCE_RACES = ["Human", "Dwarf", "Night Elf", "Gnome", "Alliance Skyborne"];
+export function getFaction(race) {
+  return ALLIANCE_RACES.includes(race) ? "alliance" : "horde";
+}
+
+export const CLASS_COLORS = {
+  "Warrior": "text-[#C79C6E] border-[#C79C6E]/40 bg-[#C79C6E]/10",
+  "Paladin": "text-[#F58CBA] border-[#F58CBA]/40 bg-[#F58CBA]/10",
+  "Hunter": "text-[#ABD473] border-[#ABD473]/40 bg-[#ABD473]/10",
+  "Rogue": "text-[#FFF569] border-[#FFF569]/40 bg-[#FFF569]/10",
+  "Priest": "text-[#FFFFFF] border-[#FFFFFF]/40 bg-[#FFFFFF]/10",
+  "Shaman": "text-[#0070DE] border-[#0070DE]/40 bg-[#0070DE]/10",
+  "Mage": "text-[#40C7EB] border-[#40C7EB]/40 bg-[#40C7EB]/10",
+  "Warlock": "text-[#8787ED] border-[#8787ED]/40 bg-[#8787ED]/10",
+  "Druid": "text-[#FF7D0A] border-[#FF7D0A]/40 bg-[#FF7D0A]/10"
+};
+
+// Bar fills for the class distribution. Spelled out as literals because the
+// Tailwind Play CDN only emits utilities it can find verbatim in this file, so
+// interpolating a hex out of CLASS_COLORS would produce unstyled bars.
+export const CLASS_BAR = {
+  "Warrior": "bg-[#C79C6E]/75",
+  "Paladin": "bg-[#F58CBA]/75",
+  "Hunter": "bg-[#ABD473]/75",
+  "Rogue": "bg-[#FFF569]/75",
+  "Priest": "bg-[#FFFFFF]/75",
+  "Shaman": "bg-[#0070DE]/75",
+  "Mage": "bg-[#40C7EB]/75",
+  "Warlock": "bg-[#8787ED]/75",
+  "Druid": "bg-[#FF7D0A]/75"
+};
+
+export const RACE_BAR = {
+  alliance: "bg-sky-500/75",
+  horde: "bg-red-500/75"
+};
+
+export const PROF_ABBR = {
+  "Alchemy": "Alch",
+  "Blacksmithing": "BS",
+  "Enchanting": "Ench",
+  "Engineering": "Eng",
+  "Herbalism": "Herb",
+  "Leatherworking": "LW",
+  "Mining": "Min",
+  "Skinning": "Skin",
+  "Tailoring": "Tail"
+};
+
+// Roster names and player handles are typed into a form and arrive from a shared
+// JSON file, so they must never be able to close the tag they are printed inside.
+export function escapeHtml(value) {
+  const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  return String(value == null ? '' : value).replace(/[&<>"']/g, ch => entities[ch]);
+}

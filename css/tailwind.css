@@ -1,0 +1,9 @@
+/* css/tailwind.css — build output placeholder.
+ *
+ * Nothing references this file yet: index.html still loads the Tailwind Play CDN
+ * (vendoring moves to the Pages workflow in Phase 3c, where
+ * `npx tailwindcss -c tailwind.config.js -o css/tailwind.css --minify` generates it).
+ * It is committed as an empty stub so the path in the Phase 3c workflow and
+ * tailwind.config.js resolve to a real location. Do not hand-edit; it will be
+ * overwritten by the build.
+ */
