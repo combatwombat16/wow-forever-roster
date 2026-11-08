@@ -207,7 +207,10 @@ dirty = git.stdout.split()
 # The guard protects machine-owned/runtime files only.
 # The Phase 2 migration deletes the root characters.json on purpose (it is now
 # data/characters.json), so the protected roster path is the data/ one.
-untouched = [p for p in dirty if p in ("index.html", "data/characters.json",
+# index.html left the protected list in Phase 3: the UI is the actively developed
+# surface; its correctness gates are verify_stats.mjs + verify_search_detail.mjs,
+# and the sync workflow's commit scope is pinned by verify_sync_artifacts.py.
+untouched = [p for p in dirty if p in ("data/characters.json",
                                       "pi-warden.md", ".env", ".gitignore")]
 check(not untouched, f"protected files untouched (dirty: {untouched})")
 # Phase 2 legitimately ships sync-bnet.yml; anything else appearing in

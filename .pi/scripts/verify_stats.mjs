@@ -21,7 +21,7 @@ console.log('\n[1] module extraction + static structure');
 // sources, in dependency order, with import/export syntax stripped so the behavioural
 // harness below can still evaluate them as one script body.
 const MODULES = ['util.js', 'state.js', 'data.js', 'github.js', 'roster.js', 'party.js',
-  'professions.js', 'stats.js', 'editchar.js', 'main.js'];
+  'professions.js', 'stats.js', 'editchar.js', 'detail.js', 'search.js', 'main.js'];
 const moduleSrc = {};
 MODULES.forEach(f => {
   const file = path.join(ROOT, 'js', f);
@@ -39,6 +39,12 @@ fs.writeFileSync('/tmp/app_extract.js', src);
 
 const markup = html.replace(/<script[\s\S]*?<\/script>/g, '');
 const declaredIds = [...markup.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
+// The class list each declared element ships with, so the stub knows #detail-modal starts
+// hidden the way the browser does.
+const declaredClasses = new Map(
+  [...markup.matchAll(/<(\w+)([^>]*\bid="([^"]+)"[^>]*)>/gi)]
+    .map(m => [m[3], (/\bclass="([^"]*)"/i.exec(m[2]) || [, ''])[1]])
+);
 const dupIds = declaredIds.filter((id, i) => declaredIds.indexOf(id) !== i);
 ok(dupIds.length === 0, `no duplicate ids (found: ${dupIds.join(',') || 'none'})`);
 
@@ -78,18 +84,46 @@ ok(drift.length === 0, `no hex drift between CLASS_COLORS and CLASS_BAR (${drift
 // ---------- 3. behavioural harness ----------
 console.log('\n[3] rendered output vs independent tally of characters.json');
 
-function makeEl(id) {
-  return {
-    id, innerHTML: '', textContent: '', innerText: '', className: '', value: '', title: '',
-    style: {}, children: [],
-    classList: { add() {}, remove() {} },
-    appendChild(child) { this.children.push(child); this.innerHTML += child.innerHTML || ''; },
+// A token-set classList (Phase 3c toggles `hidden` on the search clear button and the detail
+// modal, so add/remove has to be observable rather than a no-op) plus the DOM plumbing the
+// card-click wiring touches: addEventListener, setAttribute, querySelectorAll.
+function makeEl(id, classes = '') {
+  let html = '';
+  const el = {
+    id, textContent: '', innerText: '', value: '', title: '', attrs: {},
+    listeners: {}, style: {}, children: [], _classes: new Set(String(classes).split(/\s+/).filter(Boolean)),
+    classList: {
+      add: (...names) => names.forEach(n => el._classes.add(n)),
+      remove: (...names) => names.forEach(n => el._classes.delete(n)),
+      contains: n => el._classes.has(n),
+      toggle: (n, force) => {
+        const on = force === undefined ? !el._classes.has(n) : Boolean(force);
+        if (on) el._classes.add(n); else el._classes.delete(n);
+        return on;
+      },
+    },
+    addEventListener(type, fn) { (el.listeners[type] = el.listeners[type] || []).push(fn); },
+    setAttribute(key, value) { el.attrs[key] = String(value); },
+    getAttribute(key) { return el.attrs[key] === undefined ? null : el.attrs[key]; },
+    querySelectorAll() { return []; },
+    appendChild(child) { this.children.push(child); html += child.innerHTML || ''; },
   };
+  // Assigning innerHTML replaces the children (renderRoster clears the grid that way), while
+  // appendChild adds to them — so the two stay distinguishable and card counts are meaningful.
+  Object.defineProperty(el, 'innerHTML', {
+    get: () => html,
+    set: value => { html = String(value); el.children = []; },
+  });
+  Object.defineProperty(el, 'className', {
+    get: () => [...el._classes].join(' '),
+    set: value => { el._classes = new Set(String(value).split(/\s+/).filter(Boolean)); },
+  });
+  return el;
 }
 
 function runApp(seededChars) {
   const registry = new Map();
-  declaredIds.forEach(id => registry.set(id, makeEl(id)));
+  declaredIds.forEach(id => registry.set(id, makeEl(id, declaredClasses.get(id) || '')));
   const missing = [];
   const documentStub = {
     getElementById(id) {
@@ -98,6 +132,8 @@ function runApp(seededChars) {
     },
     querySelectorAll() { return []; },
     createElement(tag) { return makeEl(`<${tag}>`); },
+    listeners: {},
+    addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); },
   };
   const storageStub = {
     getItem(key) { return key === 'wow_forever_roster' ? JSON.stringify(seededChars) : null; },
@@ -106,11 +142,13 @@ function runApp(seededChars) {
   const windowStub = {};
   const factory = new Function(
     'document', 'localStorage', 'setInterval', 'alert', 'confirm', 'prompt', 'fetch', 'console', 'window',
-    `${src}\nreturn { setFilter, renderRoster, deriveLifecycleState, get characters() { return characters; } };`
+    `${src}\nreturn { setFilter, renderRoster, deriveLifecycleState, setQuery, getQuery, getFilteredCharacters,` +
+    ` openCharacterDetail, closeDetail, isSafeIconUrl, applyQuery, clearSearch,` +
+    ` get characters() { return characters; } };`
   );
   const api = factory(documentStub, storageStub, () => {}, () => {}, () => false, () => null,
     () => Promise.reject(new Error('network disabled in harness')), { error() {}, log() {} }, windowStub);
-  return { api, registry, missing };
+  return { api, registry, missing, documentStub };
 }
 
 const expected = (chars) => {
@@ -241,6 +279,132 @@ ok(lockedRowHtml.includes('Validated by pandamancer'), 'validated badge title na
 ok(draftRowHtml.includes("editCharacter('902')") && draftRowHtml.includes('>unvalidated<'), 'draft row keeps its edit handler and badge');
 ok(!draftRowHtml.includes('Validated — use Review to re-open'), 'draft row is not locked');
 ok(reg4.get('bnet-sync-line').innerHTML === 'No Battle.net data', 'sync line degrades to "No Battle.net data" with no sidecar');
+
+// ---------- 7. Phase 3c: search box + character detail modal ----------
+console.log('\n[7] search box + detail modal (Phase 3c)');
+const stateSrc = moduleSrc['state.js'];
+const rosterSrc = moduleSrc['roster.js'];
+const searchSrc = moduleSrc['search.js'];
+const detailSrc = moduleSrc['detail.js'];
+
+// markup: declared, hidden by default, in the visual language, and with no new CDN script
+ok(declaredIds.includes('search-input') && /id="search-input"[^>]*oninput="onSearchInput\(event\)"/.test(markup),
+  '#search-input is declared and wired to onSearchInput(event)');
+ok(declaredIds.includes('clear-search') && markup.includes('onclick="clearSearch()"'),
+  'the clear (✕) button is declared and wired to clearSearch()');
+ok(markup.indexOf('Squad Filter') < markup.indexOf('id="search-input"')
+  && markup.indexOf('id="search-input"') < markup.indexOf('id="character-grid"'),
+  'the search box sits in the Squad Filter panel above the roster');
+ok(declaredIds.includes('detail-modal') && declaredIds.includes('detail-content'),
+  '#detail-modal + #detail-content are declared');
+ok((declaredClasses.get('detail-modal') || '').includes('hidden'), 'the detail modal starts hidden');
+ok(/id="detail-modal"[\s\S]{0,600}?class="wow-border-gold[^"]*"[\s\S]{0,400}?id="detail-content"/.test(markup),
+  'the detail modal reuses the wow-border-gold panel shell');
+ok(!/style="[^"]*(color|background)/i.test(markup), 'no inline-style colours anywhere in the markup');
+const remoteScripts = [...html.matchAll(/<script[^>]*\bsrc="(https?:[^"]+)"/g)].map(m => m[1]);
+ok(remoteScripts.every(u => u === 'https://cdn.tailwindcss.com'),
+  `no new CDN scripts (${remoteScripts.join(', ') || 'none'})`);
+
+// one filter path: search AND track, in state.js, nowhere else
+ok(/export let currentQuery/.test(stateSrc) && /function setQuery\(query\)/.test(stateSrc),
+  'state.js owns the query (currentQuery + setQuery)');
+ok(/function getFilteredCharacters\(\)[\s\S]{0,220}currentFilter[\s\S]{0,220}matchesQuery/.test(stateSrc),
+  'getFilteredCharacters applies track AND query');
+// The panels must consume the filtered view; editchar.js's characters.filter() is a roster
+// mutation (delete), not a render path, so the invariant is scoped to the render-path modules.
+const renderPathModules = ['roster.js', 'party.js', 'professions.js', 'stats.js', 'detail.js'];
+const filterForks = renderPathModules.filter(f => /characters\.filter\(/.test(moduleSrc[f]));
+ok(filterForks.length === 0, `no render path re-implements the filter (forks: ${filterForks.join(',') || 'none'})`);
+ok(!/currentFilter/.test(rosterSrc) && /getFilteredCharacters\(\)/.test(rosterSrc),
+  'roster.js paints the filtered view instead of reading the raw filter');
+ok(/registerSearchProvider\(fn\)|registerSearchProvider/.test(stateSrc) && /registerSearchProvider\(/.test(moduleSrc['data.js']),
+  'guild + Battle.net lookup names join the search through a state.js provider hook (no cycle)');
+
+// debounce + the search box does not fork the render path
+ok((searchSrc.match(/SEARCH_DEBOUNCE_MS = 120/g) || []).length === 1, 'the ~120 ms debounce is stated exactly once');
+ok(/setTimeout\([\s\S]{0,140}?SEARCH_DEBOUNCE_MS\)/.test(searchSrc), 'keystrokes are debounced with that constant');
+ok(!/renderAll\(/.test(searchSrc) && /setQuery\(/.test(searchSrc),
+  'search.js repaints only through state.setQuery → renderAll');
+
+// detail modal trust boundaries
+ok(/ICON_HOSTS = \[[^\]]*render\.worldofwarcraft\.com[^\]]*us\.api\.blizzard\.com[^\]]*\]/.test(detailSrc),
+  'the icon host allowlist names both Blizzard hosts');
+ok(/new URL\(url\)/.test(detailSrc) && /protocol === 'https:'/.test(detailSrc) && /parsed\.hostname/.test(detailSrc),
+  'the icon check is on a parsed https hostname, not a substring');
+ok(/loading="lazy"/.test(detailSrc) && /alt="\$\{escapeHtml\(name\)\}"/.test(detailSrc),
+  'gear icons are lazy-loaded with escaped alt text');
+ok(!/localStorage\s*\.\s*(setItem|getItem|removeItem)/.test(detailSrc),
+  'the detail module performs no localStorage access at all');
+// the click wiring on both sides of the roster/detail boundary
+ok(/getLifecycleBadge\(c, lifecycle, badgeClickId\)/.test(rosterSrc)
+  && /lifecycle === LIFECYCLE\.NEEDS_RESOLUTION \? c\.id : null/.test(rosterSrc),
+  'the roster passes a candidate-click id for exactly the rows that need a pick');
+ok(/window\.openCharacterDetail = openCharacterDetail/.test(detailSrc)
+  && /window\.openCharacterDetail\(c\.id\)/.test(rosterSrc)
+  && !/from '\.\/detail\.js'/.test(rosterSrc),
+  'roster.js opens the modal through the window-published handler, and does not import detail.js');
+ok(/window\.openCandidateList = openCandidateList/.test(detailSrc), 'the badge handler is published on window');
+ok(/card\.addEventListener\('click'/.test(rosterSrc)
+  && /querySelectorAll\('button'\)[\s\S]{0,120}stopPropagation\(\)/.test(rosterSrc),
+  'the card click is bound, and its buttons stopPropagation');
+ok(/event\.key === 'Escape'/.test(detailSrc), 'ESC closes the detail modal');
+ok(/event\.target === modal/.test(detailSrc), 'a backdrop click closes the detail modal');
+ok(/Confirm\/resolve coming with validation/.test(detailSrc), 'the candidate list carries the read-only hint');
+ok(!/confirmCandidate|resolveCandidate|selectCandidate|workflow_dispatch/.test(detailSrc),
+  'no resolve/confirm action is wired yet (that is Phase 3d)');
+
+// behaviour: composition, panels, empty state, modal, escaping
+const { api: api6, registry: reg6 } = runApp(repoChars);
+api6.setFilter('all');
+api6.setQuery('tank');
+const tankExpected = repoChars.filter(c => [c.role, c.roleSec].some(r => String(r).toLowerCase().includes('tank')));
+ok(api6.getFilteredCharacters().length === tankExpected.length,
+  `query "tank" matches role/roleSec (${tankExpected.length} chars)`);
+api6.setFilter('flowmasters');
+const combined = api6.getFilteredCharacters();
+ok(combined.length > 0 && combined.every(c => c.track === 'flowmasters'
+  && [c.role, c.roleSec].some(r => String(r).toLowerCase().includes('tank'))),
+  `search AND track compose (${combined.length} flowmasters match "tank")`);
+ok(reg6.get('character-grid').children.length === combined.length,
+  'the roster grid renders exactly the searched-and-filtered rows');
+ok(reg6.get('race-summary').innerText === `${new Set(combined.map(c => c.race)).size} Races / ${combined.length} Chars`,
+  `race panel counts the same pool: "${reg6.get('race-summary').innerText}"`);
+ok(reg6.get('class-summary').innerText === `${new Set(combined.map(c => c.class)).size} Classes / ${combined.length} Chars`,
+  `class panel counts the same pool: "${reg6.get('class-summary').innerText}"`);
+api6.setQuery('zzzz-no-such-character');
+ok(reg6.get('character-grid').children.length === 0
+  && reg6.get('character-grid').innerHTML.includes('text-[11px] text-slate-500 italic p-3 text-center bg-slate-900/40 rounded border border-slate-800'),
+  'an empty search keeps the existing empty-state styling');
+ok(reg6.get('character-grid').innerHTML.includes('zzzz-no-such-character'), 'the empty state echoes the query');
+api6.setFilter('all');
+api6.setQuery('');
+ok(reg6.get('character-grid').children.length === repoChars.length,
+  `clearing the query restores every row (${reg6.get('character-grid').children.length})`);
+
+ok(reg6.get('detail-modal').classList.contains('hidden'), 'the detail modal starts hidden');
+api6.openCharacterDetail(String(repoChars[0].id));
+ok(!reg6.get('detail-modal').classList.contains('hidden'), 'openCharacterDetail() reveals the detail modal');
+ok(reg6.get('detail-content').innerHTML.includes(repoChars[0].name), 'the modal shows the requested row');
+ok(reg6.get('detail-content').innerHTML.includes('No Battle.net data'),
+  'with no sidecar loaded it degrades to the "No Battle.net data" placeholder');
+ok(!reg6.get('detail-content').innerHTML.includes('>Gear<'), 'no gear section without gear data');
+api6.closeDetail();
+ok(reg6.get('detail-modal').classList.contains('hidden'), 'closeDetail() hides it again');
+
+const evilRow = { id: '666', player: evil, name: evil, track: 'family', role: 'DPS', roleSec: 'None', race: 'Troll', class: 'Mage', prof1: 'None', prof2: 'None' };
+const { api: api7, registry: reg7 } = runApp([evilRow]);
+api7.openCharacterDetail('666');
+const modalHtml = reg7.get('detail-content').innerHTML;
+ok(!reg7.get('detail-modal').classList.contains('hidden'), 'the modal opens for a row whose text is an XSS payload');
+ok(!modalHtml.includes('<img src=x') && modalHtml.includes('&lt;img src=x'), 'the modal escapes roster-sourced text');
+ok([...reg7.values()].map(el => el.innerHTML).join('').split('<img src=x').length === 1,
+  'no panel renders the payload as a tag while the modal is open');
+
+[['https://render.worldofwarcraft.com/a.jpg', true], ['https://us.api.blizzard.com/x.jpg', true],
+  ['https://render.worldofwarcraft.com.evil.tld/a.jpg', false], ['https://evil.tld/', false],
+  ['//render.worldofwarcraft.com/a.jpg', false], ['javascript:alert(1)', false],
+  ['https://render.worldofwarcraft.com@evil.tld/', false], ['', false], [null, false], [42, false]]
+  .forEach(([url, want]) => ok(api7.isSafeIconUrl(url) === want, `isSafeIconUrl(${JSON.stringify(url)}) -> ${want}`));
 
 console.log(`\n${fails === 0 ? 'ALL CHECKS PASSED' : 'FAILURES PRESENT'}: ${passes} passed, ${fails} failed`);
 process.exit(fails === 0 ? 0 : 1);

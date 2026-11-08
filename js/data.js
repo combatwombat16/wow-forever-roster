@@ -12,7 +12,7 @@
 // leaves the panels that need it showing nothing extra and the site behaving as it
 // did before they existed.
 
-import { STORAGE_KEY, getCharacters, normalizeRoster, registerRenderHook, renderAll, setCharacters } from './state.js';
+import { STORAGE_KEY, getCharacters, normalizeRoster, registerRenderHook, registerSearchProvider, renderAll, setCharacters } from './state.js';
 import { escapeHtml } from './util.js';
 
 export const ROSTER_PATH = 'data/characters.json';
@@ -177,3 +177,21 @@ export async function loadSidecars() {
 
 // Repaints keep the header line and the badges consistent after any setCharacters().
 registerRenderHook(renderSyncLine);
+
+// The searchable sidecar half: guild, and the Battle.net lookup name the sync resolved (or
+// failed to resolve) for this roster row. It enters the search through state.js's provider
+// hook rather than a state.js import, so that module stays the leaf it is documented as,
+// and it degrades to nothing when either sidecar is absent (search just matches less).
+registerSearchProvider(c => {
+  const { sidecar, mapEntry } = byRosterId(c && c.id);
+  const extra = [];
+  const guild = sidecar ? sidecar.guild : null;
+  if (typeof guild === 'string' || typeof guild === 'number') extra.push(String(guild));
+  if (mapEntry && typeof mapEntry === 'object') {
+    ['bnetName', 'surname', 'slug'].forEach(key => {
+      const value = mapEntry[key];
+      if (typeof value === 'string' || typeof value === 'number') extra.push(String(value));
+    });
+  }
+  return extra;
+});

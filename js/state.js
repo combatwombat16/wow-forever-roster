@@ -1,11 +1,12 @@
 // state.js — the single source of truth: the characters array, the active Squad
-// Filter, the derived Battle.net lifecycle, and the render dispatcher that repaints
-// every dependent panel.
+// Filter, the active search query, the derived Battle.net lifecycle, and the render
+// dispatcher that repaints every dependent panel.
 //
 // Leaf module (imports nothing) so anything may import it without creating a cycle.
 // Cross-module calls that used to be direct are now hook registries:
-//   registerRenderHook(fn) — panels repaint on renderAll()
-//   onFilterChange(fn)     — things that only follow the filter (party's button label)
+//   registerRenderHook(fn)    — panels repaint on renderAll()
+//   onFilterChange(fn)        — things that only follow the filter (party's button label)
+//   registerSearchProvider(fn) — extra searchable text (data.js: guild + lookup name)
 // deriveLifecycleState() stays pure for the same reason: the map entry arrives as an
 // argument, because the sidecar lookup lives in data.js and importing it here would
 // turn this leaf into a hub.
@@ -35,6 +36,9 @@ export function normalizeRoster(list) {
 
 export let characters;
 export let currentFilter = 'all';
+// The search box's value as normalised for matching ('' == no search active). Only ever
+// written through setQuery() so the query, like the track, has exactly one owner.
+export let currentQuery = '';
 
 // Synchronous seed: localStorage first, DEFAULT_CHARACTERS on empty/parse failure.
 // The async fetch in data.js may override this afterwards, exactly as the Contents
@@ -54,6 +58,10 @@ if (stored) {
 
 export function getCharacters() {
   return characters;
+}
+
+export function getQuery() {
+  return currentQuery;
 }
 
 // ---------- derived lifecycle (docs/refactor-design.md §2) ----------
@@ -136,10 +144,60 @@ export function setFilter(filter) {
   renderAll();
 }
 
-// The one place the Squad Filter is applied, so the roster grid, the profession
-// matrix and both distribution panels can never disagree about the active squad.
+// ---------- search (docs/refactor-design.md §1, armory-tasks 3.4) ----------
+// Search is a second predicate on the same source of truth rather than a second render
+// path: getFilteredCharacters() is search AND track, so every panel that already followed
+// the track filter follows the query too.
+
+// Extra searchable text for a character, contributed by a module whose data state.js must
+// not import (data.js adds the sidecar guild and the Battle.net lookup name). A provider
+// returns a string or an array of strings; anything else is ignored, so a provider cannot
+// make a character match on garbage.
+const searchProviders = [];
+
+export function registerSearchProvider(fn) {
+  if (typeof fn === 'function') searchProviders.push(fn);
+}
+
+// The lowercased haystack for one character: the roster identity fields plus whatever the
+// providers add. Non-primitive contributions are dropped rather than stringified, so an
+// object can never match on "[object object]".
+export function getSearchFields(character) {
+  if (!character || typeof character !== 'object') return [];
+  const values = [character.name, character.player, character.class, character.role, character.roleSec];
+  searchProviders.forEach(fn => {
+    const extra = fn(character);
+    if (Array.isArray(extra)) values.push(...extra);
+    else if (extra != null) values.push(extra);
+  });
+  return values
+    .filter(v => typeof v === 'string' || typeof v === 'number')
+    .map(v => String(v).toLowerCase());
+}
+
+// Every whitespace-separated term must appear in at least one field (terms AND together,
+// fields OR). An empty query matches everything, which is what "no search active" means.
+export function matchesQuery(character, query = currentQuery) {
+  const terms = String(query == null ? '' : query).toLowerCase().split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return true;
+  const fields = getSearchFields(character);
+  return terms.every(term => fields.some(field => field.indexOf(term) !== -1));
+}
+
+// The one place the Squad Filter and the search query are applied, so the roster grid, the
+// party pool, the profession matrix and both distribution panels can never disagree about
+// which characters are in play.
 export function getFilteredCharacters() {
-  return characters.filter(c => currentFilter === 'all' ? true : c.track === currentFilter);
+  return characters.filter(c =>
+    (currentFilter === 'all' ? true : c.track === currentFilter) && matchesQuery(c)
+  );
+}
+
+// The search box is the only writer. Repaints through renderAll(), never through a
+// panel-specific path, so a query change repaints exactly what a track change repaints.
+export function setQuery(query) {
+  currentQuery = String(query == null ? '' : query).trim();
+  renderAll();
 }
 
 // Inline on*="…" handlers in index.html resolve against the global scope, so the

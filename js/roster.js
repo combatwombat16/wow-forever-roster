@@ -5,7 +5,7 @@
 // Everything Battle.net-sourced is display-only (design §2): it is read through the
 // data.js join, escaped like any other untrusted string, and never written back.
 
-import { LIFECYCLE, characters, currentFilter, deriveLifecycleState, isLifecycleEditable, registerRenderHook } from './state.js';
+import { LIFECYCLE, characters, deriveLifecycleState, getFilteredCharacters, getQuery, isLifecycleEditable, registerRenderHook } from './state.js';
 import { byRosterId, formatSyncedAt, isSidecarFresh } from './data.js';
 import { party } from './party.js';
 import { CLASS_COLORS, PROF_ABBR, escapeHtml, getFaction } from './util.js';
@@ -59,7 +59,10 @@ export function getSidecarDot(sidecar, mapEntry) {
 }
 
 // The lifecycle badge, shown for every row whether or not a sidecar exists for it.
-export function getLifecycleBadge(character, lifecycle) {
+// clickId is optional: a row that needs a human pick gets a badge that opens its candidate
+// list inside the detail modal (armory-tasks 3.3 — read-only there; the resolve action is
+// Phase 3d). Only the roster's own id is interpolated, escaped, and only into the handler.
+export function getLifecycleBadge(character, lifecycle, clickId = null) {
   const validation = character && typeof character === 'object' ? character.validation : null;
   let label = 'unvalidated';
   let tone = 'text-slate-400 border-slate-700 bg-slate-800';
@@ -88,7 +91,12 @@ export function getLifecycleBadge(character, lifecycle) {
     title = reviewedBy ? `Validated by ${reviewedBy} — read-only` : 'Validated — read-only';
   }
 
-  return `<span title="${escapeHtml(title)}" class="text-[9px] font-bold uppercase tracking-wider px-1 py-0.5 rounded border ${tone}">${escapeHtml(label)}</span>`;
+  const needsPick = lifecycle === LIFECYCLE.NEEDS_RESOLUTION && clickId != null;
+  const handler = needsPick
+    ? ` onclick="openCandidateList(event, '${escapeHtml(String(clickId))}')"`
+    : '';
+
+  return `<span${handler} title="${escapeHtml(title)}" class="text-[9px] font-bold uppercase tracking-wider px-1 py-0.5 rounded border ${tone}${needsPick ? ' cursor-pointer hover:brightness-125' : ''}">${escapeHtml(label)}</span>`;
 }
 
 // Level · item level · guild, straight off the sidecar. Numbers are rendered only when
@@ -115,12 +123,18 @@ export function getSidecarMeta(sidecar) {
 // Dense, compact single-row card rendering with Faction background coloring
 export function renderRoster() {
   const grid = document.getElementById('character-grid');
-  const filtered = characters.filter(c => currentFilter === 'all' ? true : c.track === currentFilter);
+  // The one filtered view (track AND search), so the grid can never show rows the panels
+  // to its right are not counting.
+  const filtered = getFilteredCharacters();
+  const query = getQuery();
   document.getElementById('roster-count').innerText = `${filtered.length} Chars`;
 
   grid.innerHTML = '';
   if (filtered.length === 0) {
-    grid.innerHTML = `<div class="text-[11px] text-slate-500 italic p-3 text-center bg-slate-900/40 rounded border border-slate-800">No characters in this filter.</div>`;
+    // Same empty-state styling as the no-match case for the track filter; only the wording
+    // distinguishes them, and the echoed query is escaped like any other roster string.
+    const reason = query ? `No characters match “${escapeHtml(query)}”.` : 'No characters in this filter.';
+    grid.innerHTML = `<div class="text-[11px] text-slate-500 italic p-3 text-center bg-slate-900/40 rounded border border-slate-800">${reason}</div>`;
     return;
   }
 
@@ -133,7 +147,10 @@ export function renderRoster() {
     const { sidecar, mapEntry } = byRosterId(c.id);
     const lifecycle = deriveLifecycleState(c, mapEntry);
     const sidecarMeta = getSidecarMeta(sidecar);
-    const bnetLine = `${getSidecarDot(sidecar, mapEntry)}${sidecarMeta ? `<span class="flex items-center gap-1">${sidecarMeta}</span>` : ''}${getLifecycleBadge(c, lifecycle)}`;
+    // A row that needs a human pick gets a badge that opens the modal straight at its (read-only)
+    // candidate list; every other badge is plain status display.
+    const badgeClickId = lifecycle === LIFECYCLE.NEEDS_RESOLUTION ? c.id : null;
+    const bnetLine = `${getSidecarDot(sidecar, mapEntry)}${sidecarMeta ? `<span class="flex items-center gap-1">${sidecarMeta}</span>` : ''}${getLifecycleBadge(c, lifecycle, badgeClickId)}`;
 
     // Faction-based backdrop and border styling
     const factionStyles = faction === 'alliance'
@@ -149,7 +166,8 @@ export function renderRoster() {
     const profsFormatted = [prof1Str, prof2Str].filter(Boolean).map(escapeHtml).join('/');
 
     const card = document.createElement('div');
-    card.className = `rounded-lg px-2.5 py-1.5 transition-all border flex items-center justify-between gap-2 text-xs ${factionStyles} ${isPartyMember ? 'ring-1 ring-amber-400 border-amber-400/80' : ''}`;
+    card.className = `cursor-pointer rounded-lg px-2.5 py-1.5 transition-all border flex items-center justify-between gap-2 text-xs ${factionStyles} ${isPartyMember ? 'ring-1 ring-amber-400 border-amber-400/80' : ''}`;
+    card.setAttribute('data-character-id', String(c.id == null ? '' : c.id));
     card.innerHTML = `
       <!-- Left: Identity, Faction & Badges -->
       <div class="flex items-center gap-2 min-w-0 flex-1">
@@ -191,6 +209,16 @@ export function renderRoster() {
         </button>
       </div>
     `;
+    // A card click opens the read-only detail modal (armory-tasks 3.3); the micro-actions
+    // stopPropagation, so ✓/✎/✕ keep their own behaviour without also opening it. detail.js
+    // is called through window on purpose: it imports getLifecycleBadge from this module, and
+    // importing it back would make a load-order cycle the reason the click works.
+    card.addEventListener('click', () => {
+      if (typeof window.openCharacterDetail === 'function') window.openCharacterDetail(c.id);
+    });
+    card.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', e => e.stopPropagation());
+    });
     grid.appendChild(card);
   });
 }

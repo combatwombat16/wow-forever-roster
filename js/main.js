@@ -13,6 +13,10 @@ import './roster.js';
 import './party.js';
 import './professions.js';
 import './stats.js';
+// Registered after the panels, so a repaint paints the grid, then the derived panels, then an
+// open detail modal. search.js owns no state of its own — it only feeds state.js's query.
+import './detail.js';
+import './search.js';
 import { onRaceChange } from './editchar.js';
 import { updateAutoFormButtonLabel } from './party.js';
 

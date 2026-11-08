@@ -406,9 +406,15 @@ def main():
         check(not re.search(r"git add (?:battle-net-map|character-data)\.json", wf),
               "commit step no longer adds the old root paths")
 
-    # --- untouched machine-owned files ---------------------------------------------- #
-    diff = subprocess.run(["git", "-C", str(ROOT), "diff", "--quiet", "HEAD", "--", "index.html"])
-    check(diff.returncode == 0, "index.html is unmodified vs git HEAD (the UI is Phase 3)")
+    # --- machine-owned commit scope: sync may commit ONLY data/ artifacts ------------ #
+    # (the Phase 2 guard 'index.html unmodified vs HEAD' is obsolete since Phase 3
+    # legitimately develops the UI; what must hold is that the sync workflow never
+    # commits UI files — only the two data/ artifacts.)
+    if wf:
+        bad_adds = [ln for ln in wf.splitlines()
+                    if re.match(r"^\s*git add ", ln)
+                    and re.search(r"index\.html|\bjs/|\bcss/|characters\.json", ln)]
+        check(not bad_adds, f"sync workflow never commits UI files or the roster ({bad_adds})")
 
     # --- caching mechanism (amendment 3) --------------------------------------------- #
     check("If-Modified-Since" in SYNC_TEXT, "sync package sends If-Modified-Since")
