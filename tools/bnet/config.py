@@ -22,6 +22,10 @@ DATA_DIR = REPO / "data"
 ROSTER_FILE = DATA_DIR / "characters.json"
 MAP_FILE = DATA_DIR / "battle-net-map.json"
 DATA_FILE = DATA_DIR / "character-data.json"
+# Phase 1 modal rework (character-tasks.md T1.3): spec talent-tree definitions are
+# version-pinned static reference data shared by every character, so they are
+# stored once here instead of duplicated per character in the sidecar.
+TALENT_TREES_FILE = DATA_DIR / "talent-trees.json"
 PROBE_OUT_FILE = REPO / "docs" / "bnet-probe-raw.json"
 DEFAULT_STATE_DIR = Path.home() / ".cache" / "wow-bnet-sync"
 
@@ -39,6 +43,13 @@ SECRET_ENV = ("BLIZZARD_CLIENT_ID", "BLIZZARD_CLIENT_SECRET")
 # --------------------------------------------------------------------------- #
 GUILD_ROSTER_PATH = "/data/wow/guild/{slug}/roster"
 PLAYABLE_CLASS_INDEX = "/data/wow/playable-class/index"
+# Phase 1 modal rework routes (notes §9.2/§9.3): the profession/reputation data
+# rides the character profile hrefs, but the spell icon and talent-tree docs live
+# only in the re-discovered static namespace. The icon route wants the SPELL id
+# from ``spell_tooltip.spell.id`` — every ``/data/wow/media/spell/{talent_id}``
+# probe 404s (§9.3.1), which is why the placeholder is named, not generic.
+PLAYABLE_SPECIALIZATION_PATH = "/data/wow/playable-specialization/{spec_id}"
+SPELL_MEDIA_PATH = "/data/wow/media/spell/{spell_id}"
 # The static namespace is version-pinned and must be re-discovered every run
 # from hrefs in fresh payloads (notes §5); plain static-forever-us is 403.
 STATIC_NS_RE = re.compile(r"namespace=(static-[A-Za-z0-9._-]+)")
@@ -70,6 +81,12 @@ MAX_REQUESTS = 2500           # hard per-run cap; a hit stops the run cleanly
 HTTP_TIMEOUT_S = 30
 MAX_TOKEN_MINTS = 3           # initial + 401 refresh + one spare; tokens last 24 h
 MAX_429_RETRIES = 3
+# Talent trees carry one distinct spell id per rank (§9.3.2), so filling every
+# node icon costs hundreds of one-per-spell lookups (§9.3.1) on the run that
+# first sees a patch. The cap keeps that reference-data pass from eating the
+# character budget (MAX_REQUESTS); icons above the cap stay null and are picked
+# up by a later run once the trees themselves are cached.
+MAX_SPELL_ICON_LOOKUPS = 900
 USER_AGENT = "wow-forever-roster/2.0 (nightly roster sync; read-only)"
 
 CACHE_VERSION = 1
@@ -79,7 +96,12 @@ MAX_CACHE_URLS = 4000         # LRU prune so months of runs cannot grow the file
 # tripwire (amendment 7); a revision change is reported loudly but never aborts.
 DRIFT_SURFACES = ("profile", "equipment", "specializations", "achievements",
                   "statistics", "pvp_summary", "item_media", "guild_roster",
-                  "playable_class_index")
+                  "playable_class_index",
+                  # Phase 1 modal rework (notes §9.7.7): these surfaces became
+                  # load-bearing for the character modal, so their drift must
+                  # surface on the same tripwire as the Phase 1 contract.
+                  "reputations", "professions", "character_media", "spell_media",
+                  "playable_specialization", "talent_tree")
 
 # --------------------------------------------------------------------------- #
 # Probe endpoints / budgets (tools/bnet/probe.py; Phase 1 contract frozen here)

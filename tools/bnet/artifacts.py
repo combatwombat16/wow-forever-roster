@@ -30,10 +30,25 @@ MAP_ENTRY_KEYS = ("rosterName", "status", "slug", "href", "bnetName", "surname",
 CANDIDATE_KEYS = ("slug", "name", "surname", "matchedForm", "href")
 
 DATA_DOC_KEYS = ("schemaVersion", "syncedAt", "triggeredBy", "characters")
+# Phase 1 modal rework (T1.1–T1.5) is ADDITIVE: every key the sidecar already
+# published keeps its exact meaning, and the five new keys (stats, talents,
+# professions, reputations, media) are optional whole blocks — present only when
+# the payload yielded data, exactly like guild/progress.
 CHARACTER_KEYS = ("status", "bnet", "level", "guild", "activeSpec", "itemLevel",
-                  "gear", "progress", "achievementPoints", "fetchedAt")
+                  "gear", "progress", "achievementPoints", "fetchedAt",
+                  "stats", "talents", "professions", "reputations", "media")
 BNET_KEYS = ("name", "surname", "href")
-GEAR_KEYS = ("slot", "name", "ilvl", "iconUrl")
+# gear keeps slot/name/ilvl/iconUrl and gains the T1.1 tooltip fields; no
+# gem/socket key exists because the API carries none (notes §9.4, amendment 2).
+GEAR_KEYS = ("slot", "name", "ilvl", "iconUrl",
+             "itemId", "quality", "itemClass", "itemSubclass", "enchants", "stats")
+# data/talent-trees.json (T1.3): shared spec tree geometry, version-pinned to
+# the static namespace it was fetched from, keyed by spec id.
+TALENT_TREES_DOC_KEYS = ("staticNamespace", "updatedAt", "specs")
+TALENT_TREE_KEYS = ("treeId", "classId", "className", "specId", "specName", "name", "nodes")
+TALENT_NODE_KEYS = ("id", "displayRow", "displayCol", "rawPositionX", "rawPositionY",
+                    "unlocks", "lockedBy", "ranks")
+TALENT_RANK_KEYS = ("rank", "talentId", "spellId", "spellName", "description", "castTime", "iconUrl")
 
 
 def write_json(path, payload):
@@ -134,6 +149,46 @@ def triggered_by(env=None):
 # --------------------------------------------------------------------------- #
 # Readers used by the incremental (lookup) write path
 # --------------------------------------------------------------------------- #
+def load_previous_talent_trees(path=None):
+    """The committed data/talent-trees.json document, or {} when absent/unreadable.
+
+    Trees are version-pinned static docs (§9.3.2): when the pinned static
+    namespace still matches, a re-run reuses them and spends zero requests; a
+    patch (new static ns) makes the Fetcher ignore the old geometry wholesale."""
+    path = path or config.TALENT_TREES_FILE
+    if not path.exists():
+        return {}
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        print(f"  ! previous talent-trees.json unreadable ({type(exc).__name__}); rebuilding it whole")
+        return {}
+    return raw if isinstance(raw, dict) else {}
+
+
+def write_talent_trees(static_namespace, specs, *, dry_run):
+    """Write data/talent-trees.json (never in dry-run) and return the document.
+
+    Merging rather than replacing means a lookup run for one character cannot
+    erase the trees every other spec already depends on; when the namespace
+    changed the pinned old geometry is worthless, so it is dropped, not merged."""
+    payload_specs = {}
+    previous = load_previous_talent_trees()
+    if previous.get("staticNamespace") == static_namespace and isinstance(previous.get("specs"), dict):
+        payload_specs.update({str(k): v for k, v in previous["specs"].items() if isinstance(v, dict)})
+    payload_specs.update({str(k): v for k, v in (specs or {}).items() if isinstance(v, dict)})
+
+    def sort_key(spec_id):
+        return (0, int(spec_id)) if spec_id.isdigit() else (1, 0)
+
+    payload = {"staticNamespace": static_namespace,
+               "updatedAt": http.iso_now(),
+               "specs": {k: payload_specs[k] for k in sorted(payload_specs, key=sort_key)}}
+    if not dry_run:
+        write_json(config.TALENT_TREES_FILE, payload)
+    return payload
+
+
 def load_previous_data(path=None):
     """Previous sidecar rows, keyed by roster id.
 

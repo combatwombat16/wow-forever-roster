@@ -35,6 +35,7 @@ PKG = ROOT / "tools" / "bnet"
 ROSTER = ROOT / "data" / "characters.json"
 MAP = ROOT / "data" / "battle-net-map.json"
 DATA = ROOT / "data" / "character-data.json"
+TREES = ROOT / "data" / "talent-trees.json"
 WORKFLOW = ROOT / ".github" / "workflows" / "sync-bnet.yml"
 PAGES_WORKFLOW = ROOT / ".github" / "workflows" / "pages.yml"
 ENV = ROOT / ".env"
@@ -60,10 +61,33 @@ VALIDATION_KEYS = {"state", "confirmedSlug", "reviewedBy", "reviewedAt",
 # caps it, the sync caps it, and a longer note is a hand-edit rather than something the UI wrote.
 REPORT_NOTE_MAX = 240
 ROSTER_KEYS = ROSTER_FIELDS | {"validation"}
+# Phase 1 modal rework (T1.1–T1.5) is additive: the pre-existing keys and their
+# meaning are untouched, the five new keys are optional whole blocks. The
+# sub-object key sets below mirror bnet.fetch's extractors exactly, so the
+# sidecar the UI consumes is schema-checked at every level, not just the top.
 CHAR_KEYS = {"status", "bnet", "level", "guild", "activeSpec", "itemLevel",
-             "gear", "progress", "achievementPoints", "fetchedAt"}
+             "gear", "progress", "achievementPoints", "fetchedAt",
+             "stats", "talents", "professions", "reputations", "media"}
 BNET_KEYS = {"name", "surname", "href"}
-GEAR_KEYS = {"slot", "name", "ilvl", "iconUrl"}
+GEAR_KEYS = {"slot", "name", "ilvl", "iconUrl",
+             "itemId", "quality", "itemClass", "itemSubclass", "enchants", "stats"}
+GEAR_STAT_KEYS = {"value", "displayString", "isEquipBonus", "color"}
+RGBA_KEYS = {"r", "g", "b", "a"}
+ID_NAME_KEYS = {"id", "name"}
+STAT_VALUE_KEYS = {"base", "effective", "value", "ratingBonus", "ratingNormalized", "id", "name"}
+TALENT_SPEC_KEYS = {"specId", "specName", "spentPoints", "talents"}
+TALENT_RANK_KEYS = {"rank", "talentId", "spellId", "spellName", "description", "castTime", "iconUrl"}
+PROFESSIONS_KEYS = {"primaries", "secondaries"}
+PROFESSION_KEYS = {"id", "name", "tiers"}
+PROFESSION_TIER_KEYS = {"skillPoints", "maxSkillPoints", "tierId", "tierName", "knownRecipes"}
+RECIPE_KEYS = {"id", "name"}
+REPUTATION_KEYS = {"factionId", "factionName", "standing"}
+STANDING_KEYS = {"raw", "value", "max", "tier", "name"}
+MEDIA_KEYS = {"avatar", "avatarSd"}
+TREE_KEYS = {"treeId", "classId", "className", "specId", "specName", "name", "nodes"}
+TREE_NODE_KEYS = {"id", "displayRow", "displayCol", "rawPositionX", "rawPositionY",
+                  "unlocks", "lockedBy", "ranks"}
+MAX_TREES_BYTES = 2 * 1024 * 1024
 PROGRESS_KEYS = {"raid", "mythicPlus", "pvp"}
 # Keys that only exist in raw Blizzard payloads: their presence would mean the
 # sync dumped unnormalized data into the public sidecar.
@@ -368,7 +392,8 @@ def main():
             check(isinstance(gear, list), f"ok data entry {rid} gear is a list")
             for item in gear or []:
                 if not isinstance(item, dict) or not set(item) <= GEAR_KEYS:
-                    check(False, f"data entry {rid} gear item carries only slot/name/ilvl/iconUrl")
+                    check(False, f"data entry {rid} gear item carries only the v2 keys "
+                                 f"plus the T1.1 tooltip fields")
                     continue
                 icon = item.get("iconUrl")
                 # null is the documented outcome when an item-media doc 404s
@@ -377,10 +402,89 @@ def main():
                 # loaded by every visitor's browser and re-fetched nightly.
                 check(icon is None or (isinstance(icon, str) and ICON_URL_RE.match(icon)),
                       f"data entry {rid} gear iconUrl matches ^https://render\\.worldofwarcraft\\.com/ or null")
+                # T1.1 tooltip fields (notes §9.4): id/quality stay scalar, class
+                # references are {id, name}, enchants are strings, stats carry the
+                # RGBA display colour verbatim. No gem/socket keys exist anywhere
+                # (amendment 2), so none may appear.
+                check(item.get("itemId") is None or (isinstance(item.get("itemId"), int)
+                      and not isinstance(item.get("itemId"), bool)),
+                      f"data entry {rid} gear itemId is null or an int")
+                check(item.get("quality") is None or isinstance(item.get("quality"), str),
+                      f"data entry {rid} gear quality is null or a string enum")
+                for ref_key in ("itemClass", "itemSubclass"):
+                    ref = item.get(ref_key)
+                    check(ref is None or (isinstance(ref, dict) and set(ref) <= ID_NAME_KEYS),
+                          f"data entry {rid} gear {ref_key} is null or {{id, name}}")
+                enchants = item.get("enchants")
+                check(isinstance(enchants, list) and all(isinstance(x, str) for x in enchants),
+                      f"data entry {rid} gear enchants is a list of strings")
+                gear_stats = item.get("stats") or []
+                check(all(isinstance(s, dict) and set(s) <= GEAR_STAT_KEYS for s in gear_stats),
+                      f"data entry {rid} gear stats carry only value/displayString/isEquipBonus/color")
+                check(all(s.get("color") is None or (isinstance(s.get("color"), dict) and set(s["color"]) <= RGBA_KEYS)
+                          for s in gear_stats if isinstance(s, dict)),
+                      f"data entry {rid} gear stat colors are null or RGBA")
             progress = char.get("progress")
             if progress is not None:
                 check(isinstance(progress, dict) and set(progress) <= PROGRESS_KEYS and bool(progress),
                       f"data entry {rid} progress only has data-bearing keys (omit-when-empty)")
+            # --- Phase 1 additive blocks (T1.2–T1.5) ------------------------- #
+            stats_block = char.get("stats")
+            if stats_block is not None:
+                check(isinstance(stats_block, dict) and bool(stats_block),
+                      f"data entry {rid} stats is a non-empty object when present")
+                bad_stats = sorted(
+                    key for key, value in (stats_block or {}).items()
+                    if not ((isinstance(value, (int, float)) and not isinstance(value, bool))
+                            or (isinstance(value, dict) and bool(value) and set(value) <= STAT_VALUE_KEYS)))
+                check(not bad_stats,
+                      f"data entry {rid} stats values are numbers or normalized groups (bad: {bad_stats[:5]})")
+            talents_block = char.get("talents")
+            if talents_block is not None:
+                check(isinstance(talents_block, list) and bool(talents_block),
+                      f"data entry {rid} talents is a non-empty list when present")
+                for spec_group in talents_block or []:
+                    check(isinstance(spec_group, dict) and set(spec_group) <= TALENT_SPEC_KEYS,
+                          f"data entry {rid} talent group carries only specId/specName/spentPoints/talents")
+                    selected = (spec_group.get("talents") or []) if isinstance(spec_group, dict) else []
+                    check(all(isinstance(t, dict) and set(t) <= TALENT_RANK_KEYS for t in selected),
+                          f"data entry {rid} selected talents carry only the T1.3 fields")
+                    check(all(t.get("iconUrl") is None
+                              or (isinstance(t.get("iconUrl"), str) and ICON_URL_RE.match(t["iconUrl"]))
+                              for t in selected if isinstance(t, dict)),
+                          f"data entry {rid} selected-talent iconUrls are null or on the render host")
+            professions = char.get("professions")
+            if professions is not None:
+                check(isinstance(professions, dict) and set(professions) <= PROFESSIONS_KEYS
+                      and bool(professions.get("primaries") or professions.get("secondaries")),
+                      f"data entry {rid} professions has only primaries/secondaries and carries data")
+                for side in ((professions or {}).get("primaries") or []) + ((professions or {}).get("secondaries") or []):
+                    check(isinstance(side, dict) and set(side) <= PROFESSION_KEYS,
+                          f"data entry {rid} profession carries only id/name/tiers")
+                    for tier in (side.get("tiers") or []) if isinstance(side, dict) else []:
+                        check(isinstance(tier, dict) and set(tier) <= PROFESSION_TIER_KEYS,
+                              f"data entry {rid} profession tier carries only the T1.4 fields")
+                        for recipe in (tier.get("knownRecipes") or []) if isinstance(tier, dict) else []:
+                            check(isinstance(recipe, dict) and set(recipe) <= RECIPE_KEYS,
+                                  f"data entry {rid} known recipe carries only id/name")
+            reputations = char.get("reputations")
+            if reputations is not None:
+                check(isinstance(reputations, list) and bool(reputations),
+                      f"data entry {rid} reputations is a non-empty list when present")
+                for rep in reputations or []:
+                    check(isinstance(rep, dict) and set(rep) <= REPUTATION_KEYS,
+                          f"data entry {rid} reputation carries only factionId/factionName/standing")
+                    standing = rep.get("standing") if isinstance(rep, dict) else None
+                    check(isinstance(standing, dict) and set(standing) == STANDING_KEYS,
+                          f"data entry {rid} reputation standing keeps raw/value/max/tier/name")
+            media = char.get("media")
+            if media is not None:
+                check(isinstance(media, dict) and set(media) <= MEDIA_KEYS,
+                      f"data entry {rid} media carries only avatar/avatarSd (no inset/headshot exist)")
+                for media_key in (MEDIA_KEYS & set(media or {})):
+                    media_url = media[media_key]
+                    check(media_url is None or (isinstance(media_url, str) and ICON_URL_RE.match(media_url)),
+                          f"data entry {rid} media.{media_key} is null or on the render host")
     blob_keys = (set(walk_keys(characters, set()) or set()) if characters else set())
     offenders = blob_keys & RAW_BLOB_KEYS
     check(not offenders, f"no raw Blizzard payload keys leaked into the sidecar (found: {sorted(offenders)})")
@@ -393,6 +497,54 @@ def main():
     check(len(map_text) < MAX_ARTIFACT_BYTES and len(data_text) < MAX_ARTIFACT_BYTES,
           f"artifacts are under {MAX_ARTIFACT_BYTES} bytes "
           f"(map={len(map_text)}B data={len(data_text)}B)")
+
+    # --- data/talent-trees.json (T1.3) -------------------------------------- #
+    # Shared spec-tree geometry, version-pinned to the static namespace it was
+    # fetched from and keyed by spec id — the one file that must NOT be embedded
+    # per character, and whose every iconUrl is H2-checked like the sidecar's.
+    trees_text = read(TREES)
+    check(trees_text is not None, "data/talent-trees.json exists")
+    if trees_text is not None:
+        trees_doc = None
+        try:
+            trees_doc = json.loads(trees_text)
+        except ValueError as exc:
+            check(False, f"data/talent-trees.json parses as JSON: {exc}")
+        if isinstance(trees_doc, dict):
+            check(set(trees_doc) == {"staticNamespace", "updatedAt", "specs"},
+                  "talent-trees top-level keys are exactly staticNamespace/updatedAt/specs")
+            check(isinstance(trees_doc.get("staticNamespace"), str)
+                  and trees_doc["staticNamespace"].startswith("static-"),
+                  f"talent-trees is version-pinned to the static namespace ({trees_doc.get('staticNamespace')!r})")
+            check(isinstance(trees_doc.get("updatedAt"), str) and ISO_RE.match(trees_doc["updatedAt"]),
+                  "talent-trees updatedAt is ISO8601 UTC")
+            specs = trees_doc.get("specs")
+            check(isinstance(specs, dict) and bool(specs),
+                  "talent-trees specs is a non-empty object keyed by spec id")
+            for spec_id, tree in (specs or {}).items():
+                if not isinstance(tree, dict):
+                    check(False, f"talent-trees spec {spec_id} is an object")
+                    continue
+                check(set(tree) <= TREE_KEYS and isinstance(tree.get("nodes"), list) and bool(tree["nodes"]),
+                      f"talent-trees spec {spec_id} carries identity plus at least one node")
+                check(str(tree.get("specId")) == str(spec_id),
+                      f"talent-trees spec {spec_id} key matches its payload specId")
+                for node in tree.get("nodes") or []:
+                    check(isinstance(node, dict) and set(node) <= TREE_NODE_KEYS,
+                          f"talent-trees spec {spec_id} node keys are geometry/prerequisites/ranks only")
+                    ranks = (node.get("ranks") or []) if isinstance(node, dict) else []
+                    check(all(isinstance(r, dict) and set(r) <= TALENT_RANK_KEYS for r in ranks),
+                          f"talent-trees spec {spec_id} node {node.get('id') if isinstance(node, dict) else '?'} "
+                          f"ranks carry only the T1.3 fields")
+                    check(all(r.get("iconUrl") is None
+                              or (isinstance(r.get("iconUrl"), str) and ICON_URL_RE.match(r["iconUrl"]))
+                              for r in ranks if isinstance(r, dict)),
+                          f"talent-trees spec {spec_id} node rank iconUrls are null or on the render host")
+        trees_foreign = sorted({u for u in re.findall(r"https?://[^\s\"'<>\\]+", trees_text)
+                                if urlparse(u).netloc not in ARTIFACT_HOSTS})
+        check(not trees_foreign, f"data/talent-trees.json contains no non-Blizzard URL (found: {trees_foreign[:3]})")
+        check(len(trees_text) < MAX_TREES_BYTES,
+              f"data/talent-trees.json is under {MAX_TREES_BYTES} bytes (found {len(trees_text)}B)")
 
     # --- secret scan ------------------------------------------------------------- #
     secrets = []
@@ -414,7 +566,8 @@ def main():
                     "tools/migrate_v2.py": read(ROOT / "tools" / "migrate_v2.py"),
                     "data/characters.json": roster_text,
                     "data/battle-net-map.json": map_text,
-                    "data/character-data.json": data_text})
+                    "data/character-data.json": data_text,
+                    "data/talent-trees.json": trees_text})
     for label, text in scanned.items():
         check(text is not None, f"{label} exists for the secret scan")
         if text is None:

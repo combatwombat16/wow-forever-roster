@@ -11,6 +11,9 @@ Artifacts (written through ``bnet.artifacts``, the single writer):
 
     data/battle-net-map.json      roster-id -> Battle.net identity map (schema v2)
     data/character-data.json      normalized sidecar consumed by the site UI (schema v2)
+    data/talent-trees.json        spec talent-tree geometry, pinned to the static
+                                  namespace and keyed by spec id (T1.3) — shared
+                                  reference data, so it joins neither pair above
 
 Credentials come from BLIZZARD_CLIENT_ID / BLIZZARD_CLIENT_SECRET, are never
 printed, logged or written, and every string that could carry one passes
@@ -116,6 +119,16 @@ class Sync:
         lines.extend(f"DRIFT {line}" for line in f.drift)
         if f.icon_failures:
             lines.append(f"WARNING: {f.icon_failures} item icon fetch(es) failed; those gear rows carry iconUrl null")
+        if f.sub_failures:
+            # The exact status per refused surface (T1.7: an endpoint failure is a
+            # recorded error, never a silently missing feature block).
+            lines.append("WARNING: sub-resource fetch failures: "
+                         + "; ".join(f"{surface}=HTTP {status}" for surface, status in f.sub_failures[:12])
+                         + (" …" if len(f.sub_failures) > 12 else ""))
+        if f.feature_failures:
+            lines.append(f"WARNING: {len(f.feature_failures)} optional feature block(s) not stored: "
+                         + "; ".join(f.feature_failures[:10])
+                         + (" …" if len(f.feature_failures) > 10 else ""))
         if f.guild_fetch_failures:
             lines.append(f"WARNING: guild roster fetch failed for: {', '.join(sorted(f.guild_fetch_failures))}")
         if self.budget_hit:
@@ -230,6 +243,12 @@ class Sync:
         # minimal.
         self.resolver.apply_reported_notes(work, ordered_ids)
 
+        # Talent-tree definitions are version-pinned static data (§9.3.2): seed
+        # the cache from the committed document so a run on the same patch re-
+        # fetches nothing. static_ns is already discovered at this point (the
+        # resolution loop above ran first).
+        self.f.seed_talent_trees(artifacts.load_previous_talent_trees())
+
         characters_out = {}
         for rid in ordered_ids:
             w = work[rid]
@@ -287,6 +306,12 @@ class Sync:
         self.cache.save()
 
         extra = []
+        if self.f.static_ns and self.f.talent_trees:
+            # Written only after the pair landed: a run that refused or crashed
+            # never publishes half a reference dataset.
+            artifacts.write_talent_trees(self.f.static_ns, self.f.talent_trees, dry_run=self.args.dry_run)
+            extra.append(f"talent trees: {len(self.f.talent_trees)} spec(s) pinned to {self.f.static_ns}"
+                         + (" (dry-run, not written)" if self.args.dry_run else ""))
         if pruned:
             extra.append(f"pruned stale map rows (roster ids no longer present): {', '.join(pruned)}")
         if self.args.dry_run:
@@ -381,6 +406,9 @@ class Sync:
                 if isinstance(payload, dict):
                     w = {"rec": rows[0], "entry": entry, "profile": payload,
                          "profile_url": href, "unchanged": False}
+                    # Same talent-tree seeding as the nightly run; the static ns
+                    # is known because the lookup above fetched a profile.
+                    self.f.seed_talent_trees(artifacts.load_previous_talent_trees())
                     try:
                         char_row = self.f.enrich(w)
                     except http.UnsafeUrl:
@@ -414,6 +442,11 @@ class Sync:
                     if write_refusal is None:
                         lines.append(f"map: updated id {rid} -> {entry['status']} ({verdict_via}); "
                                      "character-data row written in the same write_pair")
+                        if self.f.static_ns and self.f.talent_trees:
+                            artifacts.write_talent_trees(self.f.static_ns, self.f.talent_trees,
+                                                         dry_run=self.args.dry_run)
+                            lines.append(f"talent trees: {len(self.f.talent_trees)} spec(s) pinned to "
+                                         f"{self.f.static_ns}")
                     else:
                         lines.append(write_refusal)
         else:
