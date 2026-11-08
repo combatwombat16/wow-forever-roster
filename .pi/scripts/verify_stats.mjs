@@ -301,9 +301,19 @@ ok((declaredClasses.get('detail-modal') || '').includes('hidden'), 'the detail m
 ok(/id="detail-modal"[\s\S]{0,600}?class="wow-border-gold[^"]*"[\s\S]{0,400}?id="detail-content"/.test(markup),
   'the detail modal reuses the wow-border-gold panel shell');
 ok(!/style="[^"]*(color|background)/i.test(markup), 'no inline-style colours anywhere in the markup');
+// Phase 4 replaced the Tailwind Play CDN with the Pages-built stylesheet, so the old
+// "no CDN script beyond Tailwind" allowance became a hard zero: an empty list used to
+// satisfy it trivially, which would have let any CDN script in unnoticed. The order is
+// load-bearing too — css/tailwind.css must precede css/app.css or app.css's
+// hand-written overrides lose the cascade.
 const remoteScripts = [...html.matchAll(/<script[^>]*\bsrc="(https?:[^"]+)"/g)].map(m => m[1]);
-ok(remoteScripts.every(u => u === 'https://cdn.tailwindcss.com'),
-  `no new CDN scripts (${remoteScripts.join(', ') || 'none'})`);
+ok(remoteScripts.length === 0,
+  `no remote <script> remains, the Tailwind CDN included (${remoteScripts.join(', ') || 'none'})`);
+ok(!/cdn\.tailwindcss\.com/.test(html), 'index.html no longer references cdn.tailwindcss.com');
+const twLink = html.indexOf('<link rel="stylesheet" href="css/tailwind.css">');
+const appLink = html.indexOf('<link rel="stylesheet" href="css/app.css">');
+ok(twLink !== -1 && appLink !== -1 && twLink < appLink,
+  `css/tailwind.css is linked before css/app.css (tw=${twLink} app=${appLink})`);
 
 // one filter path: search AND track, in state.js, nowhere else
 ok(/export let currentQuery/.test(stateSrc) && /function setQuery\(query\)/.test(stateSrc),

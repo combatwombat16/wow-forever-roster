@@ -8,8 +8,10 @@ sidecar contains only whitelisted normalized keys (no raw Blizzard blobs), no
 credential material appears in any committed surface (including the roster and
 the unit-test fixtures), NO root-level copy of characters.json /
 battle-net-map.json / character-data.json exists in the worktree (a root copy is
-a UI/legacy fork of the roster, not this pipeline's data), the workflow has no
-PR/push trigger and an exact permissions block, the pipeline runs the offline
+a UI/legacy fork of the roster, not this pipeline's data), the sync workflow has no
+PR/push trigger and an exact permissions block (and the only other permitted workflow,
+pages.yml, is checked separately: secret-free, minimally permitted, Tailwind-built,
+deployed through the official Pages actions), the pipeline runs the offline
 unit tests then the modular ``python3 -m bnet sync`` entrypoint under a job
 ``timeout-minutes`` and commits under ``data/``, and the sync package reuses
 Last-Modified conditional GETs (amendment 3: If-Modified-Since yes, the
@@ -34,6 +36,7 @@ ROSTER = ROOT / "data" / "characters.json"
 MAP = ROOT / "data" / "battle-net-map.json"
 DATA = ROOT / "data" / "character-data.json"
 WORKFLOW = ROOT / ".github" / "workflows" / "sync-bnet.yml"
+PAGES_WORKFLOW = ROOT / ".github" / "workflows" / "pages.yml"
 ENV = ROOT / ".env"
 
 SYNC_MODULES = ("__init__.py", "__main__.py", "config.py", "http.py", "roster.py",
@@ -146,6 +149,30 @@ def workflow_steps(text):
         head = next((ln for ln in block if re.match(r"^\s*(?:-\s+)?name:", ln)), block[0])
         out.append((head.split("name:", 1)[1].strip().strip('"').strip("'"), "\n".join(block)))
     return out
+
+
+def permission_pairs(text):
+    """[(scope, level)] for every ``permissions:`` block in a workflow file.
+
+    Same dependency-free line scan as ``workflow_steps``: a verification gate may not
+    depend on a package the runner lacks. Covers both the top-level and the per-job
+    blocks, which is exactly the surface a least-privilege review needs.
+    """
+    pairs = []
+    lines = text.splitlines()
+    for i, ln in enumerate(lines):
+        if not re.match(r"^\s*permissions:\s*$", ln):
+            continue
+        indent = len(ln) - len(ln.lstrip())
+        for nxt in lines[i + 1:]:
+            if not nxt.strip() or nxt.lstrip().startswith("#"):
+                continue
+            if len(nxt) - len(nxt.lstrip()) <= indent:
+                break
+            m = re.match(r"^\s*([a-z][a-z-]*):\s*(read|write|none)\s*$", nxt)
+            if m:
+                pairs.append((m.group(1), m.group(2)))
+    return pairs
 
 
 def body_of(text, pattern):
@@ -383,6 +410,7 @@ def main():
     scanned.update({f"tools/tests/{p.name}": read(p)
                     for p in sorted((ROOT / "tools" / "tests").glob("*.py"))})
     scanned.update({".github/workflows/sync-bnet.yml": read(WORKFLOW),
+                    ".github/workflows/pages.yml": read(PAGES_WORKFLOW),
                     "tools/migrate_v2.py": read(ROOT / "tools" / "migrate_v2.py"),
                     "data/characters.json": roster_text,
                     "data/battle-net-map.json": map_text,
@@ -594,6 +622,81 @@ def main():
         if verify_at is not None:
             check("if:" not in joined[verify_at] and "continue-on-error" not in joined[verify_at],
                   "the verify gate cannot be skipped or tolerated (no if:/continue-on-error)")
+
+    # --- pages.yml: the static deploy workflow (design §4) -------------------------- #
+    # Phase 4 replaces the Tailwind Play CDN with a Pages deploy. This workflow holds
+    # no credential, so its own posture is the reviewable surface: no PR trigger, the
+    # three deploy-pages scopes and nothing else, one pinned build step, an explicit
+    # allow-list bundle, and the official upload/deploy actions.
+    pages = scanned[".github/workflows/pages.yml"]
+    if pages is not None:
+        # Comments explain why the deploy reacts to a push; scan the YAML only.
+        ptrig = "\n".join(ln for ln in pages.split("jobs:", 1)[0].splitlines()
+                          if not ln.lstrip().startswith("#"))
+        check("pull_request" not in ptrig, "pages.yml has no pull_request trigger")
+        check(re.search(r"^\s*push:", ptrig, flags=re.M) is not None
+              and re.search(r"branches:\s*\[main\]", ptrig) is not None,
+              "pages.yml deploys on push to main (the path the sync's [skip ci] commit skips)")
+        check("workflow_run:" in ptrig and 'workflows: ["Sync Battle.net data"]' in ptrig
+              and re.search(r"types:\s*\[completed\]", ptrig) is not None
+              and len(re.findall(r"branches:\s*\[main\]", ptrig)) >= 2,
+              "pages.yml chains off the sync-bnet workflow_run (completed, main)")
+        check("workflow_dispatch:" in ptrig, "pages.yml allows manual dispatch")
+        check("secrets." not in pages and "secrets:" not in pages,
+              "pages.yml references no secret: a static build needs none")
+        pairs = set(permission_pairs(pages))
+        allowed = {("contents", "read"), ("pages", "write"), ("id-token", "write")}
+        check(bool(pairs) and pairs <= allowed,
+              f"pages.yml permissions are minimal ({sorted(allowed)} at most; found {sorted(pairs)})")
+        check(("pages", "write") in pairs and ("id-token", "write") in pairs,
+              "pages.yml grants the pages:write + id-token:write actions/deploy-pages authenticates with")
+        check(("contents", "write") not in pairs and "permissions: write" not in pages
+              and "read-all" not in pages,
+              "pages.yml can never push: no contents:write and no permissions shorthand")
+        check(re.search(r"npx --yes tailwindcss@3\.4\.\d+", pages) is not None,
+              "pages.yml builds with the pinned v3 Tailwind CLI (v3-style tailwind.config.js)")
+        check("-c tailwind.config.js" in pages and "-o css/tailwind.css" in pages
+              and "--minify" in pages,
+              "the Tailwind step compiles tailwind.config.js to css/tailwind.css with --minify")
+        check(re.search(r"wc -c < css/tailwind\.css", pages) is not None and "10240" in pages,
+              "a stub-sized stylesheet fails the build instead of deploying an unstyled site")
+        check(re.search(r"^\s*path:\s*_site\s*$", pages, flags=re.M) is not None
+              and not re.search(r"^\s*path:\s*\.\s*$", pages, flags=re.M),
+              "the Pages artifact is the assembled _site bundle, never the repository root")
+        copied = [ln.strip() for ln in pages.splitlines() if re.match(r"^\s*cp ", ln)]
+        check(bool(copied)
+              and all(re.search(r"(index\.html|css/\*\.css|js/\*\.js|data/\*\.json) _site/", ln) for ln in copied),
+              f"the bundle copies only index.html, css/, js/ and data/ ({copied})")
+        for forbidden in ("docs", "tools", ".pi", "armory-tasks.md", "pi-warden.md"):
+            check(not re.search(rf"cp[^\n]*{re.escape(forbidden)}", pages),
+                  f"the bundle never publishes the maintainer-facing {forbidden}/")
+        check("actions/upload-pages-artifact@v" in pages and "actions/deploy-pages@v" in pages
+              and "actions/configure-pages@v" in pages,
+              "deploy goes through the official configure-pages + upload-pages-artifact + deploy-pages actions")
+        check(re.search(r"environment:\s*\n\s+name:\s*github-pages", pages) is not None
+              and "steps.deployment.outputs.page_url" in pages and "needs: build" in pages,
+              "the deploy job waits for build, uses the github-pages environment and exports page_url")
+        job_names = re.findall(r"^  ([a-zA-Z][\w-]*):\s*$", pages.split("jobs:", 1)[1], flags=re.M)
+        timeouts = re.findall(r"^    timeout-minutes:\s*(\d+)\s*$", pages, flags=re.M)
+        check(len(job_names) >= 2 and len(timeouts) == len(job_names),
+              f"every pages.yml job declares timeout-minutes (jobs={job_names}, timeouts={timeouts})")
+        check("head_sha" in pages and re.search(r"default branch", pages, flags=re.I) is not None,
+              "pages.yml documents why a workflow_run deploy takes the default-branch head "
+              "(the synced commit) rather than workflow_run.head_sha")
+        # Step order across the workflow: compile, then gate the compile, then stage
+        # the bundle, then hand it to Pages. A swapped pair (upload before build) would
+        # publish the committed stub instead of the generated stylesheet.
+        def at(pattern):
+            m = re.search(pattern, pages, flags=re.M)
+            return pages[:m.start()].count("\n") if m else None
+        tw_at, gate_at, stage_at, upload_at, deploy_at = (
+            at(r"npx --yes tailwindcss@"), at(r"wc -c < css/tailwind\.css"),
+            at(r"mkdir -p _site"), at(r"actions/upload-pages-artifact@"),
+            at(r"actions/deploy-pages@"))
+        check(None not in (tw_at, gate_at, stage_at, upload_at, deploy_at)
+              and tw_at < gate_at < stage_at < upload_at < deploy_at,
+              f"step order is tailwind -> size gate -> stage -> upload -> deploy "
+              f"(got {tw_at}, {gate_at}, {stage_at}, {upload_at}, {deploy_at})")
 
     print(f"\n{passes} passed, {len(fails)} failed")
     if fails:

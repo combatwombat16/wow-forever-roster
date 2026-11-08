@@ -1,6 +1,8 @@
 /**
- * tailwind.config.js — Phase 3a companion to the Tailwind Play CDN that index.html
- * still loads (the CDN stays until the Pages workflow builds CSS in Phase 3c).
+ * tailwind.config.js — the single Tailwind input. index.html no longer loads the Play
+ * CDN: .github/workflows/pages.yml compiles this file into css/tailwind.css at deploy
+ * time (`npx --yes tailwindcss@3.4.19 -c tailwind.config.js -o css/tailwind.css
+ * --minify`), and the same command regenerates the committed copy for local dev.
  *
  * index.html has no inline `tailwind.config = { … }` block to mirror, so this file
  * declares what the app actually depends on: the scan targets (markup plus the JS

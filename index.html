@@ -4,7 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WoW: Forever — Roster & Synergy Tracker</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind is built at deploy time, not loaded from the Play CDN: .github/workflows/
+       pages.yml runs `npx --yes tailwindcss@3.4.19 -c tailwind.config.js -o css/tailwind.css
+       --minify` (utilities are scanned in index.html + js/**, which is what emits the
+       arbitrary class-colour values). The generated css/tailwind.css is committed, so a
+       plain `python3 -m http.server` needs no build; every deploy regenerates it in place
+       (do not hand-edit it). Order matters: it must stay BEFORE css/app.css, whose
+       hand-written overrides have to win the cascade. -->
+  <link rel="stylesheet" href="css/tailwind.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">

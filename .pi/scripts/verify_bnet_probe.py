@@ -213,11 +213,14 @@ dirty = git.stdout.split()
 untouched = [p for p in dirty if p in ("data/characters.json",
                                       "pi-warden.md", ".env", ".gitignore")]
 check(not untouched, f"protected files untouched (dirty: {untouched})")
-# Phase 2 legitimately ships sync-bnet.yml; anything else appearing in
-# .github/workflows is unexpected and must be reviewed.
+# Phase 1 shipped sync-bnet.yml alone; Phase 4 adds pages.yml (the Pages deploy,
+# design §4). The allow-list is exactly those two names — a third workflow needs a
+# review. The zero-PR/push-trigger rule stays scoped to sync-bnet.yml (that is the
+# workflow holding the Blizzard credential); pages.yml legitimately builds on push to
+# main and is checked separately, secret-free, by verify_sync_artifacts.py.
 _workflows = sorted(p.name for p in (ROOT / ".github" / "workflows").glob("*.yml")) if (ROOT / ".github" / "workflows").is_dir() else []
-check(_workflows == [] or _workflows == ["sync-bnet.yml"],
-      f"only sync-bnet.yml may exist in .github/workflows (found: {_workflows})")
+check(set(_workflows) <= {"sync-bnet.yml", "pages.yml"},
+      f"only sync-bnet.yml and pages.yml may exist in .github/workflows (found: {_workflows})")
 
 print(f"\n{passes} passed, {len(fails)} failed")
 for fail in fails:

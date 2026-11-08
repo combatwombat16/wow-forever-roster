@@ -1,0 +1,133 @@
+name: Deploy GitHub Pages
+
+# Static site, no npm project and no bundler (design §4: "no CI build step except
+# Pages-deploy Tailwind"). The only build is the Tailwind CLI turning
+# tailwind.config.js + index.html + js/** into css/tailwind.css; every other file in
+# the bundle is served byte-for-byte from the repository.
+#
+# Triggers
+#   push(main)         ordinary UI/tooling changes deploy as they land. This is the
+#                      one trigger that legitimately reacts to a push — the
+#                      zero-push/PR-trigger posture belongs to sync-bnet.yml, which
+#                      is the only workflow that holds a credential (design §4).
+#   workflow_run       sync-bnet.yml commits data/ with "[skip ci]", so the nightly
+#                      data commit deliberately skips the push trigger above. This
+#                      chain is what redeploys fresh data — without it the deployed
+#                      snapshot would keep serving last week's roster (the
+#                      artifact-snapshot staleness trap of design §4).
+#   workflow_dispatch  manual redeploy (e.g. right after the one-time Pages
+#                      build_type: legacy → workflow flip).
+#
+# Which commit does a workflow_run run deploy?
+#   actions/checkout below carries no explicit ref, so it checks out github.ref, and
+#   a workflow_run always runs against the repository's default branch. sync-bnet.yml
+#   pushes data/ straight to main and only then completes, so main's head already
+#   contains the synced commit by the time this workflow starts: deploying the
+#   default-branch head IS deploying the synced commit. github.event.workflow_run
+#   .head_sha is deliberately NOT used — it names the triggering commit, which any
+#   later push to main has already superseded, and pinning it would publish a stale
+#   UI on top of the new data. Nothing is downloaded from the sync run either: the
+#   sync's output is a commit on main, not a build artifact, so checkout is the
+#   transport (an artifact would only re-create the staleness the chain exists to fix).
+
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: ["Sync Battle.net data"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege for the whole file; each job narrows it further. This workflow
+# builds a static bundle and therefore references no secret at all.
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # actions/deploy-pages requirements: pages:write to publish, id-token:write for
+    # the OIDC token that authenticates the Pages API call, contents:read to check
+    # the repository out. Nothing wider.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    # A failed or cancelled sync must not take the site down or republish it from a
+    # poisoned data snapshot; push and manual dispatch are unaffected.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # There is no package.json or lockfile, so there is nothing to `npm ci`: npx
+      # fetches the CLI itself. tailwind.config.js is v3-style CommonJS
+      # (module.exports + content/theme.extend), which is why the pin is 3.4.x — the
+      # v4 CLI would need CSS-first configuration and would emit nothing here. The
+      # patch version is pinned exactly so the committed stub and the deployed
+      # stylesheet are produced by the same compiler.
+      - name: Build Tailwind CSS
+        run: npx --yes tailwindcss@3.4.19 -c tailwind.config.js -o css/tailwind.css --minify
+
+      # Guard against a degenerate build (a content glob matching nothing, or a
+      # renamed js/ directory): the committed stub is ~1 KB and the real output ~25 KB,
+      # so 10 KB separates "stylesheet did not build" from "stylesheet is fine" with
+      # room on both sides. Without this, an unstyled site would deploy silently.
+      - name: Refuse a degenerate stylesheet
+        run: |
+          size=$(wc -c < css/tailwind.css)
+          echo "css/tailwind.css: ${size} bytes"
+          if [ "$size" -le 10240 ]; then
+            echo "::error::Tailwind build produced a ${size}-byte stylesheet; refusing to deploy it"
+            exit 1
+          fi
+
+      # Explicit allow-list rather than uploading the repository root: the same repo
+      # tracks docs/, tools/, .pi/, armory-tasks.md and pi-warden.md, which are
+      # maintainer-facing and must not be published to the internet.
+      - name: Assemble static bundle
+        run: |
+          mkdir -p _site/css _site/js _site/data
+          cp index.html _site/index.html
+          cp css/*.css _site/css/
+          cp js/*.js _site/js/
+          cp data/*.json _site/data/
+          find _site -type f | sort
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload static bundle
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # pages:write + id-token:write are what actions/deploy-pages authenticates with;
+    # this job never reads the repository, so it gets no contents scope at all.
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
