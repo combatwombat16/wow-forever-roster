@@ -48,6 +48,23 @@ export function setBaselineRoster(list) {
   baselineRoster = Array.isArray(list) ? JSON.stringify(list) : null;
 }
 
+// The single adoption entry point: call it whenever a characters array becomes "what this browser
+// believes the branch holds", so that there is exactly one canonical baseline — the parsed characters
+// array last adopted from upstream, in the representation the branch itself used — and exactly one
+// place that writes it. The three readers go through it:
+//
+//   * loadRoster()               the deployed copy of data/characters.json (a page load)
+//   * pullFromGitHub()           the Contents API read the settings form / Pull performs
+//   * commitRosterFile() success the list this browser just committed, rebased included
+//
+// A list this browser invented must NOT come through here: pushToGitHub()'s local-only and no-PAT
+// paths hold the edit in state and localStorage without the branch ever agreeing to it, and a
+// baseline the branch never held turns the next legitimate push into a phantom "changed upstream".
+export function adoptUpstreamRoster(list) {
+  setBaselineRoster(list);
+  return Array.isArray(list) ? list : null;
+}
+
 export function setFetchedWrapper(doc) {
   fetchedWrapper = Array.isArray(doc) ? null : doc;
 }
@@ -173,7 +190,7 @@ export async function loadRoster() {
 
     setFetchedWrapper(doc);
     // The file just read is the baseline every later whole-file commit is compared to.
-    setBaselineRoster(list);
+    adoptUpstreamRoster(list);
     setCharacters(normalizeRoster(list));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(getCharacters()));
     renderAll();

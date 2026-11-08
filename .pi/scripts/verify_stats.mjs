@@ -488,8 +488,13 @@ ok(/async function ghApi\(path, opts = \{\}\)/.test(githubSrc), 'ghApi(path, opt
 ok((githubSrc.match(/Authorization/g) || []).length === 1,
   `the Authorization header is built in exactly one place (${(githubSrc.match(/Authorization/g) || []).length})`);
 ok(/actions\/workflows\/.+dispatches/.test(githubSrc), 'the refresh dispatches the sync-bnet.yml workflow_dispatch endpoint');
-ok(/lookup_name:/.test(githubSrc) && /force: 'false'/.test(githubSrc) && /client_payload: \{ actor:/.test(githubSrc),
-  'the dispatch body carries inputs.lookup_name, inputs.force and client_payload.actor');
+ok(/lookup_name:/.test(githubSrc) && /force: 'false'/.test(githubSrc),
+  'the dispatch body carries the two declared workflow inputs, inputs.lookup_name and inputs.force');
+ok(!/client_payload\s*:/.test(githubSrc),
+  'no client_payload key is built anywhere in github.js (workflow_dispatch rejects it with 422; provenance is the runner’s GITHUB_ACTOR)');
+ok((githubSrc.match(/^\s*cache: 'no-store',$/gm) || []).length === 1
+  && new RegExp("fetch\\([\\s\\S]{0,220}cache: 'no-store'").test(githubSrc),
+  'the one fetch() in ghApi opts out of the HTTP cache exactly once (a cached Contents read is a phantom "changed upstream")');
 ok(/event=workflow_dispatch/.test(githubSrc) && /created=/.test(githubSrc), 'the poll lists workflow_dispatch runs since the dispatch');
 ok(/run\.workflow_id/.test(githubSrc) && /run\.head_branch/.test(githubSrc),
   'a polled run is re-validated by workflow id and ref before it is credited to this dispatch');

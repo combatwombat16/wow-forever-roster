@@ -62,7 +62,9 @@ Phase 3 ✅ (offline-verified — see its acceptance note), Phase 3bis ✅, Phas
 - Existing GitHub PAT sync feature stays as is; do not entangle it with Blizzard data.
       **AMENDED 2026-11-08** — the PAT path is now also the review-commit path and can dispatch a Battle.net
       refresh (`26c3dc1`, design §4). The entanglement that remains forbidden is credential entanglement: no
-      Blizzard secret ever reaches the browser, and the dispatch carries only `lookup_name`/`force`.
+      Blizzard secret ever reaches the browser, and the dispatch carries only `lookup_name`/`force` — and
+      can carry nothing else, because `workflow_dispatch` rejects any other body key (see the §4 amendment
+      in `docs/refactor-design.md`: `client_payload` is rejected by the API, so it is not sent).
 
 ### Repo layout as built (2026-11-08, at `722c428`)
 
@@ -264,18 +266,20 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
 
 - [x] 4.1 Extend `.pi/scripts/` checks (or add `verify_armory.mjs`): sidecar + map JSON parse and schema-validate; every `getElementById` id present & unique; every inline handler resolves to a global function; sidecar-derived interpolations all pass through the escaper; `rg` scan proving no token/secret patterns in the repo or workflow logs; `characters.json` byte-identical to before the change.
       DONE — deliberately **not** as one `verify_armory.mjs`: the coverage was split into five verifiers that
-      each own a surface, so a failure names the surface. Counts below are the current totals, re-run at
-      `f2d4edd` (post fix-wave; the fix wave raised verify_writes 140→220, verify_stats 181→197 and the unit
-      suite 35→44):
+      each own a surface, so a failure names the surface. Counts below are the current totals — re-run at
+      `f2d4edd` (post fix-wave: verify_writes 140→220, verify_stats 181→197, unit suite 35→44), then again
+      after the **live bug-fix wave on top of `9822da1`** (the phantom "roster changed upstream" drift, the
+      422-rejected dispatch body, and the `needs_review` row with no way out: verify_writes 220→256,
+      verify_stats 197→199, unit suite 44→49; the other three verifiers unchanged):
 
       | Script | Checks | Owns |
       |---|---|---|
       | `.pi/scripts/verify_sync_artifacts.py` | 486 | map + data + roster parse and exact v2 key sets, ok-rows carry real identity, ambiguous rows carry candidates and no slug, whitelisted sidecar keys (no raw Blizzard blobs), href/iconUrl hosts, secret scan, no root-level JSON copies, sync-workflow trigger/permissions/step-order, **and the `pages.yml` shape (secret-free, minimally permitted, Tailwind-built, official Pages actions, allowlisted bundle)** |
-      | `.pi/scripts/verify_stats.mjs` | 197 | static structure across `js/**` (every `getElementById` target exists, no duplicate ids, every inline handler resolves **and** is assigned to `window` by a module), colour-map agreement, rendered stats vs an independent tally of `data/characters.json`, empty-filter placeholder, escaping, sidecar wiring (3b), search + detail (3c), review-action wiring (3d) |
-      | `.pi/scripts/verify_writes.mjs` | 220 | the browser write paths under a DOM stub: no-PAT gating, action set per lifecycle state, fresh-sha GET before PUT + v2 envelope + design §2 payload shape, 409 → pull-first with nothing applied locally, RESOLVE/REPORT/RE-OPEN, refresh dispatch body + 403 guidance + bounded poll, editchar gating, and an origin allowlist of `api.github.com` + same-origin only |
+      | `.pi/scripts/verify_stats.mjs` | 199 | static structure across `js/**` (every `getElementById` target exists, no duplicate ids, every inline handler resolves **and** is assigned to `window` by a module), colour-map agreement, rendered stats vs an independent tally of `data/characters.json`, empty-filter placeholder, escaping, sidecar wiring (3b), search + detail (3c), review-action wiring (3d) |
+      | `.pi/scripts/verify_writes.mjs` | 256 | the browser write paths under a DOM stub: no-PAT gating, action set per lifecycle state (**all three `needs_review` shapes, and the pick-candidate badge**), fresh-sha GET before PUT + v2 envelope + design §2 payload shape, 409 → pull-first with nothing applied locally, **§4d: the baseline after a commit, run against a branch that keeps what was PUT plus GitHub's 60 s max-age cache**, RESOLVE/REPORT/RE-OPEN + the needs_review exits, refresh dispatch body (**only `ref` + the two declared inputs — the harness 422s anything else, as the API does**) + 403 guidance + bounded poll, editchar gating, and an origin allowlist of `api.github.com` + same-origin only |
       | `.pi/scripts/verify_search_detail.mjs` | 97 | search AND track composition, every panel repaints on query change, debounce/clear, modal open paths, gear host allowlisting (foreign host, `javascript:`, look-alike host), section omission, escaping, ESC/backdrop close, no localStorage growth |
       | `.pi/scripts/verify_bnet_probe.py` | 42 | Phase 1 contract: every JSON path cited in `docs/bnet-api-notes.md` exists in the captured probe payloads; workflows allowlist |
-      | `python3 -m unittest discover -s tools -p "test_*"` | 44 tests | offline stdlib-only unit tests for the sync package (allowlist, redactor, H4 floor incl. the resolver-verdict/note ordering, artifact schemas, `validation.note` → `needs_review`, log hygiene) |
+      | `python3 -m unittest discover -s tools -p "test_*"` | 49 tests | offline stdlib-only unit tests for the sync package (allowlist, redactor, H4 floor incl. the resolver-verdict/note ordering, artifact schemas, `validation.note` → `needs_review`, log hygiene, **the `--lookup` verdicts a Refresh depends on: multi-hit → `ambiguous` + every candidate, single hit → `ok`, and neither published without a human**) |
 
       Deltas against the original 4.1 wording: (a) the `characters.json` byte-identical clause moved into the
       migration — `tools/migrate_v2.py` compares bytes and rewrites nothing when the target is already v2
@@ -303,8 +307,10 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
          PAT attached in exactly one place against a fixed origin; fresh-sha GET before every PUT with 409 →
          pull-first; failures never mutate local state; handler arguments shape-checked so untrusted strings
          never reach `on*` attributes and `confirmedSlug` must match `SLUG_RE`; the refresh dispatch carries
-         only the two declared workflow inputs. `verify_writes.mjs` (220 checks after the fix wave, new in
-         that commit) is the executable record of these guards.
+         only the two declared workflow inputs — a `client_payload` key is rejected by the API (422), so it is
+         not sent at all, and provenance stays the runner's `GITHUB_ACTOR`. `verify_writes.mjs` (new in
+         that commit; the harness enforces the permitted body keys the way the endpoint does) is the
+         executable record of these guards.
       Not in scope for either pass: `pages.yml` arrived after them (`722c428`) and was gated by its shape
       checks in `verify_sync_artifacts.py` instead; the `workflow_run`/`head_sha` reasoning is documented in
       the workflow's own comment block.
@@ -371,6 +377,7 @@ Not in the original Phase 3 list; tracked here so this file stays the roster of 
   with their own PAT, the UI polls the run to completion (10 s interval, 180 s cap) and reloads the sidecars
   past the HTTP cache. Nightly `schedule` remains the default data path and the only path that refreshes every
   character; dispatch with `lookup_name` refreshes one. Deferred inside this area: honouring a client-supplied
-  actor for provenance (see `docs/refactor-design.md` §4 amendment — deliberately not honoured), automatic
+  actor for provenance — and it is not merely ignored: a `client_payload` key on the dispatch body **is rejected
+  by the API, so it is not sent at all** (see `docs/refactor-design.md` §4 amendment), automatic
   re-resolve of a user-confirmed slug (design §2, stricter than drafted), and a `pages.yml` deploy that pins
   the sync run's `head_sha` (deliberately not done — see the workflow's comment block).

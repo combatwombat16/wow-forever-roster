@@ -275,7 +275,13 @@ export function reviewReport(character) {
 // is a view, and a stale selection from another row would be a wrong review, not just a stale
 // render.
 let openId = null;
-let candidatesOpen = false;
+// Whether the candidate list is shown. null means "the mode's own default": shown when the reviewer
+// can act on it (3d made the resolve control the default view for these rows) and collapsed when
+// they cannot (the read-only 3c list, hidden until asked for). true/false is a choice the reviewer
+// made, and both badge paths go through it: the card's "pick candidate" badge sets it to shown, the
+// badge inside the modal flips it. It used to be one boolean whose true meant "collapsed" in the
+// interactive mode, which inverted the card badge into a hide-candidates button.
+let candidatesToggled = null;
 let mismatchOpen = false;
 let chosenSlug = null;
 let chosenFor = null;
@@ -283,8 +289,12 @@ let lastResult = null;      // {id, tone, message}
 let refresh = null;         // {id, message} while a dispatch/poll is in flight
 let actionRunning = false;
 
+function candidatesVisible(interactive) {
+  return candidatesToggled === null ? interactive === true : candidatesToggled;
+}
+
 function resetReviewView() {
-  candidatesOpen = false;
+  candidatesToggled = null;
   mismatchOpen = false;
   chosenSlug = null;
   chosenFor = null;
@@ -379,17 +389,40 @@ function stateActions(character, mapEntry, lifecycle, id, busy) {
   }
 
   if (lifecycle === LIFECYCLE.NEEDS_RESOLUTION) {
+    // Both `ambiguous` and `needs_review` derive to this state (state.js), and they arrive in three
+    // different shapes: a candidate list to choose from, an identity worth signing off (the slug a
+    // reported mismatch carries, or one the sync kept for a collided row), or neither at all. Each
+    // shape gets the affordance it can actually use, and none of them gets a dead button:
+    //
+    //   * a mapped slug  → CONFIRM THIS MATCH, which is confirmMatch() unchanged — the same flow, the
+    //     same §2 payload, and the slug taken from the committed map entry rather than typed;
+    //   * candidate(s)   → the radio RESOLVE panel (rendered above this section) plus CONFIRM
+    //     SELECTED, which stays disabled until one is chosen;
+    //   * neither        → no confirm action at all, and a hint that says to Refresh.
+    // Before this, a needs_review row offered only CONFIRM SELECTED: for the "unsure about a match"
+    // rows that carry no candidates — every reported mismatch, and every duplicate normalization in
+    // the live map — the button was permanently disabled and the row had no way out.
     const picked = chosenFor === String(character.id) ? chosenSlug : null;
+    const entrySlug = scalarText(mapEntry && mapEntry.slug);
+    const mapped = SLUG_RE.test(entrySlug) ? entrySlug : '';
+    const pickable = mapCandidates(character).some(c => c && SLUG_RE.test(scalarText(c.slug)));
+    const hint = mapped === '' && pickable === false
+      ? 'Battle.net recorded no profile and no candidate for this row (a duplicate, or a collision it will not guess between). Refresh to query Battle.net again, or report a mismatch if the roster row itself is wrong.'
+      : 'Battle.net is not sure which profile this row is. Confirm the mapping it recorded, choose one of the candidates below, or report a mismatch.';
     return section('Review', `${resultBanner(character)}
-      ${hintBlock('Battle.net could not pick one profile for this name. Select a candidate above and confirm it, or report a mismatch.')}
+      ${hintBlock(hint)}
       ${rows(
-        actionButton('Confirm selected', `confirmSelectedCandidate('${id}')`, 'primary', {
+        mapped === '' ? '' : actionButton('Confirm this match', `confirmMatch('${id}')`, 'primary', {
+          disabled: busy,
+          title: `Validate this row as ${mapped}, the mapping Battle.net recorded`
+        }),
+        pickable === false ? '' : actionButton('Confirm selected', `confirmSelectedCandidate('${id}')`, 'primary', {
           disabled: busy || !picked,
           title: picked ? `Validate this row as ${picked}` : 'Select one candidate first'
         }),
         actionButton('Report mismatch', `toggleMismatchForm('${id}')`, 'danger', {
           disabled: busy,
-          title: 'None of these candidates is this character'
+          title: 'None of these is this character'
         })
       )}
       ${mismatchForm(character, id, busy)}`);
@@ -875,18 +908,28 @@ function reviewNoteSection(character) {
 // flag is re-derived from the row on every render instead of trusted from the click.
 //
 // With a PAT the list is the resolve control rather than a read-only peek, so it is open by
-// default for exactly those rows; the badge toggle then collapses it. Without one, the Phase 3c
-// behaviour stands: collapsed until the badge is clicked, and read-only when shown.
+// default for exactly those rows (and an entry with no candidates shows no list at all — there is
+// nothing to resolve, and the Review hint says what to do instead). Without a PAT the Phase 3c
+// behaviour stands: collapsed until the badge is clicked, read-only when shown, empty state and all.
+// `candidatesToggled` is what both badges drive, so the card's "pick candidate" badge lands on the
+// list in either mode rather than inverting it.
 function candidatesIfOpen(lifecycle, mapEntry, character) {
   if (lifecycle !== LIFECYCLE.NEEDS_RESOLUTION) return '';
   const interactive = ghHasPat() && handlerArg(character && character.id) !== '';
-  if (!interactive) return candidatesOpen ? candidatesBlock(mapEntry) : '';
-  if (candidatesOpen) return '';
-  return candidatesBlock(mapEntry, {
-    interactive: true,
-    id: character && character.id,
-    chosenSlug: chosenFor === String(character && character.id) ? chosenSlug : null
-  });
+  if (!candidatesVisible(interactive)) return '';
+  const listed = mapEntry && typeof mapEntry === 'object' && Array.isArray(mapEntry.candidates)
+    ? mapEntry.candidates : [];
+  // A resolve control over an empty list is not a control, and the Review section already says what
+  // to do with a row that has nothing to pick. The read-only list keeps its empty state exactly as
+  // Phase 3c rendered it.
+  if (interactive && listed.length === 0) return '';
+  return interactive
+    ? candidatesBlock(mapEntry, {
+      interactive: true,
+      id: character && character.id,
+      chosenSlug: chosenFor === String(character && character.id) ? chosenSlug : null
+    })
+    : candidatesBlock(mapEntry);
 }
 
 // ---------- open / close ----------
@@ -912,8 +955,10 @@ export function openCharacterDetail(id, openSection) {
     return;
   }
   const { mapEntry } = byRosterId(openId);
-  candidatesOpen = openSection === 'candidates'
-    && deriveLifecycleState(character, mapEntry) === LIFECYCLE.NEEDS_RESOLUTION;
+  // The badge path asks for the list explicitly, in both modes. A row that does not need a pick
+  // keeps the mode's default rather than being shown an empty list.
+  candidatesToggled = openSection === 'candidates'
+    && deriveLifecycleState(character, mapEntry) === LIFECYCLE.NEEDS_RESOLUTION ? true : null;
   renderDetail();
   modal.classList.remove('hidden');
 }
@@ -932,7 +977,7 @@ export function toggleDetailCandidates() {
   if (!character) return;
   const { mapEntry } = byRosterId(openId);
   if (deriveLifecycleState(character, mapEntry) !== LIFECYCLE.NEEDS_RESOLUTION) return;
-  candidatesOpen = !candidatesOpen;
+  candidatesToggled = !candidatesVisible(ghHasPat() && handlerArg(character.id) !== '');
   renderDetail();
 }
 

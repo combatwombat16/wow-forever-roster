@@ -16,8 +16,8 @@
 // overwriting it. A failed commit never touches characters or localStorage.
 
 import { STORAGE_KEY, getCharacters, normalizeRoster, setCharacters, renderAll } from './state.js';
-import { ROSTER_PATH, ensureRosterEnvelope, getBaselineRoster, rosterCharactersFrom, serializeRoster,
-  setBaselineRoster, setFetchedWrapper } from './data.js';
+import { ROSTER_PATH, ensureRosterEnvelope, adoptUpstreamRoster, getBaselineRoster, rosterCharactersFrom,
+  serializeRoster, setFetchedWrapper } from './data.js';
 import { showToast } from './util.js';
 
 export let ghConfig = JSON.parse(localStorage.getItem('wow_gh_config') || 'null') || {
@@ -73,9 +73,20 @@ export async function ghApi(path, opts = {}) {
 
   let res;
   try {
+    // `cache: 'no-store'` is load-bearing, not a performance footnote. GitHub answers an API GET
+    // with `Cache-Control: private, max-age=60`, and an HTTP cache is keyed on the full URL: the
+    // Contents read this module needs is `GET …/characters.json?ref=main`, while the write is
+    // `PUT …/characters.json`, so this browser's own commit does not evict its own read entry
+    // (RFC 9111 §4.4 invalidates the effective request URI of the PUT, which is a different key).
+    // Without opting out, the read that backs both the fresh-sha base and the drift comparison
+    // keeps returning the pre-commit copy for the rest of the max-age window, every later edit then
+    // compares that snapshot against a baseline that has already advanced, and the user is told
+    // "roster changed upstream — pull first" for a change this browser itself made. The same stale
+    // read would credit a run list that predates the dispatch and a login that is not the token's.
     res = await fetch(`${GH_API}${path}`, {
       method: opts.method || 'GET',
       headers,
+      cache: 'no-store',
       body: opts.body === undefined ? undefined : JSON.stringify(opts.body)
     });
   } catch (err) {
@@ -182,9 +193,27 @@ export function rostersSemanticallyEqual(a, b) {
   return canonicalJson(a) === canonicalJson(b);
 }
 
+// Drift is defined as *upstream != what this browser last saw*, never as *upstream != what this
+// browser now holds locally*: a reviewer's own edits between two commits are the whole point of the
+// edit flow, and the last thing they saw is re-recorded on every adoption path (page load, Pull, and
+// every successful commit, including the rebased list a review commit wrote).
+//
+// The comparison is deliberately normalization-tolerant. `setBaselineRoster()` stores the array as it
+// was parsed off the branch, while the payload a bulk edit sends was built from the in-memory roster,
+// which every roster goes through normalizeRoster() to enter — and that function owns two rewrites
+// (roleSec defaults to 'None', the legacy 'together' track becomes 'flowmasters'). Those are a
+// representation, not content a reviewer or the sync changed, so both sides are put through the same
+// normalizer before they are compared and a first-adoption rewrite cannot read as a permanent drift.
+// The tolerance costs exactly one thing, and it is the accepted half of the trade: an upstream change
+// whose ONLY effect is to fill in a default roleSec or to migrate the retired track name is not
+// reported. Every real edit — a name, a role, a validation block, a row added or removed — still is.
+function canonicalForDrift(list) {
+  return list.map(row => (row && typeof row === 'object' ? normalizeRoster([row])[0] : row));
+}
+
 // The compare-and-replace rule for the whole-file (bulk edit) path. The PUT replaces
 // characters.json outright, so it is allowed only while the branch still holds what this
-// browser loaded; anything else is "pull first". Without a baseline the comparison is
+// browser last saw; anything else is "pull first". Without a baseline the comparison is
 // impossible, and overwriting rows this page never saw is precisely the failure the check
 // exists for, so that case refuses too (⚙️ Settings pulls, and Pull re-arms it).
 function baselineDriftMessage(freshList, upstreamMissing) {
@@ -202,7 +231,7 @@ function baselineDriftMessage(freshList, upstreamMissing) {
   if (!Array.isArray(baselineList) || !Array.isArray(freshList)) {
     return 'The roster on GitHub could not be read as JSON — pull first, then repeat this edit.';
   }
-  if (rostersSemanticallyEqual(freshList, baselineList)) return '';
+  if (rostersSemanticallyEqual(canonicalForDrift(freshList), canonicalForDrift(baselineList))) return '';
   return 'Roster changed upstream — pull first, then repeat this edit. Nothing was committed, and your local roster was left untouched.';
 }
 
@@ -312,8 +341,11 @@ export async function commitRosterFile(message, charactersArray, opts = {}) {
   if (put.ok) {
     const written = put.data && put.data.content && typeof put.data.content.sha === 'string'
       ? put.data.content.sha : null;
-    // The branch now holds exactly this list, so it is the baseline the next bulk edit compares to.
-    setBaselineRoster(listToCommit);
+    // The branch now holds exactly this list — including anything the read-modify-write rebase picked
+    // up from a commit that landed while this page was open — so it is what this browser last saw, and
+    // the baseline the next bulk edit compares to. Every adoption path records it the same way, which is
+    // what keeps a successful commit from making its own change look like drift.
+    adoptUpstreamRoster(listToCommit);
     return { ok: true, sha: written, list: listToCommit, data: put.data };
   }
   if (put.status === 409) {
@@ -354,19 +386,25 @@ export function updateRosterInMemory(nextCharacters) {
 // a request to bypass the Last-Modified cache (and design §2 keeps --force out of the
 // trust rules entirely).
 //
-// `client_payload` is sent because design §4 asks for it, and it is inert here:
-// client_payload is a repository_dispatch field, so a workflow_dispatch run cannot read
-// it. That is the safer direction — the provenance the sync records (artifacts.triggered_by)
-// comes from the runner's own GITHUB_ACTOR, i.e. from the authenticated actor, and never
-// from a client-supplied string a browser could forge.
-export async function dispatchSyncWorkflow(lookupName, actor) {
+// The body is exactly `{ref, inputs}`, because that is exactly what the endpoint accepts:
+// `workflow_dispatch` permits `ref` plus `inputs` and refuses anything else with
+// `422 "client_payload" is not a permitted key` — the live failure this fixes. The drafted
+// actor field belonged to `repository_dispatch`, a different event, so it was never going to be
+// read here; sending it did not buy inertness, it bought a rejected dispatch and a Refresh button
+// that never started a run.
+//
+// Nothing takes its place, and that is the safer direction rather than a loss: the provenance the
+// sync records (artifacts.triggered_by) is read from the runner's own GITHUB_ACTOR, i.e. from the
+// authenticated actor as GitHub knows it, and never from a client-supplied string a browser could
+// forge. A browser therefore sends no identity at all — only the branch to dispatch on and the two
+// inputs the workflow declares.
+export async function dispatchSyncWorkflow(lookupName) {
   const path = `/repos/${ghConfig.owner}/${ghConfig.repo}/actions/workflows/${SYNC_WORKFLOW_FILE}/dispatches`;
   const res = await ghApi(path, {
     method: 'POST',
     body: {
       ref: ghConfig.branch,
-      inputs: { lookup_name: String(lookupName == null ? '' : lookupName), force: 'false' },
-      client_payload: { actor: String(actor == null ? '' : actor) }
+      inputs: { lookup_name: String(lookupName == null ? '' : lookupName), force: 'false' }
     }
   });
   if (res.ok) return { ok: true, status: res.status };
@@ -502,7 +540,9 @@ function lookupNameHint(run) {
 // dispatch failure), so the caller only decides what to render.
 export async function dispatchAndAwaitSync(lookupName, opts = {}) {
   const onPhase = typeof opts.onPhase === 'function' ? opts.onPhase : () => {};
-  const actor = await ghUserLogin();
+  // No login is read here on purpose: the dispatch carries no actor field (see
+  // dispatchSyncWorkflow), so a GET /user before it would be a request whose answer is thrown
+  // away. The reviewer login still exists for the review commits, which do write it.
   // The dispatch is a 202 with no body, so the run can only be identified by the workflow's own
   // id. Resolve it BEFORE dispatching: no id means no attribution, and failing closed here means
   // we never start a run we cannot watch. (Reviewer nit f2d4edd: resolving it after the dispatch
@@ -516,7 +556,7 @@ export async function dispatchAndAwaitSync(lookupName, opts = {}) {
     };
   }
   onPhase('Dispatching the Battle.net sync…');
-  const dispatch = await dispatchSyncWorkflow(lookupName, actor);
+  const dispatch = await dispatchSyncWorkflow(lookupName);
   if (!dispatch.ok) return dispatch;
   // The one and only clock-skew correction: `since` already carries the allowance, and
   // candidateRuns() re-checks against this same instant instead of subtracting it again.
@@ -566,9 +606,11 @@ export async function pullFromGitHub() {
     if (!list) throw new Error('no characters in data/characters.json');
 
     setFetchedWrapper(doc);
-    // What the branch holds right now, recorded as the baseline the bulk edit path compares to.
-    setBaselineRoster(list);
-    setCharacters(list);
+    // What the branch holds right now, recorded as the baseline the bulk edit path compares to. The
+    // state side goes through the normalizer here exactly as loadRoster() does: one representation for
+    // a roster entering the page, whichever door it came in by.
+    adoptUpstreamRoster(list);
+    setCharacters(normalizeRoster(list));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(getCharacters()));
     setSyncStatus(`Live (${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`);
     renderAll();

@@ -501,6 +501,106 @@ class MassFlipFloorVersusReportedNotes(unittest.TestCase):
                 config.MAP_FILE, config.DATA_FILE = original
 
 
+class LookupVerdicts(unittest.TestCase):
+    """Bug 3: an on-demand refresh has to hand the reviewer real character options.
+
+    The browser's "Refresh from Battle.net" button runs ``sync.py::run_lookup`` for one name
+    (design §4). When more than one distinct profile answers, the verdict has to be ``ambiguous``
+    with every profile attached as a candidate — that list is what the detail modal renders as radio
+    options. Both wrong shapes are asserted against here: first-hit-wins (an ``ok`` for whichever
+    spelling answered first, which is the sync picking a human's character) and a bare
+    ``needs_review`` with no candidates (a row with no way out). A single hit must still be a plain
+    ``ok``, or the refresh that resolves an unambiguous name stops being useful. Offline stubs only:
+    the fake client answers the profile GETs and the artifacts are redirected into a temp directory.
+    """
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.map_file, self.data_file = self.tmp / "battle-net-map.json", self.tmp / "character-data.json"
+        self._files = (config.MAP_FILE, config.DATA_FILE)
+        config.MAP_FILE, config.DATA_FILE = self.map_file, self.data_file
+        self._step_summary = os.environ.pop("GITHUB_STEP_SUMMARY", None)
+
+    def tearDown(self):
+        config.MAP_FILE, config.DATA_FILE = self._files
+        if self._step_summary is not None:
+            os.environ["GITHUB_STEP_SUMMARY"] = self._step_summary
+
+    def make(self):
+        args = argparse.Namespace(dry_run=False, lookup=None, force=False, state_dir=self.tmp / "state")
+        s = sync.Sync(args)
+        f, resolver = make_sync()
+        # Gear/progress enrichment is not what a verdict is about; the pair still gets a row.
+        f.enrich = lambda w: {"status": "ok", "fetchedAt": http.iso_now()}
+        s.cache, s.client, s.f, s.resolver = f.cache, f.client, f, resolver
+        return s, f
+
+    def run_lookup(self, name, table, records=None, prev=None):
+        s, f = self.make()
+        f.client.table = dict(table)
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = s.run_lookup(name, records or [{"id": "1", "name": name}],
+                                prev if prev is not None else {})
+        return code, out.getvalue(), f
+
+    def test_two_distinct_profiles_are_ambiguous_with_both_candidates(self):
+        f, r = make_sync()
+        # Two spellings of the roster name, two distinct profiles behind them.
+        f.client.table = {"beef-pho": profile("Beef", "Pho", "beef-pho"),
+                          "beefpho": profile("Beefpho", "Alt", "beefpho")}
+        result = r.lookup_name("Beef Pho", [])
+        self.assertTrue(result["status"].startswith("ambiguous"), result["status"])
+        self.assertIsNone(result["payload"], "an ambiguous lookup must not hand back one profile")
+        self.assertIsNone(result["href"])
+        self.assertEqual({c["slug"] for c in result["candidates"]}, {"beef-pho", "beefpho"})
+        self.assertTrue(all(set(c) <= set(artifacts.CANDIDATE_KEYS) for c in result["candidates"]))
+        # The whole spelling ladder was walked: returning at the first 200 is first-hit-wins again.
+        self.assertEqual(len(f.client.urls), len(resolve.lookup_candidates("Beef Pho")))
+
+    def test_one_distinct_profile_is_ok_and_carries_no_candidates(self):
+        f, r = make_sync()
+        f.client.table = {"beef-pho": profile("Beef", "Pho", "beef-pho")}
+        result = r.lookup_name("Beef Pho", [])
+        self.assertTrue(result["status"].startswith("resolved via direct GET"), result["status"])
+        self.assertEqual(result["via"], "direct")
+        self.assertEqual(result["candidates"], [])
+        self.assertEqual(resolve.slug_from_href(result["href"]), "beef-pho")
+
+    def test_run_lookup_reports_ambiguous_and_lists_every_candidate(self):
+        table = {"beef-pho": profile("Beef", "Pho", "beef-pho"),
+                 "beefpho": profile("Beefpho", "Alt", "beefpho")}
+        code, out, _ = self.run_lookup("Beef Pho", table)
+        self.assertEqual(code, 0, out)
+        self.assertIn("result: ambiguous", out)
+        self.assertIn("candidates (2):", out)
+        self.assertIn("beef-pho", out)
+        self.assertIn("beefpho", out)
+        self.assertIn("map: unchanged", out)
+        # Nothing is published for a verdict nobody chose: the map keeps its silence rather than
+        # publishing an identity, or an empty needs_review row the UI can do nothing with.
+        self.assertFalse(self.map_file.exists() or self.data_file.exists(), out)
+
+    def test_run_lookup_single_hit_writes_the_ok_pair_for_that_one_row(self):
+        code, out, _ = self.run_lookup("Beef Pho", {"beef-pho": profile("Beef", "Pho", "beef-pho")})
+        self.assertEqual(code, 0, out)
+        self.assertIn("map: updated id 1 -> ok (direct)", out)
+        written = json.loads(self.map_file.read_text())["entries"]["1"]
+        self.assertEqual(written["status"], "ok")
+        self.assertEqual(written["slug"], "beef-pho")
+        self.assertEqual(written["candidates"], [])
+        self.assertEqual(json.loads(self.data_file.read_text())["characters"]["1"]["status"], "ok")
+
+    def test_run_lookup_never_picks_between_two_roster_rows_of_the_same_name(self):
+        # Two tracker rows, one Battle.net hit: naming the profile does not say which ROW it is, so
+        # the lookup reports and writes nothing (the reviewer resolves one of them by hand).
+        records = [{"id": "1", "name": "Beef Pho"}, {"id": "2", "name": "beef-pho"}]
+        code, out, _ = self.run_lookup("Beef Pho", {"beef-pho": profile("Beef", "Pho", "beef-pho")}, records)
+        self.assertEqual(code, 0, out)
+        self.assertIn("never auto-pick between them", out)
+        self.assertFalse(self.map_file.exists() or self.data_file.exists(), out)
+
+
 class LogHygiene(unittest.TestCase):
     """NIT 9: untrusted text is one printable line at the log boundary, verbatim in the artifact."""
 

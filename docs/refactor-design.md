@@ -85,6 +85,7 @@ Original per-character fields (`id, player, name, track, role, roleSec, race, cl
 | absent | no entry | `awaiting_sync` | ✅ draft | grey "unvalidated — awaiting sync" |
 | absent | `ok` | `awaiting_confirmation` | ✅ draft (bnet preview shown read-only) | amber "confirm Battle.net match" |
 | absent | `ambiguous` | `needs_resolution` | ✅ draft | amber "pick candidate" |
+| absent | `needs_review` | `needs_resolution` | ✅ draft | amber "pick candidate" |
 | absent | `not_found` | `not_found` | ✅ draft | red "no Battle.net match" |
 | absent | `fetch_error` | `fetch_error` | ✅ draft | red "sync error" |
 | `validated` | any | `validated` | ❌ read-only | green "validated by X" |
@@ -93,6 +94,15 @@ Rules:
 - **User-authored fields editable only while draft.** Once `validated`, the row locks; re-opening requires an explicit "re-open for editing" action (new commit, audit trail via git).
 - Battle.net-sourced data (level/gear/progress/…) is **display-only in every state**.
 - "Not my character" in review modal → user edits the name or presses "report mismatch" → a commit appends `note` (free text) and sets map review via the sync tool's `needs_review` on next run; the char stays draft.
+- **`needs_review` rows carry real options** (amended on top of `9822da1`; they used to offer only a
+  disabled "confirm selected"). `needs_review` derives to `needs_resolution` like `ambiguous`, but it
+  arrives in three shapes and each gets its own affordance: a mapped `slug` → **CONFIRM THIS MATCH**
+  (`confirmMatch`, i.e. the same `{state: validated, confirmedSlug}` flow as an `ok` row, with the slug
+  taken from the committed map entry); any candidate with a usable slug → the radio RESOLVE panel plus
+  **CONFIRM SELECTED**; neither → no confirm action at all and a hint to Refresh. REPORT MISMATCH is
+  offered in all three, and the sync note stays visible beside the actions — it is why the row is here.
+  A row with no slug cannot be confirmed by any path (`confirmMatch` re-checks the entry and refuses).
+  The card's "pick candidate" badge still opens straight at the candidate list in both modes.
 - `confirmedSlug` (set during review) is authoritative: sync never re-resolves a character that has one. **Re-resolution of a user-confirmed slug is NOT implemented** — the `--force` + "user has re-opened it" escape hatch drafted here does not exist in the code, and there is no plan to add it to the sync: `--force` only bypasses the HTTP `Last-Modified` cache, never the trust rule. This is stricter than drafted; a re-resolve may be added later behind an explicit UI action (a review-modal button that rewrites `confirmedSlug` in `characters.json`), never as a sync flag.
 
 ## 3. Sidecar schemas v2 (sync outputs)
@@ -131,19 +141,29 @@ pages.yml  (new)            on: push(main) + workflow_run(sync-bnet: completed, 
 **On-demand refresh (browser):** `POST /repos/{owner}/{repo}/actions/workflows/sync-bnet.yml/dispatches` with the user's PAT and `inputs.lookup_name = <character>`, ~~`client_payload.actor = <login>`~~; UI then polls `…/actions/runs?created=>` until completion and refetches `data/` (cache-busted). PAT scope additions documented: `actions: write` (existing flows keep `contents: write`).
 
 > **AMENDED 2026-11-08 — the `client_payload` actor is NOT honoured, and cannot be.**
-> `client_payload` is a **`repository_dispatch`** field; a `workflow_dispatch` run does not read it at all, so the
-> drafted `client_payload.actor` would simply have been ignored by `sync-bnet.yml`. The implementation therefore
+> `client_payload` is a **`repository_dispatch`** field; a `workflow_dispatch` run does not read it at all.
+>
+> **Corrected the same day (live bug fix).** It is worse than merely ignored: `workflow_dispatch`
+> **rejects** it. The endpoint permits `ref` and `inputs` and nothing else, so a dispatch body carrying
+> `client_payload` is answered with `422 Invalid request. "client_payload" is not a permitted key` and no
+> run ever starts — which is what "Refresh from Battle.net" was doing in production. The wording below
+> previously claimed the field was *ignored*; it is **rejected, and is therefore not sent at all**.
+> `verify_writes.mjs` §8 now refuses a dispatch body that carries any key outside `{ref, inputs}` with
+> that same 422, so the shape cannot silently come back.
+>
+> The implementation
 > takes provenance from the runner environment alone: `tools/bnet/artifacts.py::triggered_by()` reads
 > `GITHUB_EVENT_NAME` first (so a cron run records `schedule` even though GitHub also sets `GITHUB_ACTOR`) and
 > otherwise `GITHUB_ACTOR`, falling back to `manual` at a shell. **This direction is strictly safer than
 > drafted:** `GITHUB_ACTOR` is set by GitHub from the authenticated caller, so a client cannot forge who caused a
 > run — a browser-supplied actor string in the recorded `triggeredBy` would have been an untrusted value written
-> into a committed artifact. Consequences: `js/github.js::dispatchSyncWorkflow()` still sends
-> `client_payload.actor` (inert, kept only so the call shape matches this document and so a future
-> `repository_dispatch` variant would have the field), sends exactly the two declared workflow inputs
-> (`lookup_name`, `force: 'false'` — a refresh never bypasses the `Last-Modified` cache), and
-> `verify_writes.mjs` §8 pins that body shape plus the 403 → "PAT needs Actions: write" guidance and the bounded
-> poll. Nothing in `tools/` reads `client_payload`.
+> into a committed artifact. Consequences: `js/github.js::dispatchSyncWorkflow()` sends **no**
+> `client_payload` (it is rejected by the API, so it is not sent — and no actor field replaces it, because
+> the runner's `GITHUB_ACTOR` is the provenance of record), and its body is exactly `{ref, inputs}` with the
+> two declared workflow inputs (`lookup_name`, `force: 'false'` — a refresh never bypasses the
+> `Last-Modified` cache). `verify_writes.mjs` §8 pins that body shape — rejecting anything outside
+> `{ref, inputs}` the way the endpoint does — plus the 403 → "PAT needs Actions: write" guidance and the
+> bounded poll. Nothing in `tools/` reads `client_payload` either.
 
 ## 5. Python modularization
 
@@ -215,6 +235,24 @@ entry is either a naming/plumbing change or a place where the build is stricter 
      commit), the push is refused with "roster changed upstream — pull first" and **nothing** is written
      locally (the old failure-time localStorage write was removed). Byte-different but semantically identical
      upstream content is not treated as drift.
+     **Amended on top of `9822da1` (live "drift after every commit" bug).** The rule is *upstream != what this
+     browser LAST SAW*, never *upstream != what it now holds locally* — a reviewer's own edits between commits
+     are the feature, not drift. Three things hold it there:
+     (a) one canonical baseline, written only through `data.js::adoptUpstreamRoster()` on every adoption path
+     (page load, Pull, and every successful commit **including the rebased list** a review commit wrote);
+     (b) the comparison is normalization-tolerant — both sides go through `normalizeRoster()` first, so a raw
+     baseline against a branch whose rows already picked up `roleSec: 'None'` / the migrated track name is not
+     drift (the accepted cost: an upstream change that only fills a default or migrates the retired track name
+     is not reported either);
+     (c) **`ghApi()` sends `cache: 'no-store'`.** This was the defect: GitHub answers an API GET with
+     `Cache-Control: private, max-age=60`, an HTTP cache is keyed on the full URL, and the write is
+     `PUT …/characters.json` while the read is `GET …/characters.json?ref=main` — a different effective request
+     URI, so a browser's own commit never evicts its own read entry (RFC 9111 §4.4). The drift check therefore
+     compared an advanced baseline against the pre-commit snapshot for the rest of the window and refused every
+     subsequent edit, until the window expired and a reload re-adopted what the read finally returned. The same
+     stale read would equally have handed a review commit an out-of-date sha and a refresh an outdated run list.
+     `verify_writes.mjs` §4d drives the four page lifecycles against a branch that keeps what was PUT **plus a
+     max-age cache**, and pins that no GitHub request is cacheable.
    Mitigations unchanged: sync never commits the roster; every write goes through the v2 envelope
    (`ensureRosterEnvelope()`); failed writes never mutate local state.
 2. **`pages.yml` is the deploy path; the "settings flip TBD" of §4 is retired by it** rather than by the flip.

@@ -9,7 +9,10 @@
 //
 //   [1] no-PAT gating — no action markup at all, and a handler called anyway opens the PAT
 //       modal and sends nothing
-//   [2] the action set per lifecycle state (confirm / resolve+radio / report / hint / re-open)
+//   [2] the action set per lifecycle state (confirm / resolve+radio / report / hint / re-open),
+//       including the three shapes a needs_review row arrives in (mapped slug / candidates /
+//       neither), the two-slug radio panel of an ambiguous entry, and the "pick candidate" badge
+//       still landing on the candidates once a PAT is configured
 //   [3] the commit happy path — a fresh sha GET immediately before the PUT, the v2 envelope,
 //       the design §2 payload shape, GET /user as the source of reviewedBy (cached in memory),
 //       the in-memory + localStorage update, the repaint and the success flash
@@ -20,11 +23,19 @@
 //  [4c] the bulk edit push is compare-and-replace — semantic drift upstream is refused with no
 //       PUT and no write to characters or localStorage; an identical (differently serialised)
 //       upstream still commits on the fresh sha
+//  [4d] the baseline tracks the branch (the live "changed upstream after every commit" bug) — the
+//       reads run against a branch that keeps what was last PUT plus GitHub's 60 s max-age cache, and
+//       load → commit → edit → commit still commits, for the bulk path, for a review commit, and for
+//       the two mixed sequences; a pre-normalization baseline is not drift; a real upstream change
+//       still is reported, and nothing is applied for it
 //   [5] RESOLVE — the radio selection is the only thing CONFIRM SELECTED can commit
+//  [5b] needs_review exits — CONFIRM THIS MATCH validates the slug the map entry already holds, and
+//       a row with no slug cannot be confirmed by any path
 //   [6] REPORT MISMATCH — note required, ≤240, escaped where it renders, {note, reportedBy,
 //       reportedAt} with no state key, and the row stays a draft
 //   [7] RE-OPEN — confirm() gates it, and the committed row carries no validation block
-//   [8] REFRESH — the dispatch body (inputs.lookup_name / inputs.force / client_payload.actor),
+//   [8] REFRESH — the dispatch body (exactly ref + the two declared inputs; client_payload is
+//       rejected by the API, so it must not appear),
 //       403 → actions: write, the bounded poll to completion, the cache-busted sidecar reload
 //       and repaint, a failed run, a timeout, and no double dispatch while one is in flight
 //   [9] editchar gating — a validated row refuses to open the edit form and refuses to save,
@@ -207,6 +218,28 @@ function fixtureReadFor(raw) {
   return { ok: true, file };
 }
 
+// GitHub answers every API request with `Cache-Control: private, max-age=60`, and an HTTP cache is
+// keyed on the FULL URL: the Contents read is `GET …/characters.json?ref=main` while the write is
+// `PUT …/characters.json` (no query), so a browser's own commit does NOT invalidate its own read
+// entry — RFC 9111 §4.4 invalidates the effective request URI of the PUT, a different key. Section
+// [4d] runs against that cache because it is the deployed condition. While `ghEdge.armed` is false
+// every other section sees exactly the stub it always saw, and a request that asks for
+// `cache: 'no-store'` never touches the cache in either direction.
+const ghEdge = { armed: false, maxAgeMs: 60000, entries: new Map(), served: 0 };
+
+function edgeLookup(raw, opts, method) {
+  if (!ghEdge.armed || method !== 'GET' || opts.cache === 'no-store') return null;
+  const hit = ghEdge.entries.get(raw);
+  if (!hit || Date.now() - hit.at >= ghEdge.maxAgeMs) return null;
+  ghEdge.served += 1;
+  return hit.reply;
+}
+
+function edgeStore(raw, opts, method, reply) {
+  if (!ghEdge.armed || method !== 'GET' || opts.cache === 'no-store' || reply.cacheable !== true) return;
+  ghEdge.entries.set(raw, { at: Date.now(), reply });
+}
+
 function replyFor(method, ghPath, body) {
   for (const entry of routes) {
     if (entry.method !== method) continue;
@@ -226,10 +259,21 @@ globalThis.fetch = async (url, opts = {}) => {
     const body = typeof opts.body === 'string' ? JSON.parse(opts.body) : null;
     const headers = opts.headers || {};
     const record = { host: 'github', method, path: ghPath, body, auth: headers.Authorization || null,
-      contentType: headers['Content-Type'] || null };
+      contentType: headers['Content-Type'] || null,
+      cache: opts.cache === undefined ? null : String(opts.cache), cached: false };
     net.push(record);
     netAll.push(record);
+    const fromEdge = edgeLookup(raw, opts, method);
+    if (fromEdge !== null) {
+      record.cached = true;
+      return {
+        ok: fromEdge.status >= 200 && fromEdge.status < 300,
+        status: fromEdge.status,
+        json: async () => (fromEdge.data === undefined ? null : fromEdge.data)
+      };
+    }
     const reply = replyFor(method, ghPath, body);
+    edgeStore(raw, opts, method, reply);
     return {
       ok: reply.status >= 200 && reply.status < 300,
       status: reply.status,
@@ -331,6 +375,8 @@ const ROWS = {
   blank: 'r-blank',      // no map entry at all  → awaiting_sync
   locked: 'r-locked',    // validation.state validated
   draft: 'r-draft',      // editable draft, used for the save/delete checks
+  reviewSlug: 'r-rev-slug',  // needs_review, slug kept, NO candidates (a reported mismatch)
+  reviewBare: 'r-rev-bare',  // needs_review, no slug and no candidates (duplicate normalization)
 };
 
 function character(id, name, extra = {}) {
@@ -352,6 +398,8 @@ const fixtureRoster = {
       validation: { state: 'validated', confirmedSlug: 'locked-slug', reviewedBy: 'octocat', reviewedAt: stamp },
     }),
     character(ROWS.draft, 'Drafty'),
+    character(ROWS.reviewSlug, 'Dup Confirm'),
+    character(ROWS.reviewBare, 'Dup Pair'),
   ],
 };
 
@@ -382,6 +430,15 @@ const fixtureMap = {
       slug: 'dup-row', href: profileHref('dup-row'), bnetName: 'Dup', surname: 'Row',
       mappedVia: 'direct', note: 'slug dup-row also claimed by id 2; never auto-pick between them',
       candidates: [{ slug: 'dup-row', name: 'Dup', surname: 'Row', matchedForm: 'lower', href: profileHref('dup-row') }],
+    }),
+    [ROWS.reviewSlug]: mapEntry('dup confirm', 'needs_review', {
+      slug: 'dup-row-slug', href: profileHref('dup-row-slug'), bnetName: 'Dup', surname: 'Confirm',
+      mappedVia: 'direct',
+      note: 'a reviewer reported this mapping as wrong; the identity is kept so the row can be signed off',
+      candidates: [],
+    }),
+    [ROWS.reviewBare]: mapEntry('dup pair', 'needs_review', {
+      note: 'two roster rows normalize to this name; nothing was picked, so nothing is offered',
     }),
     [ROWS.missing]: mapEntry('nowhere', 'not_found', { note: '404 on all forms — likely not opted in (task 0.4)' }),
     [ROWS.locked]: mapEntry('locked', 'ok', {
@@ -512,6 +569,34 @@ ok(!/onclick="[^"]*tir-rheebeard/.test(decodedHtml()),
 const reviewHtml = openRow(ROWS.review);
 ok(reviewHtml.includes('Confirm selected') && reviewHtml.includes('>Candidates<'),
   'a needs_review row gets the same resolve affordance (its candidates survived the note rule)');
+ok(reviewHtml.includes('Confirm this match') && /onclick="confirmMatch\('/.test(decodeEntities(reviewHtml)),
+  'and CONFIRM THIS MATCH as well, because its map entry carries a slug worth signing off');
+
+// The two shapes `needs_review` actually arrives in, both of which used to leave the reviewer with a
+// disabled button and nothing to do: a reported mismatch (identity kept, no candidates) and a
+// duplicate normalization (no identity and no candidates at all).
+const reviewSlugHtml = openRow(ROWS.reviewSlug);
+ok(reviewSlugHtml.includes('Confirm this match') && /onclick="confirmMatch\('/.test(decodeEntities(reviewSlugHtml)),
+  'a needs_review row with a mapped slug offers CONFIRM THIS MATCH (the reported-mismatch exit)');
+ok(reviewSlugHtml.includes('Report mismatch'), 'and REPORT MISMATCH, for when it really is the wrong character');
+ok(!reviewSlugHtml.includes('<input type="radio"') && !/onclick="confirmSelectedCandidate\(/.test(reviewSlugHtml),
+  'and no candidate control for a row with no candidates');
+ok(reviewSlugHtml.includes('reviewer reported this mapping as wrong'),
+  'the sync note stays visible next to the actions (it is the reason the row is here)');
+ok(reviewSlugHtml.includes('dup-row-slug'), 'and the slug being confirmed is named on screen');
+
+const bareHtml = openRow(ROWS.reviewBare);
+ok(/Refresh/i.test(bareHtml) && bareHtml.includes('Refresh from Battle.net'),
+  'a needs_review row with neither slug nor candidates is told to Refresh');
+ok(!/onclick="(confirmMatch|confirmSelectedCandidate)\(/.test(decodeEntities(bareHtml)),
+  'and is offered no way to commit a slug nobody chose');
+ok(bareHtml.includes('two roster rows normalize to this name'), 'with the sync note still shown');
+
+// 3b: an ambiguous entry with two candidates is a two-option control, with both slugs present and
+// every untrusted string escaped on the way in.
+const bothSlugs = openRow(ROWS.ambiguous);
+ok(bothSlugs.includes('value="tir-rheebeard"') && bothSlugs.includes('value="tir-rheebeard-two"'),
+  'the radio panel offers both candidate slugs of an ambiguous entry');
 
 const missingHtml = openRow(ROWS.missing);
 ok(missingHtml.includes('use Refresh to query Battle.net'),
@@ -601,6 +686,19 @@ ok(byId('character-grid').innerHTML.includes('Validated by octocat')
   && byId('character-grid').innerHTML.includes('Validated — use Review to re-open'),
   'the roster card repainted too, and its edit affordance is now the disabled one');
 ok(ghCalls('GET', '/user').length === 1, 'the login is cached in memory across actions (no second GET /user)');
+
+// 3c behaviour, re-checked with the new panel in place: the "pick candidate" badge on the card opens
+// straight at the candidates, and the badge inside the modal stays the toggle for that same list.
+detail.closeDetail();
+detail.openCandidateList({ stopPropagation() {} }, ROWS.ambiguous);
+ok(modalHtml().includes('>Candidates<') && (modalHtml().match(/<input type="radio"/g) || []).length === 2,
+  'the needs_resolution badge still lands on the candidates, now alongside the action panel');
+ok(modalHtml().includes('Confirm selected'), 'the resolve control is shown with the list, not instead of it');
+fire(findAction(/toggleDetailCandidates/));
+ok(!modalHtml().includes('>Candidates<'), 'the badge inside the modal collapses that list');
+fire(findAction(/toggleDetailCandidates/));
+ok(modalHtml().includes('>Candidates<'), 'and opens it again');
+detail.closeDetail();
 
 // ---------------------------------------------------------------- 4. 409 conflict
 console.log('\n[4] sha conflict: pull-first message, nothing applied locally');
@@ -784,6 +882,155 @@ ok(/changed upstream/i.test(toast().textContent) && /pull first/i.test(toast().t
 ok(byId('sync-status').textContent === 'Commit failed',
   `and the status line reports it ("${byId('sync-status').textContent}")`);
 
+// ---------------------------------------------------------------- 4d. the baseline after a commit
+console.log('\n[4d] the baseline tracks the branch: a commit never makes the NEXT edit look like drift');
+// The reported bug: "after any successful commit, the next edit says 'roster changed upstream — pull
+// first' until a full page reload". The comparison is only honest if the read it compares against
+// is the branch, so this section runs against a branch that keeps what was last PUT *and* an HTTP
+// cache that answers `GET …?ref=main` out of GitHub's 60 s max-age (which the browser's own PUT
+// cannot invalidate: different effective request URI). Every sequence below is a real page
+// lifecycle: load, edit, commit, edit again.
+function liveBranch(initialDoc) {
+  let doc = JSON.parse(JSON.stringify(initialDoc));
+  const counter = { writes: 0, reads: 0 };
+  resetRoutes();
+  route('GET', /^\/user$/, () => ({ status: 200, data: { login: 'octocat' } }));
+  route('GET', new RegExp(`${CONTENTS}\\?ref=main$`), () => {
+    counter.reads += 1;
+    return { status: 200, cacheable: true, data: { sha: `sha-branch-${counter.writes}`,
+      content: Buffer.from(JSON.stringify(doc)).toString('base64') } };
+  });
+  route('PUT', new RegExp(`${CONTENTS}$`), ({ body }) => {
+    doc = decodedRoster(body);
+    counter.writes += 1;
+    return { status: 200, data: { content: { sha: `sha-branch-${counter.writes}` }, commit: { sha: `commit-${counter.writes}` } } };
+  });
+  return Object.assign(counter, {
+    doc: () => doc,
+    // Somebody else moved the branch (the nightly sync, or a second reviewer).
+    pushUpstream(next) { doc = JSON.parse(JSON.stringify(next)); counter.writes += 1; },
+  });
+}
+
+// A page load: the roster file is the deployed copy, the branch starts with the same content, and
+// the browser's HTTP cache starts holding the read that load performed.
+async function startOnBranch(deployedDoc, branchDoc) {
+  fs.writeFileSync(path.join(FIXTURES, 'data', 'characters.json'), JSON.stringify(deployedDoc, null, 2));
+  const branch = liveBranch(branchDoc || deployedDoc);
+  await dataMod.loadRoster();
+  ghEdge.armed = true;
+  ghEdge.entries.clear();
+  ghEdge.served = 0;
+  net.length = 0;
+  byId('app-toast').textContent = '';        // so a later PASS label cannot quote an older failure
+  return branch;
+}
+
+function editRow(list, id, patch) {
+  const out = JSON.parse(JSON.stringify(list));
+  Object.assign(out.find(c => c.id === id), patch);
+  return out;
+}
+const rowNamed = id => (state.getCharacters().find(c => c.id === id) || {}).name;
+
+let branch4d = await startOnBranch(fixtureRoster);
+await github.pushToGitHub(editRow(fixtureRoster.characters, ROWS.ok, { name: 'Edit A' }));
+await settled();
+ok(rowNamed(ROWS.ok) === 'Edit A' && branch4d.writes === 1 && ghCalls('PUT', CONTENTS).length === 1,
+  'seq1a: load → edit A → the push commits');
+await github.pushToGitHub(editRow(state.getCharacters(), ROWS.ambiguous, { name: 'Edit B' }));
+await settled();
+ok(rowNamed(ROWS.ambiguous) === 'Edit B' && branch4d.writes === 2,
+  `seq1b: load → edit A → push OK → edit B → push must succeed (toast: "${toast().textContent}")`);
+ok(branch4d.reads >= 2 && ghEdge.served === 0,
+  `and each drift check re-read the branch rather than the cache (${branch4d.reads} reads, ${ghEdge.served} served from the max-age cache)`);
+
+// A review validation commit, then a whole-file bulk edit: the validation commit moves the branch
+// AND this browser's baseline, so the bulk edit that follows has nothing to drift from.
+branch4d = await startOnBranch(fixtureRoster);
+openRow(ROWS.ok);
+const seq2Validation = await globalThis.confirmMatch(ROWS.ok);
+await settled();
+ok(seq2Validation === true && branch4d.writes === 1,
+  'seq2a: load → the validation commit lands');
+await github.pushToGitHub(editRow(state.getCharacters(), ROWS.missing, { name: 'Edited after a validation commit' }));
+await settled();
+ok(rowNamed(ROWS.missing) === 'Edited after a validation commit' && branch4d.writes === 2,
+  `seq2b: validation commit → bulk edit → push must succeed (toast: "${toast().textContent}")`);
+
+// Bulk push, then a validation commit, then a bulk push: the baseline survives both kinds of write.
+branch4d = await startOnBranch(fixtureRoster);
+await github.pushToGitHub(editRow(fixtureRoster.characters, ROWS.ok, { name: 'Bulk first' }));
+await settled();
+ok(rowNamed(ROWS.ok) === 'Bulk first' && branch4d.writes === 1, 'seq3a: the bulk push lands');
+const seq3Validation = await github.commitValidationOnFresh('Resolve one row [skip ci]', ROWS.draft,
+  row => { row.validation = { state: 'validated', confirmedSlug: 'drafty', reviewedBy: 'octocat', reviewedAt: stamp }; });
+await settled();
+ok(seq3Validation.ok === true && branch4d.writes === 2, 'seq3b: the validation commit lands on top of it');
+await github.pushToGitHub(editRow(state.getCharacters(), ROWS.blank, { name: 'Bulk last' }));
+await settled();
+ok(rowNamed(ROWS.blank) === 'Bulk last' && branch4d.writes === 3,
+  `seq3c: bulk push → validation commit → bulk push must succeed (toast: "${toast().textContent}")`);
+
+// The adoption the normalizer rewrites: a branch row with no roleSec and the legacy 'together'
+// track. The baseline is the raw parsed array, the payload the bulk path sends is the normalized
+// one, and that difference is a representation, not a reviewer changing the roster upstream.
+const PRE_MIGRATION = { schemaVersion: 2, characters: JSON.parse(JSON.stringify(fixtureRoster.characters)) };
+const preMigrationRow = PRE_MIGRATION.characters.find(c => c.id === ROWS.ok);
+delete preMigrationRow.roleSec;                       // the pre-migration shape: no second role at all
+preMigrationRow.track = 'together';                   // and the track name normalizeRoster() migrates
+branch4d = await startOnBranch(PRE_MIGRATION);
+await github.pushToGitHub(editRow(state.getCharacters(), ROWS.ok, { name: 'Normalized once' }));
+await settled();
+ok(branch4d.writes === 1, 'seq4a: the first push adopts the normalization (roleSec filled, track migrated)');
+ok(branch4d.doc().characters.find(c => c.id === ROWS.ok).track === 'flowmasters'
+  && branch4d.doc().characters.find(c => c.id === ROWS.ok).roleSec === 'None',
+  'the branch now holds the normalized form of that row');
+await github.pushToGitHub(editRow(state.getCharacters(), ROWS.draft, { name: 'Normalized twice' }));
+await settled();
+ok(branch4d.writes === 2 && rowNamed(ROWS.draft) === 'Normalized twice',
+  `seq4b: a baseline captured before normalization still does not read as drift on the next push (toast: "${toast().textContent}")`);
+
+// The exact shape the task names as the first candidate: the baseline was captured as the RAW fetched
+// list, while everything the page works from (and therefore everything a later commit carries) has
+// been through normalizeRoster(). Here the branch has already been normalized — by an earlier commit
+// from this or another browser — while this page loaded the pre-migration copy. Those two differ only
+// in what the normalizer owns, so the next edit must still commit.
+const NORMALIZED_BRANCH = JSON.parse(JSON.stringify(PRE_MIGRATION));
+const normalizedRow = NORMALIZED_BRANCH.characters.find(c => c.id === ROWS.ok);
+normalizedRow.roleSec = 'None';
+normalizedRow.track = 'flowmasters';
+branch4d = await startOnBranch(PRE_MIGRATION, NORMALIZED_BRANCH);
+await github.pushToGitHub(editRow(state.getCharacters(), ROWS.draft, { name: 'Against a normalized branch' }));
+await settled();
+ok(branch4d.writes === 1 && rowNamed(ROWS.draft) === 'Against a normalized branch',
+  `seq5: a raw baseline against an already-normalized branch is not drift (toast: "${toast().textContent}")`);
+
+// The guard: an upstream that REALLY moved is still refused. Nothing here may weaken the check.
+branch4d = await startOnBranch(fixtureRoster);
+const colleagueMoved = editRow(fixtureRoster.characters, ROWS.draft, { name: 'Renamed by a colleague' });
+branch4d.pushUpstream(colleagueMoved);
+const guardLocal = JSON.stringify(state.getCharacters());
+const guardStorage = store.get('wow_forever_roster');
+await github.pushToGitHub(editRow(fixtureRoster.characters, ROWS.ok, { name: 'Mine instead' }));
+await settled();
+ok(ghCalls('PUT', CONTENTS).length === 0 && /changed upstream/i.test(toast().textContent)
+  && /pull first/i.test(toast().textContent),
+  `guard: a genuinely changed upstream still reports drift ("${toast().textContent}")`);
+ok(JSON.stringify(state.getCharacters()) === guardLocal && store.get('wow_forever_roster') === guardStorage,
+  'and the refused push still applies nothing locally');
+
+// The mechanism the whole section depends on: no GitHub read may be satisfiable from a cache, or
+// the drift comparison is made against a snapshot instead of the branch.
+ok(netAll.filter(c => c.host === 'github' && c.cache !== 'no-store').length === 0,
+  `every GitHub request in the run asked out of the HTTP cache (${netAll.filter(c => c.host === 'github' && c.cache !== 'no-store').length} did not)`);
+
+ghEdge.armed = false;
+ghEdge.entries.clear();
+writeFixtures();
+resetRoster();
+detail.closeDetail();
+
 // ---------------------------------------------------------------- 5. resolve flow
 console.log('\n[5] RESOLVE: only a radio selection can be confirmed');
 happyCommitRoutes();
@@ -808,6 +1055,33 @@ ok(resolvedRow.validation.state === 'validated' && resolvedRow.validation.review
 // a slug the map never offered cannot be smuggled in through the handler
 ok(detail.selectCandidate(ROWS.ambiguous, '99') === false, 'an out-of-range candidate index selects nothing');
 ok(detail.selectCandidate(ROWS.ok, '0') === false, 'a row without candidates selects nothing');
+
+// ---------------------------------------------------------------- 5b. needs_review exits
+console.log('\n[5b] needs_review exits: CONFIRM THIS MATCH commits the slug the map already holds');
+resetRoster();
+happyCommitRoutes();
+net.length = 0;
+openRow(ROWS.reviewSlug);
+const signedOff = await globalThis.confirmMatch(ROWS.reviewSlug);
+await settled();
+const signPut = lastCall('PUT', CONTENTS);
+const signedRow = signPut ? rowIn(decodedRoster(signPut.body), ROWS.reviewSlug) : null;
+ok(signedOff === true && signedRow !== null, 'CONFIRM THIS MATCH on a needs_review row commits once');
+ok(signedRow && signedRow.validation.state === 'validated' && signedRow.validation.confirmedSlug === 'dup-row-slug',
+  `it writes {state: validated, confirmedSlug: <the entry's own slug>} (${signedRow ? signedRow.validation.confirmedSlug : 'nothing'})`);
+ok(signedRow && signedRow.validation.reviewedBy === 'octocat'
+  && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(signedRow.validation.reviewedAt),
+  'with the same §2 audit shape a confirm on an ok row writes');
+ok(state.deriveLifecycleState(state.getCharacters().find(c => c.id === ROWS.reviewSlug),
+  fixtureMap.entries[ROWS.reviewSlug]) === 'validated',
+  'the row leaves needs_resolution once the commit lands');
+
+net.length = 0;
+const nothingToConfirm = await globalThis.confirmMatch(ROWS.reviewBare);
+ok(nothingToConfirm === false && net.length === 0,
+  'the same handler refuses a needs_review row whose entry carries no slug (no invented confirmation)');
+ok(/no Battle.net slug/i.test(toast().textContent), `and says why ("${toast().textContent}")`);
+detail.closeDetail();
 
 // ---------------------------------------------------------------- 6. report mismatch
 console.log('\n[6] REPORT MISMATCH: required, ≤240, escaped, no state key, row stays draft');
@@ -907,7 +1181,18 @@ function refreshRoutes(conclusion = 'success', opts = {}) {
   resetRoutes();
   runsCallCount = 0;
   route('GET', /^\/user$/, () => ({ status: 200, data: { login: 'octocat' } }));
-  route('POST', new RegExp(`${DISPATCH}$`), ({ body }) => { dispatched = body; return { status: 202 }; });
+  // GitHub's workflow_dispatch endpoint accepts `ref` and `inputs` and NOTHING else, so the harness
+  // refuses a body that carries anything else exactly the way the API does (this is the live failure
+  // behind bug 2: `client_payload` is a repository_dispatch field and 422s a workflow_dispatch).
+  const DISPATCH_KEYS = ['ref', 'inputs'];
+  route('POST', new RegExp(`${DISPATCH}$`), ({ body }) => {
+    const extra = Object.keys(body || {}).filter(k => DISPATCH_KEYS.indexOf(k) === -1).sort();
+    if (extra.length > 0) {
+      return { status: 422, data: { message: `Invalid request.\n\n"${extra[0]}" is not a permitted key.` } };
+    }
+    dispatched = body;
+    return { status: 202 };
+  });
   // The dispatch answer is a 202 with no body, so the workflow id the runs are attributed by has
   // to be read from the workflow endpoint (and is then cached for the rest of the session).
   route('GET', new RegExp(`${WORKFLOW}$`), () => (opts.listWorkflow === false
@@ -951,13 +1236,19 @@ const dispatchCall = lastCall('POST', DISPATCH);
 ok(refreshed === true && dispatchCall !== null, 'the refresh dispatches the workflow and waits for it');
 ok(dispatchCall.path.endsWith(DISPATCH) && dispatchCall.auth !== null,
   'POST …/actions/workflows/sync-bnet.yml/dispatches with the PAT');
-ok(dispatched.ref === 'main', `ref is the configured branch (${dispatched.ref})`);
-ok(dispatched.inputs && dispatched.inputs.lookup_name === 'Gearman',
-  `inputs.lookup_name is the character name (${JSON.stringify(dispatched.inputs)})`);
-ok(dispatched.inputs.force === 'false', `inputs.force is false — a refresh never bypasses the cache (${JSON.stringify(dispatched.inputs.force)})`);
-ok(dispatched.client_payload && dispatched.client_payload.actor === 'octocat',
-  'client_payload.actor carries the logged-in actor');
-ok(Object.keys(dispatched.inputs).sort().join(',') === 'force,lookup_name',
+// Read defensively: a body the endpoint would refuse (see the DISPATCH_KEYS check in refreshRoutes)
+// must show up as FAIL lines, not as a TypeError that ends the run before section 9.
+const dispatchedBody = dispatched || {};
+const dispatchedInputs = dispatchedBody.inputs || {};
+ok(dispatchedBody.ref === 'main', `ref is the configured branch (${dispatchedBody.ref})`);
+ok(dispatchedInputs.lookup_name === 'Gearman',
+  `inputs.lookup_name is the character name (${JSON.stringify(dispatchedInputs)})`);
+ok(dispatchedInputs.force === 'false', `inputs.force is false — a refresh never bypasses the cache (${JSON.stringify(dispatchedInputs.force)})`);
+ok(Object.keys(dispatchedBody).sort().join(',') === 'inputs,ref',
+  `the dispatch body is exactly {ref, inputs} — nothing else is a permitted key (${Object.keys(dispatchedBody).sort().join(', ') || 'nothing at all'})`);
+ok(dispatchedBody.client_payload === undefined,
+  'no client_payload is sent at all (the API rejects it with 422: "client_payload" is not a permitted key)');
+ok(Object.keys(dispatchedInputs).sort().join(',') === 'force,lookup_name',
   'the inputs are exactly the two the workflow declares (an undeclared key would 422)');
 ok(/event=workflow_dispatch/.test(lastCall('GET', RUNS).path),
   'the poll lists workflow_dispatch runs');
