@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-08T19:13:58Z",
+  "syncedAt": "2026-11-08T19:37:56Z",
   "triggeredBy": "combatwombat16",
   "characters": {
     "1791919748959": {
@@ -516,7 +516,7 @@
     },
     "1794163010636": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T19:13:58Z"
+      "fetchedAt": "2026-11-08T19:37:56Z"
     }
   }
 }
