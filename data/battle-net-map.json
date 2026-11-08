@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-08T12:32:03Z",
+  "updatedAt": "2026-11-08T18:39:26Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -10,8 +10,8 @@
       "bnetName": "Shiftybeef",
       "surname": "Stroganoff",
       "matchedForm": "lower_hyphen",
-      "mappedVia": "direct",
-      "note": null,
+      "mappedVia": "confirmed",
+      "note": "user-confirmed",
       "candidates": []
     },
     "1791919870010": {
@@ -58,8 +58,8 @@
       "bnetName": "Beef",
       "surname": "Pho",
       "matchedForm": "lower_hyphen",
-      "mappedVia": "direct",
-      "note": null,
+      "mappedVia": "confirmed",
+      "note": "user-confirmed",
       "candidates": []
     },
     "1791928548067": {
@@ -159,15 +159,15 @@
       "candidates": []
     },
     "1791929106142": {
-      "rosterName": "puritee",
-      "status": "not_found",
-      "slug": null,
-      "href": null,
-      "bnetName": null,
-      "surname": null,
-      "matchedForm": null,
-      "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "rosterName": "Healy Bones",
+      "status": "ok",
+      "slug": "healy-bones",
+      "href": "https://us.api.blizzard.com/profile/wow/character/healy-bones?namespace=profile-forever-us",
+      "bnetName": "Healy",
+      "surname": "Bones",
+      "matchedForm": "lower_hyphen",
+      "mappedVia": "direct",
+      "note": null,
       "candidates": []
     },
     "1791929283993": {
@@ -232,6 +232,18 @@
     },
     "1793073514718": {
       "rosterName": "Heal Naw",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "candidates": []
+    },
+    "1794163010636": {
+      "rosterName": "Shmorlock Gorelocke",
       "status": "not_found",
       "slug": null,
       "href": null,

@@ -1,6 +1,7 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-08T12:32:03Z",
+  "syncedAt": "2026-11-08T18:39:26Z",
+  "triggeredBy": "manual",
   "characters": {
     "1791919748959": {
       "status": "ok",
@@ -88,15 +89,15 @@
         }
       ],
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-08T12:31:36Z"
+      "fetchedAt": "2026-11-08T18:38:57Z"
     },
     "1791919870010": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:31:36Z"
+      "fetchedAt": "2026-11-08T18:38:57Z"
     },
     "1791919950805": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:31:36Z"
+      "fetchedAt": "2026-11-08T18:38:57Z"
     },
     "1791922047617": {
       "status": "ok",
@@ -189,7 +190,7 @@
         }
       ],
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-08T12:31:46Z"
+      "fetchedAt": "2026-11-08T18:39:04Z"
     },
     "1791928493125": {
       "status": "ok",
@@ -201,7 +202,7 @@
       "level": 20,
       "guild": "Flowmasters",
       "activeSpec": "Arms",
-      "itemLevel": 14,
+      "itemLevel": 15,
       "gear": [
         {
           "slot": "Head",
@@ -211,9 +212,9 @@
         },
         {
           "slot": "Shoulders",
-          "name": "Rough Bronze Shoulders",
-          "ilvl": 22,
-          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135036.jpg"
+          "name": "Silvered Bronze Shoulders",
+          "ilvl": 25,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135040.jpg"
         },
         {
           "slot": "Shirt",
@@ -289,27 +290,27 @@
         }
       ],
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-08T12:31:56Z"
+      "fetchedAt": "2026-11-08T18:39:12Z"
     },
     "1791928548067": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:31:56Z"
+      "fetchedAt": "2026-11-08T18:39:12Z"
     },
     "1791928613248": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:31:56Z"
+      "fetchedAt": "2026-11-08T18:39:12Z"
     },
     "1791928676823": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:31:56Z"
+      "fetchedAt": "2026-11-08T18:39:12Z"
     },
     "1791928771432": {
       "status": "needs_review",
-      "fetchedAt": "2026-11-08T12:31:56Z"
+      "fetchedAt": "2026-11-08T18:39:12Z"
     },
     "1791928813281": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:31:56Z"
+      "fetchedAt": "2026-11-08T18:39:12Z"
     },
     "1791928886528": {
       "status": "ok",
@@ -318,10 +319,10 @@
         "surname": "Glows",
         "href": "https://us.api.blizzard.com/profile/wow/character/voidlight-glows?namespace=profile-forever-us"
       },
-      "level": 14,
+      "level": 15,
       "guild": "Flowmasters",
       "activeSpec": "Holy",
-      "itemLevel": 2,
+      "itemLevel": 6,
       "gear": [
         {
           "slot": "Shirt",
@@ -337,20 +338,20 @@
         },
         {
           "slot": "Waist",
-          "name": "Worn Mail Belt",
-          "ilvl": 12,
-          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132495.jpg"
+          "name": "Runed Copper Belt",
+          "ilvl": 18,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132492.jpg"
         },
         {
           "slot": "Legs",
-          "name": "Brass Scale Pants",
-          "ilvl": 11,
+          "name": "Runed Copper Pants",
+          "ilvl": 13,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134583.jpg"
         },
         {
           "slot": "Feet",
-          "name": "Finscale Soles",
-          "ilvl": 11,
+          "name": "Rough Bronze Boots",
+          "ilvl": 18,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132535.jpg"
         },
         {
@@ -373,9 +374,9 @@
         },
         {
           "slot": "Main Hand",
-          "name": "Fishing Pole",
-          "ilvl": 1,
-          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132932.jpg"
+          "name": "Heavy Copper Maul",
+          "ilvl": 16,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133055.jpg"
         }
       ],
       "achievementPoints": 0,
@@ -385,44 +386,137 @@
           "pvpRank": 0
         }
       },
-      "fetchedAt": "2026-11-08T12:32:03Z"
+      "fetchedAt": "2026-11-08T18:39:18Z"
     },
     "1791928967366": {
       "status": "needs_review",
-      "fetchedAt": "2026-11-08T12:32:03Z"
+      "fetchedAt": "2026-11-08T18:39:18Z"
     },
     "1791929013125": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:32:03Z"
+      "fetchedAt": "2026-11-08T18:39:18Z"
     },
     "1791929106142": {
-      "status": "not_found",
-      "fetchedAt": "2026-11-08T12:32:03Z"
+      "status": "ok",
+      "bnet": {
+        "name": "Healy",
+        "surname": "Bones",
+        "href": "https://us.api.blizzard.com/profile/wow/character/healy-bones?namespace=profile-forever-us"
+      },
+      "level": 22,
+      "guild": "Flowmasters",
+      "activeSpec": "Discipline",
+      "itemLevel": 14,
+      "gear": [
+        {
+          "slot": "Neck",
+          "name": "Snake Eye Kaleidoscope",
+          "ilvl": 22,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133884.jpg"
+        },
+        {
+          "slot": "Shoulders",
+          "name": "Slime-encrusted Pads",
+          "ilvl": 25,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135036.jpg"
+        },
+        {
+          "slot": "Shirt",
+          "name": "Neophyte's Shirt",
+          "ilvl": 1,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135005.jpg"
+        },
+        {
+          "slot": "Chest",
+          "name": "Robe of the Moccasin",
+          "ilvl": 22,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132677.jpg"
+        },
+        {
+          "slot": "Waist",
+          "name": "Novice Arcanist's Sash",
+          "ilvl": 15,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236919.jpg"
+        },
+        {
+          "slot": "Legs",
+          "name": "Willow Pants of the Sorcerer",
+          "ilvl": 18,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134590.jpg"
+        },
+        {
+          "slot": "Feet",
+          "name": "Buccaneer's Boots of the Eagle",
+          "ilvl": 19,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132539.jpg"
+        },
+        {
+          "slot": "Wrist",
+          "name": "Seer's Cuffs",
+          "ilvl": 17,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132606.jpg"
+        },
+        {
+          "slot": "Hands",
+          "name": "Apothecary Gloves",
+          "ilvl": 20,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132940.jpg"
+        },
+        {
+          "slot": "Ring 1",
+          "name": "Meadow Ring of Frost Protection",
+          "ilvl": 22,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133354.jpg"
+        },
+        {
+          "slot": "Back",
+          "name": "Reinforced Linen Cape",
+          "ilvl": 12,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133759.jpg"
+        },
+        {
+          "slot": "Main Hand",
+          "name": "Clear Crystal Rod",
+          "ilvl": 21,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135469.jpg"
+        },
+        {
+          "slot": "Ranged",
+          "name": "Sizzle Stick",
+          "ilvl": 23,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135139.jpg"
+        }
+      ],
+      "achievementPoints": 0,
+      "fetchedAt": "2026-11-08T18:39:26Z"
     },
     "1791929283993": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:32:03Z"
+      "fetchedAt": "2026-11-08T18:39:26Z"
     },
     "1791929450071": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:32:03Z"
+      "fetchedAt": "2026-11-08T18:39:26Z"
     },
     "1791929660455": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:32:03Z"
+      "fetchedAt": "2026-11-08T18:39:26Z"
     },
     "1791945705052": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:32:03Z"
+      "fetchedAt": "2026-11-08T18:39:26Z"
     },
     "1791945790634": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:32:03Z"
+      "fetchedAt": "2026-11-08T18:39:26Z"
     },
     "1793073514718": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T12:32:03Z"
+      "fetchedAt": "2026-11-08T18:39:26Z"
+    },
+    "1794163010636": {
+      "status": "not_found",
+      "fetchedAt": "2026-11-08T18:39:26Z"
     }
-  },
-  "triggeredBy": "schedule"
+  }
 }
