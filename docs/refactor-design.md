@@ -84,7 +84,7 @@ Rules:
 - **User-authored fields editable only while draft.** Once `validated`, the row locks; re-opening requires an explicit "re-open for editing" action (new commit, audit trail via git).
 - Battle.net-sourced data (level/gear/progress/…) is **display-only in every state**.
 - "Not my character" in review modal → user edits the name or presses "report mismatch" → a commit appends `note` (free text) and sets map review via the sync tool's `needs_review` on next run; the char stays draft.
-- `confirmedSlug` (set during review) is authoritative: sync never re-resolves a character that has one unless `--force` + user has re-opened it.
+- `confirmedSlug` (set during review) is authoritative: sync never re-resolves a character that has one. **Re-resolution of a user-confirmed slug is NOT implemented** — the `--force` + "user has re-opened it" escape hatch drafted here does not exist in the code, and there is no plan to add it to the sync: `--force` only bypasses the HTTP `Last-Modified` cache, never the trust rule. This is stricter than drafted; a re-resolve may be added later behind an explicit UI action (a review-modal button that rewrites `confirmedSlug` in `characters.json`), never as a sync flag.
 
 ## 3. Sidecar schemas v2 (sync outputs)
 

@@ -28,6 +28,11 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    # A hung run must not hold the sync-bnet concurrency group (cancel-in-progress:
+    # false) forever. 15 minutes is generous for a capped run at 0.25 s pacing plus
+    # the offline tests and the artifact gate; a timeout fails the job, so the
+    # commit step below never publishes a partial run.
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -37,8 +42,17 @@ jobs:
         with:
           python-version: "3.x"
 
+      # Offline, stdlib-only, no secrets and no network: the security helpers
+      # (allowlist, redactor, H4 floor, artifact schemas) are proven before any
+      # credential-bearing step runs, so a regression fails the job early.
+      - name: Unit tests
+        run: python3 -m unittest discover -s tools -p "test_*"
+
       # Inputs and secrets travel exclusively through env:, never interpolated
       # into the shell line, so neither can leak into logs or be shell-injected.
+      # Phase 2 entrypoint is the bnet package (tools/bnet/): PYTHONPATH points at
+      # tools/ so `python3 -m bnet` resolves from the workspace root. The provenance
+      # key triggeredBy is read from the runner's own GITHUB_EVENT_NAME/GITHUB_ACTOR.
       - name: Run Battle.net sync
         env:
           BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}
@@ -49,7 +63,7 @@ jobs:
           args=()
           if [ -n "$LOOKUP_NAME" ]; then args+=(--lookup "$LOOKUP_NAME"); fi
           if [ "$FORCE_INPUT" = "true" ]; then args+=(--force); fi
-          python3 tools/sync_bnet.py "${args[@]}"
+          PYTHONPATH=tools python3 -m bnet sync "${args[@]}"
 
       # Gate before publishing (security review H2/H4): the artifacts reach main
       # only if the deterministic checks pass — schema shape, href/iconUrl hosts,
@@ -63,7 +77,7 @@ jobs:
         run: |
           git config user.name "bnet-sync-bot"
           git config user.email "bnet-sync-bot@users.noreply.github.com"
-          git add battle-net-map.json character-data.json
+          git add data/battle-net-map.json data/character-data.json
           if git diff --cached --quiet; then
             echo "No artifact changes; skipping commit."
             exit 0

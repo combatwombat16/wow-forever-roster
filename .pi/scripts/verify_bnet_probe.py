@@ -16,8 +16,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 RAW_PATH = ROOT / "docs" / "bnet-probe-raw.json"
 NOTES_PATH = ROOT / "docs" / "bnet-api-notes.md"
-PROBE_PATH = ROOT / "tools" / "probe_bnet.py"
+# Phase 2 moved the probe into the bnet package: the implementation is now
+# tools/bnet/probe.py on top of config.py / http.py / roster.py.
+PKG_DIR = ROOT / "tools" / "bnet"
+PROBE_PATH = PKG_DIR / "probe.py"
 ENV_PATH = ROOT / ".env"
+ROSTER_PATH = ROOT / "data" / "characters.json"
 
 STDLIB = {"base64", "json", "os", "re", "sys", "time", "urllib", "collections", "pathlib",
           "__future__", "typing", "datetime", "hashlib", "textwrap", "argparse"}
@@ -91,21 +95,38 @@ for path in (RAW_PATH, NOTES_PATH, PROBE_PATH):
     check(path.is_file(), f"{path.relative_to(ROOT)} exists")
 if fails:
     sys.exit(f"aborting: {len(fails)} missing artifact(s)")
-check(PROBE_PATH.stat().st_mode & 0o111 != 0, "probe script is executable")
+# The probe entrypoint still has to be runnable from a shell: the package CLI is
+# `python3 -m bnet probe`, so the check follows the entrypoint into __main__.py.
+check((PKG_DIR / "__main__.py").is_file(), "tools/bnet/__main__.py provides the python3 -m bnet entrypoint")
+# Phase 1 checked the script's executable bit; the package entrypoint is a module,
+# so the equivalent functional check is that the CLI actually starts (and that
+# --help works without credentials).
+_cli = subprocess.run([sys.executable, "-m", "bnet", "probe", "--help"],
+                      cwd=str(ROOT / "tools"), capture_output=True, text=True)
+check(_cli.returncode == 0 and "usage" in (_cli.stdout + _cli.stderr).lower(),
+      "probe entrypoint runs: python3 -m bnet probe --help")
 modules = set()
-for node in ast.walk(ast.parse(PROBE_PATH.read_text())):
-    if isinstance(node, ast.Import):
-        modules.update(a.name.split(".")[0] for a in node.names)
-    elif isinstance(node, ast.ImportFrom) and node.module:
-        modules.add(node.module.split(".")[0])
-check(modules <= STDLIB, f"probe imports are stdlib only (found: {sorted(modules)})")
+for src in sorted(PKG_DIR.glob("*.py")):
+    for node in ast.walk(ast.parse(src.read_text())):
+        if isinstance(node, ast.Import):
+            modules.update(a.name.split(".")[0] for a in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
+            # node.level > 0 is a package-relative import (bnet.config, bnet.http):
+            # first-party code, never a third-party dependency.
+            modules.add(node.module.split(".")[0])
+check(modules <= STDLIB, f"probe package imports are stdlib only (found: {sorted(modules)})")
 
 print("\n[2] raw findings parse and cover the roster")
 raw = json.loads(RAW_PATH.read_text())
 required = ["meta", "auth", "name_resolution", "characters", "indexes", "static_ns", "tier2",
             "media", "caching", "case_sensitivity", "endpoint_matrix", "request_log", "warnings"]
 check(all(k in raw for k in required), "all required top-level sections present")
-roster = [rec["name"] for rec in json.loads((ROOT / "characters.json").read_text())]
+# Phase 2 moved the roster into data/ and wrapped it in the v2 envelope; the v1
+# array shape is still accepted so this check reads either side of the migration.
+_roster_doc = json.loads(ROSTER_PATH.read_text())
+_roster_records = (_roster_doc if isinstance(_roster_doc, list)
+                   else _roster_doc.get("characters") or [])
+roster = [rec["name"] for rec in _roster_records]
 probed = [row["roster_name"] for row in raw["name_resolution"]["results"]]
 check(sorted(probed) == sorted(roster), f"all {len(roster)} characters.json names probed exactly once")
 check(raw["meta"]["requests_made"] >= len(roster), f"requests_made ({raw['meta']['requests_made']}) >= roster size")
@@ -184,7 +205,9 @@ dirty = git.stdout.split()
 # armory-tasks.md is deliberately NOT in this list: it is the progress ledger, and
 # ticking a Phase 2 checkbox is an expected edit (orchestrator-approved 2026-11-08).
 # The guard protects machine-owned/runtime files only.
-untouched = [p for p in dirty if p in ("index.html", "characters.json",
+# The Phase 2 migration deletes the root characters.json on purpose (it is now
+# data/characters.json), so the protected roster path is the data/ one.
+untouched = [p for p in dirty if p in ("index.html", "data/characters.json",
                                       "pi-warden.md", ".env", ".gitignore")]
 check(not untouched, f"protected files untouched (dirty: {untouched})")
 # Phase 2 legitimately ships sync-bnet.yml; anything else appearing in

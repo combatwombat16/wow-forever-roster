@@ -3,7 +3,12 @@ import path from 'path';
 
 const ROOT = process.argv[2] || '.';
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-const repoChars = JSON.parse(fs.readFileSync(path.join(ROOT, 'characters.json'), 'utf8'));
+// Phase 2 migration: the roster lives at data/characters.json and is the v2
+// envelope {schemaVersion, characters:[...]}; the v1 bare array is still accepted
+// during the transition window (design §8). Path + shape only — no assertion here
+// changed, and index.html is still Phase 3's work.
+const rosterDoc = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'characters.json'), 'utf8'));
+const repoChars = Array.isArray(rosterDoc) ? rosterDoc : rosterDoc.characters;
 
 let fails = 0, passes = 0;
 const ok = (cond, msg) => { if (cond) { passes++; console.log(`  PASS ${msg}`); } else { fails++; console.log(`  FAIL ${msg}`); } };
