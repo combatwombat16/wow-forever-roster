@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-08T19:37:56Z",
+  "updatedAt": "2026-11-08T22:26:39Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -130,8 +130,8 @@
       "bnetName": "Voidlight",
       "surname": "Glows",
       "matchedForm": "lower_hyphen",
-      "mappedVia": "direct",
-      "note": null,
+      "mappedVia": "confirmed",
+      "note": "user-confirmed",
       "candidates": []
     },
     "1791928967366": {
@@ -244,6 +244,18 @@
     },
     "1794163010636": {
       "rosterName": "Shmorlock Gorelocke",
+      "status": "ok",
+      "slug": "shmorlock-gorelocke",
+      "href": "https://us.api.blizzard.com/profile/wow/character/shmorlock-gorelocke?namespace=profile-forever-us",
+      "bnetName": "Shmorlock",
+      "surname": "Gorelocke",
+      "matchedForm": "lower_hyphen",
+      "mappedVia": "direct",
+      "note": null,
+      "candidates": []
+    },
+    "1794166751512": {
+      "rosterName": "Larry Mcscary",
       "status": "not_found",
       "slug": null,
       "href": null,
@@ -251,7 +263,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "no match: direct lookup 404ed and no reachable guild roster lists this name",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     }
   }
