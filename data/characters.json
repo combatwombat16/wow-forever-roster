@@ -270,6 +270,18 @@
       "class": "Warlock",
       "prof1": "Tailoring",
       "prof2": "Enchanting"
+    },
+    {
+      "id": "1794166751512",
+      "player": "Carson",
+      "name": "Larry Mcscary",
+      "track": "family",
+      "role": "DPS",
+      "roleSec": "None",
+      "race": "Undead",
+      "class": "Rogue",
+      "prof1": "None",
+      "prof2": "None"
     }
   ]
 }
