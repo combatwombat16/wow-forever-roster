@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-08T04:43:29Z",
+  "entries": {
+    "1791919748959": {
+      "rosterName": "shiftybeef stroganoff",
+      "status": "ok",
+      "slug": "shiftybeef-stroganoff",
+      "href": "https://us.api.blizzard.com/profile/wow/character/shiftybeef-stroganoff?namespace=profile-forever-us",
+      "bnetName": "Shiftybeef",
+      "surname": "Stroganoff",
+      "matchedForm": "lower_hyphen",
+      "mappedVia": "direct",
+      "note": null
+    },
+    "1791919870010": {
+      "rosterName": "pandamancer emony",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791919950805": {
+      "rosterName": "combatwombat talion",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791922047617": {
+      "rosterName": "morc theorc",
+      "status": "ok",
+      "slug": "morc-theorc",
+      "href": "https://us.api.blizzard.com/profile/wow/character/morc-theorc?namespace=profile-forever-us",
+      "bnetName": "Morc",
+      "surname": "Theorc",
+      "matchedForm": "lower_hyphen",
+      "mappedVia": "direct",
+      "note": null
+    },
+    "1791928493125": {
+      "rosterName": "Beef Pho",
+      "status": "ok",
+      "slug": "beef-pho",
+      "href": "https://us.api.blizzard.com/profile/wow/character/beef-pho?namespace=profile-forever-us",
+      "bnetName": "Beef",
+      "surname": "Pho",
+      "matchedForm": "lower_hyphen",
+      "mappedVia": "direct",
+      "note": null
+    },
+    "1791928548067": {
+      "rosterName": "Hallowed Bonez",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791928613248": {
+      "rosterName": "Huntress",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791928676823": {
+      "rosterName": "stabby_mcgee",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791928771432": {
+      "rosterName": "Tir Rheebeard",
+      "status": "needs_review",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "duplicate normalization with id 1791928967366"
+    },
+    "1791928813281": {
+      "rosterName": "Vlinder Stormveil",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791928886528": {
+      "rosterName": "Voidlight Glows",
+      "status": "ok",
+      "slug": "voidlight-glows",
+      "href": "https://us.api.blizzard.com/profile/wow/character/voidlight-glows?namespace=profile-forever-us",
+      "bnetName": "Voidlight",
+      "surname": "Glows",
+      "matchedForm": "lower_hyphen",
+      "mappedVia": "direct",
+      "note": null
+    },
+    "1791928967366": {
+      "rosterName": "Tir Rheebeard",
+      "status": "needs_review",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "duplicate normalization with id 1791928771432"
+    },
+    "1791929013125": {
+      "rosterName": "boomster",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791929106142": {
+      "rosterName": "puritee",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791929283993": {
+      "rosterName": "shewter",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791929450071": {
+      "rosterName": "pewter",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791929660455": {
+      "rosterName": "pokeystabbey",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791945705052": {
+      "rosterName": "koalaman dingoh",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1791945790634": {
+      "rosterName": "phatbastid gnomeater",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    },
+    "1793073514718": {
+      "rosterName": "Heal Naw",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)"
+    }
+  }
+}

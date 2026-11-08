@@ -181,10 +181,17 @@ for tag in ("200", "401", "404", "not probed"):
     check(tag in notes, f"notes tag observed results with {tag}")
 git = subprocess.run(["git", "-C", str(ROOT), "status", "--porcelain"], capture_output=True, text=True)
 dirty = git.stdout.split()
-untouched = [p for p in dirty if p in ("index.html", "characters.json", "armory-tasks.md",
+# armory-tasks.md is deliberately NOT in this list: it is the progress ledger, and
+# ticking a Phase 2 checkbox is an expected edit (orchestrator-approved 2026-11-08).
+# The guard protects machine-owned/runtime files only.
+untouched = [p for p in dirty if p in ("index.html", "characters.json",
                                       "pi-warden.md", ".env", ".gitignore")]
 check(not untouched, f"protected files untouched (dirty: {untouched})")
-check(not (ROOT / ".github" / "workflows").exists(), "no .github/workflows files created")
+# Phase 2 legitimately ships sync-bnet.yml; anything else appearing in
+# .github/workflows is unexpected and must be reviewed.
+_workflows = sorted(p.name for p in (ROOT / ".github" / "workflows").glob("*.yml")) if (ROOT / ".github" / "workflows").is_dir() else []
+check(_workflows == [] or _workflows == ["sync-bnet.yml"],
+      f"only sync-bnet.yml may exist in .github/workflows (found: {_workflows})")
 
 print(f"\n{passes} passed, {len(fails)} failed")
 for fail in fails:

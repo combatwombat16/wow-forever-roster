@@ -85,11 +85,16 @@ ACCEPTED: met by commits `d8409fb` + `c7477d2`. `.pi/scripts/verify_bnet_probe.p
 
 Files: `.github/workflows/sync-bnet.yml`, `tools/sync_bnet.py` (or `.mjs`), `battle-net-map.json`, `character-data.json`.
 
-- [ ] 2.1 Workflow triggers: `schedule` (cron, nightly) + `workflow_dispatch` with inputs `lookup_name` (maintainer search) and `force` (refetch ignoring ETags). **No `push`/`pull_request` triggers.** `permissions: contents: write` only.
-- [ ] 2.2 Token: mint client-credentials token at job start from secrets; keep in memory only; never log; refresh on 401.
-- [ ] 2.3 Mapping step: for each `characters.json` entry not confidently mapped, direct-GET `profile/wow/character/{normalized(name)}`. 200 → store the canonical `href` + exact name; 404 → `status: "not_found"`; any ambiguity signal → `needs_review`. Never auto-guess.
-- [ ] 2.4 Enrichment: for mapped characters, fetch profile/equipment/achievements/available-progress per Phase 1 notes. ETag-aware (store `etag`s, send `If-None-Match`), honor `retry-after`/429 with backoff, hard-cap requests per run.
-- [ ] 2.5 Emit normalized sidecar `character-data.json` (do NOT dump raw Blizzard blobs; normalize so Blizzard schema drift can't break the UI):
+- [x] 2.1 Workflow triggers: `schedule` (cron, nightly) + `workflow_dispatch` with inputs `lookup_name` (maintainer search) and `force` (refetch ignoring ETags). **No `push`/`pull_request` triggers.** `permissions: contents: write` only.
+      NOTE: enforced by `verify_sync_artifacts.py`, which also pins the step order sync → verify → commit (security review H4: nothing is committed that the artifact checks reject).
+- [x] 2.2 Token: mint client-credentials token at job start from secrets; keep in memory only; never log; refresh on 401.
+      NOTE: the mint cap is 3/run and a mid-run 401 re-mints + replays once. Security review H3: the base64 `client_id:client_secret` pair and the URL-encoded secret are registered with the redactor, so a token endpoint that echoes its own request cannot leak them into the public Actions log.
+- [x] 2.3 Mapping step: for each `characters.json` entry not confidently mapped, direct-GET `profile/wow/character/{normalized(name)}`. 200 → store the canonical `href` + exact name; 404 → `status: "not_found"`; any ambiguity signal → `needs_review`. Never auto-guess.
+      NOTE: keyed by roster id (amendment 2) and extended with the guild-roster lever (amendment 4); a 304 counts as a hit. Stored `href` is validated against the frozen profile-URL shape before it is written (H2) — a payload self/key href that is not a Blizzard URL is dropped in favour of the URL we construct.
+- [x] 2.4 Enrichment: for mapped characters, fetch profile/equipment/achievements/available-progress per Phase 1 notes. ETag-aware (store `etag`s, send `If-None-Match`), honor `retry-after`/429 with backoff, hard-cap requests per run.
+      NOTE: Last-Modified not ETag per amendment 3 — no response has ever carried an ETag, so `If-Modified-Since` is the mechanism and `If-None-Match` is never sent. `retry-after` (seconds or HTTP-date) + 3 retries, hard cap `MAX_REQUESTS = 2500`. Sub-resource and icon GETs are reused from a profile 304 (shared §7.3 timestamp).
+- [x] 2.5 Emit normalized sidecar `character-data.json` (do NOT dump raw Blizzard blobs; normalize so Blizzard schema drift can't break the UI):
+      NOTE: every URL written to either artifact passes one shared validator — href must be a Blizzard profile URL, `iconUrl` must match `^https://render\.worldofwarcraft\.com/` (H2); refused non-Blizzard URLs are also withheld from notes and logs.
       ```json
       {
         "schemaVersion": 1,
@@ -108,9 +113,12 @@ Files: `.github/workflows/sync-bnet.yml`, `tools/sync_bnet.py` (or `.mjs`), `bat
       }
       ```
       Exact fields per Phase 1 reality; omit unavailable sections entirely rather than stub.
-- [ ] 2.6 Commit both files with `[skip ci]`, dedicated bot identity; skip commit when unchanged.
-- [ ] 2.7 Maintainer lookup mode (`lookup_name` input): direct-GET the name, write the match + result into the run summary (workflow summary markdown), update map if unambiguous.
-- [ ] 2.8 Failure policy: one character failing never aborts the run; per-character `fetch_error` + run annotation. If ALL fail (e.g. creds/quota), leave the previous sidecar untouched and fail the job loudly.
+- [x] 2.6 Commit both files with `[skip ci]`, dedicated bot identity; skip commit when unchanged.
+      NOTE: the commit step now runs only after `python3 .pi/scripts/verify_sync_artifacts.py` succeeds (no `if:`/`continue-on-error` on that gate).
+- [x] 2.7 Maintainer lookup mode (`lookup_name` input): direct-GET the name, write the match + result into the run summary (workflow summary markdown), update map if unambiguous.
+      NOTE: lookup writes the **map only** (never `character-data.json` — enrichment is a full-run concern), and only when exactly one roster row carries the normalized name.
+- [x] 2.8 Failure policy: one character failing never aborts the run; per-character `fetch_error` + run annotation. If ALL fail (e.g. creds/quota), leave the previous sidecar untouched and fail the job loudly.
+      NOTE: extended with the H4 mass-flip floor — `ok_prev >= 3 and ok_now * 2 < ok_prev` refuses BOTH artifact writes, prints FATAL + a `GITHUB_STEP_SUMMARY` line and exits 1. A Blizzard-wide 404 storm is a live upstream bug (amendment 8) and lands as `not_found`, which the all-`fetch_error` guard cannot see.
 
 Acceptance: a successful manual run commits both JSON files; second run is cheap (ETags); `battle-net-map.json` flags every non-unique/missing character instead of guessing.
 
