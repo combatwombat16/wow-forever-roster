@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-08T18:39:26Z",
+  "updatedAt": "2026-11-08T19:05:35Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -166,8 +166,8 @@
       "bnetName": "Healy",
       "surname": "Bones",
       "matchedForm": "lower_hyphen",
-      "mappedVia": "direct",
-      "note": null,
+      "mappedVia": "confirmed",
+      "note": "user-confirmed",
       "candidates": []
     },
     "1791929283993": {

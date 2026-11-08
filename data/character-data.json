@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-08T18:39:26Z",
+  "syncedAt": "2026-11-08T19:05:35Z",
   "triggeredBy": "manual",
   "characters": {
     "1791919748959": {
@@ -89,15 +89,15 @@
         }
       ],
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-08T18:38:57Z"
+      "fetchedAt": "2026-11-08T18:38:30Z"
     },
     "1791919870010": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:38:57Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791919950805": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:38:57Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791922047617": {
       "status": "ok",
@@ -190,7 +190,7 @@
         }
       ],
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-08T18:39:04Z"
+      "fetchedAt": "2026-11-08T18:38:33Z"
     },
     "1791928493125": {
       "status": "ok",
@@ -290,27 +290,27 @@
         }
       ],
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-08T18:39:12Z"
+      "fetchedAt": "2026-11-08T18:38:34Z"
     },
     "1791928548067": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:12Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791928613248": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:12Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791928676823": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:12Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791928771432": {
       "status": "needs_review",
-      "fetchedAt": "2026-11-08T18:39:12Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791928813281": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:12Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791928886528": {
       "status": "ok",
@@ -386,15 +386,15 @@
           "pvpRank": 0
         }
       },
-      "fetchedAt": "2026-11-08T18:39:18Z"
+      "fetchedAt": "2026-11-08T18:38:39Z"
     },
     "1791928967366": {
       "status": "needs_review",
-      "fetchedAt": "2026-11-08T18:39:18Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791929013125": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:18Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791929106142": {
       "status": "ok",
@@ -488,35 +488,35 @@
         }
       ],
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-08T18:39:26Z"
+      "fetchedAt": "2026-11-08T18:38:40Z"
     },
     "1791929283993": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:26Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791929450071": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:26Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791929660455": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:26Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791945705052": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:26Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1791945790634": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:26Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1793073514718": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:26Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     },
     "1794163010636": {
       "status": "not_found",
-      "fetchedAt": "2026-11-08T18:39:26Z"
+      "fetchedAt": "2026-11-08T19:05:35Z"
     }
   }
 }
