@@ -113,20 +113,34 @@ export async function deleteCharacter(id) {
   }
 }
 
+// The edit form owns exactly ten canonical fields. A committed row can own more: the `guild` a
+// nightly auto-add stamps (README §1 — often the row's only guild information while its sidecar
+// is absent or unresolved) and the `validation` block that Review owns, never this form. Rebuilt
+// from the form alone, a save silently deleted both (review C4) — which moves the row out of its
+// guild bucket with no user-visible cause. The existing row is therefore the base, the form's
+// fields land on top of it, and `validation` is re-attached explicitly so no form value can ever
+// clear or forge it.
+export function mergeEditedRow(existing, formFields) {
+  const base = existing && typeof existing === 'object' ? existing : {};
+  const merged = { ...base, ...formFields };
+  if (base.validation !== undefined) merged.validation = base.validation;
+  return merged;
+}
+
 export async function saveCharacter(e) {
   e.preventDefault();
   const editId = document.getElementById('edit-id').value;
   // Belt for the disabled ✎: an existing row that became validated since the form was opened
   // (a review commit from another tab, or the nightly landing) is not saved over. New rows are
   // always drafts, so only the edit path can cross the line.
+  const existing = editId ? characters.find(x => x.id === editId) : null;
   if (editId) {
-    const existing = characters.find(x => x.id === editId);
     if (!refuseIfValidated(existing, 'Save')) {
       closeModal();
       return;
     }
   }
-  const charData = {
+  const charData = mergeEditedRow(existing, {
     id: editId || Date.now().toString(),
     player: document.getElementById('player-name').value.trim(),
     name: document.getElementById('char-name').value.trim(),
@@ -137,7 +151,7 @@ export async function saveCharacter(e) {
     class: document.getElementById('char-class').value,
     prof1: document.getElementById('char-prof1').value,
     prof2: document.getElementById('char-prof2').value
-  };
+  });
 
   let updated;
   if (editId) {

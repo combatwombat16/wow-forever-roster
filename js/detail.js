@@ -888,15 +888,21 @@ function gearIconHtml(item, name) {
 //
 // These are authored constants, never sidecar data: the only sidecar value that reaches a style
 // attribute is the slot NAME, and only when it is already an entry of GEAR_BODY_SLOTS or
-// GEAR_HAND_SLOTS. The 420px box is the reference width, and every pair closer than 18% horizontally
-// is at least 12% apart vertically (the fixed height does not shrink with the modal), so the 52px
-// sockets cannot stack on each other even at a phone-width modal.
+// GEAR_HAND_SLOTS. The spacing rule is PIXELS, not table folklore (review B1/E1): the socket is a
+// fixed 52x50px box in css/app.css, the doll keeps its 420px height at every width, and the
+// narrowest supported doll box is 320px wide (phone-width modal), where 1% is 3.2px horizontally.
+// So every pair below is either >= 54px (16.875%) apart horizontally or >= 54px (12.857% of the
+// fixed 420px height) apart vertically — centre distance covering the 52/50px extent plus a 2/4px
+// breathing gap — and every socket's x ± 26px and y ± 25px stay inside the box. The box-model gate
+// in .pi/scripts/verify_search_detail.mjs derives those numbers from the committed stylesheet and
+// re-checks this table against them; it failed against the pre-fix geometry by 5.9–12.0px of real
+// overlap on a partial loadout, which the old table-only assertion could not see.
 const DOLL_REGIONS = {
-  Head: [50, 6], Shoulders: [50, 19], Back: [32, 26], Neck: [68, 26],
-  Chest: [50, 32], Shirt: [50, 44], Waist: [50, 56], Legs: [50, 70], Feet: [50, 90],
-  Wrist: [24, 44], Hands: [76, 44], 'Trinket 1': [14, 58], 'Trinket 2': [86, 58],
-  'Ring 1': [32, 68], 'Ring 2': [68, 68],
-  'Main Hand': [10, 78], 'Off Hand': [90, 78], Ranged: [10, 93], Ammo: [90, 93]
+  Head: [50, 7], Shoulders: [50, 21], Back: [32, 28], Neck: [68, 28],
+  Chest: [50, 35], Shirt: [50, 49], Waist: [50, 63], Legs: [50, 77], Feet: [50, 92],
+  Wrist: [24, 49], Hands: [76, 49], 'Trinket 1': [14, 64], 'Trinket 2': [86, 64],
+  'Ring 1': [32, 73], 'Ring 2': [68, 73],
+  'Main Hand': [10, 79], 'Off Hand': [90, 79], Ranged: [10, 93], Ammo: [90, 93]
 };
 
 // The socket style for one slot of the doll, or '' for a slot this map does not place (which would
@@ -2431,9 +2437,13 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
   const cls = scalarText(character.class);
   const classColor = classColorFor(cls);
   const faction = getFaction(character.race);
+  // The unknown faction is the race-less auto-add placeholder (review C2): a neutral slate tag,
+  // never the Horde red the modal inherited while getFaction defaulted every non-Alliance race.
   const factionTag = faction === 'alliance'
     ? '<span class="text-[9px] font-bold uppercase tracking-wider text-sky-400 bg-blue-950/80 px-1 py-0.5 rounded border border-blue-800/60">Alliance</span>'
-    : '<span class="text-[9px] font-bold uppercase tracking-wider text-red-400 bg-red-950/80 px-1 py-0.5 rounded border border-red-800/60">Horde</span>';
+    : faction === 'horde'
+      ? '<span class="text-[9px] font-bold uppercase tracking-wider text-red-400 bg-red-950/80 px-1 py-0.5 rounded border border-red-800/60">Horde</span>'
+      : '<span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 bg-slate-800/80 px-1 py-0.5 rounded border border-slate-700/60">Unknown</span>';
   const raceText = scalarText(character.race);
   // F4: the class icon the probe resolved, absent on every row it could not answer for. No new
   // request: it comes off the sidecar row data.js already loaded. The race has no icon (see above).
@@ -2445,6 +2455,16 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
 
   const roles = [scalarText(character.role), scalarText(character.roleSec)]
     .filter(r => r !== '' && r !== 'None').join(' / ');
+  // The identity sub-line joins only non-empty words with the bullet (review C2, modal side): an
+  // auto-added row with no race or class prints neither an empty word nor a dangling •. The roles
+  // above already drop the 'None' literal; the track word is the line's guaranteed tail.
+  const identityDot = '<span class="text-slate-500">•</span>';
+  const identityLine = [
+    cls !== '' ? `<span class="font-semibold ${classColor}">${escapeHtml(cls)}</span>` : '',
+    raceText !== '' ? `<span class="text-slate-300">${escapeHtml(raceText)}</span>` : '',
+    roles !== '' ? `<span class="text-amber-300/90">${escapeHtml(roles)}</span>` : '',
+    `<span class="text-slate-400">${escapeHtml(trackLabel(character.track))}</span>`,
+  ].filter(Boolean).join(`${identityDot} `);
   const synced = formatSyncedAt(sidecar && sidecar.fetchedAt);
   const note = mapEntry && typeof mapEntry === 'object' ? scalarText(mapEntry.note) : '';
   const achievement = numberOr(sidecar && sidecar.achievementPoints);
@@ -2467,12 +2487,7 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
       <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-[10px]">
         ${factionTag}
         ${identityIconHtml(classIcon, sidecarCls !== '' ? sidecarCls : cls === '' ? 'Class' : cls)}
-        <span class="font-semibold ${classColor}">${escapeHtml(cls)}</span>
-        <span class="text-slate-500">•</span>
-        <span class="text-slate-300">${escapeHtml(raceText)}</span>
-        ${roles !== '' ? `<span class="text-slate-500">•</span><span class="text-amber-300/90">${escapeHtml(roles)}</span>` : ''}
-        <span class="text-slate-500">•</span>
-        <span class="text-slate-400">${escapeHtml(trackLabel(character.track))}</span>
+        ${identityLine}
         ${accountChip}
         ${badge}
       </div>

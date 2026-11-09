@@ -2540,16 +2540,104 @@ ok(flankBad.length === 0 && Object.keys(FLANKS).every(s => posOf(dollSockets, s)
 ok(posOf(dollSockets, 'Main Hand').y === posOf(dollSockets, 'Off Hand').y
   && posOf(dollSockets, 'Ranged').y === posOf(dollSockets, 'Ammo').y,
   'each left/right weapon pair shares a row (a pair reads as one line of the character sheet)');
+// THE BOX-MODEL GATE (review B1/E1). The old version of this check parsed the DOLL_REGIONS
+// percentages back out of the markup and compared them to two hardcoded numbers (18 / 12) — it
+// asserted the authored table against itself and reported "clean" while headless Chromium measured
+// SEVEN overlapping sockets with the committed stylesheets. Everything here is instead derived
+// from the committed CSS, mirroring the box model:
+//   socket width/height  = the pinned `.wow-doll-slot { width; height }` (border-box: the Tailwind
+//                          preflight makes `height` include the `.wow-slot` 1px border + 4px padding).
+//   worst content height = `.wow-slot` border*2 + padding*2 + the `.wow-doll-slot .wow-slot-face`
+//                          height + (gap + one name line) when the EMPTY socket's name is still in
+//                          the flow — 1px + 4px + 40px + 3px + 8px×1.15 = 62.2px, the height real
+//                          Chromium measured at 3211b8a. A pinned box must cover it.
+//   box                  = `.wow-doll` fixed height (a px that does not shrink) at the NARROWEST
+//                          supported doll width, 320px: the doll is `width:100%` inside the phone-
+//                          width modal, horizontal centre distances shrink with width while the
+//                          vertical ones are height-fixed, so 320x420 is the worst case for both
+//                          overlap and edge containment (a reviewer's Chromium run at this box is
+//                          what proved the pre-fix 5.9–12.0px overlaps).
+// Overlap rule: two sockets clear each other when their centre delta is >= socketW+2px on one
+// axis or >= socketH+4px on the other; containment: x±socketW/2 inside [0, 320], y±socketH/2
+// inside [0, 420].
+// Parse the committed stylesheet into rules once, then look selectors up EXACTLY as a
+// comma-separated member of a rule's selector list. Substring matching would answer a query for
+// `.wow-slot-name` with the FILLED-slot rule (`.wow-doll-slot.wow-slot-filled .wow-slot-name`)
+// and could mask an in-flow name; exact member matching is what makes "is the empty name out of
+// the flow?" a question about the empty socket.
+const cssRules = [...appCssText.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(m => ({
+  sels: m[1].replace(/\/\*[\s\S]*?\*\//g, ' ').split(',').map(sel => sel.trim().replace(/\s+/g, ' ')),
+  body: m[2],
+}));
+const appRuleBody = selector => cssRules.filter(r => r.sels.includes(selector)).map(r => r.body).join(';');
+const cssPxIn = (body, prop) => {
+  const m = new RegExp(`(?:^|;)\\s*${prop}:\\s*(-?[\\d.]+)px`).exec(body);
+  return m ? parseFloat(m[1]) : NaN;
+};
+const cssNumIn = (body, prop) => {
+  const px = cssPxIn(body, prop);
+  if (Number.isFinite(px)) return { value: px, unitless: false };
+  const m = new RegExp(`(?:^|;)\\s*${prop}:\\s*([\\d.]+)\\s*;`).exec(body);
+  return m ? { value: parseFloat(m[1]), unitless: true } : { value: NaN, unitless: false };
+};
+// Cascade resolution for the empty socket's name line: the last selector wins, worst case kept.
+const emptyNameSelectors = ['.wow-slot-name', '.wow-doll-slot .wow-slot-name',
+  '.wow-doll-slot.wow-slot-empty .wow-slot-name'];
+const emptyNameBodies = emptyNameSelectors.map(appRuleBody);
+// The overlay decision: the empty name is out of the flow only if some rule that applies to it
+// (any of the three selectors above — every one of them does apply) positions it absolutely.
+const emptyNameInFlow = !emptyNameBodies.some(body => /position:\s*absolute/.test(body));
+const emptyNameFont = [...emptyNameBodies].map(b => cssPxIn(b, 'font-size')).filter(Number.isFinite).pop();
+const lhDecl = emptyNameBodies.map(b => cssNumIn(b, 'line-height')).filter(o => Number.isFinite(o.value)).pop();
+const emptyNameLine = Number.isFinite(emptyNameFont) && lhDecl
+  ? (lhDecl.unitless ? emptyNameFont * lhDecl.value : lhDecl.value) : NaN;
+const slotBaseBody = appRuleBody('.wow-slot');
+const socketBoxBody = appRuleBody('.wow-doll-slot');
+const socketW = cssPxIn(socketBoxBody, 'width');
+const socketHFixed = cssPxIn(socketBoxBody, 'height');
+const faceHPx = cssPxIn(appRuleBody('.wow-doll-slot .wow-slot-face'), 'height');
+const slotPadPx = cssPxIn(slotBaseBody, 'padding');
+const slotGapPx = cssPxIn(slotBaseBody, 'gap');
+const slotBorderPx = cssPxIn(slotBaseBody, 'border');
+const dollBoxHpx = cssPxIn(appRuleBody('.wow-doll'), 'height');
+const DOLL_MIN_W = 320;
+const emptyNaturalH = [slotBorderPx, slotPadPx, faceHPx].every(Number.isFinite)
+  ? slotBorderPx * 2 + slotPadPx * 2 + faceHPx
+    + (emptyNameInFlow && Number.isFinite(emptyNameLine) ? slotGapPx + emptyNameLine : 0)
+  : NaN;
+
+ok(/box-sizing:\s*border-box/.test(tailwindCssText),
+  'the shipped Tailwind preflight sets box-sizing:border-box (a pinned .wow-doll-slot height therefore includes its padding and border)');
+ok(Number.isFinite(socketW) && Number.isFinite(socketHFixed),
+  `the committed css/app.css pins a fixed pixel socket box: .wow-doll-slot width ${socketW}px, height ${socketHFixed}px (E1: without a pinned height the crowding rule has no pixels to compute against)`);
+ok(Number.isFinite(emptyNaturalH) && Number.isFinite(socketHFixed) && emptyNaturalH <= socketHFixed + 0.01,
+  `the tallest socket state (EMPTY) fits its pinned box: face ${faceHPx} + padding ${slotPadPx}x2 + border ${slotBorderPx}x2${emptyNameInFlow ? ` + gap ${slotGapPx} + name line ${emptyNameLine}` : ' with the name out of the flow'} = ${emptyNaturalH}px <= ${socketHFixed}px`);
+// The box's real vertical extent: the pinned height when one exists, otherwise the content height
+// (which is what Chromium measured at 3211b8a: 62.1875px). A pin SMALLER than the content is its
+// own bug — the "fits its pinned box" check above fails that case with the numbers named.
+const socketHWorst = Number.isFinite(socketHFixed) ? socketHFixed : emptyNaturalH;
+const geomOk = [socketW, socketHWorst, dollBoxHpx].every(Number.isFinite);
+ok(geomOk, `the box-model inputs all parsed from CSS: socket ${socketW}x${socketHWorst}px, worst-case doll box ${DOLL_MIN_W}x${dollBoxHpx}px`);
 const crowded = [];
-for (let i = 0; i < dollSockets.length; i += 1) {
-  for (let j = i + 1; j < dollSockets.length; j += 1) {
-    const dx = Math.abs(dollSockets[i].x - dollSockets[j].x);
-    const dy = Math.abs(dollSockets[i].y - dollSockets[j].y);
-    if (dx < 18 && dy < 12) crowded.push(`${dollSockets[i].slot}/${dollSockets[j].slot}`);
+if (geomOk) {
+  for (let i = 0; i < dollSockets.length; i += 1) {
+    for (let j = i + 1; j < dollSockets.length; j += 1) {
+      const dxPx = Math.abs(dollSockets[i].x - dollSockets[j].x) / 100 * DOLL_MIN_W;
+      const dyPx = Math.abs(dollSockets[i].y - dollSockets[j].y) / 100 * dollBoxHpx;
+      if (dxPx < socketW + 2 && dyPx < socketHWorst + 4) {
+        crowded.push(`${dollSockets[i].slot}/${dollSockets[j].slot} at ${dxPx.toFixed(1)}x${dyPx.toFixed(1)}px`);
+      }
+    }
   }
 }
-ok(crowded.length === 0,
-  `no two 52px sockets can overlap: every pair closer than 18% horizontally is >=12% apart vertically (${crowded.join(', ') || 'clean'})`);
+ok(geomOk && crowded.length === 0,
+  `no two of the 19 sockets overlap at the 320px box floor: every pair is >=${socketW + 2}px apart horizontally or >=${socketHWorst + 4}px vertically (CSS-derived ${socketW}x${socketHWorst}px sockets) (${crowded.slice(0, 4).join(', ') || 'clean'})`);
+const edgeOut = dollSockets.filter(s => !geomOk
+  || s.x / 100 * DOLL_MIN_W - socketW / 2 < -0.01 || s.x / 100 * DOLL_MIN_W + socketW / 2 > DOLL_MIN_W + 0.01
+  || s.y / 100 * dollBoxHpx - socketHWorst / 2 < -0.01 || s.y / 100 * dollBoxHpx + socketHWorst / 2 > dollBoxHpx + 0.01)
+  .map(s => `${s.slot}@${s.x},${s.y}`);
+ok(geomOk && edgeOut.length === 0,
+  `no socket crosses the 320x${dollBoxHpx}px box edge (x±${socketW / 2}px, y±${socketHWorst / 2}px) (${edgeOut.join(', ') || 'clean'})`);
 // The geometry is keyed by slot id, never by the item in the slot: a different loadout moves the
 // items, not the character sheet.
 const otherLoadout = detail.gearTabHtml({ ...richSidecar, gear: [
@@ -2976,6 +3064,67 @@ ok(committedWrong.length === 0,
   `on the committed roster every row's chip presence matches its own alias count (${[...committedCounts.values()].filter(n => n >= 2).length} grouped aliases over ${rosterChars.length} rows)`);
 ok(!rosterChars.some(c => 'account' in c || 'accountGroup' in c),
   'and the grouping needed no new roster field: nothing is stored, everything is derived');
+
+// ------------------------------------------- 4i. Review C2/C4: the race-less placeholder row, and edit-preserves-fields
+//
+// C2: autoadd.py deliberately omits race/class and writes the literal 'None' for role/roleSec,
+// asserting that "an unknown is recorded as an unknown" — a DISPLAY promise the card broke: an
+// unknown race mapped to Horde red (getFaction's else branch), the 'None' role printed "⚔️None",
+// and the empty class/race spans left dangling • separators. The fixture row proves none of the
+// three survive: no faction word but the neutral one, no 'None' text or glyph, no bullets, on the
+// card AND in the modal header. C4: the edit form owns ten canonical fields; a row may own
+// `guild` and `validation` on top of them, and a save must not silently delete either.
+console.log('\n[4i] Review C2/C4: race-less + None-role placeholder shows neither; edit keeps guild/validation');
+const placeholder = { id: 'P11', player: 'lonelyeleven', name: 'Awaiting Pick', track: 'alts',
+  role: 'None', roleSec: 'None', guild: 'Heghmoh' };
+state.setCharacters([...rosterG.characters, placeholder]);
+state.renderAll();
+const p11 = cards().find(c => String(c.attrs['data-character-id']) === 'P11');
+const p11Html = p11 ? p11.innerHTML : '';
+ok(p11Html !== '', 'the race-less placeholder row still renders a card');
+ok(!p11Html.includes('>Horde<') && !p11Html.includes('>Alliance<') && p11Html.includes('>Unknown<'),
+  'the faction tag is the neutral Unknown one — never Horde — for a row with no race');
+ok(!p11Html.includes('None') && !p11Html.includes('\u2694\uFE0F'),
+  'the role "None" prints neither the word nor a role glyph (the guard roleSec already had)');
+ok(countOf('>\u2022<', p11Html) === 0,
+  `no dangling bullet on an identity line with no class and no race (${countOf('>\u2022<', p11Html)} bullets)`);
+const p1Card = cards().find(c => String(c.attrs['data-character-id']) === 'P1');
+ok(countOf('>\u2022<', p1Card.innerHTML) >= 2,
+  `a full row keeps its bullets (${countOf('>\u2022<', p1Card.innerHTML)}) — the guard hides segments, it does not blank the line`);
+openRow('P11');
+const p11Modal = contentHtml();
+ok(!p11Modal.includes('>Horde<') && p11Modal.includes('>Unknown<'),
+  'the modal header takes the same neutral faction tag (one getFaction, one answer)');
+ok(!p11Modal.includes('\u2694\uFE0F') && countOf('>\u2022<', p11Modal) === 0,
+  'and its identity line reaches the track word with no class, no race and no bullet behind them');
+detail.closeDetail();
+state.setCharacters(rosterG.characters);
+state.renderAll();
+
+const editMod4i = await import(moduleUrl('editchar.js'));
+// Guard the call so a missing helper is a recorded FAIL, not a throw that ends the run.
+const mergeEdited = typeof editMod4i.mergeEditedRow === 'function'
+  ? editMod4i.mergeEditedRow : () => ({});
+const storedAutoRow = { id: 'P3', player: 'dupone', name: 'Auto Added Three', track: 'family',
+  role: 'None', roleSec: 'None', guild: 'Heghmoh', validation: { state: 'pending', note: null } };
+const editFormFields = { id: 'P3', player: 'dupone', name: 'Auto Added Three', track: 'family',
+  role: 'DPS', roleSec: 'None', race: 'Orc', class: 'Warrior', prof1: 'Mining', prof2: 'None' };
+ok(typeof editMod4i.mergeEditedRow === 'function',
+  'editchar.js exports mergeEditedRow (the save path has a field-preserving merge at all)');
+const savedAutoRow = mergeEdited(storedAutoRow, editFormFields);
+ok(savedAutoRow.guild === 'Heghmoh',
+  `a save for the auto-added row keeps the guild the form does not own ("${savedAutoRow.guild}")`);
+ok(savedAutoRow.validation && savedAutoRow.validation.state === 'pending',
+  'and re-attaches the validation block the form does not own');
+ok(savedAutoRow.role === 'DPS' && savedAutoRow.race === 'Orc' && savedAutoRow.class === 'Warrior',
+  'the form fields still win where the form has authority');
+ok(mergeEdited(null, editFormFields).role === 'DPS'
+  && Object.keys(mergeEdited(null, editFormFields)).length === 10,
+  'a brand-new row (no stored row) is exactly the ten form fields — nothing phantom-merged');
+const editcharSrc = fs.readFileSync(path.join(ROOT, 'js', 'editchar.js'), 'utf8');
+ok(/const charData = mergeEditedRow\(existing, \{/.test(editcharSrc)
+  && /characters\.map\(c => c\.id === editId \? charData : c\)/.test(editcharSrc),
+  'saveCharacter builds the committed row through mergeEditedRow (the ten-field rebuild is gone from the save path)');
 
 // ---------- put the page back for [6] ----------
 sourceDir = FIXTURES5;

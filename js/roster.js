@@ -217,18 +217,40 @@ export function renderRoster() {
     const bnetLine = `${getSidecarDot(sidecar, mapEntry)}${sidecarMeta ? `<span class="flex items-center gap-1">${sidecarMeta}</span>` : ''}${accountChip}${getLifecycleBadge(c, lifecycle, badgeClickId,
       Array.isArray(mapEntry && mapEntry.candidates) && mapEntry.candidates.length > 0)}`;
 
-    // Faction-based backdrop and border styling
+    // Faction-based backdrop and border styling. The third branch is the whole C2 fix on the card:
+    // a race-less auto-add row (getFaction answers "unknown") gets a neutral slate row, never the
+    // Horde red it silently inherited while getFaction defaulted every non-Alliance race to horde.
+    // Class tokens are ones the compiled css/tailwind.css already ships.
     const factionStyles = faction === 'alliance'
       ? 'bg-gradient-to-r from-blue-950/45 via-slate-900/85 to-slate-900/90 border-blue-900/50 hover:border-blue-500/60 shadow-[inset_0_0_12px_rgba(30,58,138,0.2)]'
-      : 'bg-gradient-to-r from-red-950/45 via-slate-900/85 to-slate-900/90 border-red-900/50 hover:border-red-500/60 shadow-[inset_0_0_12px_rgba(153,27,27,0.2)]';
+      : faction === 'horde'
+        ? 'bg-gradient-to-r from-red-950/45 via-slate-900/85 to-slate-900/90 border-red-900/50 hover:border-red-500/60 shadow-[inset_0_0_12px_rgba(153,27,27,0.2)]'
+        : 'bg-slate-900/80 border-slate-700/60';
 
     const factionTag = faction === 'alliance'
       ? '<span class="text-[9px] font-bold text-sky-400 bg-blue-950/80 px-1 py-0.2 rounded border border-blue-800/60">Alliance</span>'
-      : '<span class="text-[9px] font-bold text-red-400 bg-red-950/80 px-1 py-0.2 rounded border border-red-800/60">Horde</span>';
+      : faction === 'horde'
+        ? '<span class="text-[9px] font-bold text-red-400 bg-red-950/80 px-1 py-0.2 rounded border border-red-800/60">Horde</span>'
+        : '<span class="text-[9px] font-bold text-slate-400 bg-slate-800/80 px-1 py-0.2 rounded border border-slate-700/60">Unknown</span>';
 
     const prof1Str = c.prof1 && c.prof1 !== 'None' ? (ownString(PROF_ABBR, c.prof1) || c.prof1) : '';
     const prof2Str = c.prof2 && c.prof2 !== 'None' ? (ownString(PROF_ABBR, c.prof2) || c.prof2) : '';
     const profsFormatted = [prof1Str, prof2Str].filter(Boolean).map(escapeHtml).join('/');
+
+    // The identity sub-line (review C2): segments are built first and bullets only join what
+    // survives, so an absent class, an absent race and the auto-add's literal 'None' role each
+    // drop their whole segment instead of printing an empty span, a "⚔️None" and dangling •
+    // separators. 'None' is skipped exactly the way roleSec (and the professions above) already
+    // were — it is autoadd.py's vocabulary for "unknown", not a role.
+    const metaDot = '<span class="text-slate-600">•</span>';
+    const classWord = c.class ? `<span class="font-semibold ${classBadge.split(' ')[0]}">${escapeHtml(c.class)}</span>` : '';
+    const raceWord = c.race ? `<span class="text-slate-300 font-normal">${escapeHtml(c.race)}</span>` : '';
+    const roleWord = c.role && c.role !== 'None' ? `<span class="text-amber-300/90 font-medium">${getRoleIcon(c.role)}${escapeHtml(c.role)}</span>` : '';
+    const roleSecWord = c.roleSec && c.roleSec !== 'None' ? `<span class="text-sky-300/80">(${getRoleIcon(c.roleSec)}${escapeHtml(c.roleSec)})</span>` : '';
+    const rolePair = [roleWord, roleSecWord].filter(Boolean).join(' ');
+    const metaLine = [classWord, raceWord, rolePair,
+      profsFormatted ? `<span class="text-slate-400">${profsFormatted}</span>` : '',
+    ].filter(Boolean).join(`${metaDot} `);
 
     const card = document.createElement('div');
     card.className = `cursor-pointer rounded-lg px-2.5 py-1.5 transition-all border flex items-center justify-between gap-2 text-xs ${factionStyles} ${isPartyMember ? 'ring-1 ring-amber-400 border-amber-400/80' : ''}`;
@@ -245,13 +267,7 @@ export function renderRoster() {
           </div>
           <div class="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5 leading-none">
             ${classIconHtml(sidecar, String(c.class == null ? '' : c.class))}
-            <span class="font-semibold ${classBadge.split(' ')[0]}">${escapeHtml(c.class)}</span>
-            <span class="text-slate-600">•</span>
-            <span class="text-slate-300 font-normal">${escapeHtml(c.race)}</span>
-            <span class="text-slate-600">•</span>
-            <span class="text-amber-300/90 font-medium">${getRoleIcon(c.role)}${escapeHtml(c.role)}</span>
-            ${c.roleSec && c.roleSec !== 'None' ? `<span class="text-sky-300/80">(${getRoleIcon(c.roleSec)}${escapeHtml(c.roleSec)})</span>` : ''}
-            ${profsFormatted ? `<span class="text-slate-600">•</span><span class="text-slate-400">${profsFormatted}</span>` : ''}
+            ${metaLine}
           </div>
           <!-- Battle.net status dot, synced display data, lifecycle badge -->
           <div class="flex items-center gap-1.5 text-[10px] mt-0.5 leading-none min-w-0 flex-wrap">${bnetLine}</div>

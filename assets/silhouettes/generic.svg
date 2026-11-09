@@ -7,11 +7,17 @@
   no per-character variant here: Phase F of roster-ui-tasks.md owns bespoke per-character art, and
   it will land as separate files under assets/silhouettes/char/ rather than by editing this one.
 
-  The canvas is 300x400 (3:4) with the figure spanning ~5% to ~95% of the height and centred on
-  x=150, because app.css paints it with `background-size: contain` inside the fixed .wow-doll box
-  and js/detail.js positions the item sockets by percentage of that same box (head at the top,
-  feet at the bottom, hands at ~44%). A silhouette whose head or feet drift off that band would
-  put the Head socket over empty air.
+  The canvas is 300x400 (3:4), centred on x=150, because app.css paints it with `background-size:
+  contain` inside the fixed 420px-tall .wow-doll box. The box is wider than this 3:4 canvas, so
+  contain fits the HEIGHT exactly (315x400 scaled to ×420, letterboxed horizontally): a canvas y%
+  equals the doll box y% exactly, and that is the only axis js/detail.js positions sockets on.
+  THE MEASURED CONTRACT (as-authored landmark → DOLL_REGIONS socket centre, both as % of height):
+  head-circle centre cy=46 → 11.5% (Head socket 7%, over the crown); arm rects end y≈209 → 52%
+  (Wrist/Hands sockets 49%, just above the hands); feet bottoms y=374 → 93.5% (Feet socket 92%,
+  and the Ranged/Ammo row 93%). The figure spans 5.5% to 93.5%. Bespoke Phase F art must keep those
+  landmarks in that band: sockets are 50px tall and pinned inside the box, so a head that drifts
+  below ~15% or feet past ~94% of the height puts the Head socket over empty air or pushes under
+  the weapon row.
 
   The file is published to Pages by the explicit allow-list in .github/workflows/pages.yml;
   verify_sync_artifacts.py permits exactly `assets/silhouettes/*.svg` and nothing wider.

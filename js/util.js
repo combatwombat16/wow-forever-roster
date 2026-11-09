@@ -64,9 +64,14 @@ export function showToast(message, tone = 'info') {
 
 // ---------- styling constants ----------
 
-// Faction mapping for styling
+// Faction mapping for styling. A row with no race — the guild auto-add placeholder (autoadd.py
+// omits race/class until a human resolves the identity) — is its own answer: "unknown". The old
+// anything-not-Alliance-is-Horde default painted every race-less placeholder Horde-red (review C2),
+// which is exactly the "an unknown is recorded as an unknown" promise the sync makes. Every
+// consumer of this value must therefore handle "unknown" as a third branch, not as the else.
 const ALLIANCE_RACES = ["Human", "Dwarf", "Night Elf", "Gnome", "Alliance Skyborne"];
 export function getFaction(race) {
+  if (!race) return "unknown";
   return ALLIANCE_RACES.includes(race) ? "alliance" : "horde";
 }
 

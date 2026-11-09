@@ -52,9 +52,13 @@ export function renderParty() {
 
     if (char) {
       const faction = getFaction(char.race);
-      const factionBg = faction === 'alliance' 
-        ? 'bg-gradient-to-b from-blue-950/60 to-slate-950/90 border-blue-900/60' 
-        : 'bg-gradient-to-b from-red-950/60 to-slate-950/90 border-red-900/60';
+      // Third branch for the race-less auto-add placeholder (review C2): "unknown" must not fall
+      // into the Horde gradient. Display-only; the party slot's data logic is untouched.
+      const factionBg = faction === 'alliance'
+        ? 'bg-gradient-to-b from-blue-950/60 to-slate-950/90 border-blue-900/60'
+        : faction === 'horde'
+          ? 'bg-gradient-to-b from-red-950/60 to-slate-950/90 border-red-900/60'
+          : 'bg-slate-950/60 border-slate-700/60';
       // Own-data lookup (see util.js): a prototype-shaped class falls back to neutral rather
       // than handing a function to `.split()`.
       const color = ownString(CLASS_COLORS, char.class) || 'text-slate-300';
