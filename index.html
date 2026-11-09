@@ -373,9 +373,11 @@
   <!-- Character Detail Modal (read-only): opens on roster card click, closes on ✕, backdrop
        or ESC. Same shell language as #char-modal: wow-border-gold panel, cinzel heading.
        Phase 2 makes the panel a flex column instead of one long scroller, so the tab bar and
-       the review footer stay put and only the tab panel between them scrolls (T2.9). -->
+       the review footer stay put and only the tab panel between them scrolls (T2.9). Phase A
+       pins the box to a fixed h-[90vh] (max-h kept as the cap) so cycling the six tabs never
+       resizes it; short tabs leave space, long tabs scroll inside the panel. -->
   <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" role="dialog" aria-modal="true" aria-label="Character detail">
-    <div class="wow-border-gold bg-slate-900 rounded-xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
+    <div class="wow-border-gold bg-slate-900 rounded-xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl relative h-[90vh] max-h-[90vh] flex flex-col overflow-hidden">
       <!-- Filled by js/detail.js: everything in here is escaped, and gear icons only render
            from render.worldofwarcraft.com / us.api.blizzard.com. -->
       <div id="detail-content" class="flex flex-col min-h-0 flex-1"></div>
