@@ -1994,6 +1994,398 @@ ok(state.getCharacters().length === fixtureRoster.characters.length
   && hidden('detail-modal') === true && detail.isDetailOpen() === false,
   `the [5] fixtures are reloaded and the modal is closed again (${state.getCharacters().length} rows)`);
 
+// ------------------------------------------- 4d. Phase 5b: section sub-tabs + site icon maps
+//
+// Two features on one fixture page. P5.A puts the Talents sub-tab widget behind the Stats,
+// Progress and Professions panels (per-section id namespaces, default = first group WITH data,
+// data-less groups still tabbed with their own empty state, whole-tab-empty keeps the single
+// legacy message). P5.C paints Blizzard icons from the lazily-loaded data/class-icons.json and
+// data/profession-icons.json — one shared fetch per map, retryable after failure, invisible
+// while the file is absent, and never rendered for a host the allowlist rejects. Fixtures are a
+// fresh /tmp directory; the repo's data/ is never written.
+console.log('\n[4d] Phase 5b: section sub-tabs (stats/progress/professions) + lazy site icon maps');
+const FIXTURES5 = mkdtempSync(path.join(os.tmpdir(), '5b-sections-'));
+fs.mkdirSync(path.join(FIXTURES5, 'data'), { recursive: true });
+const ICON_WARRIOR = 'https://render.worldofwarcraft.com/forever-us/profile-icons/class/1.jpg';
+const ICON_MINING = 'https://us.api.blizzard.com/static/forever-us/profession/202.jpg';
+const POISON_ICON = 'https://evil.tld/icon.jpg';
+
+const roster5 = {
+  schemaVersion: 2,
+  characters: [
+    { id: 'X1', player: 'richplayer', name: 'Riches', track: 'flowmasters', role: 'DPS', roleSec: 'None', race: 'Orc', class: 'Warrior', prof1: 'Mining', prof2: 'None' },
+    { id: 'X2', player: 'plainplayer', name: 'Plain', track: 'flowmasters', role: 'DPS', roleSec: 'None', race: 'Dwarf', class: 'Paladin', prof1: 'None', prof2: 'None' },
+    { id: 'X3', player: 'badactor', name: 'Poisoned', track: 'family', role: 'DPS', roleSec: 'None', race: 'Troll', class: 'Malicious', prof1: 'None', prof2: 'None' },
+    { id: 'X4', player: 'evilplayer', name: evilName, track: 'family', role: 'Healer', roleSec: 'None', race: 'Undead', class: evilName, prof1: 'None', prof2: 'None' },
+    { id: 'X5', player: 'sparseplayer', name: 'Sparse', track: 'alts', role: 'DPS', roleSec: 'None', race: 'Tauren', class: 'Hunter', prof1: 'None', prof2: 'None' },
+  ],
+};
+// X1 is the data-rich row: stats whose FIRST group with data is the THIRD one (Crit & Ratings),
+// progress whose first group with data is the LAST one (PvP), and three professions in the
+// primaries-then-secondaries order. X5 owns nothing: every one of its three sub-tabbed panels
+// must fall back to the single legacy empty state, bar and all.
+const data5 = {
+  schemaVersion: 2, syncedAt: nowStamp, triggeredBy: 'schedule',
+  characters: {
+    X1: {
+      status: 'ok', level: 60, fetchedAt: nowStamp, activeSpec: 'Fury',
+      talents: [{ specId: 98765, specName: 'Fury', spentPoints: 1, talents: [{ rank: 1, spellName: 'Blood Thrill' }] }],
+      stats: { mastery: 5, fireResistance: 12 },
+      progress: { pvp: { honorableKills: 3 } },
+      professions: {
+        primaries: [
+          { name: 'Mining', tiers: [{ tierName: 'Apprentice', skillPoints: 100, maxSkillPoints: 300, knownRecipes: [{ name: 'Copper Ore' }] }] },
+          { name: 'Blacksmithing', tiers: [{ tierName: 'Apprentice', skillPoints: 50, maxSkillPoints: 300, knownRecipes: ['Rough Blade'] }] },
+        ],
+        secondaries: [{ name: 'Archaeology' }],
+      },
+    },
+    X2: { status: 'ok', level: 60, fetchedAt: nowStamp },
+    X3: { status: 'ok', level: 60, fetchedAt: nowStamp },
+    X4: { status: 'ok', level: 1, fetchedAt: nowStamp },
+    X5: { status: 'ok', fetchedAt: nowStamp },
+  },
+};
+const map5 = { schemaVersion: 2, updatedAt: nowStamp, entries: {} };
+fs.writeFileSync(path.join(FIXTURES5, 'data', 'characters.json'), JSON.stringify(roster5, null, 2));
+fs.writeFileSync(path.join(FIXTURES5, 'data', 'character-data.json'), JSON.stringify(data5, null, 2));
+fs.writeFileSync(path.join(FIXTURES5, 'data', 'battle-net-map.json'), JSON.stringify(map5, null, 2));
+
+// Reads are counted for the fetch-discipline checks (shared map, one read per map, zero after).
+const reads5 = [];
+const fetchBefore5b = globalThis.fetch;
+globalThis.fetch = async (url, opts = {}) => { reads5.push(String(url)); return fetchBefore5b(url, opts); };
+
+// ---------- the map-absent baseline first: no icon file, no icon markup, no layout change ----------
+// The committed repo data/ MAY already carry the P5.B artifacts (and the boot renders then loaded
+// them into the shared memo). resetSiteIconMaps() is the documented harness seam for observing
+// the no-map boot again: from here until the files are written below, the panels must draw
+// exactly the pre-Phase-5 layout.
+dataMod.resetSiteIconMaps();
+sourceDir = FIXTURES5;
+await dataMod.loadRoster();
+await dataMod.loadSidecars();
+state.setFilter('all');
+state.setQuery('');
+partyMod.clearParty();
+partyMod.autoFillDungeonGroup();
+const absentClassBars = byId('class-stats').innerHTML;
+const absentRaceBars = byId('race-stats').innerHTML;
+const absentProfTags = byId('profession-tags').innerHTML;
+const absentPartySlots = byId('party-slots').innerHTML;
+ok(absentClassBars.includes('>Warrior<') && absentClassBars.includes('wow-id-icon') === false
+  && absentClassBars.includes('<img') === false,
+  'P5.C with no data/class-icons.json: the class bars render rows and zero icon markup (layout unchanged)');
+ok(absentProfTags.includes('>Mining<') && absentProfTags.includes('wow-id-icon') === false
+  && absentProfTags.includes('<img') === false,
+  'and the profession matrix renders its tags with zero icon markup too');
+ok(absentPartySlots.includes('Riches') && absentPartySlots.includes('wow-card-icon') === false,
+  'and the party slots render names with zero icon markup');
+ok(absentRaceBars.includes('wow-id-icon') === false && absentRaceBars.includes('<img') === false,
+  'race bars hold the line: no icons before the maps, none after (§10.3 — proven nonexistent)');
+// The pre-5b retries must not have poisoned the memo: each map was fetched (and 404-returned)
+// during the boot renders above, and the next load after the files appear must still succeed.
+fs.writeFileSync(path.join(FIXTURES5, 'data', 'class-icons.json'), JSON.stringify({
+  staticNamespace: 'static-1.60.1_70399-forever-us', updatedAt: nowStamp,
+  icons: { Warrior: { id: 1, iconUrl: ICON_WARRIOR }, Malicious: { id: 2, iconUrl: POISON_ICON } },
+}));
+fs.writeFileSync(path.join(FIXTURES5, 'data', 'profession-icons.json'), JSON.stringify({
+  staticNamespace: 'static-1.60.1_70399-forever-us', updatedAt: nowStamp,
+  icons: { Mining: { id: 3, iconUrl: ICON_MINING }, Archaeology: { id: 4, iconUrl: POISON_ICON } },
+}));
+const mapReadsFrom = reads5.length;
+const loadIconMap = async p => {
+  // A pending pre-write 404 is cleared on failure, so the next ensure() starts the retry that
+  // finds the file; bound the loop so a real regression fails instead of spinning.
+  for (let attempt = 0; attempt < 6 && !dataMod.siteIconMapLoaded(p); attempt += 1) await dataMod.ensureSiteIconMap(p);
+  return dataMod.siteIconMapLoaded(p);
+};
+const classMapLoaded = await loadIconMap('data/class-icons.json');
+const profMapLoaded = await loadIconMap('data/profession-icons.json');
+ok(classMapLoaded && profMapLoaded,
+  `a failed load is retried, not memorised: both maps arrive after the 404 boot attempts (${classMapLoaded}/${profMapLoaded})`);
+const postWriteMapReads = reads5.slice(mapReadsFrom);
+ok(postWriteMapReads.filter(u => u.includes('class-icons.json')).length === 1
+  && postWriteMapReads.filter(u => u.includes('profession-icons.json')).length === 1,
+  `each map is read exactly once to load (${postWriteMapReads.join(', ')})`);
+state.renderAll();
+await sleep(30);
+
+// ---------- P5.C against the loaded maps ----------
+const loadedClassBars = byId('class-stats').innerHTML;
+const loadedProfTags = byId('profession-tags').innerHTML;
+const loadedPartySlots = byId('party-slots').innerHTML;
+ok(loadedClassBars.includes(`src="${esc(ICON_WARRIOR)}"`) && loadedClassBars.includes('wow-id-icon-img'),
+  'the Warrior distribution row paints its Blizzard class icon from class-icons.json');
+ok(countOf('class="wow-id-icon"', loadedClassBars) === 5
+  && countOf('<img src="', loadedClassBars) === 1,
+  `every class row reserves its slot, only mapped classes fill it (5 rows: ${countOf('class="wow-id-icon"', loadedClassBars)} slots, ${countOf('<img src="', loadedClassBars)} images)`);
+ok(loadedClassBars.includes('&lt;img src=x') && !loadedClassBars.includes(`${evilName} class icon`)
+  && !loadedClassBars.includes('<img src=x'),
+  'a roster class that is markup appears escaped only: its slot exists, its alt never does, no tag opens');
+ok(!loadedClassBars.includes('evil.tld') && !loadedProfTags.includes('evil.tld')
+  && !loadedPartySlots.includes('evil.tld'),
+  'a poisoned map URL names no host anywhere: the box stays empty and the URL is not echoed');
+ok(byId('race-stats').innerHTML === absentRaceBars,
+  'the race bars are byte-identical across the icon load — their rendering was not touched');
+ok(loadedProfTags.includes(`src="${esc(ICON_MINING)}"`) && countOf('class="wow-id-icon"', loadedProfTags) === 9
+  && countOf('<img src="', loadedProfTags) === 1,
+  'the profession matrix carries its tag icons through the same slots-and-allowlist discipline (9 tags, 1 mapped image)');
+ok(loadedPartySlots.includes(`src="${esc(ICON_WARRIOR)}"`) && countOf('class="wow-card-icon"', loadedPartySlots) === 4
+  && countOf('<img src="', loadedPartySlots) === 1,
+  'party slots carry the class icon beside the name from the SAME map the bars used (4 slotted rows share the one memoised read)');
+// One fetch shared, then nothing: after the maps are memoised no repaint asks again.
+state.renderAll();
+partyMod.clearParty();
+partyMod.autoFillDungeonGroup();
+state.setFilter('family');
+state.setFilter('all');
+await sleep(40);
+ok(reads5.length === mapReadsFrom + 2,
+  `zero extra icon-map fetches after the first: 2 total reads across every panel and repaint (${reads5.slice(mapReadsFrom).join(', ') || 'none since load'})`);
+
+// ---------- P5.A readers ----------
+function sectionSubButtons(html, section) {
+  return [...html.matchAll(/<button type="button" role="tab"([\s\S]*?)>([\s\S]*?)<\/button>/g)]
+    .filter(m => new RegExp(`\\bdata-detail-section-tab="${section}"`).test(m[1]))
+    .map(m => ({
+      id: attrOf('id', m[1]), index: attrOf('data-detail-section-index', m[1]),
+      controls: attrOf('aria-controls', m[1]), selected: attrOf('aria-selected', m[1]),
+      tabindex: attrOf('tabindex', m[1]),
+      name: ((/<span class="wow-subtab-label">([\s\S]*?)<\/span>/.exec(m[2]) || [])[1] || '').trim(),
+      meta: ((/<span class="wow-subtab-meta">([\s\S]*?)<\/span>/.exec(m[2]) || [])[1] || '').trim(),
+    }));
+}
+function sectionSubPanels(html, section) {
+  return [...html.matchAll(new RegExp(`<div role="tabpanel" id="(detail-subpanel-${section}-\\d+)" aria-labelledby="([^"]*)"([^>]*)class="([^"]*)"`, 'g'))]
+    .map(m => ({ id: m[1], labelledBy: m[2], focusable: m[3].includes('tabindex="0"'),
+      classes: m[4].split(/\s+/).filter(Boolean) }));
+}
+// One section sub-panel's content, ending at the next sub-panel of the SAME section, at a
+// sub-panel of another section, or at the next top-level panel — whichever comes first. Same
+// discipline as subPanelSlice(): content claims are read over one panel's bytes, not the modal.
+function panelSubSlice(html, section, index) {
+  const marker = `<div role="tabpanel" id="detail-subpanel-${section}-${index}"`;
+  const start = html.indexOf(marker);
+  if (start === -1) return '';
+  let next = html.length;
+  TAB_IDS.forEach(other => {
+    const at = html.indexOf(`<div role="tabpanel" id="detail-panel-${other}"`, start + marker.length);
+    if (at !== -1 && at < next) next = at;
+  });
+  ['stats', 'progress', 'professions'].forEach(otherSection => {
+    if (otherSection === section) return;
+    for (let i = 0; i < 12; i += 1) {
+      const at = html.indexOf(`<div role="tabpanel" id="detail-subpanel-${otherSection}-${i}"`, start + marker.length);
+      if (at !== -1 && at < next) next = at;
+    }
+  });
+  for (let i = 0; i < 12; i += 1) {
+    if (i === Number(index)) continue;
+    const at = html.indexOf(`<div role="tabpanel" id="detail-subpanel-${section}-${i}"`, start + marker.length);
+    if (at !== -1 && at < next) next = at;
+  }
+  return html.slice(start, next);
+}
+
+// ---------- the whole-tab-empty rule: no section data, no bar, the legacy message ----------
+detail.closeDetail();
+openRow('X5');
+detail.setDetailTab('stats');
+ok(panelSlice(contentHtml(), 'stats').includes(esc('No combat statistics synced yet.'))
+  && countOf('role="tablist"', panelSlice(contentHtml(), 'stats')) === 0,
+  'a stats tab with no data anywhere keeps the single legacy empty state — no sub-tab bar');
+detail.setDetailTab('progress');
+ok(panelSlice(contentHtml(), 'progress').includes(esc('No raid, Mythic+ or PvP progress synced yet.'))
+  && countOf('role="tablist"', panelSlice(contentHtml(), 'progress')) === 0,
+  'and the progress tab does the same');
+detail.setDetailTab('professions');
+ok(panelSlice(contentHtml(), 'professions').includes(esc('No professions data synced yet.'))
+  && countOf('role="tablist"', panelSlice(contentHtml(), 'professions')) === 0,
+  'and the professions tab does the same');
+
+// A hidden section panel keeps the pre-5b stacked view (the modal contract counts its nested
+// tablists; a bar inside unreachable content is not what readers are promised).
+detail.setDetailTab('gear');
+const hiddenStats = panelSlice(contentHtml(), 'stats');
+ok(countOf('role="tablist"', hiddenStats) === 0, 'a hidden section panel renders no bar of its own');
+
+// ---------- the rich row: full bars, defaults, switching ----------
+detail.closeDetail();
+openRow('X1');
+detail.setDetailTab('gear');
+const hiddenStatsRich = panelSlice(contentHtml(), 'stats');
+ok(countOf('role="tablist"', hiddenStatsRich) === 0
+  && hiddenStatsRich.includes('>Mastery<') && hiddenStatsRich.includes('>Fire resistance<'),
+  'the hidden stats panel of a rich row keeps the stacked legacy view (content built, no bar)');
+
+detail.setDetailTab('stats');
+const statsSlice = panelSlice(contentHtml(), 'stats');
+const statsTabs = sectionSubButtons(statsSlice, 'stats');
+const statsPanels = sectionSubPanels(statsSlice, 'stats');
+ok(countOf('role="tablist"', statsSlice) === 1
+  && attrOf('aria-label', statsSlice) === 'Statistics sections'
+  && attrOf('aria-label', statsSlice) !== attrOf('aria-label', tabBarSlice(statsSlice)),
+  'the visible stats panel nests exactly one scoped tablist with its own accessible name');
+ok(statsTabs.map(t => t.name).join('·') === 'Attributes·Combat·Crit, Hits &amp; Ratings·Resistances',
+  `four group tabs, the STAT_GROUPS order and labels (${statsTabs.map(t => t.name).join(' · ') || 'none'})`);
+ok(statsTabs.every(t => t.id === `detail-subtab-stats-${t.index}`
+    && t.controls === `detail-subpanel-stats-${t.index}`)
+  && statsPanels.length === 4
+  && statsPanels.every(p => p.labelledBy === `detail-subtab-stats-${p.id.replace('detail-subpanel-stats-', '')}`),
+  `per-section ids, aria-controls/aria-labelledby pairs both ways (${statsPanels.map(p => p.id).join(', ') || 'none'})`);
+ok(statsTabs.filter(t => t.selected === 'true').map(t => t.index).join() === '2'
+  && statsTabs.filter(t => t.tabindex === '0').map(t => t.index).join() === '2'
+  && detail.detailActiveSectionSubTab('stats') === 2,
+  'the default is the FIRST group with data (Crit & Ratings at index 2), not the first group');
+ok(statsPanels.filter(p => !p.classes.includes('hidden')).map(p => p.id).join() === 'detail-subpanel-stats-2'
+  && statsPanels.filter(p => p.focusable).map(p => p.id).join() === 'detail-subpanel-stats-2',
+  'one sub-panel visible (the selected one, tabindex="0"), the other three built and hidden');
+ok(panelSubSlice(contentHtml(), 'stats', 0).includes(esc('No Attributes data synced yet.'))
+  && panelSubSlice(contentHtml(), 'stats', 1).includes(esc('No Combat data synced yet.')),
+  'a data-less group still gets its tab AND a built panel carrying its own empty state');
+ok(countOf('>Mastery<', statsSlice) === 1 && panelSubSlice(contentHtml(), 'stats', 3).includes('>Fire resistance<'),
+  'every group\'s rows live in its own sub-panel (hidden-not-unbuilt: Resistances is built off-screen)');
+
+// Switching moves the sub-panel only; the top-level bar does not move one byte.
+const topBarBeforeSection = tabBarSlice(contentHtml());
+ok(detail.setDetailSectionSubTab('stats', 0) === true && detail.detailActiveSectionSubTab('stats') === 0,
+  'setDetailSectionSubTab("stats", 0) switches the section sub-tab');
+const switchedStats = contentHtml();
+ok(sectionSubPanels(switchedStats, 'stats').filter(p => !p.classes.includes('hidden')).map(p => p.id).join()
+  === 'detail-subpanel-stats-0'
+  && sectionSubButtons(switchedStats, 'stats').filter(t => t.selected === 'true').map(t => t.index).join() === '0'
+  && sectionSubButtons(switchedStats, 'stats').filter(t => t.tabindex === '0').map(t => t.index).join() === '0',
+  'the newly selected sub-panel is the only visible one, aria-selected and the roving tabindex moved together');
+ok(tabBarSlice(switchedStats) === topBarBeforeSection,
+  'switching a section sub-tab does not move one byte of the top-level tab bar');
+ok(tabPanels(switchedStats).filter(p => !p.classes.includes('hidden')).map(p => p.id).join() === 'detail-panel-stats',
+  'and the top-level visible panel is still Stats (the two bars cannot drift into each other)');
+ok(documentStub.activeElement && documentStub.activeElement.id === 'detail-subtab-stats-0',
+  `focus follows the selection to the replacement sub-tab (${documentStub.activeElement && documentStub.activeElement.id})`);
+const SUB_INERT = [null, undefined, '', 'nope', 'talents', -1, 4, 1.5, '01', 100, {}];
+ok(SUB_INERT.every(v => detail.setDetailSectionSubTab('stats', v) === false)
+  && detail.detailActiveSectionSubTab('stats') === 0,
+  'an unknown section, an out-of-range or an unaddressable index are all refused');
+ok(['stats', 'progress', 'professions'].every(s => detail.detailActiveSectionSubTab(s) >= 0)
+  && detail.detailActiveSectionSubTab('gear') === -1 && detail.detailActiveSectionSubTab(null) === -1,
+  'detailActiveSectionSubTab answers for the three sections and refuses everything else');
+
+// Keyboard on the section bar: wrap, Home/End, inert keys, preventDefault only when consumed.
+detail.setDetailSectionSubTab('stats', 3);
+const secRight = [];
+for (let i = 0; i < 2; i += 1) {
+  detail.detailSectionSubTabKeydown(keyEvent('ArrowRight'), 'stats', detail.detailActiveSectionSubTab('stats'));
+  secRight.push(detail.detailActiveSectionSubTab('stats'));
+}
+const secLeft = [];
+for (let i = 0; i < 3; i += 1) {
+  detail.detailSectionSubTabKeydown(keyEvent('ArrowLeft'), 'stats', detail.detailActiveSectionSubTab('stats'));
+  secLeft.push(detail.detailActiveSectionSubTab('stats'));
+}
+ok(secRight.join('·') === '0·1' && secLeft.join('·') === '0·3·2',
+  `ArrowRight/ArrowLeft walk the section bar and wrap both ways (${secRight.join('→')} | ${secLeft.join('→')})`);
+detail.detailSectionSubTabKeydown(keyEvent('Home'), 'stats', detail.detailActiveSectionSubTab('stats'));
+const secHome = detail.detailActiveSectionSubTab('stats');
+detail.detailSectionSubTabKeydown(keyEvent('End'), 'stats', secHome);
+ok(secHome === 0 && detail.detailActiveSectionSubTab('stats') === 3, 'Home/End reach the first and last section tab');
+const secInert = ['Enter', ' ', 'Escape', 'Tab', 'ArrowUp', 'PageDown', 'a', '']
+  .filter(key => detail.detailSectionSubTabKeydown(keyEvent(key), 'stats', 3) !== false
+    || detail.detailActiveSectionSubTab('stats') !== 3);
+ok(secInert.length === 0, 'unhandled keys are inert on the section bar (return false, selection stays)');
+const secHandled = keyEvent('ArrowRight');
+const secUntouched = keyEvent('Enter');
+detail.detailSectionSubTabKeydown(secHandled, 'stats', 3);
+detail.detailSectionSubTabKeydown(secUntouched, 'stats', 0);
+ok(secHandled._prevented === true && secUntouched._prevented === undefined,
+  'the section bar preventDefaults only the keys it consumes');
+ok(SUB_INERT.every(v => detail.detailSectionSubTabKeydown(keyEvent('ArrowRight'), 'stats', v) === false)
+  && SUB_INERT.every(v => detail.detailSectionSubTabKeydown(keyEvent('ArrowRight'), v, 0) === false),
+  'keydown refuses an unknown section or an out-of-range index outright');
+
+// Per-open reset: a sub-tab chosen on one character is not a fact about the next.
+detail.setDetailSectionSubTab('stats', 1);
+openRow('X2');
+detail.setDetailTab('stats');
+ok(panelSlice(contentHtml(), 'stats').includes(esc('No combat statistics synced yet.')),
+  'the X2 row (stats-less) shows the legacy empty state');
+detail.closeDetail();
+openRow('X1');
+detail.setDetailTab('stats');
+ok(detail.detailActiveSectionSubTab('stats') === 2,
+  'reopening the rich row re-derives the default (first group with data): the per-open reset cleared the choice');
+
+// Progress: default = first with data is the LAST section here.
+detail.setDetailTab('progress');
+const progSlice = panelSlice(contentHtml(), 'progress');
+ok(sectionSubButtons(progSlice, 'progress').map(t => t.name).join('·') === 'Raid·Mythic+·PvP'
+  && sectionSubButtons(progSlice, 'progress').filter(t => t.selected === 'true').map(t => t.index).join() === '2',
+  'progress gets Raid·Mythic+·PvP and defaults to PvP, the first (only) group with data');
+ok(panelSubSlice(contentHtml(), 'progress', 0).includes(esc('No Raid progress synced yet.'))
+  && panelSubSlice(contentHtml(), 'progress', 1).includes(esc('No Mythic+ progress synced yet.'))
+  && panelSubSlice(contentHtml(), 'progress', 2).includes('Honorable kills'),
+  'empty progress groups carry their own empty states; the PvP panel carries the synced rows');
+ok(countOf('role="tablist"', progSlice) === 1 && attrOf('aria-label', progSlice) === 'Progress sections',
+  'one scoped progress tablist with its own accessible name');
+
+// Professions: one tab per profession, primaries before secondaries, skill bar per panel.
+detail.setDetailTab('professions');
+const profSlice = panelSlice(contentHtml(), 'professions');
+const profTabs = sectionSubButtons(profSlice, 'professions');
+ok(profTabs.map(t => t.name).join('·') === 'Mining·Blacksmithing·Archaeology'
+  && profTabs[0].meta === '100/300' && profTabs[1].meta === '50/300' && profTabs[2].meta === '',
+  `one tab per profession in sidecar order (primaries then secondaries) with the skill line as meta (${profTabs.map(t => `${t.name} ${t.meta}`).join(' · ')})`);
+ok(profTabs.filter(t => t.selected === 'true').map(t => t.index).join() === '0',
+  'professions default to the first tab');
+ok(panelSubSlice(contentHtml(), 'professions', 0).includes('data-wow-kind="skill" style="width:33%"')
+  && panelSubSlice(contentHtml(), 'professions', 0).includes('Copper Ore')
+  && panelSubSlice(contentHtml(), 'professions', 1).includes('Rough Blade')
+  && panelSubSlice(contentHtml(), 'professions', 2).includes('No skill tiers synced.'),
+  'each sub-panel is that profession\'s skill bar (100/300 → 33%) plus its recipe list; tier-less entries say so');
+ok(countOf('data-wow-kind="skill"', profSlice) === 2,
+  'skill bars are built for every sub-panel that has tiers, hidden or not (hidden-not-unbuilt)');
+
+// Bar shape never depends on data richness (decision #5 extended to sub-bars).
+const oneGroupStats = detail.statsTabHtml({ stats: { strength: 12 } });
+const richGroupStats = detail.statsTabHtml({ stats: { mastery: 5, fireResistance: 12 } });
+ok(sectionSubButtons(oneGroupStats, 'stats').length === 4
+  && sectionSubButtons(richGroupStats, 'stats').length === 4
+  && sectionSubButtons(oneGroupStats, 'stats').map(t => t.name).join() === sectionSubButtons(richGroupStats, 'stats').map(t => t.name).join(),
+  'a stats panel with ONE group of data gets the same four-tab bar as one with two (shape never tracks richness)');
+ok(sectionSubButtons(oneGroupStats, 'stats').filter(t => t.selected === 'true').map(t => t.index).join() === '0'
+  && sectionSubButtons(richGroupStats, 'stats').filter(t => t.selected === 'true').map(t => t.index).join() === '2',
+  'and only the default-with-data selection moves between them (0 vs 2)');
+ok(detail.statsTabHtml({ stats: { strength: 12 } }).includes('>Strength<')
+  && detail.statsTabHtml({ stats: { strength: 12 } }).includes('>12<'),
+  'the tabbed panel still prints the group rows for its data (nothing dropped into a hidden div unreadably)');
+
+// Escape discipline on the sub-tab surface: labels are sidecar text.
+const evilProfBar = detail.professionsTabHtml({ professions: { primaries: [{ name: evilName, tiers: [] }], secondaries: [] } });
+ok(!evilProfBar.includes('<img src=x') && evilProfBar.includes(esc(evilName))
+  && [...evilProfBar.matchAll(/setDetailSectionSubTab\('([^']*)', '([^']*)'\)/g)].every(m => m[1] === 'professions' && /^\d{1,2}$/.test(m[2])),
+  'a profession name that is markup is escaped in the tab label; only the frozen section key and a small index cross into handlers');
+
+// Talents isolation: the Phase 4b `detail-subtab-\d+` readers must still see ONLY the spec row,
+// even while a section bar is painted — that is what the per-section id namespace buys.
+const liveHtml = contentHtml();
+ok(subTabButtons(liveHtml).map(t => t.id).join('·') === 'detail-subtab-0'
+  && subTabPanels(liveHtml).map(p => p.id).join('·') === 'detail-subpanel-0',
+  'the numeric detail-subtab-*/detail-subpanel-* readers still resolve exactly the talents widgets');
+ok(liveHtml.includes('id="detail-subtab-professions-0"')
+  && statsSlice.includes('id="detail-subtab-stats-0"') && statsSlice.includes('id="detail-subpanel-stats-1"')
+  && liveHtml.includes('id="detail-subtab-0"') && !liveHtml.includes('id="detail-subtab-talents-'),
+  'namespaces coexist: talents keeps its bare detail-subtab-<i> ids, every section carries its own (stats bars cannot leak into professions readers and vice versa)');
+const sectionHandlers = [...liveHtml.matchAll(/\bon[a-z]+="([A-Za-z_$][\w$]*)\(/g)].map(m => m[1]);
+ok(['setDetailSectionSubTab', 'detailSectionSubTabKeydown'].every(n => typeof globalThis[n] === 'function')
+  && sectionHandlers.every(n => typeof globalThis[n] === 'function'),
+  'the section sub-tab handlers are published on window (inline handlers resolve)');
+
+detail.closeDetail();
+globalThis.fetch = fetchBefore5b;
+partyMod.clearParty();
+state.setFilter('all');
+state.setQuery('');
+
 // ---------------------------------------------------------------- 6. storage
 console.log('\n[6] persistence boundary');
 const strayKeys = [...new Set([...storeKeysBefore, ...storageWrites])].filter(k => k !== 'wow_forever_roster' && k !== 'wow_gh_config');

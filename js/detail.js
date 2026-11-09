@@ -197,7 +197,11 @@ const TAB_BUTTON_PREFIX = 'detail-tab-';
 const TAB_PANEL_PREFIX = 'detail-panel-';
 // The Talents panel's second-level (spec) tab bar (F1). Its ids are prefixed differently from the
 // top-level bar on purpose: the two bars are different widgets with different accessible names,
-// and the verification readers key top-level panels off `detail-panel-`.
+// and the verification readers key top-level panels off `detail-panel-`. Phase 5a reuses the two
+// prefixes for the section sub-tab bars too, but with a per-section id namespace (see
+// sectionSubTabId): Talents keeps the bare `detail-subtab-<i>` ids it shipped with in Phase 4b —
+// harness readers assert them literally — while Stats/Progress/Professions get
+// `detail-subtab-stats-<i>` and friends, so the two bar readers stay structurally disjoint.
 const SPEC_TAB_PREFIX = 'detail-subtab-';
 const SPEC_PANEL_PREFIX = 'detail-subpanel-';
 
@@ -467,6 +471,176 @@ function talentSpecPanelHtml(group, sidecar, index, selected) {
   return `<div role="tabpanel" id="${specPanelId(arg)}" aria-labelledby="${specTabId(arg)}"${selected ? ' tabindex="0"' : ''} class="wow-spec-panel${selected ? '' : ' hidden'}">
       ${talentSpecHtml(group, sidecar)}
     </div>`;
+}
+
+// ---------- Phase 5a (P5.A): the shared section sub-tab machinery ----------
+//
+// The Phase 4b spec row was spec-shaped in every sense: one hard-coded bar, one hard-coded id
+// namespace, one set of handlers. The Stats, Progress and Professions panels now run the same
+// widget — a nested, scoped tablist with its own accessible name, its own roving tabindex, its own
+// Arrow/Home/End walk, hidden-not-unbuilt sub-panels and per-open state — so this section
+// generalises the moving parts (ids, selection, keyboard, composition) over a list of
+// `{label, meta, hasData, block}` groups. Talents itself keeps its own bar/panel builders: its
+// markup is frozen by the Phase 4b harness checks, and it carries an attribute (`data-wow-spec-
+// active`) the generic widget has no notion of.
+//
+// Three rules carry over, one deliberate difference:
+//
+//   * hidden-not-unbuilt WITHIN a section: every sub-panel of the visible section is built on every
+//     paint and the inactive ones carry `hidden`, so a repaint cannot lose one's state and every
+//     group's content stays assertable end to end;
+//   * only a small integer (specTabArg) and a section key from the frozen SECTION_SUB_TABS list
+//     cross into a handler — a spec name, a profession name, a faction name never becomes handler
+//     source, whatever a sidecar carries;
+//   * the difference: a section's BAR is built only inside the VISIBLE top-level panel. The
+//     committed modal contract (and its e2e harness) counts exactly one nested tablist while
+//     Talents is open; a stats or professions bar inside a hidden panel would multiply that count
+//     for content no reader can reach (display:none leaves the a11y tree), and a hidden section
+//     keeps the plain stacked markup it had before Phase 5 — so the shape no reader sees is
+//     unchanged, and the shape a reader DOES see is the tabbed one the moment its tab is selected.
+//     Data richness never changes any bar's shape (decision #5 extended): a section with one group
+//     of data renders the full bar with every group tabbed.
+export const SECTION_SUB_TABS = ['stats', 'progress', 'professions'];
+
+// Each nested bar answers to its own name: a reader inside the Stats panel hears "Statistics
+// sections", never the top-level "Character detail sections" or the Talents "Talent specializations".
+const SECTION_SUB_TAB_ARIA = {
+  stats: 'Statistics sections',
+  progress: 'Progress sections',
+  professions: 'Professions'
+};
+
+// Which sub-tab of each section the open row shows. null means "nobody has chosen", and the answer
+// to that is the first group WITH data (P5.A's default rule) — the same null-is-a-state discipline
+// selectedSpecIndex uses for the spec row. Per-open like activeTab/activeSpecIndex: reset by
+// openCharacterDetail()/closeDetail(), never persisted.
+const activeSectionSubIndex = { stats: null, progress: null, professions: null };
+
+// The id namespaces. Talents passes the empty namespace and keeps its Phase 4b ids byte-identical;
+// every other section's ids carry its name, so `detail-subpanel-\d+` readers keep seeing ONLY the
+// talents sub-panels and `detail-panel-` readers keep seeing only the six top-level panels.
+function sectionSubTabId(section, arg) {
+  return SPEC_TAB_PREFIX + (section === '' ? '' : `${section}-`) + arg;
+}
+
+function sectionSubPanelId(section, arg) {
+  return SPEC_PANEL_PREFIX + (section === '' ? '' : `${section}-`) + arg;
+}
+
+// The group a section panel opens on: the reviewer's choice when it is still in range, otherwise
+// the first group with data, otherwise the first. An out-of-range choice (a repaint after the
+// sidecar changed under the modal) falls back rather than showing an empty panel.
+export function selectedSectionSubIndex(section, groups) {
+  const list = Array.isArray(groups) ? groups : [];
+  if (list.length === 0) return 0;
+  const requested = ownValue(activeSectionSubIndex, section);
+  const wanted = requested === null || requested === undefined ? NaN : specIndexArg(requested);
+  if (Number.isInteger(wanted) && wanted >= 0 && wanted < list.length) return wanted;
+  const withData = list.findIndex(group => group && group.hasData === true);
+  return withData === -1 ? 0 : withData;
+}
+
+// The section sub-tab row: same shape and classes as the spec row (one skin, .wow-subtab), its own
+// data attributes so the Phase 4b `data-detail-subtab` readers never see it.
+export function sectionSubTabBarHtml(section, groups, selected) {
+  const list = Array.isArray(groups) ? groups : [];
+  const aria = ownString(SECTION_SUB_TAB_ARIA, section) || 'Sections';
+  const tabs = list.map((group, index) => {
+    const arg = specTabArg(index);
+    if (arg === '') return '';
+    const label = scalarText(group && group.label);
+    const meta = scalarText(group && group.meta);
+    const isSelected = index === selected;
+    return `<button type="button" role="tab"
+      id="${sectionSubTabId(section, arg)}"
+      data-detail-section-tab="${escapeHtml(section)}"
+      data-detail-section-index="${arg}"
+      aria-controls="${sectionSubPanelId(section, arg)}"
+      aria-selected="${isSelected ? 'true' : 'false'}"
+      tabindex="${isSelected ? '0' : '-1'}"
+      class="wow-subtab"
+      onclick="setDetailSectionSubTab('${escapeHtml(section)}', '${arg}')"
+      onkeydown="detailSectionSubTabKeydown(event, '${escapeHtml(section)}', '${arg}')"
+    >
+      <span class="wow-subtab-label">${escapeHtml(label)}</span>
+      ${meta === '' ? '' : `<span class="wow-subtab-meta">${escapeHtml(meta)}</span>`}
+    </button>`;
+  }).join('');
+  return `<div role="tablist" aria-label="${escapeHtml(aria)}" class="wow-subtabs shrink-0">${tabs}</div>`;
+}
+
+function sectionSubPanelHtml(section, index, selected, body) {
+  const arg = specTabArg(index);
+  if (arg === '') return '';
+  return `<div role="tabpanel" id="${sectionSubPanelId(section, arg)}" aria-labelledby="${sectionSubTabId(section, arg)}"${selected ? ' tabindex="0"' : ''} class="wow-spec-panel${selected ? '' : ' hidden'}">
+      ${body}
+    </div>`;
+}
+
+// One whole section: bar plus one panel per group. A group without data still gets its tab AND a
+// built panel — its own empty state — because the bar's shape never depends on data richness.
+// `emptyForGroup` supplies the data-less panel body, worded per section.
+function sectionSubTabbedHtml(section, groups, emptyForGroup) {
+  const selected = selectedSectionSubIndex(section, groups);
+  const panels = groups.map((group, index) => sectionSubPanelHtml(section, index, index === selected,
+    group && group.hasData ? group.block : emptyForGroup(group))).join('');
+  return `<div class="space-y-2">${sectionSubTabBarHtml(section, groups, selected)}${panels}</div>`;
+}
+
+// The groups of the open row for one section, read through the SAME builders the panels use, so
+// the tab count, the panel count and the selection maths cannot disagree (the talentSpecGroups
+// discipline). Owned by each section's *SubGroups reader below.
+function sectionSubGroups(section) {
+  const sidecar = openSidecar();
+  if (section === 'stats') return statsSubGroups(sidecar);
+  if (section === 'progress') return progressSubGroups(sidecar);
+  if (section === 'professions') return professionSubGroups(sidecar);
+  return [];
+}
+
+export function detailActiveSectionSubTab(section) {
+  const key = String(section == null ? '' : section);
+  if (SECTION_SUB_TABS.indexOf(key) === -1) return -1;
+  return selectedSectionSubIndex(key, sectionSubGroups(key));
+}
+
+export function setDetailSectionSubTab(section, index) {
+  const key = String(section == null ? '' : section);
+  if (SECTION_SUB_TABS.indexOf(key) === -1) return false;
+  const groups = sectionSubGroups(key);
+  const position = specIndexArg(index);
+  if (!Number.isInteger(position) || position < 0 || position >= groups.length) return false;
+  if (position === selectedSectionSubIndex(key, groups)) return true;
+  activeSectionSubIndex[key] = position;
+  renderDetail();
+  focusSectionSubTab(key, position);
+  return true;
+}
+
+function focusSectionSubTab(section, position) {
+  const el = document.getElementById(sectionSubTabId(section, String(position)));
+  // Same guard as every other focus here: the repaint replaced the button, so focus has to move
+  // to its replacement or the keyboard user is dropped at the top of the document.
+  if (el && typeof el.focus === 'function') el.focus();
+}
+
+// Arrow/Home/End move the selected sub-tab within this section's groups only: the top-level bar
+// and the other sections' bars must not fight over one keypress.
+export function detailSectionSubTabKeydown(event, section, index) {
+  const key = String(section == null ? '' : section);
+  if (SECTION_SUB_TABS.indexOf(key) === -1) return false;
+  const groups = sectionSubGroups(key);
+  const position = specIndexArg(index);
+  if (!Number.isInteger(position) || position < 0 || position >= groups.length) return false;
+  const pressed = event && typeof event.key === 'string' ? event.key : '';
+  let next = null;
+  if (pressed === 'ArrowRight') next = (position + 1) % groups.length;
+  else if (pressed === 'ArrowLeft') next = (position - 1 + groups.length) % groups.length;
+  else if (pressed === 'Home') next = 0;
+  else if (pressed === 'End') next = groups.length - 1;
+  if (next === null) return false;
+  if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  return setDetailSectionSubTab(key, next);
 }
 
 // ---------- shared hover/focus tooltip (T2.3, T2.4) ----------
@@ -1040,17 +1214,54 @@ function professionGroupHtml(heading, list) {
     </div>`;
 }
 
-export function professionsTabHtml(sidecar) {
+// The open row's professions in sub-tab order — primaries then secondaries, sidecar order —
+// malformed entries dropped. One tab per profession (P5.A): each sub-panel is that profession's
+// own block (skill bar + recipe list), which is exactly what professionHtml already builds, so the
+// panel content moved into the tab unchanged.
+export function professionSubGroups(sidecar) {
+  const professions = sidecar && typeof sidecar === 'object' && sidecar.professions
+    && typeof sidecar.professions === 'object' && !Array.isArray(sidecar.professions) ? sidecar.professions : null;
+  if (!professions) return [];
+  const primaries = (Array.isArray(ownValue(professions, 'primaries')) ? ownValue(professions, 'primaries') : [])
+    .filter(entry => entry && typeof entry === 'object');
+  const secondaries = (Array.isArray(ownValue(professions, 'secondaries')) ? ownValue(professions, 'secondaries') : [])
+    .filter(entry => entry && typeof entry === 'object');
+  return primaries.concat(secondaries).map(entry => {
+    const name = scalarText(ownValue(entry, 'name'));
+    const tiers = (Array.isArray(ownValue(entry, 'tiers')) ? ownValue(entry, 'tiers') : [])
+      .filter(tier => tier && typeof tier === 'object');
+    // The tab's secondary text is the first tier's skill line — the one number a profession tab
+    // can summarise with. Absent skillPoints says nothing rather than guessing zero.
+    const first = tiers.length > 0 ? tiers[0] : null;
+    const skill = first === null ? null : numberOr(ownValue(first, 'skillPoints'));
+    const max = first === null ? null : numberOr(ownValue(first, 'maxSkillPoints'));
+    const meta = skill === null ? '' : (max === null ? String(skill) : `${skill}/${max}`);
+    // An entry that made it into the list IS the data (the whole-tab-empty rule already caught
+    // the no-entries case), so every profession tab counts as "has data" and the default is
+    // simply the first.
+    return { label: name === '' ? 'Profession' : name, meta, hasData: true, block: professionHtml(entry) };
+  });
+}
+
+export function professionsTabHtml(sidecar, opts = {}) {
   const professions = sidecar && typeof sidecar === 'object' && sidecar.professions
     && typeof sidecar.professions === 'object' && !Array.isArray(sidecar.professions) ? sidecar.professions : null;
   if (!professions) return emptyState('No professions data synced yet.');
-  const primaries = Array.isArray(professions.primaries) ? professions.primaries : [];
-  const secondaries = Array.isArray(professions.secondaries) ? professions.secondaries : [];
+  const primaries = Array.isArray(ownValue(professions, 'primaries')) ? ownValue(professions, 'primaries') : [];
+  const secondaries = Array.isArray(ownValue(professions, 'secondaries')) ? ownValue(professions, 'secondaries') : [];
   if (primaries.length === 0 && secondaries.length === 0) return emptyState('No professions data synced yet.');
-  return `<div class="space-y-2.5">
+  const groups = professionSubGroups(sidecar);
+  // A list of nothing but malformed entries carries no section with data either: the single
+  // empty state beats a bar of tabs over rows the payload cannot name.
+  if (groups.length === 0) return emptyState('No professions data synced yet.');
+  if (opts.subTabs === false) {
+    return `<div class="space-y-2.5">
       ${professionGroupHtml('Primary professions', primaries)}
       ${professionGroupHtml('Secondary professions', secondaries)}
     </div>`;
+  }
+  return sectionSubTabbedHtml('professions', groups,
+    () => emptyState('No skill data synced for this profession.'));
 }
 
 // ---------- reputation tab (T2.6) ----------
@@ -1186,48 +1397,79 @@ function statRowHtml(key, label, stats) {
     </div>`;
 }
 
-export function statsTabHtml(sidecar) {
+// The four STAT_GROUPS as sub-tab groups: label, whether the group has any nameable row, and the
+// exact block the stacked panel drew before Phase 5. The same reader feeds the tab count, the
+// panel count and the default selection, so the three cannot disagree.
+export function statsSubGroups(sidecar) {
   const stats = sidecar && typeof sidecar === 'object' && sidecar.stats
     && typeof sidecar.stats === 'object' && !Array.isArray(sidecar.stats) ? sidecar.stats : null;
-  if (!stats) return emptyState('No combat statistics synced yet.');
-  const groups = STAT_GROUPS.map(([heading, rows]) => {
+  return STAT_GROUPS.map(([heading, rows]) => {
     const lines = rows.map(([key, label]) => statRowHtml(key, label, stats)).filter(Boolean);
-    if (lines.length === 0) return '';
-    return `<div class="rounded border border-slate-800 bg-slate-950/50 p-2 space-y-0.5">
+    return {
+      label: heading,
+      hasData: lines.length > 0,
+      block: lines.length === 0 ? '' : `<div class="rounded border border-slate-800 bg-slate-950/50 p-2 space-y-0.5">
         <div class="text-[10px] font-bold uppercase tracking-wider text-amber-200/80">${escapeHtml(heading)}</div>
         ${lines.join('')}
-      </div>`;
-  }).filter(Boolean).join('');
-  if (groups === '') return emptyState('No combat statistics synced yet.');
-  return `<div class="space-y-1.5">${groups}</div>`;
+      </div>`
+    };
+  });
 }
 
-// ---------- progress tab (T2.8) ----------
+// `opts.subTabs === false` is the hidden-panel render (see sectionSubTabbedHtml): the pre-Phase-5
+// stacked view, byte-identical to what this panel drew before sub-tabs existed.
+export function statsTabHtml(sidecar, opts = {}) {
+  const groups = statsSubGroups(sidecar);
+  // Whole-tab-empty rule: no group with data keeps the one empty state, barless (the message is
+  // the one this tab has always said, byte-identical).
+  if (!groups.some(group => group.hasData)) return emptyState('No combat statistics synced yet.');
+  if (opts.subTabs === false) {
+    return `<div class="space-y-1.5">${groups.filter(group => group.hasData).map(group => group.block).join('')}</div>`;
+  }
+  return sectionSubTabbedHtml('stats', groups, group => emptyState(`No ${group.label} data synced yet.`));
+}
 
-function progressTabHtml(sidecar) {
-  const built = progressSections(sidecar);
-  return built === '' ? emptyState('No raid, Mythic+ or PvP progress synced yet.') : built;
+// ---------- progress tab (T2.8, sub-tabbed in P5.A) ----------
+
+export function progressTabHtml(sidecar, opts = {}) {
+  const groups = progressSubGroups(sidecar);
+  if (!groups.some(group => group.hasData)) return emptyState('No raid, Mythic+ or PvP progress synced yet.');
+  if (opts.subTabs === false) {
+    return section('Progress', groups.filter(group => group.hasData).map(group => group.block).join(''));
+  }
+  return sectionSubTabbedHtml('progress', groups, group => emptyState(`No ${group.label} progress synced yet.`));
 }
 
 // ---------- progress ----------
 
-export function progressSections(sidecar) {
+// The three PROGRESS_SECTIONS as sub-tab groups, in display order. The block a section with rows
+// draws is the exact block the stacked panel drew before Phase 5 — the same walker, the same
+// markup, just one heading per tab panel rather than a stack of three.
+export function progressSubGroups(sidecar) {
   const progress = sidecar && typeof sidecar === 'object' && sidecar.progress
     && typeof sidecar.progress === 'object' && !Array.isArray(sidecar.progress) ? sidecar.progress : null;
-  if (!progress) return '';
-  const blocks = PROGRESS_SECTIONS.map(([key, heading]) => {
-    const rows = progressRows(progress[key]);
-    if (rows.length === 0) return '';
+  return PROGRESS_SECTIONS.map(([key, heading]) => {
+    const rows = progress ? progressRows(ownValue(progress, key)) : [];
     const lines = rows.map(row => `<div class="flex items-center justify-between gap-2 text-[11px]">
       <span class="text-slate-400 truncate" title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</span>
       <span class="text-slate-200 font-semibold shrink-0">${escapeHtml(row.value)}</span>
     </div>`).join('');
-    return `<div class="rounded border border-slate-800 bg-slate-950/50 p-2 space-y-0.5">
+    return {
+      label: heading,
+      hasData: rows.length > 0,
+      block: rows.length === 0 ? '' : `<div class="rounded border border-slate-800 bg-slate-950/50 p-2 space-y-0.5">
       <div class="text-[10px] font-bold uppercase tracking-wider text-amber-200/80">${escapeHtml(heading)}</div>
       ${lines}
-    </div>`;
-  }).join('');
-  return section('Progress', blocks);
+    </div>`
+    };
+  });
+}
+
+// The pre-Phase-5 stacked view, kept as its own export: the hidden-panel render below goes through
+// the same code path a section ever had, so a legacy draw cannot drift from the tabbed one.
+export function progressSections(sidecar) {
+  const groups = progressSubGroups(sidecar);
+  return section('Progress', groups.filter(group => group.hasData).map(group => group.block).join(''));
 }
 
 // ---------- Phase 3d: review actions (design §2 lifecycle, §4 refresh) ----------
@@ -1333,6 +1575,9 @@ function resetReviewView() {
 function resetDetailView() {
   activeTab = DEFAULT_DETAIL_TAB;
   activeSpecIndex = null;
+  // P5.A: the section sub-selections are per-open too — a Combat choice on one character is not
+  // a fact about the next (the same rule as the spec row and the top-level tab).
+  SECTION_SUB_TABS.forEach(name => { activeSectionSubIndex[name] = null; });
   dismissDetailTooltip();
 }
 
@@ -2210,14 +2455,18 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
   // CONFIRM below it, so it sits between the header and the field grid rather than in a tab.
   const mismatchFlag = identityMismatchHtml(character, sidecar);
 
+  // P5.A: a section panel runs its sub-tab widget only while it is the visible top-level panel
+  // (see sectionSubTabbedHtml); a hidden one renders the plain stacked view it had before
+  // Phase 5, so the modal keeps exactly the nested-tablist shape its readers count.
+  const visibleTab = detailActiveTab();
   return `<div class="shrink-0">${header}${mismatchFlag}${body}</div>
     ${tabBarHtml()}
     ${tabPanel('gear', gearTabHtml(sidecar))}
     ${tabPanel('talents', talentsTabHtml(sidecar))}
-    ${tabPanel('professions', professionsTabHtml(sidecar))}
+    ${tabPanel('professions', professionsTabHtml(sidecar, { subTabs: visibleTab === 'professions' }))}
     ${tabPanel('reputation', reputationTabHtml(sidecar))}
-    ${tabPanel('stats', statsTabHtml(sidecar))}
-    ${tabPanel('progress', progressTabHtml(sidecar))}
+    ${tabPanel('stats', statsTabHtml(sidecar, { subTabs: visibleTab === 'stats' }))}
+    ${tabPanel('progress', progressTabHtml(sidecar, { subTabs: visibleTab === 'progress' }))}
     ${foot === '' ? '' : `<div class="wow-detail-foot shrink-0 overflow-y-auto pt-2 mt-1 border-t border-slate-800">${foot}</div>`}`;
 }
 
@@ -2387,6 +2636,8 @@ window.setDetailTab = setDetailTab;
 window.detailTabKeydown = detailTabKeydown;
 window.setDetailSpecTab = setDetailSpecTab;
 window.detailSpecTabKeydown = detailSpecTabKeydown;
+window.setDetailSectionSubTab = setDetailSectionSubTab;
+window.detailSectionSubTabKeydown = detailSectionSubTabKeydown;
 // roster.js reads this one rather than importing it: it renders a card's class icon, and importing
 // detail.js back would make a module cycle the reason a card paints (see the note in roster.js).
 window.isSafeIconUrl = isSafeIconUrl;

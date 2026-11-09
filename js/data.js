@@ -191,6 +191,97 @@ export function talentTreeFor(specId) {
   return tree && typeof tree === 'object' && !Array.isArray(tree) ? tree : null;
 }
 
+// ---------- site icon maps (P5.C): class-icons.json / profession-icons.json ----------
+
+// Static-namespace lookup tables the sync commits (each file pins its own staticNamespace, the
+// way talent-trees.json does), shaped:
+//
+//   {"staticNamespace": "…", "updatedAt": "…", "icons": {"<Name>": {"id": <int>, "iconUrl": "https://render…"}}}
+//
+// They load lazily on the first panel that paints one and are memoised per path, so the class
+// distribution, the party slots and any later reader share ONE request per map per page — the
+// ensureTalentTrees() discipline: the success memo makes twenty repaints one fetch, and a failed
+// load clears the memo so the next repaint retries (a transient 404 must not strand every icon
+// panel for the session). They are deliberately absent from loadSidecars()/reloadSidecars(): a
+// daily sync rewrites them byte-identically unless the static namespace moves, and a namespace
+// move arrives with a new deploy. Module scope only — a map in localStorage would outlive the
+// namespace it was generated against, exactly like the trees.
+export const CLASS_ICONS_PATH = 'data/class-icons.json';
+export const PROFESSION_ICONS_PATH = 'data/profession-icons.json';
+
+const siteIconMaps = new Map();
+const siteIconLoads = new Map();
+
+// True once the map has loaded. Renderers gate their icon MARKUP on this: while the file is
+// absent (the P5.B artifact has not landed yet, or the fetch failed) the panels draw byte-for-byte
+// what they drew before Phase 5 existed — reserved icon slots only enter the layout once there is
+// a map that could fill one, so "no file" never shifts a label by a pixel.
+export function siteIconMapLoaded(iconPath) {
+  return siteIconMaps.has(iconPathKey(iconPath));
+}
+
+export function ensureSiteIconMap(iconPath) {
+  const key = iconPathKey(iconPath);
+  if (key === '') return Promise.resolve(null);
+  const loaded = siteIconMaps.get(key);
+  if (loaded) return Promise.resolve(loaded);
+  const pending = siteIconLoads.get(key);
+  if (pending) return pending;
+  const load = loadSidecar(key).then(doc => {
+    const valid = doc && typeof doc === 'object' && !Array.isArray(doc) ? doc : null;
+    // The in-flight memo drops either way; only the success memo persists, so a failure is what
+    // the next repaint retries against (no renderAll on failure — nothing changed to repaint).
+    siteIconLoads.delete(key);
+    if (valid === null) return null;
+    siteIconMaps.set(key, valid);
+    renderAll();
+    return valid;
+  });
+  siteIconLoads.set(key, load);
+  return load;
+}
+
+function iconPathKey(iconPath) {
+  return iconPath == null ? '' : String(iconPath);
+}
+
+// Drop the memoised icon maps and any in-flight loads. This exists for the verification harness
+// only: the no-map boot (the graceful-absence layout) happens once per page, and a harness that
+// boots against the repo first must be able to observe a fixture directory WITHOUT the artifacts
+// as if they had never loaded. App code never calls it — there is no runtime path where a loaded
+// static map should be forgotten mid-page.
+export function resetSiteIconMaps() {
+  siteIconMaps.clear();
+  siteIconLoads.clear();
+}
+
+// The icon URL recorded for one name, or ''. Own-data lookups end to end: the map is a committed
+// artifact and the name is roster/sidecar text, so `icons["constructor"]` must resolve nothing.
+// The match is exact first, then case-insensitive over the map's OWN keys (the roster's spelling
+// and the artifact's are written by different code paths; the maps hold ~10 entries, so the scan
+// is bounded and cannot invent a row the file does not carry).
+//
+// The URL comes back RAW on purpose. isSafeIconUrl() is the single gate between a committed URL
+// and an <img>, it lives in detail.js, and importing that from here would close a module cycle
+// (detail.js imports this one) — so every renderer passes this value through the window-published
+// check (the roster.js safeSidecarIconUrl precedent) before it reaches markup.
+export function siteIconUrl(iconPath, name) {
+  const doc = siteIconMaps.get(iconPathKey(iconPath));
+  const icons = doc && typeof doc === 'object' ? ownValue(doc, 'icons') : null;
+  if (!icons || typeof icons !== 'object' || Array.isArray(icons)) return '';
+  const wanted = name == null ? '' : String(name).trim();
+  if (wanted === '') return '';
+  let entry = ownValue(icons, wanted);
+  if (!entry || typeof entry !== 'object') {
+    const lower = wanted.toLowerCase();
+    const hit = Object.keys(icons).find(mapKey => String(mapKey).toLowerCase() === lower);
+    entry = hit === undefined ? null : ownValue(icons, hit);
+  }
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return '';
+  const url = ownValue(entry, 'iconUrl');
+  return typeof url === 'string' ? url.trim() : '';
+}
+
 // ---------- header provenance line ----------
 
 // 'schedule' (the nightly cron) reads as "nightly"; anything else is the github.actor

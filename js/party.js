@@ -7,6 +7,7 @@
 // (that would close a cycle).
 
 import { characters, currentFilter, getFilteredCharacters, onFilterChange, registerRenderHook, renderAll } from './state.js';
+import { CLASS_ICONS_PATH, ensureSiteIconMap, siteIconMapLoaded, siteIconUrl } from './data.js';
 import { CLASS_COLORS, escapeHtml, getFaction, ownString } from './util.js';
 
 export let party = [null, null, null, null, null];
@@ -20,7 +21,25 @@ export function syncPartyCharacter(charData) {
   party = party.map(p => (p && p.id === charData.id ? { ...charData, assignedRole: p.assignedRole || charData.role } : p));
 }
 
+// The class icon beside a slotted name (P5.C), from the same lazily-loaded class-icons.json the
+// distribution bars use (one request shared, data.js owns it). Nothing at all while the map is
+// unloaded — the slot markup stays exactly what it was before the feature — and a reserved box
+// once it is, so a name cannot shift between a class the map names and one it does not. The URL
+// gate is the window-published isSafeIconUrl (the roster.js precedent: a panel module does not
+// import detail.js for one check).
+function partySlotIconHtml(cls) {
+  if (!siteIconMapLoaded(CLASS_ICONS_PATH)) return '';
+  const raw = siteIconUrl(CLASS_ICONS_PATH, cls);
+  const url = raw !== '' && typeof window.isSafeIconUrl === 'function' && window.isSafeIconUrl(raw) ? raw : '';
+  // The alt describes the IMAGE: the Battle.net class icon, not the roster word beside it.
+  return `<span class="wow-card-icon">${url === '' ? ''
+    : `<img src="${escapeHtml(url)}" loading="lazy" alt="${escapeHtml(`${cls} class icon`)}" class="wow-card-icon-img">`}</span>`;
+}
+
 export function renderParty() {
+  // The slots are what ask for the class-icon map here (lazy, memoised, retryable in data.js;
+  // party.js and stats.js share the one request).
+  ensureSiteIconMap(CLASS_ICONS_PATH);
   const container = document.getElementById('party-slots');
   container.innerHTML = '';
 
@@ -40,6 +59,7 @@ export function renderParty() {
       // than handing a function to `.split()`.
       const color = ownString(CLASS_COLORS, char.class) || 'text-slate-300';
       const isOffspec = char.assignedRole && char.assignedRole === char.roleSec;
+      const slotIcon = partySlotIconHtml(char.class);
 
       slotEl.className = `${factionBg} border rounded-lg p-2.5 flex flex-col justify-between min-h-[95px] shadow-sm`;
       slotEl.innerHTML = `
@@ -51,7 +71,7 @@ export function renderParty() {
               <span class="text-[8px] font-bold ${faction === 'alliance' ? 'text-sky-400' : 'text-red-400'}">${faction === 'alliance' ? 'Alliance' : 'Horde'}</span>
             </div>
           </div>
-          <div class="font-bold text-sm text-slate-100 truncate mt-0.5">${escapeHtml(char.name)}</div>
+          <div class="flex items-center gap-1.5 mt-0.5">${slotIcon}<span class="font-bold text-sm text-slate-100 truncate">${escapeHtml(char.name)}</span></div>
           <div class="text-xs font-semibold ${color.split(' ')[0]}">${escapeHtml(char.class)}</div>
           <div class="text-[10px] text-slate-400">${escapeHtml(char.player)} • ${escapeHtml(char.race)}</div>
         </div>
