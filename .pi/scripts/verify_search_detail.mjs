@@ -2393,6 +2393,602 @@ partyMod.clearParty();
 state.setFilter('all');
 state.setQuery('');
 
+// ------------------------------------------- 4e. Phase A: the modal box is fixed, and the shell never tracks data
+//
+// Phase A pinned the detail box to a fixed height (roster-ui-tasks Phase A). "It does not resize"
+// is three separate claims, and each is falsifiable only by asserting the structure: the height is
+// authored in index.html rather than derived from content; the header, the tab bar and the review
+// footer sit OUTSIDE the scroll region and are shrink-0; and every panel scrolls internally. The
+// box lives in the markup and the app only ever writes #detail-content, so the box element itself
+// must survive a full tab cycle untouched — and a gear-rich row must produce the same shell as a
+// row with no sidecar at all, the same rule decision #5 states for the tab bar.
+console.log('\n[4e] Phase A: fixed 90vh modal box, pinned bar and footer, six internally scrolling panels');
+
+const appCssText = fs.readFileSync(path.join(ROOT, 'css', 'app.css'), 'utf8');
+const tailwindCssText = fs.readFileSync(path.join(ROOT, 'css', 'tailwind.css'), 'utf8');
+// The box is the first <div> inside the #detail-modal backdrop.
+const boxTagAt = markup.indexOf('id="detail-modal"');
+const boxTag = markup.slice(markup.indexOf('<div', markup.indexOf('>', boxTagAt) + 1));
+const boxClasses = attrOf('class', boxTag.slice(0, boxTag.indexOf('>') + 1)).split(/\s+/).filter(Boolean);
+ok(boxClasses.includes('h-[90vh]') && boxClasses.includes('max-h-[90vh]'),
+  `the detail box carries the fixed height AND the cap (h-[90vh]${boxClasses.includes('h-[90vh]') ? ' ✓' : ' MISSING'}, max-h-[90vh]${boxClasses.includes('max-h-[90vh]') ? ' ✓' : ' MISSING'})`);
+ok(boxClasses.includes('flex') && boxClasses.includes('flex-col') && boxClasses.includes('overflow-hidden')
+  && boxClasses.includes('max-w-2xl'),
+  'the box is a clipped flex column at the unchanged max-w-2xl width (Phase A changed the height, not the shape)');
+ok(tailwindCssText.includes('.h-\\[90vh\\]{height:90vh}')
+  && tailwindCssText.includes('.max-h-\\[90vh\\]{max-height:90vh}'),
+  'the generated css/tailwind.css ships both utilities — the box really is 90vh tall in the deploy');
+const editModalAt = markup.indexOf('id="char-modal"');
+const editBoxClasses = attrOf('class', markup.slice(markup.indexOf('<div', markup.indexOf('>', editModalAt) + 1)))
+  .split(/\s+/);
+ok(!editBoxClasses.includes('h-[90vh]') && editBoxClasses.includes('max-h-[90vh]'),
+  'the fixed height is detail-only: the Add/Edit modal keeps its content-sized max-h-[90vh] box');
+ok(attrOf('class', markup.slice(markup.indexOf('id="detail-content"'))).split(/\s+/).includes('flex-1')
+  && attrOf('class', markup.slice(markup.indexOf('id="detail-content"'))).split(/\s+/).includes('min-h-0'),
+  '#detail-content is flex-1 min-h-0 — content grows inside the box, never past it');
+
+// The panel SET is the shape; `hidden` is only the state, so the shape is compared without it.
+const panelShape = html => tabPanels(html)
+  .map(p => `${p.id}:${p.classes.filter(c => c !== 'hidden').sort().join(',')}`).join('|');
+const panelsScroll = panels => panels.length === 6 && panels.every(p => p.classes.includes('overflow-y-auto')
+  && p.classes.includes('flex-1') && p.classes.includes('min-h-0'));
+
+detail.closeDetail();
+const phaseARich = openRow('X1');
+const boxClassSnapshot = byId('detail-modal').className;
+const contentClassSnapshot = byId('detail-content').className;
+ok(panelsScroll(tabPanels(phaseARich)),
+  `all six tab panels scroll internally (${tabPanels(phaseARich).length} panels, every one overflow-y-auto + flex-1 + min-h-0)`);
+ok(phaseARich.startsWith('<div class="shrink-0">'),
+  'the header and its field grid are the first shrink-0 block of the column (a tall panel cannot squeeze them)');
+ok(tabBarSlice(phaseARich).includes('wow-tabs shrink-0') && countOf('wow-tabs shrink-0', phaseARich) === 1,
+  'the tab bar is the pinned flex row: exactly one wow-tabs shrink-0 above the panels');
+const phaseAFoot = detail.detailHtml(roster5.characters[0], data5.characters.X1, null, 'ok',
+  '<span></span>', '<div class="act">actions</div>');
+const footAt = phaseAFoot.lastIndexOf('wow-detail-foot');
+ok(footAt !== -1 && phaseAFoot.slice(footAt).includes('shrink-0')
+  && phaseAFoot.slice(footAt).includes('overflow-y-auto'),
+  'the review footer is shrink-0 with its own scroll: pinned below the panels, never pushed away by them');
+ok(footAt > phaseAFoot.lastIndexOf('<div role="tabpanel"'),
+  'and it comes after the last panel in document order (T2.9 still true under Phase A)');
+const cycledShapes = [];
+for (const tab of TAB_IDS) {
+  detail.setDetailTab(tab);
+  cycledShapes.push(panelShape(contentHtml()));
+}
+ok(new Set(cycledShapes).size === 1,
+  `cycling all six tabs changes which panel is hidden and nothing else (${new Set(cycledShapes).size} distinct panel shape${new Set(cycledShapes).size === 1 ? '' : 's'})`);
+const barSkeleton = html => tabButtons(html).map(b => `${b.id}|${b.tab}|${b.controls}|${b.label}`).join('·');
+ok(tabBarSlice(contentHtml()) !== '' && barSkeleton(contentHtml()) === barSkeleton(phaseARich),
+  'the tab bar keeps the same six buttons, ids, labels and aria wiring across a full cycle (only the selection moves)');
+ok(tabButtons(contentHtml()).filter(b => b.selected === 'true').length === 1
+  && tabButtons(contentHtml()).find(b => b.selected === 'true').tab === 'progress',
+  'and exactly one button is aria-selected at the end of the cycle — the one that is open');
+ok(byId('detail-modal').className === boxClassSnapshot
+  && byId('detail-content').className === contentClassSnapshot && byId('detail-modal').innerHTML === '',
+  'the box element is never rewritten: opening, cycling and closing only write #detail-content');
+ok(!contentHtml().includes('90vh') && !/style="[^"]*height/.test(contentHtml()),
+  'no repaint injects a height into the modal content (the fixed box is the only size authority)');
+const phaseASparse = detail.detailHtml(roster5.characters[4], data5.characters.X5, null, 'ok',
+  '<span></span>', '<div class="act">a</div>');
+const phaseABare = detail.detailHtml(roster5.characters[4], null, null, 'ok', '<span></span>', '<div class="a">a</div>');
+ok(panelsScroll(tabPanels(phaseAFoot)) && panelShape(phaseAFoot) === panelShape(phaseASparse)
+  && panelShape(phaseASparse) === panelShape(phaseABare),
+  'the shell is data-independent: gear-rich, status-only and no-sidecar rows yield the identical six-panel scroll structure');
+detail.closeDetail();
+
+// ------------------------------------------- 4f. Phase B: the gear paper doll
+//
+// Phase B replaced the two five-across gear grids with ONE fixed-size doll whose sockets are pinned
+// to regions of the figure (roster-ui-tasks Phase B). Two things make this worth pinning down in a
+// harness rather than by eye: the layout is a constant (it is authored geometry keyed by Blizzard
+// slot id, never sidecar data, so a different loadout cannot move the character sheet), and the
+// silhouette is a CSS background layer rather than an <img> — which is exactly why the <img> host
+// and src-count pins above stay honest. The one real image the figure can produce is the sync-
+// validated `media.fullRender`, re-checked here against the same ICON_HOSTS allowlist at render
+// time, lazy, and self-hiding on error so a URL that died between sync and view degrades to the
+// fallback art instead of a broken-image glyph.
+console.log('\n[4f] Phase B: one fixed doll, regions keyed by slot id, one allowlisted render over a CSS silhouette');
+
+const detailJsText = fs.readFileSync(path.join(ROOT, 'js', 'detail.js'), 'utf8');
+const DOLL_SLOTS = [...detail.GEAR_BODY_SLOTS, ...detail.GEAR_HAND_SLOTS];
+const SOCKET_RE = /<[^>]*class="[^"]*wow-doll-slot[^"]*"\s+style="left:([\d.]+)%;top:([\d.]+)%" data-wow-slot="([^"]*)"/g;
+const parseSockets = html => [...html.matchAll(SOCKET_RE)].map(m => ({ slot: m[3], x: Number(m[1]), y: Number(m[2]) }));
+const posOf = (sockets, slot) => sockets.find(s => s.slot === slot) || { x: NaN, y: NaN };
+const RENDER_OK = 'https://render.worldofwarcraft.com/forever-us/character/53/877365-main-raw.png';
+const dollHtml = detail.gearTabHtml(richSidecar);
+const dollSockets = parseSockets(dollHtml);
+
+ok(!detailJsText.includes('grid-cols-5'),
+  'the two five-across grids are gone from js/detail.js (the doll replaced them, and the bare utility left the generated stylesheet with them)');
+ok(countOf('class="wow-doll">', dollHtml) === 1 && countOf('<div class="wow-doll-figure"></div>', dollHtml) === 1,
+  `exactly one doll container with one figure layer (${countOf('class="wow-doll">', dollHtml)} box, ${countOf('<div class="wow-doll-figure"></div>', dollHtml)} figure)`);
+ok(DOLL_SLOTS.length === 19 && dollSockets.length === 19
+  && dollSockets.map(s => s.slot).join('·') === DOLL_SLOTS.join('·'),
+  `all 19 sockets are placed in the const order, filled or not (${dollSockets.length} parsed of ${richSidecar.gear.length} items)`);
+ok(dollSockets.every(s => Number.isInteger(s.x) && Number.isInteger(s.y) && s.x >= 0 && s.x <= 100
+  && s.y >= 0 && s.y <= 100),
+  'every socket position is a whole percentage of the fixed box (nothing off the figure, nothing sidecar-authored)');
+ok(new Set(dollSockets.map(s => `${s.x},${s.y}`)).size === dollSockets.length,
+  `no two sockets share a cell (${new Set(dollSockets.map(s => `${s.x},${s.y}`)).size} distinct positions for ${dollSockets.length} sockets)`);
+const yOrder = ['Head', 'Shoulders', 'Chest', 'Waist', 'Legs', 'Feet'];
+ok(yOrder.every((slot, i) => i === 0 || posOf(dollSockets, slot).y > posOf(dollSockets, yOrder[i - 1]).y),
+  `the body column reads top to bottom: ${yOrder.map(s => `${s}@${posOf(dollSockets, s).y}%`).join(' → ')}`);
+ok(['Head', 'Shoulders', 'Chest', 'Shirt', 'Waist', 'Legs', 'Feet']
+  .every(slot => posOf(dollSockets, slot).x === 50),
+  'the midline slots are centred (helm, shoulder pads, chest, shirt, belt, legs and boots all on x=50)');
+ok(posOf(dollSockets, 'Shirt').y > posOf(dollSockets, 'Chest').y
+  && posOf(dollSockets, 'Shirt').y < posOf(dollSockets, 'Waist').y,
+  'the shirt fills the torso gap between chest and belt rather than floating elsewhere');
+ok(posOf(dollSockets, 'Neck').y > posOf(dollSockets, 'Head').y
+  && posOf(dollSockets, 'Neck').y < posOf(dollSockets, 'Chest').y
+  && posOf(dollSockets, 'Back').y > posOf(dollSockets, 'Head').y
+  && posOf(dollSockets, 'Back').y < posOf(dollSockets, 'Chest').y
+  && posOf(dollSockets, 'Neck').x !== posOf(dollSockets, 'Back').x,
+  `neck and back sit between head and chest on opposite sides (${posOf(dollSockets, 'Neck').x}% / ${posOf(dollSockets, 'Back').x}%)`);
+ok(['Wrist', 'Hands'].every(s => posOf(dollSockets, s).y > posOf(dollSockets, 'Chest').y
+  && posOf(dollSockets, s).y < posOf(dollSockets, 'Waist').y && posOf(dollSockets, s).x !== 50),
+  `wrists and hands are on the forearms, flanking the torso (${posOf(dollSockets, 'Wrist').x}% / ${posOf(dollSockets, 'Hands').x}%)`);
+ok(['Ring 1', 'Ring 2', 'Trinket 1', 'Trinket 2'].every(s => posOf(dollSockets, s).y > posOf(dollSockets, 'Waist').y
+  && posOf(dollSockets, s).y < posOf(dollSockets, 'Feet').y),
+  'rings and trinkets sit over the hands: below the belt, above the boots');
+const FLANKS = { 'Main Hand': 'left', 'Off Hand': 'right', Ranged: 'left', Ammo: 'right' };
+const flankBad = Object.keys(FLANKS).filter(slot => FLANKS[slot] === 'left'
+  ? posOf(dollSockets, slot).x >= 50 : posOf(dollSockets, slot).x <= 50);
+ok(flankBad.length === 0 && Object.keys(FLANKS).every(s => posOf(dollSockets, s).y > posOf(dollSockets, 'Waist').y),
+  `the weapon slots flank the lower sides (${Object.keys(FLANKS).map(s => `${s} ${posOf(dollSockets, s).x},${posOf(dollSockets, s).y}`).join(' · ')})`);
+ok(posOf(dollSockets, 'Main Hand').y === posOf(dollSockets, 'Off Hand').y
+  && posOf(dollSockets, 'Ranged').y === posOf(dollSockets, 'Ammo').y,
+  'each left/right weapon pair shares a row (a pair reads as one line of the character sheet)');
+const crowded = [];
+for (let i = 0; i < dollSockets.length; i += 1) {
+  for (let j = i + 1; j < dollSockets.length; j += 1) {
+    const dx = Math.abs(dollSockets[i].x - dollSockets[j].x);
+    const dy = Math.abs(dollSockets[i].y - dollSockets[j].y);
+    if (dx < 18 && dy < 12) crowded.push(`${dollSockets[i].slot}/${dollSockets[j].slot}`);
+  }
+}
+ok(crowded.length === 0,
+  `no two 52px sockets can overlap: every pair closer than 18% horizontally is >=12% apart vertically (${crowded.join(', ') || 'clean'})`);
+// The geometry is keyed by slot id, never by the item in the slot: a different loadout moves the
+// items, not the character sheet.
+const otherLoadout = detail.gearTabHtml({ ...richSidecar, gear: [
+  { slot: 'Feet', name: 'Other Boots', ilvl: 60 },
+  { slot: 'Head', name: 'Other Helm', ilvl: 61 },
+] });
+ok(parseSockets(otherLoadout).map(s => `${s.slot}@${s.x},${s.y}`).join('|')
+  === dollSockets.map(s => `${s.slot}@${s.x},${s.y}`).join('|'),
+  'the same slots sit in the same places under a different loadout (regions are keyed by slot id, not by item)');
+// The unslotted fallback row: nothing in the sidecar is dropped, and nothing invents a body part.
+ok(!dollHtml.includes('Unslotted') && countOf('wow-gear-chip', dollHtml) === 0,
+  'a row whose items all match a region gets no Unslotted strip at all (no empty heading, no layout residue)');
+const pillDoll = detail.gearTabHtml({ status: 'ok', gear: [
+  { slot: 'Mystery Socket', name: 'Unmatchable', ilvl: 96 },
+  { slot: 'Chest', name: 'First Chest', ilvl: 90 },
+  { slot: 'Chest', name: 'Second Chest', ilvl: 91 },
+] });
+ok(pillDoll.includes('Unslotted') && countOf('class="wow-gear-chip"', pillDoll) === 2
+  && pillDoll.includes('Unmatchable') && pillDoll.includes('Second Chest'),
+  'an unknown slot name and a second item claiming one cell both land in the Unslotted pill row (2 chips, nothing dropped)');
+ok(!/data-wow-slot="Mystery Socket"/.test(pillDoll) && countOf('data-wow-slot="Chest"', pillDoll) === 1,
+  'neither becomes a doll region: an unrecognised name never guesses a body part, and one cell never holds two items');
+const aliasDoll = detail.gearTabHtml({ status: 'ok', gear: [{ slot: 'Trinket', name: 'Odd Trinket', ilvl: 97 }] });
+ok(/data-wow-slot="Trinket 1"/.test(aliasDoll) && aliasDoll.includes('Odd Trinket'),
+  'the lone "Trinket" spelling is still placed on the doll (the alias map keeps old payloads on the figure)');
+ok(detail.gearTabHtml({ status: 'ok', gear: [] }).includes('No gear data')
+  && detail.gearTabHtml(null).includes('No gear data'),
+  'no gear is still the single empty state — the doll is not built out of nothing');
+
+// The figure image: exactly one, only through the allowlist, lazy, and self-hiding.
+const dollImgs = sidecar => (detail.gearTabHtml(sidecar).match(/<img/g) || []).length;
+const renderDoll = detail.gearTabHtml({ ...richSidecar, media: { avatar: null, avatarSd: null, fullRender: RENDER_OK } });
+const renderImg = (renderDoll.match(/<img class="wow-doll-render"[^>]*>/) || [''])[0];
+ok(countOf('<img class="wow-doll-render"', renderDoll) === 1 && renderImg.includes(`src="${esc(RENDER_OK)}"`),
+  'the validated fullRender becomes exactly one figure <img> with the URL escaped as-is');
+ok(renderImg.includes('loading="lazy"'), 'the render is lazy (a full-size PNG must not block the modal paint)');
+ok(/onerror="this\.style\.display='none'"/.test(renderImg),
+  'a render that fails at read time hides itself, which is what reveals the silhouette underneath');
+ok(detail.isSafeIconUrl(RENDER_OK) === true
+  && detail.ICON_HOSTS.includes('render.worldofwarcraft.com'),
+  'the render goes through the same ICON_HOSTS/isSafeIconUrl path the icons use (no second, wider allowlist)');
+const REJECTED_RENDERS = ['https://evil.tld/x.png', '//render.worldofwarcraft.com/a.png',
+  'javascript:alert(1)', 'https://render.worldofwarcraft.com.evil.tld/a.png', 'render.worldofwarcraft.com/a.png', null];
+const rejectedBad = REJECTED_RENDERS.map(url => {
+  const html = detail.gearTabHtml({ status: 'ok', gear: [{ slot: 'Chest', name: 'C', ilvl: 1 }], media: { fullRender: url } });
+  const host = /evil\.tld/.test(String(url)) ? 'evil.tld' : '';
+  return html.includes('<img') || (host !== '' && html.includes(host)) ? String(url) : '';
+}).filter(x => x !== '');
+ok(rejectedBad.length === 0,
+  `a rejected render URL becomes no <img>, no src and no echoed host (${REJECTED_RENDERS.length} shapes tried, including a look-alike host suffix)`);
+ok(dollImgs({ ...richSidecar, media: { fullRender: RENDER_OK } })
+  === dollImgs(richSidecar) + 1,
+  `the render is the only image the figure adds (${dollImgs(richSidecar)} → ${dollImgs({ ...richSidecar, media: { fullRender: RENDER_OK } })} <img> in the panel)`);
+// No shift when the image is absent: from the figure layer down, the markup is identical once the
+// tooltip registry's call-order index is normalised (it counts registrations across the whole
+// process, so it is bookkeeping rather than layout — every other byte is compared as-is).
+const belowFigure = html => {
+  const stripped = html.replace(/<img class="wow-doll-render"[^>]*>/g, '');
+  return stripped.slice(stripped.indexOf('<div class="wow-doll-figure"></div>'))
+    .replace(/showDetailTooltip\(event, \d+\)/g, 'showDetailTooltip(event, N)');
+};
+ok(belowFigure(renderDoll) === belowFigure(dollHtml) && belowFigure(renderDoll).length > 1000
+  && countOf('data-wow-slot=', belowFigure(renderDoll)) === 19,
+  'removing the render leaves the figure layer, all 19 sockets and the caption identical (the image cannot move the layout)');
+
+// The silhouette is CSS. Markup cannot assert a background-image, so this reads the shipped
+// stylesheet, and the file that stylesheet points at.
+const cssRule = name => (appCssText.match(new RegExp(`\\.${name} \\{([\\s\\S]*?)\\}`)) || ['', ''])[1];
+ok(/position:\s*relative/.test(cssRule('wow-doll')) && /max-width:\s*\d+px/.test(cssRule('wow-doll'))
+  && /height:\s*\d+px/.test(cssRule('wow-doll')),
+  `.wow-doll is a fixed box in CSS (height ${(/height:\s*(\d+px)/.exec(cssRule('wow-doll')) || [])[1]}, max-width ${(/max-width:\s*(\d+px)/.exec(cssRule('wow-doll')) || [])[1]}, position relative)`);
+ok(!/(vh|%)/.test((/height:[^;]+;/.exec(cssRule('wow-doll')) || [''])[0]),
+  'the doll height is px, not vh: a 1600x1200 render cannot make the box follow the viewport');
+ok(/position:\s*absolute/.test(cssRule('wow-doll-figure')) && /inset:\s*0/.test(cssRule('wow-doll-figure'))
+  && /background-image:\s*url\("\.\.\/assets\/silhouettes\/generic\.svg"\)/.test(cssRule('wow-doll-figure')),
+  'the silhouette is a background layer on .wow-doll-figure (absolute, inset 0), never an <img> element');
+ok(/position:\s*absolute/.test(cssRule('wow-doll-render')) && /object-fit:\s*cover/.test(cssRule('wow-doll-render')),
+  '.wow-doll-render is absolutely positioned over the figure (it cannot push the sockets around)');
+ok(/position:\s*absolute/.test(cssRule('wow-doll-slot'))
+  && /transform:\s*translate\(-50%, -50%\)/.test(cssRule('wow-doll-slot')),
+  '.wow-doll-slot is absolutely positioned and centred on its point (the percentages above are its only layout input)');
+ok(fs.existsSync(path.join(ROOT, 'assets', 'silhouettes', 'generic.svg')),
+  'assets/silhouettes/generic.svg exists next to the stylesheet that references it (Phase F swaps art, not plumbing)');
+ok(!/<img[^>]+src="[^"]*silhouette/i.test(dollHtml) && !dollHtml.includes('generic.svg')
+  && !dollHtml.includes('assets/'),
+  'no markup path can turn the silhouette into an <img> (the constraint that keeps the <img> host and src pins above honest)');
+detail.closeDetail();
+
+// ------------------------------------------- 4g. Phase C: the guild chips
+//
+// The guild chips are a THIRD predicate on the one filtered view (roster-ui-tasks Phase C), so the
+// claim worth pinning is not "a chip filters" but "the three predicates AND together inside
+// state.getFilteredCharacters(), and a row's guild is joined in a documented fallback order":
+//   1. the sidecar's non-empty guild string, 2. the row's own `guild` field (what a nightly
+//   auto-add stamps before any sidecar row exists), 3. Guildless when a sidecar row exists and says
+//   no guild, 4. Unknown when there is no sidecar row to ask.
+// Step 2 outranks step 3 deliberately, and P8 below is that case: a row with a sidecar that says
+// nothing AND a committed guild name belongs to the named guild, not to Guildless.
+//
+// Expectations are recomputed from the fixture JSON, never read back out of state.js.
+console.log('\n[4g] Phase C: guild chips AND with track and query; buckets derived with Guildless/Unknown last');
+
+const guildMod = await import(moduleUrl('guildfilter.js'));
+const GUILD_ALL = state.GUILD_FILTER_ALL;
+const GUILDLESS = state.GUILD_GUILDLLESS;
+const UNKNOWN = state.GUILD_UNKNOWN;
+const FIXTURES_PG = mkdtempSync(path.join(os.tmpdir(), 'pg-guild-'));
+fs.mkdirSync(path.join(FIXTURES_PG, 'data'), { recursive: true });
+const gRow = (id, player, name, track, extra) => ({
+  id, player, name, track, role: 'DPS', roleSec: 'None',
+  race: 'Orc', class: 'Warrior', prof1: 'Mining', prof2: 'None', ...extra,
+});
+const rosterG = {
+  schemaVersion: 2,
+  characters: [
+    gRow('P1', 'dupone', 'Guilded One', 'flowmasters'),
+    gRow('P2', 'dupone', 'Guilded Two', 'alts'),
+    // The auto-add shape: a committed guild name, and no sidecar row to ask.
+    gRow('P3', 'dupone', 'Auto Added Three', 'family', { guild: 'Heghmoh' }),
+    gRow('P4', ' lonelyfour ', 'Guildless Four', 'alts'),
+    gRow('P5', 'lonelyfive', 'Unknown Five', 'flowmasters'),
+    gRow('P6', 'DUPONE', 'Folded Six', 'alts'),
+    gRow('P7', ' Dupone ', 'Folded Seven', 'family'),
+    // A sidecar that says nothing while the row itself names a guild: step 2 outranks step 3.
+    gRow('P8', 'otherseven', 'Precedence Eight', 'alts', { guild: 'Precedence Guild' }),
+    gRow('P9', 'otherseven', 'Poison Nine', 'flowmasters'),
+    gRow('P10', 'lonelyten', 'Long Ten', 'family', { guild: 'The Longest Guild Name On The Roster' }),
+  ],
+};
+const dataG = {
+  schemaVersion: 2, syncedAt: nowStamp, triggeredBy: 'schedule',
+  characters: {
+    P1: { status: 'ok', level: 60, guild: 'Flowmasters', fetchedAt: nowStamp },
+    P2: { status: 'ok', level: 50, guild: 'Flowmasters', fetchedAt: nowStamp },
+    P4: { status: 'ok', level: 40, guild: null, fetchedAt: nowStamp },
+    P6: { status: 'ok', level: 45, guild: 'alpha guild', fetchedAt: nowStamp },
+    P8: { status: 'ok', level: 30, guild: null, fetchedAt: nowStamp },
+    P9: { status: 'ok', level: 20, guild: '<img src=x onerror=alert(1)>', fetchedAt: nowStamp },
+  },
+};
+const mapG = {
+  schemaVersion: 2, updatedAt: nowStamp,
+  entries: { P1: { rosterName: 'guilded one', status: 'ok', slug: 'guilded-one', href: null,
+    bnetName: 'Guilded', surname: 'One', matchedForm: 'lower_hyphen', mappedVia: 'direct', note: null, candidates: [] } },
+};
+fs.writeFileSync(path.join(FIXTURES_PG, 'data', 'characters.json'), JSON.stringify(rosterG, null, 2));
+fs.writeFileSync(path.join(FIXTURES_PG, 'data', 'character-data.json'), JSON.stringify(dataG, null, 2));
+fs.writeFileSync(path.join(FIXTURES_PG, 'data', 'battle-net-map.json'), JSON.stringify(mapG, null, 2));
+sourceDir = FIXTURES_PG;
+await dataMod.loadRoster();
+await dataMod.loadSidecars();
+state.setFilter('all');
+state.setGuildFilter(GUILD_ALL);
+state.setQuery('');
+
+// The documented fallback order, recomputed straight off the fixture documents.
+const gSidecar = id => (dataG.characters[String(id)] || null);
+const gBucket = row => {
+  const sc = gSidecar(row.id);
+  const scGuild = sc && typeof sc.guild === 'string' ? sc.guild.trim() : '';
+  if (scGuild !== '') return scGuild;
+  const rowGuild = typeof row.guild === 'string' ? row.guild.trim() : '';
+  if (rowGuild !== '') return rowGuild;
+  return sc ? GUILDLESS : UNKNOWN;
+};
+function gExpected(track, bucket, query) {
+  const terms = String(query == null ? '' : query).toLowerCase().split(/\s+/).filter(Boolean);
+  return rosterG.characters.filter(r => {
+    if (track !== 'all' && r.track !== track) return false;
+    if (bucket !== GUILD_ALL && gBucket(r) !== bucket) return false;
+    if (terms.length === 0) return true;
+    const fields = [r.name, r.player, r.class, r.role, r.roleSec];
+    const sc = gSidecar(r.id);
+    if (sc && (typeof sc.guild === 'string' || typeof sc.guild === 'number')) fields.push(sc.guild);
+    const entry = mapG.entries[r.id];
+    if (entry) ['bnetName', 'surname', 'slug'].forEach(key => {
+      if (typeof entry[key] === 'string' || typeof entry[key] === 'number') fields.push(entry[key]);
+    });
+    const low = fields.map(f => String(f).toLowerCase());
+    return terms.every(term => low.some(f => f.indexOf(term) !== -1));
+  }).map(r => String(r.id)).sort();
+}
+const gBuckets = (() => {
+  const names = new Set();
+  let hasGuildless = false;
+  let hasUnknown = false;
+  rosterG.characters.forEach(r => {
+    const bucket = gBucket(r);
+    if (bucket === GUILDLESS) hasGuildless = true;
+    else if (bucket === UNKNOWN) hasUnknown = true;
+    else names.add(bucket);
+  });
+  const sorted = [...names].sort((a, b) => {
+    const x = a.toLowerCase();
+    const y = b.toLowerCase();
+    return x < y ? -1 : x > y ? 1 : 0;
+  });
+  if (hasGuildless) sorted.push(GUILDLESS);
+  if (hasUnknown) sorted.push(UNKNOWN);
+  return sorted;
+})();
+
+ok(markup.indexOf('id="guild-filter-chips"') !== -1
+  && markup.indexOf('id="guild-filter-chips"') < markup.indexOf('id="character-grid"'),
+  'the chip row is declared in the roster aside above the grid it filters (not bolted on below it)');
+ok(rosterG.characters.map(r => state.getGuildBucket(r)).join('·')
+  === rosterG.characters.map(r => gBucket(r)).join('·'),
+  `getGuildBucket follows the four-step order per row: ${rosterG.characters.map(r => `${r.id}=${gBucket(r)}`).join(', ')}`);
+ok(state.getGuildBucket(rosterG.characters[7]) === 'Precedence Guild',
+  'step 2 outranks step 3: a row whose sidecar says nothing but whose own guild field is set is NOT Guildless');
+ok(state.guildBuckets().join('·') === gBuckets.join('·'),
+  `the offered buckets are derived, sorted case-insensitively, synthetic two last (${state.guildBuckets().join(' · ')})`);
+
+let guildFails = 0;
+const guildCombos = [];
+for (const track of ['all', 'flowmasters', 'family', 'alts']) {
+  for (const bucket of [GUILD_ALL, ...gBuckets]) {
+    for (const query of ['', 'warrior', 'dupone', 'one', 'zzzz-none']) {
+      state.setFilter(track);
+      state.setGuildFilter(bucket);
+      state.setQuery(query);
+      const got = state.getFilteredCharacters().map(c => String(c.id)).sort();
+      const want = gExpected(track, bucket, query);
+      guildCombos.push(1);
+      if (got.length !== want.length || got.some((id, i) => id !== want[i])) {
+        guildFails += 1;
+        if (guildFails < 4) console.log(`      track=${track} guild=${bucket} q="${query}" want [${want}] got [${got}]`);
+      }
+    }
+  }
+}
+state.setFilter('all');
+state.setGuildFilter(GUILD_ALL);
+state.setQuery('');
+ok(guildFails === 0,
+  `${guildCombos.length} track×guild×query combinations match an independent tally of the same three predicates`);
+// The AND is real: each added predicate narrows, and the pair can admit nothing where either alone
+// admits rows.
+state.setGuildFilter('Heghmoh');
+const onlyGuild = state.getFilteredCharacters().map(c => String(c.id)).join();
+state.setFilter('flowmasters');
+const guildAndTrack = state.getFilteredCharacters().map(c => String(c.id)).join();
+state.setQuery('auto');
+const allThree = state.getFilteredCharacters().map(c => String(c.id)).join();
+state.setFilter('all');
+state.setQuery('');
+ok(onlyGuild === 'P3' && guildAndTrack === '' && allThree === '',
+  `the predicates narrow, never widen: Heghmoh=[${onlyGuild}] alone, +flowmasters=[${guildAndTrack}] (its one row is on family)`);
+state.setGuildFilter('Flowmasters');
+const guildPool = gExpected('all', 'Flowmasters', '');
+ok(cards().length === guildPool.length && byId('roster-count').innerText === `${guildPool.length} Chars`
+  && byId('race-summary').innerText === `${new Set(guildPool.map(id => rosterG.characters.find(r => r.id === id).race)).size} Races / ${guildPool.length} Chars`,
+  `a guild selection repaints every panel through the one path (${cards().length} cards, "${byId('roster-count').innerText}", "${byId('race-summary').innerText}")`);
+state.setGuildFilter(GUILD_ALL);
+
+// The chip row itself.
+const chipTags = [...byId('guild-filter-chips').innerHTML.matchAll(/<button type="button" id="(guild-chip-\d+)" title="([^"]*)" onclick="([^"]*)" class="([^"]*)">([\s\S]*?)<\/button>/g)]
+  .map(m => ({ id: m[1], title: m[2], onclick: m[3], classes: m[4].split(/\s+/), label: m[5] }));
+ok(chipTags.length === gBuckets.length + 1
+  && chipTags.map((c, i) => c.id).join('·') === chipTags.map((_c, i) => `guild-chip-${i}`).join('·'),
+  `one chip for All plus one per bucket, ids contiguous with the click index (${chipTags.length} chips for ${gBuckets.length} buckets)`);
+ok(chipTags.filter(c => c.classes.includes('bg-amber-500/20')).length === 1
+  && chipTags[0].label === 'All' && chipTags[0].classes.includes('bg-amber-500/20'),
+  'exactly one chip is highlighted on open, and it is All');
+ok(chipTags.every(c => c.onclick === `setGuildFilterIndex(${c.id.replace('guild-chip-', '')})`),
+  'every chip handler carries only its own index — a guild name is never an inline-handler argument');
+ok(chipTags.every(c => !c.classes.includes('filter-btn')),
+  'no guild chip carries filter-btn (setFilter re-highlights .filter-btn and would blank a selected guild on the next track click)');
+const longChip = chipTags.find(c => c.title === 'The Longest Guild Name On The Roster');
+ok(!!longChip && longChip.label.includes('…') && longChip.label.length < longChip.title.length,
+  `a long guild name is truncated in the label with the whole value in the title ("${longChip ? longChip.label : 'missing'}")`);
+ok(byId('guild-filter-chips').innerHTML.includes('&lt;img src=x onerror=alert(1)&gt;')
+  && !byId('guild-filter-chips').innerHTML.includes('<img src=x'),
+  'a guild name that is markup is escaped in the chip row and opens no tag');
+ok(chipTags.some(c => c.title === GUILDLESS) && chipTags.some(c => c.title === UNKNOWN),
+  `Guildless and Unknown are real chips, and they are the last two (${chipTags[chipTags.length - 2].title}, ${chipTags[chipTags.length - 1].title})`);
+ok(chipTags.findIndex(c => c.title === 'alpha guild') < chipTags.findIndex(c => c.title === 'Flowmasters'),
+  'the case-insensitive sort is visible in the chip order (alpha guild precedes Flowmasters)');
+const heghmohChip = chipTags.findIndex(c => c.title === 'Heghmoh');
+fire(byId('guild-filter-chips').children[heghmohChip]);
+ok(state.getGuildFilter() === 'Heghmoh' && cards().length === 1
+  && byId('character-grid').innerHTML.includes('Auto Added Three'),
+  'clicking a chip filters the grid through state, reaching a row with no sidecar by the guild it carries');
+ok(countOf('bg-amber-500/20', byId('guild-filter-chips').innerHTML) === 1
+  && byId('guild-filter-chips').innerHTML.includes(chipTags[heghmohChip].id),
+  'the chip row repaints on a guild change with exactly one highlighted chip');
+state.setFilter('flowmasters');
+ok(state.getGuildFilter() === 'Heghmoh' && cards().length === 0,
+  'a track click keeps the guild selection (AND, not last-writer-wins) rather than silently clearing it');
+state.setFilter('all');
+state.setGuildFilter(GUILDLESS);
+ok(state.getFilteredCharacters().map(c => String(c.id)).join() === 'P4',
+  'Guildless means "a sidecar row that says no guild" — exactly the rows whose sidecar carries guild: null');
+state.setGuildFilter(UNKNOWN);
+ok(state.getFilteredCharacters().map(c => String(c.id)).sort().join() === 'P5,P7',
+  'Unknown means "no sidecar to ask": the two rows with neither a sidecar row nor a guild field of their own');
+state.setGuildFilter('   ');
+ok(state.getGuildFilter() === GUILD_ALL, 'an empty selection is All (the predicate stays inert until a chip is clicked)');
+guildMod.setGuildFilterIndex(9999);
+ok(state.getGuildFilter() === GUILD_ALL,
+  'an out-of-range chip index (a repaint between paint and click) falls back to All, not to an empty grid');
+// A chip can disappear under an active selection — the row was deleted, or a sync renamed the
+// guild. The row says what is clickable instead of holding a selection with no chip.
+state.setGuildFilter('Heghmoh');
+state.setCharacters(rosterG.characters.filter(r => gBucket(r) !== 'Heghmoh'));
+state.renderAll();
+const droppedChips = [...byId('guild-filter-chips').innerHTML.matchAll(/title="([^"]*)"/g)].map(m => m[1]);
+ok(state.getGuildFilter() === GUILD_ALL && !droppedChips.includes('Heghmoh'),
+  'a selection whose chip vanished falls back to All rather than stranding the grid empty');
+state.setCharacters(rosterG.characters);
+state.renderAll();
+ok(state.getGuildFilter() === GUILD_ALL && cards().length === rosterG.characters.length,
+  `and the roster is whole again afterwards (${cards().length} cards)`);
+
+// ------------------------------------------- 4h. Phase D: the account chip
+//
+// Battle.net exposes no account identity (docs/bnet-api-notes.md), so the roster's hand-typed
+// `player` field is the whole of the grouping (roster-ui-tasks Phase D). Two properties carry the
+// feature, and both are about absence: a row is flagged only when its alias owns >= 2 rows —
+// trimmed and case-folded, because "NahBrah" beside "nahbrah" is one account — and a player who
+// owns one character gets the empty string rather than an empty box, so nothing on that row moves.
+// The count is derived on every paint (no stored field), and the card and the modal header call the
+// SAME function, which is what stops the two surfaces drifting apart.
+console.log('\n[4h] Phase D: one chip per player owning >=2 roster rows, and no markup for anybody else');
+
+const rosterMod = await import(moduleUrl('roster.js'));
+const rosterJsText = fs.readFileSync(path.join(ROOT, 'js', 'roster.js'), 'utf8');
+const aliasList = (...players) => players.map((p, i) => ({ id: `A${i}`, player: p, name: `Row ${i}` }));
+const groupKeysOf = list => [...state.accountGroupKeys(list)].sort().join('·');
+ok(state.accountGroupKeys(aliasList('a', 'a')).has('a') && state.accountGroupKeys(aliasList('a')).size === 0,
+  'two rows under one alias make a group and one row does not (the whole rule in one line)');
+ok(groupKeysOf(aliasList('NahBrah', 'nahbrah', ' NAHBRAH ')) === 'nahbrah',
+  'the fold is trim + lowercase: three spellings are one account, flagged once');
+ok(groupKeysOf(aliasList('', '  ', '\t')) === '',
+  'blank aliases own nothing (no group can be keyed on the empty string)');
+ok(groupKeysOf(aliasList('constructor', 'constructor')) === 'constructor'
+  && groupKeysOf(aliasList('toString', 'toString')) === 'tostring',
+  'prototype-named aliases behave like any other alias (the tally is a Map, not an object)');
+ok(state.accountGroupKeys('not-a-list').size === 0 && state.accountGroupKeys(null).size === 0,
+  'a non-list roster yields no groups instead of throwing');
+const firstSpelling = [{ id: '1', player: '  NahBrah ' }, { id: '2', player: 'nahbrah' }];
+const groupOfSecond = state.accountGroupFor(firstSpelling[1], firstSpelling);
+ok(groupOfSecond && groupOfSecond.count === 2 && groupOfSecond.alias === 'NahBrah',
+  `count folds, display does not: "${groupOfSecond ? groupOfSecond.alias : '—'}" owns ${groupOfSecond ? groupOfSecond.count : 0} (the first row's own spelling wins)`);
+ok(state.accountGroupFor(null, firstSpelling) === null && state.accountGroupFor('x', firstSpelling) === null
+  && state.accountGroupFor({ player: 42 }, firstSpelling) === null
+  && state.accountGroupFor({ player: ' lonely ' }, aliasList('a', 'a', ' lonely ')) === null,
+  'no row, a non-object row, a numeric alias and a one-row alias all answer "nothing to say"');
+const twoRows = aliasList('dupplayer', 'dupplayer');
+const chipHtml = rosterMod.getAccountChip(twoRows[0], twoRows);
+ok(chipHtml.includes('class="wow-account-chip"') && countOf('wow-account-chip', chipHtml) === 1,
+  'a grouped row gets exactly one chip, and it is the hand-written .wow-account-chip');
+ok(rosterMod.getAccountChip(aliasList('soloone')[0], aliasList('soloone')) === '',
+  'a singleton gets the empty string — not an empty span, not a placeholder box');
+ok(rosterMod.getAccountChip(aliasList('')[0], aliasList('', '')) === '',
+  'and a blank alias gets the same empty string however many rows share it');
+ok(chipHtml.includes('owns 2 characters') && chipHtml.includes('display only'),
+  `the title says what the chip means (${(/title="([^"]*)"/.exec(chipHtml) || ['', '…'])[1]})`);
+const longAliasPair = aliasList('a-very-long-account-name-here', 'a-very-long-account-name-here');
+const longAliasChip = rosterMod.getAccountChip(longAliasPair[0], longAliasPair);
+ok((/<span class="wow-account-chip"[^>]*>([\s\S]*?)<\/span>/.exec(longAliasChip) || ['', ''])[1].length
+  === rosterMod.ACCOUNT_LABEL_MAX
+  && longAliasChip.includes('…') && longAliasChip.includes(esc(longAliasPair[0].player)),
+  `a long alias is truncated in the string with the whole value in the title ("${(/<span class="wow-account-chip"[^>]*>([\s\S]*?)<\/span>/.exec(longAliasChip) || ['', ''])[1]}")`);
+ok(!/onclick=|<button|<a href/.test(chipHtml),
+  'the chip is inert markup: no handler, no link — display-only by construction, not by convention');
+ok(rosterMod.getAccountChip(aliasList('<img src=x>')[0], aliasList('<img src=x>', '<img src=x>'))
+  .includes('&lt;img src=x&gt;'),
+  'an alias that is markup is escaped in the chip and in its title');
+ok(rosterJsText.includes('getAccountChip') && detailJsText.includes('getAccountChip')
+  && /from '\.\/roster\.js'/.test(detailJsText),
+  'both surfaces import the one builder: the card and the modal header cannot drift apart');
+
+// On the Phase C fixture page: presence and absence in both directions, then the modal header.
+const gCounts = new Map();
+rosterG.characters.forEach(c => {
+  const key = String(c.player).trim().toLowerCase();
+  if (key !== '') gCounts.set(key, (gCounts.get(key) || 0) + 1);
+});
+const gGrouped = new Set(rosterG.characters
+  .filter(c => (gCounts.get(String(c.player).trim().toLowerCase()) || 0) >= 2)
+  .map(c => String(c.id)));
+state.renderAll();
+const chipsPerCard = new Map(cards().map(card => [String(card.attrs['data-character-id']),
+  countOf('wow-account-chip', card.innerHTML)]));
+ok(chipsPerCard.size === rosterG.characters.length
+  && [...chipsPerCard.entries()].every(([id, n]) => n === (gGrouped.has(id) ? 1 : 0)),
+  `every card carries the chip exactly when its alias owns >=2 rows, and never two (${chipsPerCard.size} cards, ${[...chipsPerCard.values()].filter(n => n === 1).length} chipped: ${gGrouped.size} grouped rows)`);
+ok(countOf('wow-account-chip', byId('character-grid').innerHTML) === gGrouped.size
+  && gGrouped.size === 7,
+  `the folded groups are the ones flagged: dupone across four spellings plus otherseven (${gGrouped.size} of ${rosterG.characters.length} rows)`);
+openRow('P1');
+ok(countOf('wow-account-chip', contentHtml()) === 1, 'the modal header carries the same chip for a grouped row');
+openRow('P5');
+ok(countOf('wow-account-chip', contentHtml()) === 0,
+  'and no chip (and no empty box) for a player who owns one character');
+openRow('P7');
+const headerHtml = contentHtml();
+const headerChip = (/<span class="wow-account-chip"[^>]*>([\s\S]*?)<\/span>/.exec(headerHtml) || ['', '']);
+const headerTitle = (/title="([^"]*)"[^>]*>dupone</.exec(headerHtml) || ['', ''])[1];
+ok(headerChip[1] === 'dupone' && headerTitle.includes('owns 5 characters'),
+  `the chip reads the group's display spelling and its true count wherever the alias was spelled ("${headerChip[1]}", "${headerTitle}")`);
+ok(headerHtml.indexOf('wow-account-chip') < headerHtml.indexOf('role="tablist"')
+  && headerHtml.indexOf('wow-account-chip') < headerHtml.indexOf('No Battle.net data'),
+  'the chip sits in the always-rendered identity line, not in the synced field grid an empty row falls back to');
+detail.closeDetail();
+const orderBefore = cards().map(c => String(c.attrs['data-character-id'])).join('·');
+state.setQuery('five');
+const orderAfter = cards().map(c => String(c.attrs['data-character-id'])).join('·');
+state.setQuery('');
+ok(orderBefore === rosterG.characters.map(c => String(c.id)).join('·') && orderAfter === 'P5',
+  'grouping reorders nothing: the grid stays in roster order, chips on it');
+// The committed roster, tallied straight off data/characters.json: the rule the site ships.
+const committedCounts = new Map();
+rosterChars.forEach(c => {
+  const key = String(c.player == null ? '' : c.player).trim().toLowerCase();
+  if (key !== '') committedCounts.set(key, (committedCounts.get(key) || 0) + 1);
+});
+const committedWrong = rosterChars.filter(c => {
+  const grouped = (committedCounts.get(String(c.player).trim().toLowerCase()) || 0) >= 2;
+  return (rosterMod.getAccountChip(c, rosterChars) !== '') !== grouped;
+});
+ok(committedWrong.length === 0,
+  `on the committed roster every row's chip presence matches its own alias count (${[...committedCounts.values()].filter(n => n >= 2).length} grouped aliases over ${rosterChars.length} rows)`);
+ok(!rosterChars.some(c => 'account' in c || 'accountGroup' in c),
+  'and the grouping needed no new roster field: nothing is stored, everything is derived');
+
+// ---------- put the page back for [6] ----------
+sourceDir = FIXTURES5;
+await dataMod.loadRoster();
+await dataMod.loadSidecars();
+state.setFilter('all');
+state.setGuildFilter(GUILD_ALL);
+state.setQuery('');
+detail.closeDetail();
+ok(state.getCharacters().length === roster5.characters.length && hidden('detail-modal') === true
+  && state.getGuildFilter() === GUILD_ALL,
+  `the [4d] fixtures are reloaded with both filters at rest (${state.getCharacters().length} rows, modal closed)`);
+
 // ---------------------------------------------------------------- 6. storage
 console.log('\n[6] persistence boundary');
 const strayKeys = [...new Set([...storeKeysBefore, ...storageWrites])].filter(k => k !== 'wow_forever_roster' && k !== 'wow_gh_config');

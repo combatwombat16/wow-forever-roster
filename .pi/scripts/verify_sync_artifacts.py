@@ -1376,6 +1376,24 @@ def main():
         for forbidden in ("docs", "tools", ".pi", "armory-tasks.md", "pi-warden.md"):
             check(not re.search(rf"cp[^\n]*{re.escape(forbidden)}", pages),
                   f"the bundle never publishes the maintainer-facing {forbidden}/")
+        # Phase B, the one failure mode the copy allow-list above cannot catch on its own: the
+        # doll's silhouette is a CSS background layer rather than an <img>, so nothing resolves it
+        # at run time — a missing <img> 404s visibly, a missing background-image simply paints
+        # nothing. Renaming generic.svg, or moving it off the published asset path, would ship a
+        # site of empty paper-doll boxes with every other gate green. So every url() the shipped
+        # stylesheets reference must resolve on disk AND land on the published asset path.
+        css_urls = sorted({
+            m.group(1).strip("\"'")
+            for sheet in sorted((ROOT / "css").glob("*.css"))
+            for m in re.finditer(r"url\(\s*([^)\s]+)\s*\)", read(sheet) or "")
+        })
+        check(bool(css_urls), "the shipped stylesheets reference at least one asset url")
+        published_dir = (ROOT / "assets" / "silhouettes").resolve()
+        for ref in css_urls:
+            target = (ROOT / "css" / ref).resolve()
+            check(target.is_file(), f"css url({ref}) resolves to a file that exists")
+            check(target.suffix == ".svg" and target.parent == published_dir,
+                  f"css url({ref}) sits on the assets/silhouettes/ path the copy step publishes")
         check("actions/upload-pages-artifact@v" in pages and "actions/deploy-pages@v" in pages
               and "actions/configure-pages@v" in pages,
               "deploy goes through the official configure-pages + upload-pages-artifact + deploy-pages actions")
