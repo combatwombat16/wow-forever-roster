@@ -30,7 +30,7 @@
 import { LIFECYCLE, characters, deriveLifecycleState, isLifecycleEditable, registerRenderHook, renderAll } from './state.js';
 import { byRosterId, ensureTalentTrees, formatSyncedAt, isSidecarFresh, reloadSidecars, talentTreeFor, talentTreesLoading, talentTreesStaticNamespace } from './data.js';
 import { commitValidationOnFresh, dispatchAndAwaitSync, ghHasPat, ghUserLogin, openGhModal, updateRosterInMemory } from './github.js';
-import { getLifecycleBadge } from './roster.js';
+import { getAccountChip, getLifecycleBadge } from './roster.js';
 // The two vocabularies the roster is frozen to (pi-warden). Importing them is the whole point of
 // the F3 guard: the tie below must not invent its own copy of the legal race/class/profession
 // lists, and neither module imports this one, so the edge is acyclic.
@@ -2415,7 +2415,10 @@ function identityIconHtml(url, label) {
 
 // The whole modal body for one row. Exported for the verification harness: it is pure over
 // (roster row, sidecar row, map entry, badge markup), so the escaping and the section-omission
-// rules can be asserted without a click.
+// rules can be asserted without a click. One value is not an argument: the account chip is read
+// off the roster as a whole (state.js `characters`), because owning two characters is a fact
+// about the roster rather than about the row — the same reason getFilteredCharacters() and the
+// guild buckets read the live list. Tests set the roster, then build the markup.
 // actionsHtml is an internal seam (and a harness seam): null renders this module's own
 // review action area for the row, a string replaces it.
 export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = null, actionsHtml = null) {
@@ -2447,6 +2450,14 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
   const achievement = numberOr(sidecar && sidecar.achievementPoints);
 
   const fullName = displayName(sidecar, mapEntry, character);
+  // The account chip (Phase D), built by the roster card's own function so the two surfaces
+  // cannot drift. It belongs in this always-rendered identity line and NOT in the Battle.net
+  // field grid below: that grid is synced data whose emptiness *is* the "No Battle.net data"
+  // state, so a roster-authored alias in it would both claim to have come from the API and
+  // quietly replace that empty state for exactly the pending rows that have no sidecar yet.
+  // A single-character player gets '' here too — that absence is the whole of the
+  // "no callout, no layout shift" rule.
+  const accountChip = getAccountChip(character);
   const header = `<div class="flex items-start justify-between gap-3 pb-2.5 border-b border-slate-800">
     <div class="flex items-start gap-2.5 min-w-0">
       ${avatarHtml(sidecar, fullName)}
@@ -2462,6 +2473,7 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
         ${roles !== '' ? `<span class="text-slate-500">•</span><span class="text-amber-300/90">${escapeHtml(roles)}</span>` : ''}
         <span class="text-slate-500">•</span>
         <span class="text-slate-400">${escapeHtml(trackLabel(character.track))}</span>
+        ${accountChip}
         ${badge}
       </div>
       </div>

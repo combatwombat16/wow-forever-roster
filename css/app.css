@@ -311,6 +311,38 @@ body {
 }
 .wow-card-icon-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+/* Phase D account chip: the alias a row shares with at least one other row of the roster, printed
+   on the card beside the sidecar meta and in the modal header. It is the roster's own hand-typed
+   `player` field and nothing else — Battle.net exposes no account identity (docs/bnet-api-notes.md)
+   — and it is display-only in the structural sense: js/roster.js emits a plain <span> with no
+   handler, so it cannot promise a filter the data cannot back, and it adds nothing to the row.
+
+   The box is sized by CSS (fixed line-height, fixed padding) and the alias is truncated in JS with
+   the full value in the title, so a long alias cannot reflow the row. A player who owns one
+   character renders no element at all: those rows keep the exact height they had before, which is
+   the layout-shift half of the Phase D rule. The hue is deliberately not any of the status tones
+   (green/amber/red are Battle.net states, sky/red are faction) so the chip never reads as a sync
+   verdict; the flag glyph is CSS, not markup, so the chip's text is the alias alone. */
+.wow-account-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  max-width: 110px;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  background: rgba(76, 29, 149, 0.25);
+  color: rgb(196 181 253);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 12px;
+  letter-spacing: 0.02em;
+}
+.wow-account-chip::before { content: "\2691"; font-size: 9px; opacity: 0.85; }
+
 /* One shared tooltip element (index.html), positioned fixed by js/detail.js so it can flip to
    the other side of a slot near an edge. pointer-events:none is what stops the tooltip itself
    from stealing the hover and strobing. */

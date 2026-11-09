@@ -260,6 +260,69 @@ export function setGuildFilter(bucket) {
   renderAll();
 }
 
+// ---------- account grouping (roster-ui-tasks Phase D) ----------
+// The roster's hand-maintained `player` field is the only account grouping key the site has:
+// docs/bnet-api-notes.md probed every available endpoint and Battle.net exposes no account /
+// Battletag identity at all, so the alias a reviewer types is the whole of it.
+//
+// The grouping is therefore DERIVED, never stored: no characters.json field is introduced, no
+// row is mutated, nothing is persisted, and the grid order is whatever it already was. A row is
+// flagged only when its alias owns at least ACCOUNT_GROUP_MIN rows, which is what makes the chip
+// absence (rather than an empty chip) the single-character case: nothing is inserted, so nothing
+// moves.
+//
+// Comparison trims and case-folds, because the alias is typed by hand into the edit form and
+// drifts ("NahBrah" beside "nahbrah" is one account, not two). The alias that is DISPLAYED is
+// the first row's own trimmed spelling in roster order, so the UI never rewrites what a reviewer
+// typed — only the comparison is folded.
+export const ACCOUNT_GROUP_MIN = 2;
+
+// One player value folded for comparison. Anything that is not a string or a number folds to ''
+// (and therefore to "no account", never to a group keyed on the empty string).
+export function playerMatchKey(value) {
+  if (typeof value === 'string') return value.trim().toLowerCase();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value).toLowerCase();
+  return '';
+}
+
+// The folded aliases that own >= ACCOUNT_GROUP_MIN rows of `list`.
+export function accountGroupKeys(list = characters) {
+  const counts = new Map();
+  if (!Array.isArray(list)) return new Set();
+  list.forEach(c => {
+    const key = c && typeof c === 'object' ? playerMatchKey(c.player) : '';
+    if (key === '') return;
+    counts.set(key, (counts.get(key) || 0) + 1);
+  });
+  const keys = new Set();
+  counts.forEach((count, key) => { if (count >= ACCOUNT_GROUP_MIN) keys.add(key); });
+  return keys;
+}
+
+// The account a row belongs to, or null when there is nothing to say: no alias, or an alias the
+// roster holds only once. `count` is every row of `list` sharing the alias, `alias` the display
+// spelling (the first row of that group's own trimmed text, which for a consistent roster is the
+// row's own value). The list is a parameter so the derivation is testable without the live
+// roster; the default is the live roster, which is what the panels want.
+export function accountGroupFor(character, list = characters) {
+  if (!character || typeof character !== 'object') return null;
+  const key = playerMatchKey(character.player);
+  if (key === '') return null;
+  let count = 0;
+  let alias = '';
+  if (Array.isArray(list)) {
+    list.forEach(c => {
+      if (!c || typeof c !== 'object' || playerMatchKey(c.player) !== key) return;
+      count += 1;
+      if (alias === '' && typeof c.player === 'string' && c.player.trim() !== '') {
+        alias = c.player.trim();
+      }
+    });
+  }
+  if (count < ACCOUNT_GROUP_MIN || alias === '') return null;
+  return { alias, count };
+}
+
 // ---------- search (docs/refactor-design.md §1, armory-tasks 3.4) ----------
 // Search is a second predicate on the same source of truth rather than a second render
 // path: getFilteredCharacters() is search AND track (AND guild), so every panel that already

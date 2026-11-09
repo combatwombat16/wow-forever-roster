@@ -5,7 +5,7 @@
 // Everything Battle.net-sourced is display-only (design §2): it is read through the
 // data.js join, escaped like any other untrusted string, and never written back.
 
-import { LIFECYCLE, characters, deriveLifecycleState, getFilteredCharacters, getQuery, isLifecycleEditable, registerRenderHook } from './state.js';
+import { LIFECYCLE, accountGroupFor, characters, deriveLifecycleState, getFilteredCharacters, getQuery, isLifecycleEditable, registerRenderHook } from './state.js';
 import { byRosterId, formatSyncedAt, isSidecarFresh } from './data.js';
 import { party } from './party.js';
 import { CLASS_COLORS, PROF_ABBR, escapeHtml, getFaction, ownString, ownValue } from './util.js';
@@ -130,6 +130,30 @@ export function getSidecarMeta(sidecar) {
   return parts.join('<span class="text-slate-600">•</span>');
 }
 
+// The account chip (roster-ui-tasks Phase D): the alias a row shares with at least one other row
+// of the roster, so a reader skimming the grid can see which characters are alts of one account.
+// It is the only place the grouping is rendered, which is why the modal header borrows this
+// function rather than growing a second spelling of the same badge: card and modal cannot drift.
+//
+// Display-only on purpose, and structurally so: the chip is a <span> with no handler, because
+// Battle.net exposes no account identity to filter on (docs/bnet-api-notes.md) and a click here
+// would promise a grouping the data cannot back. Nothing is added to the row either — the count
+// is derived from the roster on every paint, so a roster edit is reflected without a writer.
+//
+// A single-character player returns '': no chip, no placeholder box, so those rows keep exactly
+// the height they had before. The alias is truncated like the guild string and the whole value
+// stays in the title; the class is the hand-written .wow-account-chip (css/app.css), which also
+// carries the flag glyph, so the chip's text is the alias alone.
+export const ACCOUNT_LABEL_MAX = 12;
+
+export function getAccountChip(character, list = characters) {
+  const group = accountGroupFor(character, list);
+  if (!group) return '';
+  const title = `${group.alias} owns ${group.count} characters on this roster`
+    + ' — grouped from the roster\u2019s own player field, display only';
+  return `<span class="wow-account-chip" title="${escapeHtml(title)}">${escapeHtml(truncateLabel(group.alias, ACCOUNT_LABEL_MAX))}</span>`;
+}
+
 // The class icon a card borrows from the sidecar (F4) is an untrusted URL, and the host allowlist
 // that decides whether a URL may become an <img> lives in detail.js. detail.js imports this module
 // (getLifecycleBadge), so importing it back would make a module load-order cycle the reason a card
@@ -185,7 +209,12 @@ export function renderRoster() {
     // A row that needs a human pick gets a badge that opens the modal straight at its (read-only)
     // candidate list; every other badge is plain status display.
     const badgeClickId = lifecycle === LIFECYCLE.NEEDS_RESOLUTION ? c.id : null;
-    const bnetLine = `${getSidecarDot(sidecar, mapEntry)}${sidecarMeta ? `<span class="flex items-center gap-1">${sidecarMeta}</span>` : ''}${getLifecycleBadge(c, lifecycle, badgeClickId,
+    // The account chip sits with the sidecar meta it is read next to, and before the lifecycle
+    // badge so the row still ends on its Battle.net status. It is the roster's own data rather
+    // than synced data, and it is distinguishable by look (hand-written chip, flag glyph) and by
+    // title, not by position.
+    const accountChip = getAccountChip(c);
+    const bnetLine = `${getSidecarDot(sidecar, mapEntry)}${sidecarMeta ? `<span class="flex items-center gap-1">${sidecarMeta}</span>` : ''}${accountChip}${getLifecycleBadge(c, lifecycle, badgeClickId,
       Array.isArray(mapEntry && mapEntry.candidates) && mapEntry.candidates.length > 0)}`;
 
     // Faction-based backdrop and border styling
