@@ -1,7 +1,29 @@
 # Roster UI Adjustments (Round 2) — Tasks & Goals
 
-Status: **PLANNED** (agreed 2026-11-09). Four site adjustments (A–D) + verification (E);
-bespoke silhouette art (F) is a queued, separate task list that does not block A–E.
+Status: **SHIPPED** (implemented 2026-11-09, Phases A–E, commits `e8a7432..2fd9ae4`);
+bespoke silhouette art (F) remains a queued, separate task list.
+
+Outcome notes (what the implementation decided or changed relative to this plan):
+
+- **Owner decisions during implementation:** (1) the gear-doll fallback art is exactly ONE
+  generic `assets/silhouettes/generic.svg` (no per-race files) — Phase F swaps in bespoke art
+  per validated character later; its SVG header carries the measured art↔socket contract.
+  (2) The nightly sync is now an approved ADDITIVE writer of `data/characters.json` and
+  `sync-bnet.yml` commits it; README documents the third writer + only-visible-members caveat.
+  (3) The Pages bundle allowlist widened narrowly to `assets/silhouettes/*.svg` (gate widened
+  in the same commit, `fb5d40b`).
+- `validation.state` gained one stored value: `"pending"`, written ONLY by the auto-add;
+  the gate vocabulary is `(absent | validated | pending)` and stays strict against anything else.
+- Doll geometry: socket boxes are pinned 52×50 px with the empty-socket label as an in-box
+  overlay; the supported layout floor is a **360px viewport (~294px doll box)**, declared in
+  CSS as `--doll-supported-min-w` and DERIVED by the harness gate (sub-360px phones are
+  documented out of scope for the zero-overlap guarantee).
+- Two pre-existing defects were found and fixed alongside: a harness crash when zero rows need
+  a human pick (`c0c89b2`), and a Phase C gate-indent regression that had silently deadened the
+  `validation.note` ceiling and the §2 reported-id trust rule (fixed + pinned in `eeace6c`).
+- Review trail: two fresh reviewer passes (CHANGES REQUESTED → all findings closed); gate
+  battery at final head: 231 unit tests / 2252 sync-artifact checks / 522 UI-harness checks /
+  199 stats / 259 writes, all green, with mutation-tested non-blindness on the doll gate.
 
 Verified facts this plan rests on (checked 2026-11-09, do not re-litigate):
 
