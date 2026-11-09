@@ -889,14 +889,22 @@ function gearIconHtml(item, name) {
 // These are authored constants, never sidecar data: the only sidecar value that reaches a style
 // attribute is the slot NAME, and only when it is already an entry of GEAR_BODY_SLOTS or
 // GEAR_HAND_SLOTS. The spacing rule is PIXELS, not table folklore (review B1/E1): the socket is a
-// fixed 52x50px box in css/app.css, the doll keeps its 420px height at every width, and the
-// narrowest supported doll box is 320px wide (phone-width modal), where 1% is 3.2px horizontally.
-// So every pair below is either >= 54px (16.875%) apart horizontally or >= 54px (12.857% of the
-// fixed 420px height) apart vertically — centre distance covering the 52/50px extent plus a 2/4px
-// breathing gap — and every socket's x ± 26px and y ± 25px stay inside the box. The box-model gate
-// in .pi/scripts/verify_search_detail.mjs derives those numbers from the committed stylesheet and
-// re-checks this table against them; it failed against the pre-fix geometry by 5.9–12.0px of real
-// overlap on a partial loadout, which the old table-only assertion could not see.
+// fixed 52x50px box in css/app.css, and the doll keeps its 420px height at every width. The
+// supported floor is CSS data, not checker folklore (review R1): css/app.css declares
+// `.wow-doll { --doll-supported-min-w: 294px }` — the box a 360px phone viewport leaves after the
+// modal's padding and border — the narrowest width the zero-overlap guarantee covers. Two pixel
+// contracts follow, and the box-model gate in .pi/scripts/verify_search_detail.mjs derives every
+// input (floor included) from the committed stylesheet and re-checks this table against them.
+// At the 420px reference box every pair below is either >= 54px apart horizontally or >= 54px
+// (12.857% of the fixed height) vertically — centre distance covering the 52/50px extent plus a
+// 2/4px breathing gap. At the 294px floor the tighter 18% pairs still clear each other's actual
+// rectangles (>= 52.5px across the 292px padding box; Chromium measures 0 overlapping pairs at a
+// 360px viewport), and every socket's x ± 26px and y ± 25px stay inside the padding box (min
+// margin 3.2px). Below the floor the guarantee is off by declaration, not by accident waiting to
+// be mistaken for support: a 320px viewport yields a 254px box where Chromium measures 10
+// overlapping pairs, and css/app.css says so. The gate failed against the pre-fix geometry by
+// 5.9–12.0px of real overlap on a partial loadout, which the old table-only assertion could not
+// see.
 const DOLL_REGIONS = {
   Head: [50, 7], Shoulders: [50, 21], Back: [32, 28], Neck: [68, 28],
   Chest: [50, 35], Shirt: [50, 49], Waist: [50, 63], Legs: [50, 77], Feet: [50, 92],

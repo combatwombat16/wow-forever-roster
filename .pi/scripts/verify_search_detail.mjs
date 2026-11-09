@@ -2551,15 +2551,24 @@ ok(posOf(dollSockets, 'Main Hand').y === posOf(dollSockets, 'Off Hand').y
 //                          height + (gap + one name line) when the EMPTY socket's name is still in
 //                          the flow — 1px + 4px + 40px + 3px + 8px×1.15 = 62.2px, the height real
 //                          Chromium measured at 3211b8a. A pinned box must cover it.
-//   box                  = `.wow-doll` fixed height (a px that does not shrink) at the NARROWEST
-//                          supported doll width, 320px: the doll is `width:100%` inside the phone-
-//                          width modal, horizontal centre distances shrink with width while the
-//                          vertical ones are height-fixed, so 320x420 is the worst case for both
-//                          overlap and edge containment (a reviewer's Chromium run at this box is
-//                          what proved the pre-fix 5.9–12.0px overlaps).
-// Overlap rule: two sockets clear each other when their centre delta is >= socketW+2px on one
-// axis or >= socketH+4px on the other; containment: x±socketW/2 inside [0, 320], y±socketH/2
-// inside [0, 420].
+//   box                  = `.wow-doll` fixed height (a px that does not shrink) at TWO widths,
+//                          both derived from CSS (review R1 — the one input E1 left hardcoded was
+//                          the 320px floor, and cutting `.wow-doll`'s max-width 420→240 kept the
+//                          gate green): the `max-width` REFERENCE box (420px), where the design's
+//                          +2/+4px breathing gap must hold, and the declared support floor
+//                          `.wow-doll { --doll-supported-min-w: 294px }` — the box a 360px phone
+//                          viewport leaves after the modal's padding and border — where the
+//                          zero-overlap and edge-containment rules run. Horizontal centre
+//                          distances shrink with width while vertical ones are height-fixed, so
+//                          the floor is the worst in-scope case; boxes below it (the 254px a
+//                          320px viewport yields, where Chromium measures 10 overlapping pairs)
+//                          are declared out of scope in css/app.css rather than hidden by a
+//                          constant the stylesheet cannot guarantee.
+// Overlap rules: at the reference box two sockets clear each other when their centre delta is
+// >= socketW+2px on one axis or >= socketH+4px on the other; at the floor they must at least not
+// touch (>= socketW / >= socketH — the zero-overlap guarantee Chromium confirms as 0 pairs at
+// 294px). Containment uses the PADDING box, because that is what the sockets' left:%/top:%
+// resolve against: x±socketW/2 inside [0, W-2b], y±socketH/2 inside [0, H-2b].
 // Parse the committed stylesheet into rules once, then look selectors up EXACTLY as a
 // comma-separated member of a rule's selector list. Substring matching would answer a query for
 // `.wow-slot-name` with the FILLED-slot rule (`.wow-doll-slot.wow-slot-filled .wow-slot-name`)
@@ -2584,13 +2593,25 @@ const cssNumIn = (body, prop) => {
 const emptyNameSelectors = ['.wow-slot-name', '.wow-doll-slot .wow-slot-name',
   '.wow-doll-slot.wow-slot-empty .wow-slot-name'];
 const emptyNameBodies = emptyNameSelectors.map(appRuleBody);
-// The overlay decision: the empty name is out of the flow only if some rule that applies to it
-// (any of the three selectors above — every one of them does apply) positions it absolutely.
-const emptyNameInFlow = !emptyNameBodies.some(body => /position:\s*absolute/.test(body));
+// The overlay decision (review R1 robustness): LAST-DECLARATION-WINS, not "any absolute". Each
+// selector's own last `position` declaration answers for that selector, and the selectors are
+// consulted in cascade order (`.wow-slot-name`, then the doll scope, then the empty override —
+// generality and source order coincide here). "Any absolute" read a shared-rule absolute that a
+// re-declared `position: static` on the empty override had cancelled, and would have stayed green
+// at a real 62.2px in-flow name. No resolved position stays in-flow — the worst case.
 const emptyNameFont = [...emptyNameBodies].map(b => cssPxIn(b, 'font-size')).filter(Number.isFinite).pop();
 const lhDecl = emptyNameBodies.map(b => cssNumIn(b, 'line-height')).filter(o => Number.isFinite(o.value)).pop();
 const emptyNameLine = Number.isFinite(emptyNameFont) && lhDecl
   ? (lhDecl.unitless ? emptyNameFont * lhDecl.value : lhDecl.value) : NaN;
+const lastPositionDecl = bodies => {
+  let resolved;
+  for (const body of bodies) {
+    const decls = [...body.matchAll(/(?:^|;)\s*position:\s*([a-zA-Z-]+)/g)];
+    if (decls.length) resolved = decls.pop()[1];
+  }
+  return resolved;
+};
+const emptyNameInFlow = lastPositionDecl(emptyNameBodies) !== 'absolute';
 const slotBaseBody = appRuleBody('.wow-slot');
 const socketBoxBody = appRuleBody('.wow-doll-slot');
 const socketW = cssPxIn(socketBoxBody, 'width');
@@ -2599,8 +2620,27 @@ const faceHPx = cssPxIn(appRuleBody('.wow-doll-slot .wow-slot-face'), 'height');
 const slotPadPx = cssPxIn(slotBaseBody, 'padding');
 const slotGapPx = cssPxIn(slotBaseBody, 'gap');
 const slotBorderPx = cssPxIn(slotBaseBody, 'border');
-const dollBoxHpx = cssPxIn(appRuleBody('.wow-doll'), 'height');
-const DOLL_MIN_W = 320;
+const dollBaseBody = appRuleBody('.wow-doll');
+const dollBoxHpx = cssPxIn(dollBaseBody, 'height');
+const dollMaxW = cssPxIn(dollBaseBody, 'max-width');
+const dollBorderPx = cssPxIn(dollBaseBody, 'border');
+// Review R1: the supported floor is CSS DATA, not a checker constant. css/app.css declares it on
+// the doll itself as an inert custom property, with the arithmetic (360px viewport minus the
+// modal's p-4 ×2, the panel's p-4 — sm:p-5 only applies at ≥640px — and the panel's 1px border,
+// 0px scrollbar allowance on overlay scrollbars) written out there. This gate reads the number
+// from the stylesheet — comments stripped so prose cannot answer for a declaration — and an
+// absent property is a clear FAIL, never a fallback to a remembered constant.
+const dollFloorW = cssPxIn(dollBaseBody.replace(/\/\*[\s\S]*?\*\//g, ''), '--doll-supported-min-w');
+ok(Number.isFinite(dollFloorW),
+  'the supported doll-box floor is declared in css/app.css as `.wow-doll { --doll-supported-min-w: <N>px }` (R1: the checker derives the floor from the stylesheet and keeps no constant of its own — an absent property fails, it does not fall back)');
+ok(Number.isFinite(dollFloorW) && Number.isFinite(dollMaxW) && dollFloorW <= dollMaxW + 0.01,
+  `the declared floor is a width the doll can actually reach: --doll-supported-min-w ${dollFloorW}px <= the .wow-doll max-width ${dollMaxW}px that caps the box (shrinking max-width below the floor — the R1 blindness test — fails here)`);
+// Pixel geometry resolves against the PADDING box, because that is what the sockets' left:%/
+// top:% resolve against (review R1 robustness: containment against the border box was 2px
+// optimistic on every edge — the doll is 1px narrower/taller inside its own border).
+const floorPadW = dollFloorW - 2 * dollBorderPx;
+const boxPadH = dollBoxHpx - 2 * dollBorderPx;
+const refPadW = dollMaxW - 2 * dollBorderPx;
 const emptyNaturalH = [slotBorderPx, slotPadPx, faceHPx].every(Number.isFinite)
   ? slotBorderPx * 2 + slotPadPx * 2 + faceHPx
     + (emptyNameInFlow && Number.isFinite(emptyNameLine) ? slotGapPx + emptyNameLine : 0)
@@ -2616,28 +2656,37 @@ ok(Number.isFinite(emptyNaturalH) && Number.isFinite(socketHFixed) && emptyNatur
 // (which is what Chromium measured at 3211b8a: 62.1875px). A pin SMALLER than the content is its
 // own bug — the "fits its pinned box" check above fails that case with the numbers named.
 const socketHWorst = Number.isFinite(socketHFixed) ? socketHFixed : emptyNaturalH;
-const geomOk = [socketW, socketHWorst, dollBoxHpx].every(Number.isFinite);
-ok(geomOk, `the box-model inputs all parsed from CSS: socket ${socketW}x${socketHWorst}px, worst-case doll box ${DOLL_MIN_W}x${dollBoxHpx}px`);
-const crowded = [];
+const geomOk = [socketW, socketHWorst, dollBoxHpx, dollFloorW, dollMaxW, dollBorderPx]
+  .every(Number.isFinite);
+ok(geomOk, `the box-model inputs all parsed from CSS: socket ${socketW}x${socketHWorst}px, floor box ${dollFloorW}x${dollBoxHpx}px (--doll-supported-min-w), reference box ${dollMaxW}x${dollBoxHpx}px, ${dollBorderPx}px border`);
+const crowdedRef = [];
+const crowdedFloor = [];
 if (geomOk) {
   for (let i = 0; i < dollSockets.length; i += 1) {
     for (let j = i + 1; j < dollSockets.length; j += 1) {
-      const dxPx = Math.abs(dollSockets[i].x - dollSockets[j].x) / 100 * DOLL_MIN_W;
-      const dyPx = Math.abs(dollSockets[i].y - dollSockets[j].y) / 100 * dollBoxHpx;
-      if (dxPx < socketW + 2 && dyPx < socketHWorst + 4) {
-        crowded.push(`${dollSockets[i].slot}/${dollSockets[j].slot} at ${dxPx.toFixed(1)}x${dyPx.toFixed(1)}px`);
+      const dxPct = Math.abs(dollSockets[i].x - dollSockets[j].x);
+      const dyPx = Math.abs(dollSockets[i].y - dollSockets[j].y) / 100 * boxPadH;
+      const dxRefPx = dxPct / 100 * refPadW;
+      const dxFloorPx = dxPct / 100 * floorPadW;
+      if (dxRefPx < socketW + 2 && dyPx < socketHWorst + 4) {
+        crowdedRef.push(`${dollSockets[i].slot}/${dollSockets[j].slot} at ${dxRefPx.toFixed(1)}x${dyPx.toFixed(1)}px`);
+      }
+      if (dxFloorPx < socketW && dyPx < socketHWorst) {
+        crowdedFloor.push(`${dollSockets[i].slot}/${dollSockets[j].slot} at ${dxFloorPx.toFixed(1)}x${dyPx.toFixed(1)}px`);
       }
     }
   }
 }
-ok(geomOk && crowded.length === 0,
-  `no two of the 19 sockets overlap at the 320px box floor: every pair is >=${socketW + 2}px apart horizontally or >=${socketHWorst + 4}px vertically (CSS-derived ${socketW}x${socketHWorst}px sockets) (${crowded.slice(0, 4).join(', ') || 'clean'})`);
+ok(geomOk && crowdedRef.length === 0,
+  `no two of the 19 sockets come inside the breathing gap at the ${dollMaxW}px reference box (width derived from CSS): every pair is >=${socketW + 2}px apart horizontally or >=${socketHWorst + 4}px vertically (CSS-derived ${socketW}x${socketHWorst}px sockets) (${crowdedRef.slice(0, 4).join(', ') || 'clean'})`);
+ok(geomOk && crowdedFloor.length === 0,
+  `no two of the 19 sockets touch at the ${dollFloorW}px floor DERIVED FROM CSS (.wow-doll --doll-supported-min-w): every pair is >=${socketW}px apart horizontally or >=${socketHWorst}px vertically across the ${floorPadW}px padding box — the zero-overlap guarantee, in scope from a 360px viewport up; narrower phones are declared out of scope in css/app.css rather than silently passing (e.g. the 254px box a 320px viewport yields, where Chromium measures 10 overlapping pairs) (${crowdedFloor.slice(0, 4).join(', ') || 'clean'})`);
 const edgeOut = dollSockets.filter(s => !geomOk
-  || s.x / 100 * DOLL_MIN_W - socketW / 2 < -0.01 || s.x / 100 * DOLL_MIN_W + socketW / 2 > DOLL_MIN_W + 0.01
-  || s.y / 100 * dollBoxHpx - socketHWorst / 2 < -0.01 || s.y / 100 * dollBoxHpx + socketHWorst / 2 > dollBoxHpx + 0.01)
+  || s.x / 100 * floorPadW - socketW / 2 < -0.01 || s.x / 100 * floorPadW + socketW / 2 > floorPadW + 0.01
+  || s.y / 100 * boxPadH - socketHWorst / 2 < -0.01 || s.y / 100 * boxPadH + socketHWorst / 2 > boxPadH + 0.01)
   .map(s => `${s.slot}@${s.x},${s.y}`);
 ok(geomOk && edgeOut.length === 0,
-  `no socket crosses the 320x${dollBoxHpx}px box edge (x±${socketW / 2}px, y±${socketHWorst / 2}px) (${edgeOut.join(', ') || 'clean'})`);
+  `no socket crosses the ${dollFloorW}x${dollBoxHpx}px floor box's padding-box edge (${floorPadW}x${boxPadH}px inside the ${dollBorderPx}px border, which is what left:%/top:% resolve against; x±${socketW / 2}px, y±${socketHWorst / 2}px, all derived from CSS) (${edgeOut.join(', ') || 'clean'})`);
 // The geometry is keyed by slot id, never by the item in the slot: a different loadout moves the
 // items, not the character sheet.
 const otherLoadout = detail.gearTabHtml({ ...richSidecar, gear: [

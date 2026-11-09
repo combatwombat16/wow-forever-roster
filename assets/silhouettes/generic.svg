@@ -8,9 +8,16 @@
   it will land as separate files under assets/silhouettes/char/ rather than by editing this one.
 
   The canvas is 300x400 (3:4), centred on x=150, because app.css paints it with `background-size:
-  contain` inside the fixed 420px-tall .wow-doll box. The box is wider than this 3:4 canvas, so
-  contain fits the HEIGHT exactly (315x400 scaled to ×420, letterboxed horizontally): a canvas y%
-  equals the doll box y% exactly, and that is the only axis js/detail.js positions sockets on.
+  contain` inside the fixed 420px-tall .wow-doll box. A box at least 315px wide — every doll from
+  a ~381px viewport up — is wider than this 3:4 canvas, so there contain fits the HEIGHT exactly
+  (315x400 scaled to ×420, letterboxed horizontally): a canvas y% equals the doll box y% exactly,
+  and that is the only axis js/detail.js positions sockets on. NARROWER than 315px — which
+  includes the 294px supported floor at a 360px viewport (review R1) — contain fits the WIDTH
+  instead (the canvas lands 294x392, letterboxed ~14px top and bottom), so the canvas-y% → box-y%
+  mapping compresses by 392/420 about the centre and the landmarks below read up to ~3 percentage
+  points off the height axis there; the sockets' zero-overlap geometry, the gated invariant, holds
+  unchanged. Bespoke art should therefore keep these landmarks sane across that whole range, not
+  only at the exact 420px box.
   THE MEASURED CONTRACT (as-authored landmark → DOLL_REGIONS socket centre, both as % of height):
   head-circle centre cy=46 → 11.5% (Head socket 7%, over the crown); arm rects end y≈209 → 52%
   (Wrist/Hands sockets 49%, just above the hands); feet bottoms y=374 → 93.5% (Feet socket 92%,

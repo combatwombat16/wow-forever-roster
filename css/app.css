@@ -144,6 +144,27 @@ body {
    the doll is a portrait column: object-fit cover crops the render's empty side margins, never the
    figure, and the doll never changes size to suit whichever picture arrived. */
 .wow-doll {
+  /* THE SUPPORTED FLOOR, declared as data (review R1). Inert for layout — a custom property
+     changes nothing here — authoritative as the single source the box-model gate reads, so the
+     checker cannot keep a floor constant the stylesheet cannot guarantee.
+     Arithmetic, from the committed modal shell (index.html:390-391):
+       360px viewport
+       - #detail-modal p-4                      -2 x 16px
+       - panel p-4 (sm:p-5 only applies >= 640)  -2 x 16px
+       - .wow-border-gold border                 -2 x 1px
+       - scrollbar allowance                      -0px (the modal is fixed inset-0 over overlay
+                                                  scrollbars — Chromium headless and every phone
+                                                  this was measured on take no layout scrollbar)
+     = 294px doll box at the supported 360px viewport floor. Measured in chrome-headless-shell on
+     this exact stylesheet: 360 -> 294, 375 -> 309, 390 -> 324, >= 480 -> 414-420, and 320 -> 254.
+     At 294 every socket rectangle clears every other (min gap 0.56px, 0 overlapping pairs) and no
+     socket leaves the padding box (min edge margin 3.2px). Viewports NARROWER than 360px are out
+     of scope for the doll's zero-overlap guarantee — a 320px viewport yields the 254px box where
+     Chromium measures 10 overlapping pairs — and that is documented here, not hidden by the gate.
+     The +2/+4px breathing gap the layout is designed for needs a 300px box (18% pairs) and so
+     holds from ~366px up; verify_search_detail.mjs asserts breathing at the 420px reference box
+     and zero-touch overlap plus edge containment at this floor. */
+  --doll-supported-min-w: 294px;
   position: relative;
   width: 100%;
   max-width: 420px;
@@ -184,8 +205,10 @@ body {
    in the flow), and the vertical gaps DOLL_REGIONS leaves for 50px sockets overlap by up to 12px
    on a partial loadout. Both names are therefore out of the visual flow below (filled: clipped;
    empty: an overlay inside this box), so the height the CSS states is the height the layout gets.
-   .pi/scripts/verify_search_detail.mjs derives these numbers from this stylesheet and asserts
-   pixel non-overlap and edge containment at the 320px box floor. */
+   .pi/scripts/verify_search_detail.mjs derives these numbers — the socket box AND the supported
+   floor, read from --doll-supported-min-w on .wow-doll above — from this stylesheet, and asserts
+   the breathing gap at the 420px reference box plus pixel zero-overlap and edge containment at
+   that 294px floor, the box a 360px viewport leaves (sub-360px viewports are out of scope there). */
 .wow-doll-slot {
   position: absolute;
   transform: translate(-50%, -50%);
