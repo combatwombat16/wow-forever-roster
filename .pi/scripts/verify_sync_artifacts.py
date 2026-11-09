@@ -50,6 +50,7 @@ PAGES_WORKFLOW = ROOT / ".github" / "workflows" / "pages.yml"
 ENV = ROOT / ".env"
 
 SYNC_MODULES = ("__init__.py", "__main__.py", "config.py", "http.py", "roster.py",
+                "autoadd.py",
                 "resolve.py", "fetch.py", "artifacts.py", "sync.py")
 PKG_MODULES = SYNC_MODULES + ("probe.py",)
 
@@ -69,7 +70,46 @@ VALIDATION_KEYS = {"state", "confirmedSlug", "reviewedBy", "reviewedAt",
 # Same ceiling as ``bnet.roster.REPORT_NOTE_MAX`` and ``js/detail.js REVIEW_NOTE_MAX``: the form
 # caps it, the sync caps it, and a longer note is a hand-edit rather than something the UI wrote.
 REPORT_NOTE_MAX = 240
-ROSTER_KEYS = ROSTER_FIELDS | {"validation"}
+# Phase C (roster-ui-tasks.md): ``guild`` is the one OPTIONAL additive roster field — the
+# guild name an auto-added row carries so the guild filter can place a character that has
+# no sidecar row yet. Absent means "this row says nothing about guild"; a value must be a
+# string (checked per row below), and no other key is legal.
+ROSTER_KEYS = ROSTER_FIELDS | {"validation", "guild"}
+# The stored lifecycle vocabulary of ``validation.state``. Only two values are ever
+# written, and everything else the UI shows is derived from the map status (js/state.js
+# deriveLifecycleState):
+#
+#   * absent/None — a draft: hand-added, or written before this block existed;
+#   * ``validated`` — a human signed the identity off; sync never re-resolves the row;
+#   * ``pending`` — written ONLY by the nightly auto-add (Phase C) for a Battle.net-visible
+#     guild member nobody has reviewed yet. It is inert in the UI (which recognises just
+#     ``validated``) and keeps the row resolvable, i.e. NOT trusted.
+# Anything outside this tuple is a hand-mutation or a sync bug and fails the gate; the
+# vocabulary is a module function so tools/tests/test_sidecar_phase_c.py can prove a bogus
+# state still fails it rather than trusting the wording below.
+ROSTER_STORED_STATES = (None, "validated", "pending")
+
+
+def validation_state_ok(state):
+    """True when ``validation.state`` may appear in a committed roster row."""
+    return state in ROSTER_STORED_STATES
+
+
+def head_roster_text(path):
+    """The committed bytes of ``path`` at git HEAD, or None when git cannot answer.
+
+    None is the skip path of the additive-only guard below, and it must never read as a
+    pass: a shallow checkout, a missing git binary or a repo with no commit at all all land
+    here, and the guard's whole job is to be loud about the one thing the nightly is
+    allowed to do to the roster."""
+    try:
+        proc = subprocess.run(["git", "-C", str(ROOT), "show", f"HEAD:{path.relative_to(ROOT)}"],
+                              capture_output=True, text=True, timeout=20)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+    if proc.returncode != 0 or not proc.stdout.strip():
+        return None
+    return proc.stdout
 # Phase 1 modal rework (T1.1–T1.5) is additive: the pre-existing keys and their
 # meaning are untouched, the five new keys are optional whole blocks. The
 # sub-object key sets below mirror bnet.fetch's extractors exactly, so the
@@ -441,8 +481,8 @@ def main():
         return 1
     SYNC_TEXT = "".join(sources[n] for n in SYNC_MODULES)     # the shipped sync surface
     PKG_TEXT = "".join(sources[n] for n in PKG_MODULES)
-    CFG, HTTP, ROSTER_MOD, RESOLVE, FETCH, ARTIFACTS, SYNC = (
-        sources["config.py"], sources["http.py"], sources["roster.py"],
+    CFG, HTTP, ROSTER_MOD, AUTOADD, RESOLVE, FETCH, ARTIFACTS, SYNC = (
+        sources["config.py"], sources["http.py"], sources["roster.py"], sources["autoadd.py"],
         sources["resolve.py"], sources["fetch.py"], sources["artifacts.py"], sources["sync.py"])
 
     # --- fork gate: no root-level copies of the three data files -------------- #
@@ -480,8 +520,23 @@ def main():
         if v is not None:
             check(isinstance(v, dict) and set(v) <= VALIDATION_KEYS,
                   f"roster {rec.get('id')} validation block has no unknown keys")
-            check(v.get("state") in (None, "validated"),
-                  f"roster {rec.get('id')} validation.state is the only stored value (validated)")
+            check(validation_state_ok(v.get("state")),
+                  f"roster {rec.get('id')} validation.state {v.get('state')!r} is inside the stored "
+                  f"vocabulary {list(ROSTER_STORED_STATES)} (validated = a human signed it off, "
+                  "pending = the nightly auto-add's unreviewed placeholder)")
+        if "guild" in rec:
+            # Optional and additive: absent stays legal forever (every row written before
+            # Phase C has no such key), a value must be a string, and only an empty one is
+            # tolerated-with-a-warning rather than failed because the UI reads "" as
+            # guildless exactly as it reads an absent key.
+            check(rec["guild"] is None or isinstance(rec["guild"], str),
+                  f"roster {rec.get('id')} guild is absent, null or a string "
+                  f"(found {type(rec['guild']).__name__})")
+            if isinstance(rec["guild"], str):
+                check_soft(bool(rec["guild"].strip()),
+                           f"roster {rec.get('id')} guild string is not blank",
+                           f"roster {rec.get('id')} carries a blank guild string; the UI treats it "
+                           f"the same as no guild at all")
             note = v.get("note")
             if note is not None:
                 check(isinstance(note, str) and 0 < len(note.strip()) <= REPORT_NOTE_MAX,
@@ -505,6 +560,53 @@ def main():
         v = rec.get("validation") or {}
         if v.get("state") == "validated" or v.get("confirmedSlug"):
             trusted_slug[rec["id"]] = v.get("confirmedSlug")
+
+    # --- Phase C: the nightly may only APPEND to the roster ------------------- #
+    # data/characters.json has three writers (a hand edit, the site's Contents-API commit,
+    # and — since Phase C — the nightly auto-add of visible guild members). The sync's half
+    # of that contract is one sentence: it never removes, reorders or rewrites a row. Git
+    # HEAD is the independent witness, so the guard compares the committed rows with the
+    # ones now on disk: same rows, same order, same keys in the same order, same values, and
+    # anything extra appended at the end. When git cannot answer (no history, no binary, a
+    # shallow export) this prints a WARN and skips — never a silent pass.
+    head_text = head_roster_text(ROSTER)
+    if head_text is None:
+        check_soft(False,
+                   "unused",
+                   "git HEAD:data/characters.json is unavailable: the additive-only roster guard "
+                   "(no removals, no reorders, no mutations) WAS NOT RUN — this is not a pass")
+    else:
+        try:
+            head_doc = json.loads(head_text)
+            head_rows = head_doc.get("characters") if isinstance(head_doc, dict) else None
+        except ValueError:
+            head_rows = None
+        check(isinstance(head_rows, list),
+              "git HEAD:data/characters.json parses as a v2 roster document")
+        if isinstance(head_rows, list):
+            check(len(roster) >= len(head_rows),
+                  f"the roster did not shrink ({len(head_rows)} rows at HEAD, {len(roster)} now)")
+            first_difference = None
+            for index, before in enumerate(head_rows[:len(roster)]):
+                after = roster[index]
+                if before != after or list(before or []) != list(after or []):
+                    first_difference = index
+                    break
+            if first_difference is None:
+                check(True,
+                      f"every roster row committed at HEAD is unchanged and in order "
+                      f"({len(head_rows)} at HEAD, {len(roster)} on disk, "
+                      f"{len(roster) - len(head_rows)} appended)")
+            else:
+                check(False,
+                      f"roster row index {first_difference} differs from git HEAD — the sync may "
+                      f"only append: HEAD "
+                      f"{json.dumps(head_rows[first_difference], ensure_ascii=False)[:160]} vs disk "
+                      f"{json.dumps(roster[first_difference], ensure_ascii=False)[:160]}")
+            appended = roster[len(head_rows):] if len(roster) >= len(head_rows) else []
+            head_ids = [r.get("id") for r in head_rows if isinstance(r, dict)]
+            check(all(isinstance(r, dict) and r.get("id") not in head_ids for r in appended),
+                  "appended roster rows carry ids that are new against HEAD (no id is reused)")
 
     # --- both artifacts parse ----------------------------------------------- #
     map_text, data_text = read(MAP), read(DATA)
@@ -940,8 +1042,38 @@ def main():
     if wf:
         bad_adds = [ln for ln in wf.splitlines()
                     if re.match(r"^\s*git add ", ln)
-                    and re.search(r"index\.html|\bjs/|\bcss/|characters\.json", ln)]
-        check(not bad_adds, f"sync workflow never commits UI files or the roster ({bad_adds})")
+                    and re.search(r"index\.html|\bjs/|\bcss/", ln)]
+        check(not bad_adds, f"sync workflow never commits UI files ({bad_adds})")
+        # Phase C (owner decision): the nightly is an approved ADDITIVE writer of the
+        # roster, so the auto-added rows it resolved must reach main in the same commit as
+        # the map and sidecar that cover them — otherwise the coverage gate
+        # (set(map entries) == set(roster ids)) red-lines the very next run. The additive
+        # invariant is gated above, against git HEAD, not here.
+        check(any("data/characters.json" in ln for ln in add_lines),
+              f"commit step adds the roster the auto-add may have grown ({add_lines})")
+
+    # --- Phase C: the auto-add is pure, additive and sequenced before the write -------- #
+    check(re.search(r"def plan\(roster_records, guilds", AUTOADD) is not None
+          and "resolve.member_norm_key" in AUTOADD and "resolve.norm_slug" in AUTOADD,
+          "bnet.autoadd exposes the pure plan and mirrors resolve.member_norm_key / norm_slug")
+    check('AUTO_STATE = "pending"' in AUTOADD and '"track": AUTO_TRACK' in AUTOADD
+          and 'AUTO_TRACK = "alts"' in AUTOADD,
+          "an auto-added row is track alts with validation.state pending (the Phase C spec)")
+    check("def write_roster(" in ARTIFACTS and '"schemaVersion": SCHEMA_VERSION' in
+          body_of(ARTIFACTS, r"\ndef write_roster\((.*?)\n(?=\ndef |\Z)"),
+          "the roster is written through the schemaVersion-2 envelope by artifacts.py")
+    check("def roster_append_refusal(" in ARTIFACTS
+          and "would mutate roster row" in ARTIFACTS
+          and "would remove roster rows" in ARTIFACTS,
+          "artifacts.py owns the additive-only roster guard (no mutation, no removal)")
+    check("artifacts.roster_append_refusal(roster_before, roster_records)" in SYNC,
+          "the sync proves the append additive against the rows it started with")
+    check(SYNC.index("artifacts.roster_append_refusal(") < SYNC.index("artifacts.write_pair("),
+          "a non-additive roster is refused before the artifact pair is written")
+    check(SYNC.index("artifacts.write_pair(") < SYNC.index("artifacts.write_roster("),
+          "the roster is only written once the artifact pair it must stay consistent with has landed")
+    check("self.resolver.guild_lever(work, [r[\"id\"] for r in rows])" in SYNC,
+          "auto-added ids are resolved through the guild lever in the same run that created them")
 
     # --- caching mechanism (amendment 3) --------------------------------------------- #
     check("If-Modified-Since" in SYNC_TEXT, "sync package sends If-Modified-Since")

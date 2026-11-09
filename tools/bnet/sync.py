@@ -7,6 +7,13 @@ moved: redaction/allowlist/no-redirect live in ``bnet.http``, the artifact
 schemas and the H4 mass-flip floor in ``bnet.artifacts``, the H2 URL validators
 and the enrichment fetches in ``bnet.fetch``.
 
+Since Phase C the run is also an ADDITIVE writer of ``data/characters.json``
+(``bnet.autoadd`` decides which Battle.net-visible guild members are missing and
+``artifacts.write_roster`` writes the schemaVersion-2 envelope): existing rows are never
+mutated, reordered or removed, the append is proven against the rows as this run found
+them before anything is published, and with nothing to add the roster is not written at
+all.
+
 Artifacts (written through ``bnet.artifacts``, the single writer):
 
     data/battle-net-map.json      roster-id -> Battle.net identity map (schema v2)
@@ -60,7 +67,7 @@ import sys
 import time
 from collections import Counter
 
-from . import artifacts, config, fetch, http, resolve, roster
+from . import artifacts, autoadd, config, fetch, http, resolve, roster
 
 
 # --------------------------------------------------------------------------- #
@@ -215,9 +222,101 @@ class Sync:
                          + (" (dry-run, not written)" if dry_run else ""))
         return lines
 
+    # -- Phase C: additive guild-member auto-add -------------------------------- #
+    def discover_guilds(self, work):
+        """``{guild slug: display name}`` for every guild this run made discoverable.
+
+        A guild slug is only ever discoverable from a resolved member's profile (notes
+        §7.2: there is no guild search), so the profiles the resolver already fetched are
+        the whole source and this reads nothing."""
+        found = {}
+        for w in work.values():
+            profile = w.get("profile")
+            guild = profile.get("guild") if isinstance(profile, dict) else None
+            if not isinstance(guild, dict):
+                continue
+            slug = guild.get("slug")
+            if not isinstance(slug, str) or not slug.strip():
+                continue
+            slug = slug.strip()
+            name = guild.get("name")
+            name = name.strip() if isinstance(name, str) else ""
+            # A profile that carries the name wins over one that omitted it, whatever the
+            # iteration order was; the slug is still enough to fetch the roster.
+            if slug not in found or (not found[slug] and name):
+                found[slug] = name
+        return found
+
+    def auto_add(self, roster_records, ordered_ids, work):
+        """Append one pending row per visible guild member the roster does not list yet.
+
+        Fed by the guild rosters this run already fetched: ``Fetcher.guild_members`` caches
+        per run, so the members read here are the payload the guild-lever pass above
+        resolved against — no roster is fetched twice. Each new id then goes through that
+        same lever, which resolves it from the very member that justified the row (one
+        profile GET, which the lever spends for any guild-found member anyway), so a new row
+        carries a real map verdict — and therefore a map row and a sidecar row — in the run
+        that created it.
+
+        Placement is deliberate: after the resolver's passes (that is what produces the
+        guild data) and before the ``not_found`` fallback, the slug dedupe, the H4 floor and
+        the write, so a new id is a full citizen of this run's output and the
+        ``set(map entries) == set(roster ids)`` gate still holds with the row present.
+
+        Returns ``(rows added, summary lines)``; the caller owns whether anything is
+        published (and refuses the whole run if the append is not purely additive).
+        """
+        lines = []
+        discovered = self.discover_guilds(work)
+        if not discovered:
+            return [], lines
+        guilds = {}
+        for slug in sorted(discovered):
+            try:
+                members = self.f.guild_members(slug)
+            except http.BudgetExhausted as exc:
+                self.budget_hit = True
+                lines.append(f"auto-add: stopped at the request cap ({http.redact(str(exc))[:120]})")
+                break
+            except http.UnsafeUrl as exc:
+                lines.append(f"auto-add: skipped {slug}, the allowlist refused its roster route "
+                             f"({http.redact(str(exc))[:120]})")
+                continue
+            if members is None:
+                # Already reported by the run summary's guild-fetch warning; it must never
+                # read as "this guild has no new members", so nothing is added from it.
+                self.f.guild_fetch_failures.add(slug)
+                continue
+            guilds[slug] = {"name": discovered[slug], "members": members}
+        rows = autoadd.plan(roster_records, guilds)
+        if not rows:
+            return [], lines
+        for row in rows:
+            roster_records.append(row)
+            ordered_ids.append(row["id"])
+            work[row["id"]] = {"rec": row, "entry": None, "profile": None,
+                               "profile_url": None, "unchanged": False}
+        try:
+            self.resolver.guild_lever(work, [r["id"] for r in rows])
+        except http.BudgetExhausted as exc:
+            self.budget_hit = True
+            lines.append(f"auto-add: resolution stopped at the request cap "
+                         f"({http.redact(str(exc))[:120]})")
+        except http.UnsafeUrl as exc:
+            lines.append(f"auto-add: resolution stopped by the URL allowlist "
+                         f"({http.redact(str(exc))[:120]})")
+        lines.append(f"auto-add: {len(rows)} pending row(s) appended for Battle.net-visible guild "
+                     f"member(s) the roster did not list: "
+                     + ", ".join(f"{r['name']} ({r['id']})" for r in rows[:8])
+                     + (" …" if len(rows) > 8 else ""))
+        return rows, lines
+
     # -- full sync ------------------------------------------------------------- #
     def run_sync(self, roster_records, prev_entries):
         started = time.monotonic()
+        # The rows as this run found them, kept so the append below can be proven purely
+        # additive before anything is written (bnet.artifacts.roster_append_refusal).
+        roster_before = [rec for rec in roster_records]
         ordered_ids = [rec["id"] for rec in roster_records]
         roster_ids = set(ordered_ids)
         pruned = sorted(i for i in prev_entries if i not in roster_ids)
@@ -268,6 +367,10 @@ class Sync:
             # below; the run still writes what it legitimately learned.
             self.f.warnings.append(f"guild-lever pass stopped by the URL allowlist: {http.redact(str(exc))}")
 
+        # Phase C: visible guild members the tracker does not list yet become pending rows
+        # here, and are resolved through the lever above before the verdicts below are read.
+        auto_added, auto_lines = self.auto_add(roster_records, ordered_ids, work)
+
         for rid in ordered_ids:
             w = work[rid]
             if w["entry"] is None:
@@ -288,12 +391,24 @@ class Sync:
         resolver_verdict = artifacts.resolver_verdict(
             {rid: work[rid]["entry"] for rid in ordered_ids}, ordered_ids)
         verdict_statuses = Counter(e["status"] for e in resolver_verdict.values())
+        # The roster may only ever GROW (Phase C). Checked before anything is written, so a
+        # run that somehow lost, reordered or rewrote a row publishes nothing at all — the
+        # map, the sidecar and the roster are one atomic publication or none.
+        append_refusal = artifacts.roster_append_refusal(roster_before, roster_records)
+        if append_refusal:
+            statuses_now = {rid: work[rid]["entry"]["status"] for rid in ordered_ids
+                            if isinstance(work[rid].get("entry"), dict)}
+            self.emit_summary(self.summary_lines(statuses_now, len(ordered_ids),
+                                                 time.monotonic() - started,
+                                                 [append_refusal] + auto_lines))
+            return 1
+
         refusal = artifacts.mass_flip_refusal(resolver_verdict, ordered_ids, prev_entries)
         if refusal:
             # Printed with the run summary as before; the statuses shown are the ones the floor
             # was decided on, and nothing was enriched for a run that is about to refuse.
             self.emit_summary(self.summary_lines(verdict_statuses, len(ordered_ids),
-                                                 time.monotonic() - started, [refusal]))
+                                                 time.monotonic() - started, [refusal] + auto_lines))
             return 1
 
         # A reviewer's open report outranks whatever this run resolved: the row stays
@@ -361,11 +476,21 @@ class Sync:
                                              floor_entries=resolver_verdict)
         if write_refusal:
             self.emit_summary(self.summary_lines(statuses, len(ordered_ids),
-                                                 time.monotonic() - started, [write_refusal]))
+                                                 time.monotonic() - started, [write_refusal] + auto_lines))
             return 1
         self.cache.save()
 
         extra = []
+        if auto_added:
+            # Written last and only now: the pair is on disk, the floor cleared and the
+            # append was proven additive, so the roster can grow to cover the ids the pair
+            # already publishes. With nothing to append this writer is never called, and the
+            # committed roster's bytes stay exactly as they were.
+            artifacts.write_roster(roster_records, dry_run=self.args.dry_run)
+            extra.extend(auto_lines
+                         + [f"roster: {len(roster_records)} row(s) written to "
+                            f"{config.ROSTER_FILE.name}" + (" (dry-run, not written)" if self.args.dry_run else "")])
+
         if self.f.static_ns and self.f.talent_trees:
             # Written only after the pair landed: a run that refused or crashed
             # never publishes half a reference dataset.

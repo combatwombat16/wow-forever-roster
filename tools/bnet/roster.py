@@ -11,7 +11,10 @@ track, role, roleSec, race, class, prof1, prof2``) and may carry an optional
     {"state": "validated", "confirmedSlug": "...", "reviewedBy": "...",
      "reviewedAt": "..."}
 
-Only ``validated`` is ever stored; every other lifecycle state is derived by
+Two values are ever stored. ``validated`` is a human sign-off. ``pending`` is written by
+nothing but the Phase C auto-add (``bnet.autoadd``) and marks a row appended for a
+Battle.net-visible guild member nobody has reviewed; it is deliberately NOT a trust state,
+so such a row is still resolved on every run. Every other lifecycle state is derived by
 the UI from the Battle.net map status. A record with no ``validation`` is a
 draft.
 

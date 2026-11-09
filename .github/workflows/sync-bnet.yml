@@ -80,7 +80,14 @@ jobs:
           # Phase 5b adds the two static icon maps (data/class-icons.json,
           # data/profession-icons.json): the sync writes them after the pair lands,
           # and the verify step above has already schema-checked them.
-          git add data/battle-net-map.json data/character-data.json data/talent-trees.json data/class-icons.json data/profession-icons.json
+          # Phase C adds data/characters.json: the sync is an approved ADDITIVE writer of
+          # the roster (one pending row per Battle.net-visible guild member the tracker does
+          # not list), and the auto-added rows must land in the same commit as the map and
+          # sidecar rows written for those ids, or the next run's coverage gate
+          # (set(map entries) == set(roster ids)) fails against the file that grew. The
+          # verify step above is what proves the write appended only: same rows, same order,
+          # no mutation, compared against git HEAD.
+          git add data/characters.json data/battle-net-map.json data/character-data.json data/talent-trees.json data/class-icons.json data/profession-icons.json
           if git diff --cached --quiet; then
             echo "No artifact changes; skipping commit."
             exit 0

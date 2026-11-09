@@ -48,11 +48,31 @@ as it did before the Battle.net integration.
 
 1. **Roster (`data/characters.json`).** The external WoW: Forever tracker used to commit a
    root-level `characters.json`; that path is retired — the root file is gone and the last
-   tracker commit to it predates the `data/` migration. The roster is now edited either by
-   hand in this repository or from the site itself, which commits through the Contents API
-   with the maintainer's own PAT. The ten original fields (`id, player, name, track, role,
-   roleSec, race, class, prof1, prof2`) are unchanged and are wrapped in a
-   `{ "schemaVersion": 2, "characters": [ … ] }` envelope.
+   tracker commit to it predates the `data/` migration. It has three writers. A human edits
+   it by hand in this repository, or from the site itself, which commits through the
+   Contents API with the maintainer's own PAT. And since Phase C the nightly sync may append
+   rows to it: for every guild member Battle.net will show us that no roster row is known
+   for, the run appends one placeholder row — a fresh 13-digit id, the member's
+   `"<name> <surname>"`, `player` set to the member's name as a stand-in alias, `track:
+   "alts"`, `guild` set to the guild's name, `"None"` in the role and profession columns,
+   and `validation.state: "pending"` to mark it as unreviewed. **Appending is all it may
+   do:** before it publishes anything the run checks, against `git HEAD`, that every row it
+   was given is still there, unchanged and in order — and a run that would remove, reorder
+   or rewrite a row writes nothing at all, roster or artifacts. Curation afterwards is manual, through the site's
+   edit UI, exactly like any other draft row.
+
+   Stated plainly, because it is a limit rather than a bug: only characters whose owners
+   have opted in to the public API are in a guild roster at all, so "every guild member"
+   means every **visible** one. A member who has opted out can never be auto-added and has
+   to be added by hand — the nightly cannot see them to know they are missing. The guild
+   roster is also cached upstream for three hours, so a character who joined or left today
+   may not appear until tomorrow's run.
+
+   The ten original fields (`id, player, name, track, role, roleSec, race, class, prof1,
+   prof2`) are unchanged, `guild` is the one optional addition (an auto-added row carries
+   the guild name there so the guild filter can place a character that has no sidecar row
+   yet), and everything is wrapped in a `{ "schemaVersion": 2, "characters": [ … ] }`
+   envelope.
 2. **Battle.net sidecars (`data/character-data.json`, `data/battle-net-map.json`).** Written
    only by the sync pipeline, never by the browser: a scheduled run each night, plus
    on-demand refreshes a maintainer dispatches from the character modal. The sync mints a

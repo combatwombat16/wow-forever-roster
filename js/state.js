@@ -65,9 +65,16 @@ export function getQuery() {
 }
 
 // ---------- derived lifecycle (docs/refactor-design.md §2) ----------
-// Only `validated` is ever stored (in the roster's validation block); every other
+// Only `validated` carries meaning (in the roster's validation block); every other
 // state is derived from the battle-net-map status of the same roster id, so the map
 // can never drift out of sync with a stored state that the sync stopped writing.
+//
+// One second value exists as DATA, not as behaviour: the nightly auto-add (Phase C) stamps
+// `validation.state: 'pending'` on the placeholder rows it appends for Battle.net-visible
+// guild members. Nothing below recognises it — a pending row is not validated, so it falls
+// through to exactly the map-status derivation an unvalidated draft gets. That is intended:
+// the marker exists so a human curating the roster (and the sync gate) can tell a row the
+// nightly wrote from one a person typed, and it must never freeze resolution.
 export const LIFECYCLE = Object.freeze({
   AWAITING_SYNC: 'awaiting_sync',
   AWAITING_CONFIRMATION: 'awaiting_confirmation',

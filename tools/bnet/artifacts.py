@@ -6,7 +6,9 @@ Provenance: ``write_json``, the fixed map-entry field set (``map_entry`` /
 key are the Phase 2 lifecycle additions of docs/refactor-design.md §3.
 
 This module is the ONLY writer of ``data/battle-net-map.json`` and
-``data/character-data.json``, and of the reference artifacts beside them
+``data/character-data.json``, of the roster it appends pending rows to
+(``write_roster``, Phase C: additive only, and only when a row was actually added),
+and of the reference artifacts beside them
 (``data/talent-trees.json`` since T1.3, ``data/class-icons.json`` and
 ``data/profession-icons.json`` since Phase 5b). Every key either module emits is
 listed in ``MAP_ENTRY_KEYS`` / ``CANDIDATE_KEYS`` / ``CHARACTER_KEYS`` /
@@ -20,6 +22,11 @@ import os
 from . import config, fetch, http
 
 SCHEMA_VERSION = 2
+
+# ``data/characters.json`` envelope keys. The roster keeps its own schemaVersion rather than
+# inheriting the artifact constant by name because a hand-edit writes this shape too; the two
+# happen to be 2 today (verify_sync_artifacts.py gates both).
+ROSTER_DOC_KEYS = ("schemaVersion", "characters")
 
 # Status vocabulary (v2). ``ambiguous`` is new: multiple plausible resolutions,
 # slug null, candidates populated. ``needs_review`` survives for the roster-side
@@ -361,6 +368,43 @@ def write_map(entries, *, dry_run):
     payload = {"schemaVersion": SCHEMA_VERSION, "updatedAt": http.iso_now(), "entries": entries}
     if not dry_run:
         write_json(config.MAP_FILE, payload)
+    return payload
+
+
+def roster_append_refusal(previous, records):
+    """The additive-only verdict for a roster write: the fatal message, or None.
+
+    Phase C makes the nightly a writer of ``data/characters.json``, the one data file a
+    human edits by hand. Its whole safety property is that it may only APPEND: every row
+    that was there when the run started must still be there, at the same index, with the
+    same keys in the same order and equal values. Checked before ``write_pair`` rather than
+    at the writer, because a roster the sync has no right to write must not be published
+    alongside a map and sidecar that were."""
+    prev = list(previous or [])
+    rows = list(records or [])
+    if len(rows) < len(prev):
+        return (f"FATAL: auto-add would remove roster rows ({len(prev)} at start of run, "
+                f"{len(rows)} now); characters.json was NOT written.")
+    for index, before in enumerate(prev):
+        after = rows[index]
+        if before != after or list(before or []) != list(after or []):
+            rid = before.get("id") if isinstance(before, dict) else None
+            return (f"FATAL: auto-add would mutate roster row {index} (id {rid}); existing "
+                    "rows are never rewritten, so characters.json was NOT written.")
+    return None
+
+
+def write_roster(records, *, dry_run):
+    """Write ``data/characters.json`` in its schemaVersion-2 envelope (Phase C).
+
+    Only ever called with the run's rows after :func:`roster_append_refusal` cleared them,
+    and only when a row was actually added: with nothing to append the writer is not
+    invoked at all, so a steady-state nightly leaves the roster's bytes — including the
+    trailing-newline convention of the committed file — completely untouched.
+    """
+    payload = {"schemaVersion": SCHEMA_VERSION, "characters": list(records or [])}
+    if not dry_run:
+        write_json(config.ROSTER_FILE, payload)
     return payload
 
 

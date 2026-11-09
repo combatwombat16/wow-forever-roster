@@ -10,6 +10,8 @@ Modules
                 transport and the Last-Modified conditional cache
     roster      ``data/characters.json`` v1/v2 reading + lifecycle (validated /
                 confirmedSlug) helpers
+    autoadd     Phase C: the pure plan of pending rows to APPEND for the Battle.net-visible
+                guild members a roster row is not yet known for
     resolve     name -> Battle.net identity, candidate enumeration, ``ambiguous``
                 verdicts, trusted-slug handling (never auto-picks)
     fetch       profile / gear / achievement / pvp fetching + H2 href/iconUrl
@@ -25,4 +27,4 @@ before any artifact write and withholding of non-Blizzard URLs from every string
 H3 redaction of derived credential forms, H4 mass-flip floor on the artifact pair.
 """
 
-__all__ = ["artifacts", "config", "fetch", "http", "probe", "resolve", "roster", "sync"]
+__all__ = ["artifacts", "autoadd", "config", "fetch", "http", "probe", "resolve", "roster", "sync"]
