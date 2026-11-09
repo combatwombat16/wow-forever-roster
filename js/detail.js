@@ -848,9 +848,9 @@ function clearTooltipDescription() {
 
 // ---------- gear tab (T2.3) ----------
 
-// The paper doll in fixed order: the fifteen body slots, drawn as three rows of five, then the
-// weapon/ranged row. The frame is drawn whether or not the row has any gear in it — the layout is
-// the character sheet, not a list of whatever arrived.
+// The paper doll in fixed order: the fifteen body slots, then the four weapon/ranged slots, each
+// one pinned to a region of the figure by DOLL_REGIONS below. The frame is drawn whether or not the
+// row has any gear in it — the layout is the character sheet, not a list of whatever arrived.
 export const GEAR_BODY_SLOTS = ['Head', 'Neck', 'Shoulders', 'Back', 'Chest', 'Shirt', 'Waist', 'Legs',
   'Feet', 'Wrist', 'Hands', 'Ring 1', 'Ring 2', 'Trinket 1', 'Trinket 2'];
 export const GEAR_HAND_SLOTS = ['Main Hand', 'Off Hand', 'Ranged', 'Ammo'];
@@ -880,9 +880,52 @@ function gearIconHtml(item, name) {
     : '<span class="wow-slot-glyph" aria-hidden="true"></span>';
 }
 
-function gearSlotHtml(slot, item) {
+// Where the socket for a slot sits, as whole percentages of the fixed .wow-doll box in app.css
+// (x from the left edge, y from the top), keyed by Blizzard slot id: helm over the head, shoulder
+// pads over the shoulders, neck and back across the upper torso, chest/shirt/waist/legs down the
+// middle of the body, wrist and hands on the forearms, rings and trinkets over the hands, boots at
+// the feet, and the weapons flanking the lower sides.
+//
+// These are authored constants, never sidecar data: the only sidecar value that reaches a style
+// attribute is the slot NAME, and only when it is already an entry of GEAR_BODY_SLOTS or
+// GEAR_HAND_SLOTS. The 420px box is the reference width, and every pair closer than 18% horizontally
+// is at least 12% apart vertically (the fixed height does not shrink with the modal), so the 52px
+// sockets cannot stack on each other even at a phone-width modal.
+const DOLL_REGIONS = {
+  Head: [50, 6], Shoulders: [50, 19], Back: [32, 26], Neck: [68, 26],
+  Chest: [50, 32], Shirt: [50, 44], Waist: [50, 56], Legs: [50, 70], Feet: [50, 90],
+  Wrist: [24, 44], Hands: [76, 44], 'Trinket 1': [14, 58], 'Trinket 2': [86, 58],
+  'Ring 1': [32, 68], 'Ring 2': [68, 68],
+  'Main Hand': [10, 78], 'Off Hand': [90, 78], Ranged: [10, 93], Ammo: [90, 93]
+};
+
+// The socket style for one slot of the doll, or '' for a slot this map does not place (which would
+// put it back in a static flow rather than guess at a body part). `slot` is always an entry of the
+// two const lists, and the two coordinates are the authored integers above.
+function dollRegionStyle(slot) {
+  const region = ownValue(DOLL_REGIONS, slot);
+  if (!Array.isArray(region) || region.length !== 2) return '';
+  return `left:${region[0]}%;top:${region[1]}%`;
+}
+
+// The character render inside the doll (Phase B): exactly one <img>, only for a `media.fullRender`
+// the sync HEAD-validated and this host allowlist re-checks at render time, and never anything else
+// — a rejected or absent URL emits no tag, no src and no host name, leaving the generic silhouette
+// app.css paints as the doll's background layer as the whole picture. `onerror` hides the broken
+// image over the same silhouette, so a URL that validated at sync time and failed at read time
+// degrades to the fallback art instead of a broken-image glyph.
+function dollRenderHtml(sidecar) {
+  const media = sidecar && typeof sidecar === 'object' ? ownValue(sidecar, 'media') : null;
+  const raw = media && typeof media === 'object' && !Array.isArray(media) ? ownValue(media, 'fullRender') : '';
+  const render = scalarText(raw);
+  if (!isSafeIconUrl(render)) return '';
+  return `<img class="wow-doll-render" src="${escapeHtml(render)}" loading="lazy" alt="" onerror="this.style.display='none'">`;
+}
+
+function gearSlotHtml(slot, item, regionStyle) {
+  const position = regionStyle === undefined || regionStyle === '' ? '' : ` style="${escapeHtml(regionStyle)}"`;
   if (!item) {
-    return `<div class="wow-slot wow-slot-empty" data-wow-slot="${escapeHtml(slot)}">
+    return `<div class="wow-slot wow-slot-empty wow-doll-slot"${position} data-wow-slot="${escapeHtml(slot)}">
       <span class="wow-slot-face"></span>
       <span class="wow-slot-name">${escapeHtml(slot)}</span>
     </div>`;
@@ -892,7 +935,7 @@ function gearSlotHtml(slot, item) {
   const quality = qualityKey(item.quality);
   const nameAttrs = quality === '' ? 'class="wow-slot-name"' : `class="wow-slot-name wow-quality" data-wow-quality="${quality}"`;
   const ilvl = numberOr(item.ilvl);
-  return `<button type="button" class="wow-slot wow-slot-filled" data-wow-slot="${escapeHtml(slot)}"
+  return `<button type="button" class="wow-slot wow-slot-filled wow-doll-slot"${position} data-wow-slot="${escapeHtml(slot)}"
     onmouseenter="showDetailTooltip(event, ${index})" onmouseleave="hideDetailTooltip()"
     onfocus="showDetailTooltip(event, ${index})" onblur="hideDetailTooltip()">
       <span class="wow-slot-face">${gearIconHtml(item, name)}</span>
@@ -928,12 +971,21 @@ export function gearTabHtml(sidecar) {
     }
     bySlot.set(slot, item);
   });
-  const cells = slots => slots.map(slot => gearSlotHtml(slot, bySlot.get(slot) || null)).join('');
+  // One doll, not two grids: every known slot — filled or empty — is placed over the figure, and
+  // the figure is the CSS layer plus (only when it exists) the validated render. .wow-doll-figure
+  // carries no aria-hidden: the element is empty and its only content is a CSS background, which no
+  // screen reader reads, and the modal reserves that attribute for the rejected-icon placeholders.
+  const sockets = [...GEAR_BODY_SLOTS, ...GEAR_HAND_SLOTS]
+    .map(slot => gearSlotHtml(slot, bySlot.get(slot) || null, dollRegionStyle(slot)))
+    .join('');
   const known = [...bySlot.values()].length;
   if (known === 0 && other.length === 0) return emptyState('No gear data synced yet.');
   return `<div class="space-y-1.5">
-    <div class="grid grid-cols-5 gap-1.5">${cells(GEAR_BODY_SLOTS)}</div>
-    <div class="grid grid-cols-4 gap-1.5">${cells(GEAR_HAND_SLOTS)}</div>
+    <div class="wow-doll">
+      <div class="wow-doll-figure"></div>
+      ${dollRenderHtml(sidecar)}
+      ${sockets}
+    </div>
     ${other.length === 0 ? '' : `<div class="pt-0.5">
       <div class="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Unslotted</div>
       <div class="flex flex-wrap gap-1.5 pt-1">${gearChipsHtml(other)}</div>
