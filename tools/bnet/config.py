@@ -26,6 +26,13 @@ DATA_FILE = DATA_DIR / "character-data.json"
 # version-pinned static reference data shared by every character, so they are
 # stored once here instead of duplicated per character in the sidecar.
 TALENT_TREES_FILE = DATA_DIR / "talent-trees.json"
+# Phase 5b (P5.B, notes §11): the two site-wide static icon maps. Same envelope as
+# talent-trees.json ({staticNamespace, updatedAt, icons}) and the same reason to
+# live in their own file — the payload is reference data shared by every character
+# and every UI surface (class distribution bars, profession matrix, party slots),
+# so it is written once per run rather than repeated per row.
+CLASS_ICON_FILE = DATA_DIR / "class-icons.json"
+PROFESSION_ICON_FILE = DATA_DIR / "profession-icons.json"
 PROBE_OUT_FILE = REPO / "docs" / "bnet-probe-raw.json"
 DEFAULT_STATE_DIR = Path.home() / ".cache" / "wow-bnet-sync"
 
@@ -58,6 +65,13 @@ SPELL_MEDIA_PATH = "/data/wow/media/spell/{spell_id}"
 # the sidecar publishes no race icon at all rather than an invented one.
 PROFESSION_MEDIA_PATH = "/data/wow/media/profession/{profession_id}"
 PLAYABLE_CLASS_MEDIA_PATH = "/data/wow/media/playable-class/{class_id}"
+# Phase 5b (P5.B, notes §11): the profession dictionary. Both index docs answer in
+# the re-discovered STATIC namespace (playable-class/index is §5, profession/index
+# is §11 — 200 profession/2, 13 entries), and every icon still comes from the
+# per-id media prefix route above: `/data/wow/media/profession/index` is a routed
+# 404, so the index carries names and ids only. There is deliberately no
+# playable-race index-for-icons use: §10.3 keeps race icons unavailable.
+PROFESSION_INDEX = "/data/wow/profession/index"
 # The static namespace is version-pinned and must be re-discovered every run
 # from hrefs in fresh payloads (notes §5); plain static-forever-us is 403.
 STATIC_NS_RE = re.compile(r"namespace=(static-[A-Za-z0-9._-]+)")
@@ -95,6 +109,12 @@ MAX_429_RETRIES = 3
 # character budget (MAX_REQUESTS); icons above the cap stay null and are picked
 # up by a later run once the trees themselves are cached.
 MAX_SPELL_ICON_LOOKUPS = 900
+# Longest name accepted as an icon-map artifact KEY (notes §11). Values from the
+# index are Blizzard's own names — the longest observed is 21 characters ("Test
+# Profession [DNT]") — so this only bounds what a hostile or patched index can put
+# into a key the browser does lookups with. A longer name is refused and reported,
+# never truncated (a truncated key would silently answer for a different name).
+ICON_MAP_KEY_MAX = 64
 USER_AGENT = "wow-forever-roster/2.0 (nightly roster sync; read-only)"
 
 CACHE_VERSION = 1
@@ -112,7 +132,12 @@ DRIFT_SURFACES = ("profile", "equipment", "specializations", "achievements",
                   "playable_specialization", "talent_tree",
                   # Phase 4a (notes §10): the profession and class icon docs are
                   # now load-bearing for the Professions tab and the class badge.
-                  "profession_media", "playable_class_media")
+                  "profession_media", "playable_class_media",
+                  # Phase 5b (notes §11): the profession dictionary behind
+                  # data/profession-icons.json. The class index is already listed
+                  # above as playable_class_index, and both maps reuse the two
+                  # media surfaces, so those are the only additions.
+                  "profession_index")
 
 # --------------------------------------------------------------------------- #
 # Probe endpoints / budgets (tools/bnet/probe.py; Phase 1 contract frozen here)

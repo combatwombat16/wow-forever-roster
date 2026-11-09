@@ -6,9 +6,12 @@ Provenance: ``write_json``, the fixed map-entry field set (``map_entry`` /
 key are the Phase 2 lifecycle additions of docs/refactor-design.md §3.
 
 This module is the ONLY writer of ``data/battle-net-map.json`` and
-``data/character-data.json``. Every key either module emits is listed in
-``MAP_ENTRY_KEYS`` / ``CANDIDATE_KEYS`` / ``CHARACTER_KEYS`` so a reviewer can
-diff two runs line by line and the verify script can assert exact key sets.
+``data/character-data.json``, and of the reference artifacts beside them
+(``data/talent-trees.json`` since T1.3, ``data/class-icons.json`` and
+``data/profession-icons.json`` since Phase 5b). Every key either module emits is
+listed in ``MAP_ENTRY_KEYS`` / ``CANDIDATE_KEYS`` / ``CHARACTER_KEYS`` /
+``TALENT_TREES_DOC_KEYS`` / ``ICON_MAP_DOC_KEYS`` so a reviewer can diff two runs
+line by line and the verify script can assert exact key sets.
 """
 
 import json
@@ -58,6 +61,13 @@ TALENT_TREE_KEYS = ("treeId", "classId", "className", "specId", "specName", "nam
 TALENT_NODE_KEYS = ("id", "displayRow", "displayCol", "rawPositionX", "rawPositionY",
                     "unlocks", "lockedBy", "ranks")
 TALENT_RANK_KEYS = ("rank", "talentId", "spellId", "spellName", "description", "castTime", "iconUrl")
+# data/class-icons.json and data/profession-icons.json (Phase 5b, notes §11): the
+# talent-tree envelope reused. The keys are Blizzard's own class / profession
+# names (bnet.fetch.icon_map_key is what decides that a name may be a key at all),
+# and an entry exists only when its icon resolved on the render host, so iconUrl is
+# never null here — unlike the per-character icon fields.
+ICON_MAP_DOC_KEYS = ("staticNamespace", "updatedAt", "icons")
+ICON_ENTRY_KEYS = ("id", "iconUrl")
 
 
 
@@ -196,6 +206,58 @@ def write_talent_trees(static_namespace, specs, *, dry_run):
                "specs": {k: payload_specs[k] for k in sorted(payload_specs, key=sort_key)}}
     if not dry_run:
         write_json(config.TALENT_TREES_FILE, payload)
+    return payload
+
+
+def load_previous_icon_map(path):
+    """A previous icon-map document (class or profession), or {} when absent/unreadable.
+
+    Same contract as ``load_previous_talent_trees``: the pinned static namespace is
+    what decides whether the old entries are still worth anything, and this reader
+    only hands the document over — ``write_icon_map`` makes that call."""
+    if not path.exists():
+        return {}
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        print(f"  ! previous {path.name} unreadable ({type(exc).__name__}); rebuilding it whole")
+        return {}
+    return raw if isinstance(raw, dict) else {}
+
+
+def write_icon_map(path, static_namespace, icons, *, dry_run):
+    """Write one static icon-map artifact (never in dry-run) and return the document.
+
+    Envelope identical to ``write_talent_trees`` on purpose: the site already knows
+    how to treat "pinned to this static namespace, updated at this time", and the
+    merge rule is the same one — entries are carried forward by NAME only while the
+    pinned namespace is unchanged, and a patch drops the old map instead of merging
+    geometry from two versions. Merging rather than replacing means a run whose
+    index read came back short cannot erase icons the site is already rendering
+    (bnet.fetch.Fetcher.icon_map builds the map from the whole index, so in a healthy
+    run the merge only adds names the index no longer lists).
+
+    Every value — fresh or carried — goes through ``fetch.icon_entry``, so an
+    off-host URL in a hand-edited committed file cannot survive a re-write.
+    """
+    payload_icons = {}
+    previous = load_previous_icon_map(path)
+    if previous.get("staticNamespace") == static_namespace and isinstance(previous.get("icons"), dict):
+        for name, value in previous["icons"].items():
+            entry = fetch.icon_entry(value)
+            key = fetch.icon_map_key(name)
+            if entry and key:
+                payload_icons[key] = entry
+    for name, value in (icons or {}).items():
+        entry = fetch.icon_entry(value)
+        key = fetch.icon_map_key(name)
+        if entry and key:
+            payload_icons[key] = entry
+    payload = {"staticNamespace": static_namespace,
+               "updatedAt": http.iso_now(),
+               "icons": {k: payload_icons[k] for k in sorted(payload_icons, key=lambda n: (n.casefold(), n))}}
+    if not dry_run:
+        write_json(path, payload)
     return payload
 
 

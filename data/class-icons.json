@@ -1,0 +1,42 @@
+{
+  "staticNamespace": "static-1.60.1_70399-forever-us",
+  "updatedAt": "2026-11-09T04:41:30Z",
+  "icons": {
+    "Druid": {
+      "id": 11,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/625999.jpg"
+    },
+    "Hunter": {
+      "id": 3,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626000.jpg"
+    },
+    "Mage": {
+      "id": 8,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626001.jpg"
+    },
+    "Paladin": {
+      "id": 2,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626003.jpg"
+    },
+    "Priest": {
+      "id": 5,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626004.jpg"
+    },
+    "Rogue": {
+      "id": 4,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626005.jpg"
+    },
+    "Shaman": {
+      "id": 7,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626006.jpg"
+    },
+    "Warlock": {
+      "id": 9,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626007.jpg"
+    },
+    "Warrior": {
+      "id": 1,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626008.jpg"
+    }
+  }
+}

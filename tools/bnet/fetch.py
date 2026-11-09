@@ -431,6 +431,103 @@ def normalize_talent_tree(payload):
             "nodes": nodes}
 
 
+# --------------------------------------------------------------------------- #
+# Phase 5b static icon maps (character-tasks.md P5.B, notes §11).
+# Pure index-payload -> artifact-key functions: no I/O, so the shape contract of
+# data/class-icons.json / data/profession-icons.json is pinned offline. The map is
+# keyed by the NAME Blizzard gives (the UI has no id to start from: a roster row
+# carries a class word, a distribution bar carries a class word), which makes the
+# key attacker-influenced input, so it gets stricter rules than a value does.
+# --------------------------------------------------------------------------- #
+# Names that are Object.prototype property names. A hostile (or merely patched)
+# index that named a profession ``constructor`` would hand the UI team an object
+# whose ``map[name]`` lookup resolves to a built-in function, and whose
+# ``for (const k of …) out[k] = …`` copy silently sets the prototype instead of
+# creating an entry. Real Blizzard names never look like this, so refusing the key
+# costs nothing and the refusal is reported rather than swallowed.
+JS_OBJECT_KEY_HAZARDS = frozenset({
+    "__proto__", "constructor", "prototype", "hasownproperty", "isprototypeof",
+    "propertyisenumerable", "tolocalestring", "tostring", "valueof",
+    "__definegetter__", "__definesetter__", "__lookupgetter__", "__lookupsetter__",
+})
+
+
+def icon_map_key(raw):
+    """An icon-map KEY: a printable, bounded, non-hazardous name, else None.
+
+    Deliberately never truncates: a cut-down name would answer lookups for a
+    different profession and read as a correct entry. Control characters are
+    refused because the artifact is line-oriented text that humans and scripts
+    both grep, and a name carrying a scheme is refused because neither a class nor
+    a profession has ever been called a URL."""
+    if not isinstance(raw, str):
+        return None
+    name = raw.strip()
+    if not name or len(name) > config.ICON_MAP_KEY_MAX:
+        return None
+    if any(ch < " " or ch == "\x7f" for ch in name):
+        return None
+    if "://" in name:
+        # A class or profession name is never a URL, and the committed maps are
+        # scanned for exactly this pattern: refusing it here keeps a hostile index
+        # from putting an attacker host into a publicly served artifact.
+        return None
+    if name.casefold() in JS_OBJECT_KEY_HAZARDS:
+        return None
+    return name
+
+
+def icon_entry(value):
+    """A candidate map value -> {id, iconUrl} | None, re-validated from scratch.
+
+    Used for BOTH halves of the contract: a fresh fetch and a value carried over
+    from the committed file. The carry-over path needs the gate for the same
+    reason the cache-reuse path of ``icon_for`` does — a document written before a
+    validator existed, or hand-edited since, is not evidence that its URLs are on
+    the render host. An entry whose icon is missing is dropped rather than stored
+    with a null: a map entry exists precisely because its icon resolved (§11)."""
+    if not isinstance(value, dict):
+        return None
+    ident = _int(value.get("id"))
+    url = safe_artifact_url(value.get("iconUrl"), "iconUrl")
+    if ident is None or url is None:
+        return None
+    return {"id": ident, "iconUrl": url}
+
+
+def normalize_icon_index(index_payload, entries_key):
+    """playable-class / profession index (§5, §11) -> (entries, refused_descriptions).
+
+    Names are locale maps in both indexes (§11: the §9.2 plain-string exception is
+    the per-character payload, not the dictionary), so ``loc`` reads .en_US and
+    still tolerates a plain string. Order is Blizzard's own; an entry without a
+    usable int id or a usable key is described for the run summary and dropped —
+    never stored under a key the UI cannot look up, and never fatal.
+    """
+    if not isinstance(index_payload, dict):
+        return [], ["index payload was not an object"]
+    nodes = index_payload.get(entries_key)
+    if not isinstance(nodes, list):
+        return [], [f"index carried no {entries_key} list"]
+    entries, refused = [], []
+    for node in nodes:
+        if not isinstance(node, dict):
+            refused.append("entry was not an object")
+            continue
+        ident = _int(node.get("id"))
+        raw_name = loc(node.get("name"))
+        key = icon_map_key(raw_name)
+        if key is None:
+            refused.append(f"name {str(raw_name)[:40]!r} is unusable as a key"
+                           + ("" if ident is None else f" (id {ident})"))
+            continue
+        if ident is None:
+            refused.append(f"{key!r} carried no integer id")
+            continue
+        entries.append({"id": ident, "name": key})
+    return entries, refused
+
+
 class Fetcher:
     """Client + cache + caches + counters shared by the resolve and enrich passes."""
 
@@ -458,6 +555,11 @@ class Fetcher:
         self.talent_trees = {}
         self.feature_failures = []
         self.sub_failures = []
+        # Phase 5b (P5.B, notes §11): per-entry refusals for the two static icon
+        # maps. Its own list rather than feature_failures because the unit being
+        # refused is one index entry (up to 13 in one run), not one character
+        # block, and the map's own summary line reports it entry by entry.
+        self.icon_map_failures = []
 
     # -- tripwires / helpers ------------------------------------------------ #
     def note_revision(self, surface, headers):
@@ -600,6 +702,118 @@ class Fetcher:
         """Record an optional feature block that could not be stored, with its
         exact cause, so the run summary reports it instead of a silent absence."""
         self.feature_failures.append(f"id {character_id}: {surface} — {detail}")
+
+    def note_icon_map_failure(self, kind, detail):
+        """One icon-map entry that was refused, with its exact cause (§11).
+
+        The same pattern as note_feature_failure and the same reach: the line is
+        printed with the run summary through log_safe(http.redact(line)), so it is
+        reported, never committed."""
+        self.icon_map_failures.append(f"{kind}: {detail}")
+
+    def icon_map(self, *, kind, index_path, entries_key, index_surface,
+                 media_path, media_placeholder, media_surface, prior_document):
+        """One static-ns index + one media doc per id -> the committed icon map.
+
+        The shared shape behind class_icon_map and profession_icon_map. Three
+        rules, all inherited from the proven precedents:
+
+        * **once per run, cached**: one index GET plus one media GET per distinct
+          id, and the URL de-dup in ``icon_for`` means a class/profession whose
+          icon the character pass already fetched costs nothing extra;
+        * **merge by name with the committed map while the pinned static namespace
+          is unchanged** (the talent-tree rule, §9.3.2): a name the previous patch
+          already resolved costs zero requests this run, and a patch (new ns)
+          makes the old map worthless, so it is dropped rather than merged;
+        * **no icon, no entry**: a 404 or an off-host asset omits that key and
+          reports one line. The map never carries a null iconUrl, because the whole
+          point of an entry is that the icon resolved.
+
+        Returns ``(icons, index_total, carried)``. A failed index read returns an
+        empty map, which the caller treats as "leave the committed file alone".
+        """
+        if not self.static_ns:
+            self.note_icon_map_failure(kind, "static namespace unknown this run — map not rebuilt")
+            return {}, 0, 0
+        prior = prior_document if isinstance(prior_document, dict) else {}
+        prior_icons = {}
+        if prior:
+            if prior.get("staticNamespace") == self.static_ns and isinstance(prior.get("icons"), dict):
+                prior_icons = prior["icons"]
+            else:
+                self.warnings.append(
+                    f"{kind}: committed map is pinned to "
+                    f"{str(prior.get('staticNamespace'))[:40]!r}, this run discovered {self.static_ns}; "
+                    "every icon is refetched and the old entries are dropped, not merged")
+        url = f"{config.API_BASE}{index_path}?namespace={self.static_ns}"
+        resp = self.client.get(url)
+        payload = resp.json if resp.status in (200, 304) else None
+        if not isinstance(payload, dict):
+            self.note_icon_map_failure(kind, f"{index_path} index returned HTTP {resp.status} — "
+                                             "committed map left untouched")
+            return {}, 0, 0
+        self.note_revision(index_surface, resp.headers)
+        # A poisoned index can carry a non-list here ("classes": 5); len() would raise a raw
+        # TypeError and break the never-fatal/always-reported contract after the pair is on disk.
+        entries_raw = payload.get(entries_key)
+        index_total = len(entries_raw) if isinstance(entries_raw, list) else 0
+        entries, refused = normalize_icon_index(payload, entries_key)
+        for reason in refused:
+            self.note_icon_map_failure(kind, f"index entry refused — {reason}")
+        icons, carried = {}, 0
+        for entry in entries:
+            name = entry["name"]
+            if name in icons:
+                # Two index rows claiming one key: first wins, and the loser is
+                # reported, because "which id is Warrior?" must never be decided by
+                # whatever a hostile payload appended last.
+                self.note_icon_map_failure(kind, f"duplicate name {name!r} (id {entry['id']}) — "
+                                                 "first index entry kept")
+                continue
+            # An id that moved under a stable name means the carried icon belongs to a
+            # different doc, so it is refetched rather than reused.
+            previous = icon_entry(prior_icons.get(name)) if prior_icons else None
+            if previous and previous["id"] == entry["id"]:
+                icons[name] = previous
+                carried += 1
+                self.saved_requests += 1
+                self.skipped["icon_maps"] += 1
+                continue
+            # static_media_icon is the proven §10 shape: it builds the static-ns URL,
+            # reuses the cached doc, and hands the value to icon_for, which is where
+            # safe_artifact_url lives. Nothing here writes a URL of its own.
+            icon = self.static_media_icon(media_path, media_surface, {},
+                                          **{media_placeholder: entry["id"]})
+            if icon is None:
+                self.note_icon_map_failure(kind, f"{name} (id {entry['id']}) — media doc yielded no "
+                                                 "allowlisted icon (HTTP 404 or refused host); entry omitted")
+                continue
+            icons[name] = {"id": entry["id"], "iconUrl": icon}
+        return icons, index_total, carried
+
+    def class_icon_map(self, prior_document):
+        """data/class-icons.json: every playable class (§5 index + §10.2 prefix route)."""
+        return self.icon_map(kind="class icons",
+                             index_path=config.PLAYABLE_CLASS_INDEX,
+                             entries_key="classes",
+                             index_surface="playable_class_index",
+                             media_path=config.PLAYABLE_CLASS_MEDIA_PATH,
+                             media_placeholder="class_id",
+                             media_surface="playable_class_media",
+                             prior_document=prior_document)
+
+    def profession_icon_map(self, prior_document):
+        """data/profession-icons.json: every profession, primary and secondary alike
+        (§11 index + §9.2/§10.1 prefix route — one id 185 Cooking and one id 164
+        Blacksmithing answer identically, so no primary/secondary split exists here)."""
+        return self.icon_map(kind="profession icons",
+                             index_path=config.PROFESSION_INDEX,
+                             entries_key="professions",
+                             index_surface="profession_index",
+                             media_path=config.PROFESSION_MEDIA_PATH,
+                             media_placeholder="profession_id",
+                             media_surface="profession_media",
+                             prior_document=prior_document)
 
     def seed_talent_trees(self, document):
         """Carry previously captured spec trees forward when the pinned static

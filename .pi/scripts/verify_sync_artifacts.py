@@ -17,6 +17,12 @@ unit tests then the modular ``python3 -m bnet sync`` entrypoint under a job
 Last-Modified conditional GETs (amendment 3: If-Modified-Since yes, the
 If-None-Match flavour of task 2.4 is dead — no response ever carried an ETag).
 
+Phase 5b added the two static icon maps (``data/class-icons.json`` and
+``data/profession-icons.json``): the talent-tree envelope, keyed by Blizzard's own class /
+profession name, every value ``{id: int, iconUrl}`` on the render host, duplicate JSON keys and
+a byte ceiling checked, and both files joined to the foreign-URL and secret scans. The maps are
+name-keyed because the UI joins them by word, so the KEY rules are gated as strictly as the URLs.
+
 Phase 2 moved the artifacts to ``data/`` and the implementation from the two
 root scripts into the ``tools/bnet/`` package, so the source-level security
 checks below read that package. The invariant text was carried over unchanged;
@@ -36,6 +42,9 @@ ROSTER = ROOT / "data" / "characters.json"
 MAP = ROOT / "data" / "battle-net-map.json"
 DATA = ROOT / "data" / "character-data.json"
 TREES = ROOT / "data" / "talent-trees.json"
+# Phase 5b (P5.B, notes §11): the two site-wide static icon maps.
+CLASS_ICONS = ROOT / "data" / "class-icons.json"
+PROFESSION_ICONS = ROOT / "data" / "profession-icons.json"
 WORKFLOW = ROOT / ".github" / "workflows" / "sync-bnet.yml"
 PAGES_WORKFLOW = ROOT / ".github" / "workflows" / "pages.yml"
 ENV = ROOT / ".env"
@@ -94,6 +103,29 @@ TREE_KEYS = {"treeId", "classId", "className", "specId", "specName", "name", "no
 TREE_NODE_KEYS = {"id", "displayRow", "displayCol", "rawPositionX", "rawPositionY",
                   "unlocks", "lockedBy", "ranks"}
 MAX_TREES_BYTES = 2 * 1024 * 1024
+# Phase 5b (notes §11): data/class-icons.json and data/profession-icons.json share
+# the talent-tree envelope ({staticNamespace, updatedAt, icons}) and one entry
+# shape ({id, iconUrl}). The byte ceiling is generous by design — the observed
+# documents are ~1.5 KiB (9 classes, 13 professions) — but a map that grew past
+# this is either a hostile index or a sync bug duplicating entries, and the site
+# fetches this file on every distribution bar it draws.
+MAX_ICON_MAP_BYTES = 64 * 1024
+ICON_MAP_DOC_KEYS = {"staticNamespace", "updatedAt", "icons"}
+ICON_ENTRY_KEYS = {"id", "iconUrl"}
+# Same ceiling as ``bnet.config.ICON_MAP_KEY_MAX``: the name is an artifact KEY,
+# so it is bounded rather than truncated.
+ICON_MAP_KEY_MAX = 64
+# Names an icon map must never be keyed by, whatever an index claims: a JS consumer
+# that copies the parsed object with ``out[k] = v`` silently sets the prototype
+# instead of creating an entry for ``__proto__`` (and resolves a built-in for
+# ``constructor``/``toString``). bnet.fetch.icon_map_key refuses these on the write
+# side; this gate is the independent read of the same rule.
+JS_OBJECT_KEY_HAZARDS = {"__proto__", "constructor", "prototype", "hasownproperty",
+                         "isprototypeof", "propertyisenumerable", "tolocalestring",
+                         "tostring", "valueof", "__definegetter__", "__definesetter__",
+                         "__lookupgetter__", "__lookupsetter__"}
+# A version-pinned Forever static namespace, the shape both maps pin to.
+STATIC_NS_PIN_RE = re.compile(r"^static-[A-Za-z0-9._-]+-forever-us$")
 PROGRESS_KEYS = {"raid", "mythicPlus", "pvp"}
 # Keys that only exist in raw Blizzard payloads: their presence would mean the
 # sync dumped unnormalized data into the public sidecar.
@@ -172,6 +204,120 @@ def walk_keys(node, out):
 
 def read(path):
     return path.read_text(encoding="utf-8") if path.exists() else None
+
+
+def duplicate_json_keys(text):
+    """Every object key that appears twice at any depth in one JSON document.
+
+    json.loads keeps the last of a duplicated key, so a poisoned or hand-merged
+    artifact can hide an entry behind a repeat of the same name — and for the
+    name-keyed icon maps that is the whole attack: ``{"Warrior": {…good…},
+    "Warrior": {…beacon…}}`` reads as one clean entry. Checked on the raw text at
+    every depth, because the parse has already thrown the evidence away."""
+    dupes = set()
+
+    def hook(pairs):
+        seen = set()
+        for key, _value in pairs:
+            if key in seen:
+                dupes.add(str(key))
+            seen.add(key)
+        return dict(pairs)
+
+    try:
+        json.loads(text, object_pairs_hook=hook)
+    except ValueError:
+        return set()          # the parse check owns that failure
+    return dupes
+
+
+def icon_map_key_ok(name):
+    """The read-side mirror of ``bnet.fetch.icon_map_key``; returns the refusal reason."""
+    if not isinstance(name, str) or not name.strip():
+        return "is not a non-empty string"
+    if len(name) > ICON_MAP_KEY_MAX:
+        return f"exceeds the {ICON_MAP_KEY_MAX}-character key ceiling"
+    if any(ch < " " or ch == "\x7f" for ch in name):
+        return "carries a control character"
+    if "://" in name:
+        return "carries a URL scheme"
+    if name.casefold() in JS_OBJECT_KEY_HAZARDS:
+        return "is an Object.prototype property name"
+    return None
+
+
+def check_icon_map(label, path, expected_names, expected_source, floor=9):
+    """One Phase 5b icon-map artifact: envelope, keys, values, hosts, size (§11).
+
+    ``expected_names`` is the SOFT coverage set — the class/profession words the site
+    actually renders rows for. Absent coverage is a WARNING, not a failure: a patch
+    that renames or drops one class is exactly the kind of finding the nightly is for
+    (the same reasoning as §10.4.3), while a missing file, a bad host or a stray key
+    is a poisoned artifact and fails the gate. ``floor`` is the one hard size rule: the
+    map covers the whole index (P5.B: "ALL playable classes"), so a document smaller
+    than the classic class count was filtered to the roster by mistake."""
+    text = read(path)
+    rel = path.relative_to(ROOT)
+    check(text is not None, f"{label}: {rel} exists")
+    if text is None:
+        return None
+    try:
+        doc = json.loads(text)
+    except ValueError as exc:
+        check(False, f"{label}: parses as JSON: {exc}")
+        return None
+    check(isinstance(doc, dict) and set(doc) == ICON_MAP_DOC_KEYS,
+          f"{label}: top-level keys are exactly staticNamespace/updatedAt/icons "
+          f"(found {sorted(doc) if isinstance(doc, dict) else type(doc).__name__})")
+    if not isinstance(doc, dict):
+        return text
+    namespace = doc.get("staticNamespace")
+    check(isinstance(namespace, str) and STATIC_NS_PIN_RE.match(namespace or "") is not None,
+          f"{label}: version-pinned to a Forever static namespace ({namespace!r})")
+    check(isinstance(doc.get("updatedAt"), str) and ISO_RE.match(doc["updatedAt"]),
+          f"{label}: updatedAt is ISO8601 UTC")
+    icons = doc.get("icons")
+    check(isinstance(icons, dict) and bool(icons),
+          f"{label}: icons is a non-empty object "
+          f"({len(icons) if isinstance(icons, dict) else type(icons).__name__} entries)")
+    if isinstance(icons, dict):
+        for name, entry in icons.items():
+            reason = icon_map_key_ok(name)
+            check(reason is None, f"{label}: key {str(name)[:40]!r} is a usable artifact key"
+                                  + (f" ({reason})" if reason else ""))
+            check(isinstance(entry, dict) and set(entry) == ICON_ENTRY_KEYS,
+                  f"{label}: entry {str(name)[:40]!r} has exactly the keys id/iconUrl")
+            if not isinstance(entry, dict):
+                continue
+            # An entry exists precisely because its icon resolved, so iconUrl is
+            # never null here (the per-character fields may be; this map may not).
+            check(isinstance(entry.get("id"), int) and not isinstance(entry.get("id"), bool),
+                  f"{label}: entry {str(name)[:40]!r} id is an int (not a bool)")
+            url = entry.get("iconUrl")
+            check(isinstance(url, str) and ICON_URL_RE.match(url) is not None,
+                  f"{label}: entry {str(name)[:40]!r} iconUrl matches "
+                  f"^https://render\\.worldofwarcraft\\.com/")
+        if expected_names:
+            missing = sorted(n for n in expected_names if n not in icons)
+            check_soft(
+                not missing,
+                f"{label} cover every name the site renders rows for "
+                f"({expected_source}: {len(expected_names) - len(missing)}/{len(expected_names)})",
+                warn_msg=f"{label} do NOT cover {missing} from {expected_source}: the UI renders "
+                         f"those rows icon-less (no placeholder is invented) — re-run the §11 sweep "
+                         f"and check whether the index still lists the name")
+    if isinstance(icons, dict):
+        check(len(icons) >= floor,
+              f"{label}: carries {len(icons)} entries — the whole index, not the guild's own "
+              f"subset (floor {floor})")
+    dupes = duplicate_json_keys(text)
+    check(not dupes, f"{label}: no duplicated JSON key at any depth (found: {sorted(dupes)[:5]})")
+    foreign = sorted({u for u in re.findall(r"https?://[^\s\"'<>\\]+", text)
+                      if urlparse(u).netloc not in ARTIFACT_HOSTS})
+    check(not foreign, f"{label}: contains no non-Blizzard URL (found: {foreign[:3]})")
+    check(len(text) < MAX_ICON_MAP_BYTES,
+          f"{label}: is under {MAX_ICON_MAP_BYTES} bytes (found {len(text)}B)")
+    return text
 
 
 def workflow_steps(text):
@@ -637,6 +783,26 @@ def main():
         check(len(trees_text) < MAX_TREES_BYTES,
               f"data/talent-trees.json is under {MAX_TREES_BYTES} bytes (found {len(trees_text)}B)")
 
+    # --- data/class-icons.json + data/profession-icons.json (P5.B, notes §11) --- #
+    # The two site-wide static icon maps. Same envelope as the talent trees, keyed
+    # by Blizzard's OWN class / profession name, because the UI joins by word, not
+    # by id: a distribution bar, a profession tag and a party slot each start from a
+    # name. That makes the key as much of an attack surface as the value, so both
+    # halves are gated here and every URL is the same render host the sidecar uses.
+    roster_class_words = {rec["class"] for rec in roster if isinstance(rec.get("class"), str)}
+    roster_prof_words = {w for rec in roster for w in (rec.get("prof1"), rec.get("prof2"))
+                         if isinstance(w, str) and w.strip() and w.strip().casefold() != "none"}
+    # Both maps cover the WHOLE index rather than this guild (P5.B), so the size
+    # floor is the nine classic classes: nine playable classes (§5) and thirteen
+    # professions (§11) are what the two indexes return today.
+    class_icons_text = check_icon_map("class icon map", CLASS_ICONS,
+                                      roster_class_words | CLASS_VOCAB,
+                                      "roster class columns + pi-warden CLASS_COLORS",
+                                      floor=9)          # §5: playable-class/index returns 9
+    profession_icons_text = check_icon_map("profession icon map", PROFESSION_ICONS,
+                                           roster_prof_words, "roster prof1/prof2 columns",
+                                           floor=9)     # the roster alone names 9 distinct professions
+
     # --- secret scan ------------------------------------------------------------- #
     secrets = []
     if ENV.exists():
@@ -658,7 +824,11 @@ def main():
                     "data/characters.json": roster_text,
                     "data/battle-net-map.json": map_text,
                     "data/character-data.json": data_text,
-                    "data/talent-trees.json": trees_text})
+                    "data/talent-trees.json": trees_text,
+                    # Phase 5b: both icon maps are committed, publicly served, and
+                    # written from response data, so they join every scan below.
+                    "data/class-icons.json": class_icons_text,
+                    "data/profession-icons.json": profession_icons_text})
     for label, text in scanned.items():
         check(text is not None, f"{label} exists for the secret scan")
         if text is None:
@@ -703,6 +873,11 @@ def main():
         add_lines = [ln for ln in wf.splitlines() if re.match(r"^\s*git add ", ln)]
         check(any("data/battle-net-map.json" in ln and "data/character-data.json" in ln for ln in add_lines),
               f"commit step adds both data/ artifacts ({add_lines})")
+        # P5.B: the nightly must publish the two icon maps too, or the committed
+        # files drift from the namespace the pair was written against (and the UI
+        # joins them by name on every distribution bar).
+        check(any("data/class-icons.json" in ln and "data/profession-icons.json" in ln for ln in add_lines),
+              f"commit step adds both Phase 5b icon maps ({add_lines})")
         check(not re.search(r"git add (?:battle-net-map|character-data)\.json", wf),
               "commit step no longer adds the old root paths")
 
@@ -777,6 +952,44 @@ def main():
           "the class icon is written where the profile identity was extracted, not elsewhere")
     check('malformed' in body_of(FETCH, r"\ndef extract_identity\(profile\):(.*?)\ndef "),
           "extract_identity reports malformed race/class refs instead of storing or dumping them")
+    # --- Phase 5b: the two static icon maps are config-declared and gated ------- #
+    # Same discipline as §10's icon routes: paths live in config, the fetch goes
+    # through the shared media gate (so safe_artifact_url is the only writer of a
+    # URL), refusals are reported per entry, and the artifact envelope is written in
+    # exactly one place.
+    check('CLASS_ICON_FILE = DATA_DIR / "class-icons.json"' in CFG
+          and 'PROFESSION_ICON_FILE = DATA_DIR / "profession-icons.json"' in CFG,
+          "both icon-map artifact paths are declared in config (one place to re-verify after a patch)")
+    check('PROFESSION_INDEX = "/data/wow/profession/index"' in CFG,
+          "the profession dictionary index route is config-declared (§11: static ns, names and ids only)")
+    check('"profession_index"' in CFG,
+          "the profession index joins the schema-drift tripwires like every other load-bearing surface")
+    check(re.search(r"ICON_MAP_KEY_MAX\s*=\s*64", CFG) is not None,
+          "the icon-map key ceiling is the single config value (64)")
+    check(re.search(r"def write_icon_map\(path, static_namespace, icons, \*, dry_run\):", ARTIFACTS) is not None
+          and re.search(r"def load_previous_icon_map\(path\):", ARTIFACTS) is not None,
+          "artifacts.py owns the icon-map envelope (single writer, the talent-tree pattern)")
+    check("fetch.icon_entry(value)" in ARTIFACTS and "fetch.icon_map_key(name)" in ARTIFACTS,
+          "a carried-over icon entry is re-validated (render-host gate + key gate) before it is rewritten")
+    icon_map_body = body_of(FETCH, r"\n    def icon_map\(self, \*,(.*?)\n    def ")
+    check(icon_map_body != "" and "self.static_media_icon(" in icon_map_body,
+          "both icon maps fetch through the shared §10 media gate (cache reuse + H2 validator) "
+          "instead of writing a URL of their own")
+    check(icon_map_body != "" and icon_map_body.count("note_icon_map_failure") >= 3,
+          "every refused icon-map entry gets its own reported line (the feature_failures pattern)")
+    check("return {}, 0, 0" in icon_map_body,
+          "a failed index read yields an empty map, which the caller never writes over the committed file")
+    check(re.search(r"def icon_map_key\(raw\):", FETCH) is not None
+          and "JS_OBJECT_KEY_HAZARDS" in FETCH and "config.ICON_MAP_KEY_MAX" in FETCH
+          and '"://" in name' in FETCH,
+          "an index name passes an artifact-key gate (bounded, printable, no Object.prototype hazard) "
+          "before it can become a map key")
+    check(re.search(r"def icon_entry\(value\):", FETCH) is not None
+          and body_of(FETCH, r"\ndef icon_entry\(value\):(.*?)\ndef ").count("safe_artifact_url") == 1,
+          "icon entries are gated by the shared safe_artifact_url validator")
+    check("self.refresh_icon_maps(" in SYNC and "if not icons:" in SYNC,
+          "the sync rebuilds both maps once per run, after the pair lands, and never writes an empty one")
+
     check(re.search(r"def redact_foreign_urls\(text\):", HTTP) is not None
           and re.search(r"def redact\(value\):\s*\n\s*if isinstance\(value, str\):\s*\n\s*return redact_foreign_urls\(", HTTP)
           is not None,

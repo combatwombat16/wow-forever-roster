@@ -14,6 +14,10 @@ Artifacts (written through ``bnet.artifacts``, the single writer):
     data/talent-trees.json        spec talent-tree geometry, pinned to the static
                                   namespace and keyed by spec id (T1.3) — shared
                                   reference data, so it joins neither pair above
+    data/class-icons.json         every playable class icon, keyed by Blizzard's own
+    data/profession-icons.json    class/profession name and pinned to the static
+                                  namespace (P5.B, notes §11) — the same
+                                  shared-reference category as the trees above
 
 Credentials come from BLIZZARD_CLIENT_ID / BLIZZARD_CLIENT_SECRET, are never
 printed, logged or written, and every string that could carry one passes
@@ -129,6 +133,12 @@ class Sync:
             lines.append(f"WARNING: {len(f.feature_failures)} optional feature block(s) not stored: "
                          + "; ".join(f.feature_failures[:10])
                          + (" …" if len(f.feature_failures) > 10 else ""))
+        if f.icon_map_failures:
+            # Per entry, exactly like feature_failures: an omitted class or profession
+            # icon is a finding with a cause, never a silently shorter map (notes §11).
+            lines.append(f"WARNING: {len(f.icon_map_failures)} static icon map entry(ies) refused: "
+                         + "; ".join(f.icon_map_failures[:12])
+                         + (" …" if len(f.icon_map_failures) > 12 else ""))
         if f.guild_fetch_failures:
             lines.append(f"WARNING: guild roster fetch failed for: {', '.join(sorted(f.guild_fetch_failures))}")
         if self.budget_hit:
@@ -154,6 +164,51 @@ class Sync:
                 handle.write("\n".join(markdown) + "\n")
         except OSError as exc:
             print(f"  ! could not append to GITHUB_STEP_SUMMARY: {type(exc).__name__}")
+
+    # -- static reference artifacts (talent trees, Phase 5b icon maps) ---------- #
+    def refresh_icon_maps(self, dry_run):
+        """Rebuild the two Phase 5b static icon maps and write them (notes §11).
+
+        Called only after a run has published its pair, for the same reason the
+        talent trees are written there: a refused or crashed run must not leave a
+        half-updated reference dataset behind. Each map is one index GET plus one
+        media GET per distinct id, and entries are carried over from the committed
+        file while the pinned static namespace is unchanged, so a same-patch nightly
+        costs the two index GETs and no media request at all (§11.4.2). Refusals are
+        reported per entry through f.icon_map_failures.
+
+        A map that produced no entry at all is NOT written: the committed file stays
+        as published, because "the index was unreachable this hour" must not reach
+        the site as "this game has no classes".
+        """
+        if not self.f.static_ns:
+            return []
+        lines = []
+        for label, build, path in (("class", self.f.class_icon_map, config.CLASS_ICON_FILE),
+                                   ("profession", self.f.profession_icon_map,
+                                    config.PROFESSION_ICON_FILE)):
+            try:
+                icons, index_total, carried = build(artifacts.load_previous_icon_map(path))
+            except http.BudgetExhausted as exc:
+                # The request cap outranks reference data: keep the committed maps.
+                self.budget_hit = True
+                lines.append(f"{label} icons: NOT rebuilt — request cap reached "
+                             f"({http.redact(str(exc))[:120]})")
+                break
+            except http.UnsafeUrl as exc:
+                lines.append(f"{label} icons: NOT rebuilt — the URL allowlist refused the route "
+                             f"({http.redact(str(exc))[:120]})")
+                continue
+            if not icons:
+                lines.append(f"{label} icons: NOT written — no index entry resolved an icon this run; "
+                             f"previous {path.name} left untouched")
+                continue
+            document = artifacts.write_icon_map(path, self.f.static_ns, icons, dry_run=dry_run)
+            lines.append(f"{label} icons: {len(icons)} of {index_total} index entries landed "
+                         f"({carried} carried from the committed map, "
+                         f"{len(document['icons'])} published) pinned to {self.f.static_ns}"
+                         + (" (dry-run, not written)" if dry_run else ""))
+        return lines
 
     # -- full sync ------------------------------------------------------------- #
     def run_sync(self, roster_records, prev_entries):
@@ -312,6 +367,7 @@ class Sync:
             artifacts.write_talent_trees(self.f.static_ns, self.f.talent_trees, dry_run=self.args.dry_run)
             extra.append(f"talent trees: {len(self.f.talent_trees)} spec(s) pinned to {self.f.static_ns}"
                          + (" (dry-run, not written)" if self.args.dry_run else ""))
+        extra.extend(self.refresh_icon_maps(self.args.dry_run))
         if pruned:
             extra.append(f"pruned stale map rows (roster ids no longer present): {', '.join(pruned)}")
         if self.args.dry_run:
@@ -447,6 +503,11 @@ class Sync:
                                                          dry_run=self.args.dry_run)
                             lines.append(f"talent trees: {len(self.f.talent_trees)} spec(s) pinned to "
                                          f"{self.f.static_ns}")
+                        # A lookup is a full run for one character, and the icon maps
+                        # are run-wide reference data: rebuilding them here (free on an
+                        # unchanged namespace) keeps a maintainer-initiated run from
+                        # publishing a sidecar whose icons the maps cannot resolve.
+                        lines.extend(self.refresh_icon_maps(self.args.dry_run))
                     else:
                         lines.append(write_refusal)
         else:

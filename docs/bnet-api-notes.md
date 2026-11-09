@@ -1033,3 +1033,158 @@ top-level keys: id, name, faction, gender_name, is_allied_race,
 5. Two new drift tripwires joined `config.DRIFT_SURFACES`: `profession_media` and
    `playable_class_media` (schemas observed here: `media/2`, `playable-class/1`,
    `playable-race/2`).
+
+## 11. Phase 5b addendum — class / profession **dictionaries**, and the two static icon maps (2026-11-09, 04:28–04:34 UTC)
+
+Produced for P5.B (`character-tasks.md` Phase 5: `data/class-icons.json`,
+`data/profession-icons.json`). §10 proved the two per-id media routes but never enumerated
+the id space, so this addendum covers what a site-wide icon map needs and nothing else: the
+**index** documents, the media route re-confirmed across every id those indexes list, and the
+shape of the two committed artifacts.
+
+Two scripted read-only sweeps drove the frozen transport (`bnet.http.ProbeHttp`: host-pinned,
+credential-masking, `REQUEST_SPACING_S` = 0.25 s pacing) directly, because `probe.py`'s path
+inventory contains neither index. **`python3 -m bnet probe` was deliberately not run** — it would
+overwrite `docs/bnet-probe-raw.json`, the FROZEN Phase 1 evidence
+`.pi/scripts/verify_bnet_probe.py` grounds every cited path against — so the sweep output stayed
+outside the repo (`/tmp/p5b_probe.py`, `/tmp/p5b_probe2.py`, request-log schema, credential-masked)
+exactly as §9's and §10's did, and the payload shapes below are fenced trees rather than inline
+path citations.
+
+Run totals, read from the two saved runs: **sweep 1 — 5 requests / 1 token mint, 3 × 200 and
+1 × 404; sweep 2 — 4 requests / 1 mint, 2 × 200 and 1 × 404**. **No 429, no retry, max attempts
+on any request: 1**, no rate-limit headers and no `ETag` on any response (§1, §7.3, §9.6,
+§10 re-confirmed at this volume); both 200 index docs carried `Last-Modified` and
+`Cache-Control: public, max-age=86400`, i.e. cacheable like every other static doc. Credentials
+came from the repo-root `.env` via `set -a && . ./.env && set +a`; no secret value was printed,
+logged or written. Static namespace re-discovered from live profile hrefs during the following
+sync, still identical to the Phase 1 / §9 / §10 value: **`static-1.60.1_70399-forever-us`**.
+
+The full local sync then ran once on this contract (`PYTHONPATH=tools python3 -m bnet sync`):
+**131 requests / 1 mint, 38 × 200, 54 × 304, 38 × 404, runtime 59.4 s**, exit 0, and both maps
+landed **9/9 classes and 13/13 professions with zero refusals**. That same run appended
+`guild roster fetch failed for heghmoh` to the 14 `not_found` note fields in
+`battle-net-map.json` — a reported soft sub-resource failure (the guild-roster lookup that runs
+per `not_found` re-query), not an icon-map event; the next nightly refresh rewrites the notes.
+
+### 11.1 Verdict table — the dictionary surfaces
+
+| Endpoint (GET, static ns) | Status | Reading |
+|---|---|---|
+| `/data/wow/playable-class/index` | **200** `playable-class/1`, 3 133 B | `classes[len]` = **9** — ids 1, 2, 3, 4, 5, 7, 8, 9, 11 (Warrior, Paladin, Hunter, Rogue, Priest, Shaman, Mage, Warlock, Druid). Already §5; re-read here because the map needs the whole list, not the roster's subset. |
+| `/data/wow/profession/index` | **200** `profession/2`, 4 968 B | `professions[len]` = **13**, **primaries and secondaries in ONE flat list**: 171 Alchemy, 182 Herbalism, 129 First Aid, 164 Blacksmithing, 165 Leatherworking, 185 Cooking, 186 Mining, 197 Tailoring, 202 Engineering, 333 Enchanting, 356 Fishing, 393 Skinning, **2933 Test Profession [DNT]** |
+| `/data/wow/media/profession/index` | **404**, 60-byte JSON body `BLZWEBAPI00000404` with the namespace echoed and `Content-Type: application/json;charset=UTF-8` | **routed 404** (the §10 signature of "wrong id / no such resource"), NOT the 0-byte unrouted kind: the media family exists, but it has **no index**. The dictionary therefore supplies names and ids and every icon still costs one per-id media GET. |
+| `/data/wow/media/playable-class/{1,2,3,4,5,7,8,9,11}` | **200** `media/2` — **9/9** | §10 sampled 1, 2, 3, 5, 11; the four it did not (4 Rogue, 7 Shaman, 8 Mage, 9 Warlock) answered from the same route in the sync run above, one fresh 200 icon asset each, so the route now covers the entire class id space this build serves. |
+| `/data/wow/media/profession/{129,164,165,171,182,185,186,197,202,333,356,393,2933}` | **200** `media/2` — **13/13** | Includes the secondary professions (129 First Aid, 185 Cooking, 356 Fishing, 393 Skinning) and the DNT row 2933: **one route for every profession the index lists**, exactly as §10.1 predicted from three samples. |
+| Playable-**race** dictionary for icons | **unchanged: UNAVAILABLE** | §10.3 stands nine ways. The race index answers 200 but its elements carry no media key and no icon field, so **there is no race icon map and none is planned** — the site's race rows stay text-only. |
+
+### 11.2 The two index payloads (observed shapes)
+
+Both dictionaries are the same three-key element shape and **neither carries a
+primary/secondary flag, a type field, or any icon field** — checked on every element of both
+indexes, not just the first:
+
+```
+GET /data/wow/playable-class/index?namespace=static-1.60.1_70399-forever-us   200 playable-class/1
+top-level keys: _links, classes
+classes[len]      = 9
+classes[].id      int: 1, 2, 3, 4, 5, 7, 8, 9, 11 — the list simply skips 6 and 10 (the payload
+                  gives no entry and no reason for the gaps; the retail meaning of those ids was
+                  not probed and is not assumed)
+classes[].name    LOCALIZED string map, 11 locales on all nine classes: en_US, en_GB, de_DE,
+                  es_ES, es_MX, fr_FR, pt_BR, ru_RU, ko_KR, zh_CN, zh_TW — no it_IT on any class
+                  (read .en_US, §7.9)
+classes[].key.href → /data/wow/playable-class/{id}?namespace=<same static ns>
+(no type, no media, no icon, no specialization list)
+
+GET /data/wow/profession/index?namespace=static-1.60.1_70399-forever-us        200 profession/2
+top-level keys: _links, professions
+professions[len]  = 13
+professions[].id  int
+professions[].name LOCALIZED string map — 12 locales on the twelve real professions (the 11 above
+                  plus it_IT), 2 (en_US, en_GB) on id 2933 Test Profession [DNT]
+professions[].key.href → /data/wow/profession/{id}?namespace=<same static ns>
+(no type/primary/secondary flag anywhere in the payload)
+```
+
+**Correction to the §9.2 plain-string exception as applied to the dictionary:** §9.2 records
+"THREE names are plain strings here" for the **per-character** `character-professions` payload,
+and that still holds. The **dictionary** localizes the same names, so a reader that reuses one
+helper for both must go through the locale reader (`.en_US`) and tolerate a plain string — which
+is what `tools/bnet/fetch.py` `loc()` already does.
+
+### 11.3 The two committed artifacts (the UI contract)
+
+Both files use the `talent-trees.json` envelope, because the site already knows what
+"pinned to this static namespace, updated at this time" means, and both are keyed by
+**Blizzard's own name** rather than by id — the surfaces that consume them (class distribution
+bars, the guild professions matrix, party slots) start from a word, not an id:
+
+```
+data/class-icons.json                              data/profession-icons.json
+staticNamespace  static-1.60.1_70399-forever-us    same
+updatedAt        ISO8601 UTC                        same
+icons            keyed by the 9 class names         keyed by the 13 profession names
+icons[<name>]    { id: int, iconUrl: string }       same (iconUrl is NEVER null here)
+```
+
+Observed icon values (all 22 landed in the run above; every one is the §6/§9.3.1/§10.1 form
+`https://render.worldofwarcraft.com/forever-us/icons/56/<file_data_id>.jpg`, so **`isSafeIconUrl()`
+still needs no change** and T2.11 stays a no-op):
+
+| Class id → file_data_id | | Profession id → file_data_id |
+|---|---|---|
+| 1 Warrior → 626008 | 2 Paladin → 626003 | 129 First Aid → 135966 | 164 Blacksmithing → 136241 |
+| 3 Hunter → 626000 | 4 Rogue → 626005 | 165 Leatherworking → 136247 | 171 Alchemy → 136240 |
+| 5 Priest → 626004 | 7 Shaman → 626006 | 182 Herbalism → 136246 | 185 Cooking → 133971 |
+| 8 Mage → 626001 | 9 Warlock → 626007 | 186 Mining → 136248 | 197 Tailoring → 136249 |
+| 11 Druid → 625999 | | 202 Engineering → 136243 | 333 Enchanting → 136244 |
+| (164/185/186 match §10.1 and ids 1/2/3/5/11 match §10.2 byte for byte) | | 356 Fishing → 136245 | 393 Skinning → 134366 |
+| | | 2933 Test Profession [DNT] → 134400 |
+
+`2933 Test Profession [DNT]` is **included on purpose**: the index lists it, its media doc answers
+200, and the P5.B rule is "every profession the dictionary returns". A UI that must not show it
+filters on the name — inventing an exclusion list here would silently hide whatever Blizzard ships
+next under a different marker.
+
+### 11.4 Consequences for the sync (implemented in this phase)
+
+1. **One index read per map per run** plus **one media GET per distinct id**, through the same
+   `icon_for` plumbing as everything else: URL de-duplication (a class icon the per-character pass
+   already fetched costs nothing extra), `If-Modified-Since` conditional reuse, and
+   `safe_artifact_url` as the only writer of a URL. The route constants live in
+   `tools/bnet/config.py` beside §10's.
+2. **Merge by NAME with the committed file, only while the pinned static namespace is unchanged**
+   — the talent-tree rule of §9.3.2. A same-patch nightly therefore costs **two index GETs and
+   zero media GETs** for both maps together (verified on the second local run: `200:2` for the
+   whole run, `class icons: 9 of 9 index entries landed (9 carried from the committed map, …)` and
+   the same for 13 professions), and a patch (new namespace) drops the old map rather than merging
+   geometry from two versions. A carried entry is re-validated from scratch (render-host gate + int id) and is
+   only reused when the index still gives that name the same id.
+3. **No icon, no entry.** A 404 or an off-host asset omits the key and reports **one line per
+   refused entry** in the run summary (the `feature_failures` pattern), because "the map has 8
+   classes today" is a finding with a cause and never a silent shortening. An entry never carries
+   a null iconUrl: an entry exists precisely because its icon resolved. This is the opposite of the
+   per-character fields, where null is the documented §8 outcome.
+4. **A name must earn the right to be a key.** The map key is response data that a browser does
+   lookups with, so it is refused (and the refusal reported) when it is empty, longer than the
+   64-character ceiling, carries a control character or a URL scheme, or is an
+   `Object.prototype` property name (`__proto__`, `constructor`, `toString`, …) — the last case
+   would make a JS consumer's `out[name] = entry` set the prototype instead of adding an entry.
+   Real Blizzard names are unaffected; truncation is deliberately never used, because a cut-down
+   name would answer lookups for a different profession.
+5. **A failed index read writes nothing.** The committed file stays as published: an unreachable
+   dictionary must not reach the site as "this game has no classes".
+6. Both maps are written **after** the map/sidecar pair lands (like the talent trees), so a refused
+   or crashed run never leaves half a reference dataset updated, and
+   `.github/workflows/sync-bnet.yml` commits both paths.
+7. One new drift tripwire joined `config.DRIFT_SURFACES`: `profession_index` (schemas observed
+   here: `profession/2`, `playable-class/1`, `media/2`). The class index and both media surfaces
+   were already listed from §5 and §10.4.5.
+8. `.pi/scripts/verify_sync_artifacts.py` gained the matching gates in the same change as the
+   data: exact envelope keys, ISO `updatedAt`, a version-pinned Forever static namespace, per-entry
+   `{id: int, iconUrl}` with the render-host regex, the key rules of (4) re-implemented
+   independently, **duplicate JSON keys at any depth** (a repeated name would otherwise hide one
+   entry behind another), the 64 KiB size ceiling, the foreign-URL and secret scans over both
+   files, and a soft WARNING when the maps stop covering a class or profession the roster renders
+   (a patch that renames a class is a finding, not an outage — §10.4.3 reasoning).

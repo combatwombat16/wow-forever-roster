@@ -1,0 +1,58 @@
+{
+  "staticNamespace": "static-1.60.1_70399-forever-us",
+  "updatedAt": "2026-11-09T04:41:30Z",
+  "icons": {
+    "Alchemy": {
+      "id": 171,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136240.jpg"
+    },
+    "Blacksmithing": {
+      "id": 164,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136241.jpg"
+    },
+    "Cooking": {
+      "id": 185,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133971.jpg"
+    },
+    "Enchanting": {
+      "id": 333,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136244.jpg"
+    },
+    "Engineering": {
+      "id": 202,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136243.jpg"
+    },
+    "First Aid": {
+      "id": 129,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg"
+    },
+    "Fishing": {
+      "id": 356,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136245.jpg"
+    },
+    "Herbalism": {
+      "id": 182,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136246.jpg"
+    },
+    "Leatherworking": {
+      "id": 165,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136247.jpg"
+    },
+    "Mining": {
+      "id": 186,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg"
+    },
+    "Skinning": {
+      "id": 393,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg"
+    },
+    "Tailoring": {
+      "id": 197,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136249.jpg"
+    },
+    "Test Profession [DNT]": {
+      "id": 2933,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134400.jpg"
+    }
+  }
+}
