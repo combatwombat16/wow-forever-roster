@@ -1,6 +1,6 @@
 # Character Modal Rework — Tasks & Goals
 
-Status: **Phases 0–4 COMPLETE** (2026-11-09). V.4 manual pass passed by the user; V.5 push still pending. **Phase 5 PLANNED** (below) — execute when the user greenlights. Execute phases in order.
+Status: **Phases 0–5 COMPLETE** (2026-11-09). V.4 manual pass passed by the user for Phases 0–3; V.5 push still pending for everything. Phase 5 shipped as `349a844` (icon maps) + `51d3290` (sub-tabs + site icons): Stats/Progress/Professions now use per-section sub-tabs; class-icons.json + profession-icons.json feed class bars, the professions matrix, and party slots; race bars stay text-only (§10.3). Harness: 398 detail checks, 2224 artifact checks, 160 unit tests.
 
 **Phase 4 outcome (shipped 2026-11-09, commits `8863d9d` + `e29d551`):**
 - Sidecar now carries `race {id,name}`, `class {id,name}`, `classIconUrl`, per-profession `iconUrl` (evidence: `docs/bnet-api-notes.md` §10).
