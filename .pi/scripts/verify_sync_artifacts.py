@@ -1231,10 +1231,16 @@ def main():
         check(re.search(r"^\s*path:\s*_site\s*$", pages, flags=re.M) is not None
               and not re.search(r"^\s*path:\s*\.\s*$", pages, flags=re.M),
               "the Pages artifact is the assembled _site bundle, never the repository root")
+        # Phase B: assets/silhouettes/*.svg is the one published asset path, and it is
+        # published as a flat glob of SVGs only — the allow-list gains that exact shape and
+        # nothing wider, so a future `cp -r assets _site/assets` (or any other asset tree)
+        # still trips this check.
         copied = [ln.strip() for ln in pages.splitlines() if re.match(r"^\s*cp ", ln)]
         check(bool(copied)
-              and all(re.search(r"(index\.html|css/\*\.css|js/\*\.js|data/\*\.json) _site/", ln) for ln in copied),
-              f"the bundle copies only index.html, css/, js/ and data/ ({copied})")
+              and all(re.search(r"(index\.html|css/\*\.css|js/\*\.js|data/\*\.json"
+                                r"|assets/silhouettes/\*\.svg) _site/", ln) for ln in copied),
+              f"the bundle copies only index.html, css/, js/, data/ and "
+              f"assets/silhouettes/*.svg ({copied})")
         for forbidden in ("docs", "tools", ".pi", "armory-tasks.md", "pi-warden.md"):
             check(not re.search(rf"cp[^\n]*{re.escape(forbidden)}", pages),
                   f"the bundle never publishes the maintainer-facing {forbidden}/")

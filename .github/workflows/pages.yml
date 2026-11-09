@@ -98,13 +98,22 @@ jobs:
       # Explicit allow-list rather than uploading the repository root: the same repo
       # tracks docs/, tools/, .pi/, armory-tasks.md and pi-warden.md, which are
       # maintainer-facing and must not be published to the internet.
+      #
+      # assets/silhouettes/ joins the list because the gear paper doll paints that SVG as
+      # the fallback for a character with no validated Battle.net render, so the file has
+      # to be inside the bundle or the reference is dead in production. The copy is
+      # guarded: an unmatched glob is a cp error, and a later commit that retires the art
+      # must fail loudly for the wrong reason rather than break the deploy here.
       - name: Assemble static bundle
         run: |
-          mkdir -p _site/css _site/js _site/data
+          mkdir -p _site/css _site/js _site/data _site/assets/silhouettes
           cp index.html _site/index.html
           cp css/*.css _site/css/
           cp js/*.js _site/js/
           cp data/*.json _site/data/
+          if compgen -G "assets/silhouettes/*.svg" > /dev/null; then
+            cp assets/silhouettes/*.svg _site/assets/silhouettes/
+          fi
           find _site -type f | sort
 
       - name: Configure Pages
