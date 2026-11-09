@@ -90,6 +90,17 @@
           </button>
         </div>
 
+        <!-- Guild Filter (roster-ui-tasks Phase C): the same chips, one more predicate. The
+             bucket row is rebuilt on every repaint by js/guildfilter.js from the guild joined
+             at render time (sidecar guild → the guild an auto-added row carries → Guildless →
+             Unknown), so only the label ships in the markup: a static chip row would go stale
+             the moment the sidecars or a Contents pull changed who is in what. It composes
+             with Squad Filter and search inside state.getFilteredCharacters(). -->
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Guild</span>
+          <div id="guild-filter-chips" class="flex flex-wrap items-center gap-1"></div>
+        </div>
+
         <!-- Roster search: instant, composed with the Squad Filter (search AND track).
              The query lives in state.js; every panel follows it through renderAll(). -->
         <div class="relative">

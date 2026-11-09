@@ -1,5 +1,6 @@
 // state.js — the single source of truth: the characters array, the active Squad
-// Filter, the active search query, the derived Battle.net lifecycle, and the render
+// Filter, the active guild filter, the active search query, the derived Battle.net
+// lifecycle, and the render
 // dispatcher that repaints every dependent panel.
 //
 // Leaf module (imports nothing) so anything may import it without creating a cycle.
@@ -7,6 +8,8 @@
 //   registerRenderHook(fn)    — panels repaint on renderAll()
 //   onFilterChange(fn)        — things that only follow the filter (party's button label)
 //   registerSearchProvider(fn) — extra searchable text (data.js: guild + lookup name)
+//   registerGuildProvider(fn)  — a row's Battle.net guild + whether a sidecar row exists
+//                                (guildfilter.js), so the guild chips need no import here
 // deriveLifecycleState() stays pure for the same reason: the map entry arrives as an
 // argument, because the sidecar lookup lives in data.js and importing it here would
 // turn this leaf into a hub.
@@ -36,6 +39,14 @@ export function normalizeRoster(list) {
 
 export let characters;
 export let currentFilter = 'all';
+// The three guild-filter bucket names, declared with the state that reads them so no module
+// evaluation can hit them before their initialiser (they are consts, but TDZ is still TDZ).
+export const GUILD_FILTER_ALL = 'all';
+export const GUILD_GUILDLLESS = 'Guildless';
+export const GUILD_UNKNOWN = 'Unknown';
+// The guild chip's selection (GUILD_FILTER_ALL == every guild). Like the track and the query
+// it has exactly one owner, and like them it is never persisted: a refresh starts from All.
+export let currentGuildFilter = GUILD_FILTER_ALL;
 // The search box's value as normalised for matching ('' == no search active). Only ever
 // written through setQuery() so the query, like the track, has exactly one owner.
 export let currentQuery = '';
@@ -151,10 +162,108 @@ export function setFilter(filter) {
   renderAll();
 }
 
+// ---------- guild filter (roster-ui-tasks Phase C) ----------
+// A third predicate on the same source of truth: Squad Filter AND guild AND query, all of
+// them inside getFilteredCharacters(), so the roster grid, the party pool and the
+// distribution panels can never disagree about which rows are in play.
+//
+// The buckets are derived, never configured: every distinct guild name the roster knows,
+// plus GUILD_GUILDLLESS (a sidecar row that carries no guild) and GUILD_UNKNOWN (no sidecar
+// row at all). Guild for a row is joined at render time in this order:
+//
+//   1. the sidecar's guild string, when non-empty — the freshest source;
+//   2. the row's own `guild` field, what a nightly auto-add stamps before any sidecar row
+//      exists for it (README, data-flow §1);
+//   3. Guildless, when a sidecar row exists and genuinely says "no guild";
+//   4. Unknown, when there is no sidecar row to ask.
+//
+// Step 2 outranks step 3 on purpose: a committed guild name is a claim about the row, while
+// an empty sidecar guild is the absence of one. The bucket name constants live with the state
+// variables above.
+
+// The sidecar half of the join, contributed by the module that owns the sidecars
+// (guildfilter.js) for exactly the reason registerSearchProvider exists: this file imports
+// nothing. A provider answers `{ guild, hasSidecar }`; anything else contributes nothing, so
+// a broken provider degrades to "no sidecar data" rather than to a wrong bucket.
+const guildProviders = [];
+
+export function registerGuildProvider(fn) {
+  if (typeof fn === 'function') guildProviders.push(fn);
+}
+
+function sidecarGuildInfo(character) {
+  let guild = '';
+  let hasSidecar = false;
+  guildProviders.forEach(fn => {
+    const info = fn(character);
+    if (!info || typeof info !== 'object') return;
+    const value = info.guild;
+    if (guild === '' && (typeof value === 'string' || typeof value === 'number')) {
+      guild = String(value).trim();
+    }
+    if (info.hasSidecar === true) hasSidecar = true;
+  });
+  return { guild, hasSidecar };
+}
+
+// The bucket one row belongs in, per the fallback order above. Exported for reuse: the chip
+// labels, the counts and any later panel all read the same derived value a row filters on,
+// so a chip can never advertise a bucket its own rows would not match.
+export function getGuildBucket(character) {
+  if (!character || typeof character !== 'object') return GUILD_UNKNOWN;
+  const info = sidecarGuildInfo(character);
+  if (info.guild !== '') return info.guild;
+  const rowGuild = typeof character.guild === 'string' ? character.guild.trim() : '';
+  if (rowGuild !== '') return rowGuild;
+  return info.hasSidecar ? GUILD_GUILDLLESS : GUILD_UNKNOWN;
+}
+
+// The buckets to offer, derived from the roster as it stands: guild names alphabetically
+// (case-insensitively, so the chip order does not depend on which sync wrote a file first),
+// then the two synthetic buckets in a fixed order. A bucket nobody is in is not offered.
+export function guildBuckets() {
+  const names = new Set();
+  let hasGuildless = false;
+  let hasUnknown = false;
+  characters.forEach(c => {
+    const bucket = getGuildBucket(c);
+    if (bucket === GUILD_GUILDLLESS) hasGuildless = true;
+    else if (bucket === GUILD_UNKNOWN) hasUnknown = true;
+    else names.add(bucket);
+  });
+  const sorted = [...names].sort((a, b) => {
+    const x = a.toLowerCase();
+    const y = b.toLowerCase();
+    return x < y ? -1 : x > y ? 1 : 0;
+  });
+  if (hasGuildless) sorted.push(GUILD_GUILDLLESS);
+  if (hasUnknown) sorted.push(GUILD_UNKNOWN);
+  return sorted;
+}
+
+export function getGuildFilter() {
+  return currentGuildFilter;
+}
+
+// Empty/no selection matches everything, which is what "no guild filter active" means and
+// what keeps the guild predicate inert until a chip is clicked.
+export function matchesGuild(character, bucket = currentGuildFilter) {
+  if (bucket === GUILD_FILTER_ALL) return true;
+  return getGuildBucket(character) === bucket;
+}
+
+// The chip row is the only writer. It repaints through renderAll() like setFilter() does, so
+// a guild change repaints exactly what a track change repaints.
+export function setGuildFilter(bucket) {
+  const value = typeof bucket === 'string' ? bucket.trim() : '';
+  currentGuildFilter = value === '' ? GUILD_FILTER_ALL : value;
+  renderAll();
+}
+
 // ---------- search (docs/refactor-design.md §1, armory-tasks 3.4) ----------
 // Search is a second predicate on the same source of truth rather than a second render
-// path: getFilteredCharacters() is search AND track, so every panel that already followed
-// the track filter follows the query too.
+// path: getFilteredCharacters() is search AND track (AND guild), so every panel that already
+// followed the track filter follows the query too.
 
 // Extra searchable text for a character, contributed by a module whose data state.js must
 // not import (data.js adds the sidecar guild and the Battle.net lookup name). A provider
@@ -191,12 +300,14 @@ export function matchesQuery(character, query = currentQuery) {
   return terms.every(term => fields.some(field => field.indexOf(term) !== -1));
 }
 
-// The one place the Squad Filter and the search query are applied, so the roster grid, the
-// party pool, the profession matrix and both distribution panels can never disagree about
-// which characters are in play.
+// The one place the Squad Filter, the guild chips and the search query are applied, so the
+// roster grid, the party pool, the profession matrix and both distribution panels can never
+// disagree about which characters are in play. All three predicates AND together.
 export function getFilteredCharacters() {
   return characters.filter(c =>
-    (currentFilter === 'all' ? true : c.track === currentFilter) && matchesQuery(c)
+    (currentFilter === 'all' ? true : c.track === currentFilter)
+    && matchesQuery(c)
+    && matchesGuild(c)
   );
 }
 
@@ -210,3 +321,4 @@ export function setQuery(query) {
 // Inline on*="…" handlers in index.html resolve against the global scope, so the
 // handlers each module owns are published on window deliberately.
 window.setFilter = setFilter;
+window.setGuildFilter = setGuildFilter;

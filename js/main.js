@@ -1,7 +1,7 @@
 // main.js — bootstrap. Imports every module (which registers its render hooks and
 // publishes its inline handlers on window), then runs the same init sequence the old
-// inline script ran: repo display, Auto-Form label, class list, first paint, and the
-// roster fetch/pull chain.
+// inline script ran: repo display, Auto-Form label, class list, first paint (guild chips
+// included, from whatever buckets the seed roster has), and the roster fetch/pull chain.
 //
 // Import order matters: roster.js registers its render hook before party/professions/
 // stats, so a repaint paints the grid first, exactly as renderRoster() used to.
@@ -17,6 +17,9 @@ import './stats.js';
 // open detail modal. search.js owns no state of its own — it only feeds state.js's query.
 import './detail.js';
 import './search.js';
+// The guild chip row (Phase C): registers the sidecar guild provider and its own render hook,
+// then follows the filter through state.js like every other panel. It owns no state.
+import './guildfilter.js';
 import { onRaceChange } from './editchar.js';
 import { updateAutoFormButtonLabel } from './party.js';
 
