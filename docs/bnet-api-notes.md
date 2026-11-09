@@ -934,3 +934,102 @@ existing `/forever-us/` render host, so no new Blizzard host needs admitting.
 7. **New drift tripwires:** `talent-tree/2`, `talent/2`, `spell/1`, `recipe/2`,
    `profession/2`, `reputation-faction/1`, `reputation-tiers/1` are now load-bearing for the
    rework and should join `config.DRIFT_SURFACES`.
+
+---
+
+## 10. Phase 4a addendum — class / race / profession **icon** media (2026-11-09, 01:05–01:10 UTC)
+
+Produced for the Phase 4a sync/data extension (race + class identity in the sidecar, profession
+icons, and the class/race icon question the modal needs answered). Three scripted read-only
+sweeps drove the frozen transport (`bnet.http.ProbeHttp`: host-pinned, credential-masking,
+`REQUEST_SPACING_S` = 0.25 s pacing) directly, because `probe.py`'s path inventory does not
+contain these routes. **`python3 -m bnet probe` was deliberately not run** — it would overwrite
+`docs/bnet-probe-raw.json`, the FROZEN Phase 1 evidence `.pi/scripts/verify_bnet_probe.py`
+grounds every cited path against — so the raw evidence for this section lives outside the repo
+(`/tmp/p4a/evidence.json`, `evidence2.json`, `evidence3.json`, same request-log schema,
+credential-masked), exactly as §9's did, and the new payload shapes are recorded below as fenced
+trees rather than inline `` `new.path` `` citations.
+
+Credentials came from the repo-root `.env` via `set -a && . ./.env && set +a`; no secret value
+was printed, logged or written. Static namespace re-discovered from a live profile href,
+unchanged: **`static-1.60.1_70399-forever-us`**.
+
+Run totals, read from the three saved meta blocks: **45 requests / 3 token mints** (one per
+sweep), statuses **20 × 200, 22 × 404**. **No 429, no retry, max attempts on any request: 1**,
+no rate-limit headers, and no `ETag` on any response — §1, §7.3 and §9.6 re-confirmed at this
+volume. Every 200 static-ns doc carried `Last-Modified` and `Cache-Control: public,
+max-age=86400`, so these docs are cacheable exactly like the item/spell media of §6 / §9.3.1.
+
+### 10.1 Verdict table — the three icon surfaces
+
+| Surface | Verdict | Route that answers (GET, static ns) | Example value |
+|---|---|---|---|
+| **Playable-class icon** | **AVAILABLE** (5/5 ids) | `/data/wow/media/playable-class/{class_id}` | `https://render.worldofwarcraft.com/forever-us/icons/56/626008.jpg` (1 Warrior) |
+| **Playable-race icon** | **UNAVAILABLE — no route exists** | — | — (see 10.3) |
+| **Profession icon** | **AVAILABLE / re-confirmed** (3/3 ids, primary **and** secondary) | `/data/wow/media/profession/{profession_id}` | `…/icons/56/136241.jpg` (164 Blacksmithing), `…/136248.jpg` (186 Mining), `…/133971.jpg` (185 Cooking) |
+
+**Safe-host verdict: PASS, and `isSafeIconUrl()` still needs no change.** Every icon URL the
+three sweeps harvested — **8 of 8** — landed on `render.worldofwarcraft.com` under
+`/forever-us/icons/56/`, the same form as the item icons (§6) and the spell icons (§9.3.1), so
+no new Blizzard host appears and T2.11 stays a no-op.
+
+### 10.2 Class icons — **AVAILABLE**, prefix route only
+
+| Endpoint | Status | Evidence |
+|---|---|---|
+| `/data/wow/playable-class/{1,3,11}/media` @ static | **404 × 0-byte, unrouted** | no `battlenet-namespace` echo, no `Content-Type` — the §1 unrouted signature: **the `…/{id}/media` sub-resource form does not exist** |
+| `/data/wow/media/playable-class/{1,2,3,5,11}` @ static | **200 × 5/5** `media/2` | ids 1/2/3/5/11 = Warrior, Paladin, Hunter, Priest, Druid — every class a live roster character uses. Payload below |
+| `/data/wow/media/playable-class/95` @ static | **404 with a 60-byte JSON body** (routed) | id 95 is a **race** id, not a class: the routed-vs-unrouted split proves the row above is a *route* verdict, not an id-size accident |
+| `/data/wow/playable-class/{1,3,11}` @ static | **200** `playable-class/1` | the doc embeds its own media reference, and — unlike the talent-tree case of §9.3.2 — **the href it serves is fetchable**: `media.key.href` names the 200 prefix route byte for byte |
+
+```
+GET /data/wow/media/playable-class/1?namespace=static-1.60.1_70399-forever-us   200 media/2
+id = 1
+assets[len]        = 1
+assets[].key       = "icon"
+assets[].file_data_id  626008
+assets[].value     https://render.worldofwarcraft.com/forever-us/icons/56/626008.jpg
+```
+
+Observed file_data_ids: 1 → 626008, 2 → 626003, 3 → 626000, 5 → 626004, 11 → 625999.
+
+### 10.3 Race icons — **UNAVAILABLE**, evidenced nine ways
+
+| Probe | Status | Reading |
+|---|---|---|
+| `/data/wow/playable-race/{2,5,6}/media` @ static | **404 × 0-byte unrouted** | sub-resource form absent |
+| `/data/wow/playable-race/1/media` @ `dynamic-forever-us` | **404 × 0-byte unrouted** | absent in the other plausible namespace too |
+| `/data/wow/media/playable-race/{1,2,5,6,36,53,69,240}` @ static | **404 × 0-byte unrouted (8/8)** | eight race ids spanning the classic ids (1 Human, 2 Orc, 5 Undead, 6 Tauren) **and** the four race ids embedded in this roster's live `character-media` render paths (§9.5: 36, 53, 69, 240) — so the 404 is systematic, not "a race we do not have" |
+| `/data/wow/media/playable-race/2` @ `dynamic-forever-us`, @ `profile-forever-us`, @ unpinned `static-forever-us` | **404 × 0-byte unrouted (3/3)** | no namespace answers this route |
+| `/data/wow/media/playable-race/index` @ static | **404 × 0-byte unrouted** | there is not even a media **index**, so the family cannot be discovered |
+| `/data/wow/playable-race/{2,5,6,95}` @ static | **200** `playable-race/2` | **the doc carries no media key at all** (keys below) — the §9.3.2 "served-but-404ing href" case does not even arise |
+| `/data/wow/playable-race/index` @ static | **200** | elements carry only `races[].id`, `races[].key.href`, `races[].name` — no icon field to fall back on |
+| `/data/wow/humantype/index`, `/data/wow/media/humantype/1` @ static | **404 × 0-byte unrouted** | the retail human-type artwork family (the usual race-icon source) is unrouted here too |
+| `racial_spells[].key.href` on the race doc | href → `/data/wow/spell/20572` (Orc "Blood Fury") | the only artwork a race doc points at is a **spell** icon, resolvable via the §9.3.1 route. **Recorded, deliberately not used**: a spell glyph is not a race icon, and inventing that mapping in a committed artifact is worse than no icon |
+
+```
+GET /data/wow/playable-race/2?namespace=static-1.60.1_70399-forever-us   200 playable-race/2
+top-level keys: id, name, faction, gender_name, is_allied_race,
+                is_selectable, playable_classes[], racial_spells[], _links
+                → NO media key (checked on race ids 2, 5, 6 and 95 alike)
+```
+
+### 10.4 Consequences for the sync (implemented in this phase)
+
+1. The sidecar now stores **`race` and `class` as `{id, name}`**, straight off the profile
+   payload the sync already fetches — `race.id`, `race.name` and `character_class.id`,
+   `character_class.name` (§3.1). Zero extra requests. A reference missing either half is
+   **reported as a warning and the key is omitted**, never published half-populated.
+2. **`classIconUrl`** is stored per character from the 10.2 route: one request per distinct
+   class id per run (URL-de-duplicated like every other media), `Cache-Control`-friendly,
+   H2-gated through `safe_artifact_url`, null on a 404.
+3. **`raceIconUrl` is not a key the sidecar has.** Publishing a permanent null would read as
+   "synced, and Blizzard returned nothing for this character", which is a different claim from
+   "this API has no race artwork at all". The sync therefore omits the key entirely, and
+   `.pi/scripts/verify_sync_artifacts.py` WARNs (soft, exit 0) on any row that grows one —
+   loud in the run report, not a nightly red-line.
+4. Every **profession** entry (both `primaries` and `secondaries`) now carries **`iconUrl`**
+   from the 10.1 route, gated and nulled the same way.
+5. Two new drift tripwires joined `config.DRIFT_SURFACES`: `profession_media` and
+   `playable_class_media` (schemas observed here: `media/2`, `playable-class/1`,
+   `playable-race/2`).

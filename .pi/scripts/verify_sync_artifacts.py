@@ -67,7 +67,10 @@ ROSTER_KEYS = ROSTER_FIELDS | {"validation"}
 # sidecar the UI consumes is schema-checked at every level, not just the top.
 CHAR_KEYS = {"status", "bnet", "level", "guild", "activeSpec", "itemLevel",
              "gear", "progress", "achievementPoints", "fetchedAt",
-             "stats", "talents", "professions", "reputations", "media"}
+             "stats", "talents", "professions", "reputations", "media",
+             # Phase 4a (notes §10): race/class identity off the profile payload, plus
+             # the class icon. ADDITIVE again — nothing above changed its meaning.
+             "race", "class", "classIconUrl", "raceIconUrl"}
 BNET_KEYS = {"name", "surname", "href"}
 GEAR_KEYS = {"slot", "name", "ilvl", "iconUrl",
              "itemId", "quality", "itemClass", "itemSubclass", "enchants", "stats"}
@@ -78,7 +81,10 @@ STAT_VALUE_KEYS = {"base", "effective", "value", "ratingBonus", "ratingNormalize
 TALENT_SPEC_KEYS = {"specId", "specName", "spentPoints", "talents"}
 TALENT_RANK_KEYS = {"rank", "talentId", "spellId", "spellName", "description", "castTime", "iconUrl"}
 PROFESSIONS_KEYS = {"primaries", "secondaries"}
-PROFESSION_KEYS = {"id", "name", "tiers"}
+# Phase 4a: a profession entry gains iconUrl (notes §10, 200 for a primary AND a
+# secondary id). The check stays a subset test, so rows synced before this phase
+# still pass and a new row is host-gated on the icon it now carries.
+PROFESSION_KEYS = {"id", "name", "tiers", "iconUrl"}
 PROFESSION_TIER_KEYS = {"skillPoints", "maxSkillPoints", "tierId", "tierName", "knownRecipes"}
 RECIPE_KEYS = {"id", "name"}
 REPUTATION_KEYS = {"factionId", "factionName", "standing"}
@@ -104,6 +110,7 @@ MAX_ARTIFACT_BYTES = 500 * 1024
 
 fails = []
 passes = 0
+warnings = []
 
 
 def check(cond, msg):
@@ -114,6 +121,25 @@ def check(cond, msg):
     else:
         fails.append(msg)
         print(f"  FAIL {msg}")
+
+
+def check_soft(cond, msg, warn_msg=None):
+    """WARNING tier: counted and printed either way, but a violation is never fatal.
+
+    Used exactly where a value can leave the site's frozen vocabulary without being
+    bad data (notes §10: the API can name a race the roster has never used), so the
+    gate surfaces it for a human and still exits 0 — a Blizzard rename is a finding,
+    not an outage, and changing the roster's vocabulary is pi-warden's call, not a
+    nightly's. warn_msg exists because a violation listed under the pass wording
+    ("is inside the vocabulary", warned) reads as a broken gate."""
+    global passes
+    if cond:
+        passes += 1
+        print(f"  PASS {msg}")
+    else:
+        text = warn_msg or msg
+        warnings.append(text)
+        print(f"  WARN {text}")
 
 
 def bail():
@@ -203,6 +229,21 @@ def body_of(text, pattern):
     """The text of one def block, for scope-accurate source checks."""
     m = re.search(pattern, text, flags=re.S)
     return m.group(1) if m else ""
+
+
+def js_object_keys(text, const_name):
+    """String keys of a JS object literal, for the pi-warden vocabulary gate.
+
+    The vocabularies are read out of the modules that own them rather than being
+    copied into this script: a copy here would be a second list free to drift, and
+    the whole point of the WARNING tier is that a drift shows up as a WARN naming the
+    offending value instead of as a red nightly or a silently vacuous check."""
+    block = body_of(text or "", rf"(?:export\s+)?const\s+{const_name}\s*=\s*\{{(.*?)\n\}}")
+    return set(re.findall(r'^\s*"([^"]+)"\s*:', block, flags=re.M))
+
+
+CLASS_VOCAB = js_object_keys(read(ROOT / "js" / "util.js"), "CLASS_COLORS")
+RACE_VOCAB = js_object_keys(read(ROOT / "js" / "editchar.js"), "FOREVER_RACE_CLASSES")
 
 
 def main():
@@ -460,7 +501,15 @@ def main():
                       f"data entry {rid} professions has only primaries/secondaries and carries data")
                 for side in ((professions or {}).get("primaries") or []) + ((professions or {}).get("secondaries") or []):
                     check(isinstance(side, dict) and set(side) <= PROFESSION_KEYS,
-                          f"data entry {rid} profession carries only id/name/tiers")
+                          f"data entry {rid} profession carries only id/name/tiers/iconUrl")
+                    # Phase 4a (notes §10): the icon is a response-derived URL like
+                    # every other one in this artifact, so null (doc 404) or the
+                    # render host, never the attacker's string (H2).
+                    if isinstance(side, dict):
+                        prof_icon = side.get("iconUrl")
+                        check(prof_icon is None or (isinstance(prof_icon, str) and ICON_URL_RE.match(prof_icon)),
+                              f"data entry {rid} profession iconUrl is null or matches "
+                              f"^https://render\\.worldofwarcraft\\.com/")
                     for tier in (side.get("tiers") or []) if isinstance(side, dict) else []:
                         check(isinstance(tier, dict) and set(tier) <= PROFESSION_TIER_KEYS,
                               f"data entry {rid} profession tier carries only the T1.4 fields")
@@ -485,6 +534,48 @@ def main():
                     media_url = media[media_key]
                     check(media_url is None or (isinstance(media_url, str) and ICON_URL_RE.match(media_url)),
                           f"data entry {rid} media.{media_key} is null or on the render host")
+
+            # --- Phase 4a additive keys (notes §10) -------------------------- #
+            # race/class are read off the already-fetched profile (§3.1), so a row
+            # that carries one must carry the complete reference: a half-populated
+            # {id: null} would render "null" where the UI needs a badge. The sync
+            # omits the key instead (bnet.fetch.extract_identity), and a name that
+            # leaves the site's frozen vocabulary is a WARNING, not a failure — a
+            # patch that renames a race is a finding for a human, not an outage.
+            for id_key, vocab, vocab_name in (("race", RACE_VOCAB, "FOREVER_RACE_CLASSES"),
+                                              ("class", CLASS_VOCAB, "CLASS_COLORS")):
+                ref = char.get(id_key)
+                if ref is None:
+                    continue
+                check(isinstance(ref, dict) and set(ref) == ID_NAME_KEYS
+                      and isinstance(ref.get("id"), int) and not isinstance(ref.get("id"), bool)
+                      and isinstance(ref.get("name"), str) and bool(ref["name"].strip()),
+                      f"data entry {rid} {id_key} is {{id: int, name: non-empty str}} when present")
+                name = ref.get("name") if isinstance(ref, dict) else None
+                if isinstance(name, str) and name.strip():
+                    check_soft(
+                        name in vocab,
+                        f"data entry {rid} {id_key} name {name!r} is inside the frozen "
+                        f"{vocab_name} vocabulary (pi-warden)",
+                        warn_msg=f"data entry {rid} {id_key} name {name!r} is OUTSIDE the frozen "
+                                 f"{vocab_name} vocabulary (pi-warden): the UI loses its colour and "
+                                 f"filter for it, so this needs a deliberate roster change, not a "
+                                 f"silent sync edit")
+            # Both icon keys get the same gate, so a future patch that opens the race
+            # route needs no new check. §10 says the sync writes no raceIconUrl today,
+            # which is asserted separately — as a WARNING, because the correct response
+            # to Blizzard shipping a race icon is to widen the sync, not to red-line
+            # the nightly that noticed.
+            for icon_key in ("classIconUrl", "raceIconUrl"):
+                if icon_key in char:
+                    icon_value = char[icon_key]
+                    check(icon_value is None or (isinstance(icon_value, str) and ICON_URL_RE.match(icon_value)),
+                          f"data entry {rid} {icon_key} is null or on the render host")
+            check_soft("raceIconUrl" not in char,
+                       f"data entry {rid} carries no raceIconUrl, as §10 requires",
+                       warn_msg=f"data entry {rid} carries a raceIconUrl although §10 found no race "
+                                f"media route on any namespace: re-run the §10 sweep, and only then "
+                                f"teach bnet.fetch to write it")
     blob_keys = (set(walk_keys(characters, set()) or set()) if characters else set())
     offenders = blob_keys & RAW_BLOB_KEYS
     check(not offenders, f"no raw Blizzard payload keys leaked into the sidecar (found: {sorted(offenders)})")
@@ -665,6 +756,27 @@ def main():
           "shared validator gates every href write site (map entry builder)")
     check('safe_artifact_url(icon, "iconUrl")' in FETCH,
           "shared validator gates the iconUrl write site (render host only)")
+    # --- Phase 4a: the two new icon routes are config-declared and share that gate --- #
+    # notes §10: profession and playable-class icons both answer at the
+    # /data/wow/media/<kind>/{id} prefix form, so the paths belong in config (one
+    # place to re-verify after a patch) and the values go through icon_for, which is
+    # the function that applies safe_artifact_url and the cache/dedup rules.
+    check('PROFESSION_MEDIA_PATH = "/data/wow/media/profession/{profession_id}"' in CFG,
+          "profession icon route is the config-declared /media prefix form (§10)")
+    check('PLAYABLE_CLASS_MEDIA_PATH = "/data/wow/media/playable-class/{class_id}"' in CFG,
+          "playable-class icon route is the config-declared /media prefix form (§10)")
+    check(not re.search(r"RACE_MEDIA_PATH|PLAYABLE_RACE", CFG)
+          and '"raceIconUrl"' not in FETCH,
+          "no race-media endpoint or write site exists in the shipped code (§10 proved every "
+          "shape unrouted, so the sync publishes no raceIconUrl key at all)")
+    icon_gate = body_of(FETCH, r"\n    def static_media_icon\(self, path, surface, w, \*\*identifiers\):(.*?)\n    def ")
+    check("self.icon_for(" in icon_gate,
+          "the new icon routes reach the shared icon_for gate (cache reuse + H2 validator), "
+          "instead of each writing a URL of its own")
+    check('out["classIconUrl"] = self.class_icon(' in FETCH,
+          "the class icon is written where the profile identity was extracted, not elsewhere")
+    check('malformed' in body_of(FETCH, r"\ndef extract_identity\(profile\):(.*?)\ndef "),
+          "extract_identity reports malformed race/class refs instead of storing or dumping them")
     check(re.search(r"def redact_foreign_urls\(text\):", HTTP) is not None
           and re.search(r"def redact\(value\):\s*\n\s*if isinstance\(value, str\):\s*\n\s*return redact_foreign_urls\(", HTTP)
           is not None,
@@ -851,7 +963,16 @@ def main():
               f"step order is tailwind -> size gate -> stage -> upload -> deploy "
               f"(got {tw_at}, {gate_at}, {stage_at}, {upload_at}, {deploy_at})")
 
+    # The vocabulary gate must be able to see anything at all: a silently empty
+    # vocabulary would soft-pass every row forever, so it is a hard requirement.
+    check(bool(CLASS_VOCAB) and bool(RACE_VOCAB),
+          f"pi-warden vocabularies loaded from js/ (classes={len(CLASS_VOCAB)}, "
+          f"races={len(RACE_VOCAB)})")
     print(f"\n{passes} passed, {len(fails)} failed")
+    if warnings:
+        print(f"{len(warnings)} WARNING(s) (advisory, not failures):")
+        for item in warnings:
+            print(f"  ! {item}")
     if fails:
         print("FAILED CHECKS:")
         for item in fails:

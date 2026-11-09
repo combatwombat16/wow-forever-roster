@@ -119,6 +119,31 @@ def _id_name(node):
     return {"id": ident, "name": name}
 
 
+def extract_identity(profile):
+    """The profile's own race / class references (§3.1) -> (block, malformed_keys).
+
+    The data is already in the fetched profile, so it costs zero requests. The
+    class ref is keyed ``character_class``, NOT ``playable_class`` (§3.1) — reading
+    the retail key would silently publish nothing. A ref that carries an id but no
+    name (or the reverse) is reported by its payload key rather than stored
+    half-populated or dumped, because the sidecar gate below the header pins
+    ``{id: int, name: str}`` and a one-sided object would render "null" in the UI.
+    """
+    if not isinstance(profile, dict):
+        return {}, ["profile"]
+    block, malformed = {}, []
+    for side, payload_key in (("race", "race"), ("class", "character_class")):
+        node = profile.get(payload_key)
+        if node is None:
+            continue                      # absent is not malformed: the ref simply is not there
+        ref = _id_name(node)
+        if ref and ref["id"] is not None and ref["name"]:
+            block[side] = ref
+        else:
+            malformed.append(payload_key)
+    return block, malformed
+
+
 def extract_item_color(color):
     """stats[].display.color RGBA (§3.2) kept verbatim; None when empty."""
     if not isinstance(color, dict):
@@ -272,6 +297,11 @@ def normalize_professions(payload):
                 })
             out.append({"id": _int(profession.get("id")),
                         "name": loc(profession.get("name")),
+                        # Phase 4a: the profession icon is one static-ns request per
+                        # distinct profession id (§10), so the Fetcher fills it and it
+                        # starts null like the talent/tree icons — a pure extractor
+                        # must not pretend to know a URL it cannot look up.
+                        "iconUrl": None,
                         "tiers": tiers})
         return out
 
@@ -522,6 +552,50 @@ class Fetcher:
         self.spell_icon_lookups += 1
         return self.icon_for(url, w, surface="spell_media")
 
+    def static_media_icon(self, path, surface, w, **identifiers):
+        """One static-namespace media doc -> allowlist-gated icon URL | None.
+
+        The shared shape behind spell_icon for the two Phase 4a routes: the media
+        family only answers in the re-discovered static namespace (§9.3.1 spells,
+        §10 professions and playable classes), and the ``/data/wow/media/<kind>/{id}``
+        prefix form is the one that exists — the ``…/{id}/media`` sub-resource form
+        is a 0-byte unrouted 404. ``icon_for`` supplies the URL de-duplication (one
+        request per distinct id per run), the cached-304 reuse and the H2
+        ``safe_artifact_url`` gate, so a 404 or an off-host asset stores null.
+
+        No budget cap here, unlike spell icons: the id space is bounded by the nine
+        playable classes and the handful of profession ids a roster actually uses,
+        and the URL de-dup already collapses repeats across characters.
+        """
+        if not self.static_ns:
+            return None
+        url = (f"{config.API_BASE}{path.format(**identifiers)}"
+               f"?namespace={self.static_ns}")
+        return self.icon_for(url, w, surface=surface)
+
+    def profession_icon(self, profession_id, w):
+        """Profession icon for a primaries/secondaries entry (notes §9.2, §10)."""
+        if _int(profession_id) is None:
+            return None
+        return self.static_media_icon(config.PROFESSION_MEDIA_PATH, "profession_media",
+                                      w, profession_id=profession_id)
+
+    def class_icon(self, class_id, w):
+        """Playable-class icon for a character (§10: AVAILABLE).
+
+        There is no ``race_icon`` counterpart on purpose: §10 probed
+        ``/data/wow/playable-race/{id}/media``, ``/data/wow/media/playable-race/{id}``
+        (eight race ids, four namespaces, plus the media index) and the race doc
+        itself, and every one is a 0-byte unrouted 404 — Forever's
+        ``playable-race`` document carries no ``media`` key at all. The sidecar
+        therefore publishes no ``raceIconUrl`` key rather than a null one, so the UI
+        cannot mistake "synced and empty" for "the API has nothing".
+        """
+        if _int(class_id) is None:
+            return None
+        return self.static_media_icon(config.PLAYABLE_CLASS_MEDIA_PATH, "playable_class_media",
+                                      w, class_id=class_id)
+
     def note_feature_failure(self, character_id, surface, detail):
         """Record an optional feature block that could not be stored, with its
         exact cause, so the run summary reports it instead of a silent absence."""
@@ -660,6 +734,18 @@ class Fetcher:
         # href is ever published, whatever the payload claimed.
         bnet["href"] = safe_artifact_url(href, "href")
         out["bnet"] = bnet
+        # Phase 4a: race and class identity, straight off this same profile payload
+        # (notes §3.1) — zero extra requests. raceIconUrl is never written: §10
+        # proved no race-media route exists, and an omitted key is the honest
+        # signal. classIconUrl comes from the class doc the probe confirmed.
+        identity, malformed_identity = extract_identity(profile)
+        out.update(identity)
+        for payload_key in malformed_identity:
+            self.warnings.append(
+                f"id {w.get('rec', {}).get('id')}: profile carried a malformed {payload_key} "
+                "reference (no usable id+name) — key omitted, not guessed")
+        if "class" in identity:
+            out["classIconUrl"] = self.class_icon(identity["class"]["id"], w)
         if isinstance(profile.get("level"), int):
             out["level"] = profile["level"]
         guild = profile.get("guild")
@@ -750,6 +836,10 @@ class Fetcher:
         professions = self.sub_payload(w, "professions", link("professions", "professions"))
         professions_block = normalize_professions(professions)
         if professions_block:
+            # Phase 4a: one cached static-ns icon per distinct profession id, both
+            # arrays (§10 confirmed 200 for a primary and a secondary id alike).
+            for entry in professions_block["primaries"] + professions_block["secondaries"]:
+                entry["iconUrl"] = self.profession_icon(entry["id"], w)
             out["professions"] = professions_block
         elif professions is None:
             self.note_feature_failure(rid, "professions", "fetch failed (no payload)")

@@ -36,8 +36,17 @@ DATA_DOC_KEYS = ("schemaVersion", "syncedAt", "triggeredBy", "characters")
 # the payload yielded data, exactly like guild/progress.
 CHARACTER_KEYS = ("status", "bnet", "level", "guild", "activeSpec", "itemLevel",
                   "gear", "progress", "achievementPoints", "fetchedAt",
-                  "stats", "talents", "professions", "reputations", "media")
+                  "stats", "talents", "professions", "reputations", "media",
+                  # Phase 4a (notes §10): identity straight off the profile payload,
+                  # plus the class icon the probe proved exists. raceIconUrl is a legal
+                  # key that NOTHING writes: §10 found no race media route on any
+                  # namespace, so the sidecar omits it instead of publishing a
+                  # permanent null, and the verify gate warns if a row ever grows one.
+                  "race", "class", "classIconUrl", "raceIconUrl")
 BNET_KEYS = ("name", "surname", "href")
+# race / class: {id: int, name: str} read off the profile (§3.1), and a profession
+# entry now carries the §10 icon next to its id and name.
+IDENTITY_KEYS = ("id", "name")
 # gear keeps slot/name/ilvl/iconUrl and gains the T1.1 tooltip fields; no
 # gem/socket key exists because the API carries none (notes §9.4, amendment 2).
 GEAR_KEYS = ("slot", "name", "ilvl", "iconUrl",
@@ -49,6 +58,7 @@ TALENT_TREE_KEYS = ("treeId", "classId", "className", "specId", "specName", "nam
 TALENT_NODE_KEYS = ("id", "displayRow", "displayCol", "rawPositionX", "rawPositionY",
                     "unlocks", "lockedBy", "ranks")
 TALENT_RANK_KEYS = ("rank", "talentId", "spellId", "spellName", "description", "castTime", "iconUrl")
+
 
 
 def write_json(path, payload):

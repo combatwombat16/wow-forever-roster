@@ -50,6 +50,14 @@ PLAYABLE_CLASS_INDEX = "/data/wow/playable-class/index"
 # probe 404s (§9.3.1), which is why the placeholder is named, not generic.
 PLAYABLE_SPECIALIZATION_PATH = "/data/wow/playable-specialization/{spec_id}"
 SPELL_MEDIA_PATH = "/data/wow/media/spell/{spell_id}"
+# Phase 4a (notes §10): profession and playable-class icons. Both are the
+# ``/data/wow/media/<kind>/{id}`` prefix form — the ``/data/wow/playable-class/
+# {id}/media`` sub-resource form is a 0-byte unrouted 404, exactly like the spell
+# case in §9.3.1. There is deliberately NO playable-race media path: §10 probed
+# every shape, namespace and the retail human-type family and all are unrouted, so
+# the sidecar publishes no race icon at all rather than an invented one.
+PROFESSION_MEDIA_PATH = "/data/wow/media/profession/{profession_id}"
+PLAYABLE_CLASS_MEDIA_PATH = "/data/wow/media/playable-class/{class_id}"
 # The static namespace is version-pinned and must be re-discovered every run
 # from hrefs in fresh payloads (notes §5); plain static-forever-us is 403.
 STATIC_NS_RE = re.compile(r"namespace=(static-[A-Za-z0-9._-]+)")
@@ -101,7 +109,10 @@ DRIFT_SURFACES = ("profile", "equipment", "specializations", "achievements",
                   # load-bearing for the character modal, so their drift must
                   # surface on the same tripwire as the Phase 1 contract.
                   "reputations", "professions", "character_media", "spell_media",
-                  "playable_specialization", "talent_tree")
+                  "playable_specialization", "talent_tree",
+                  # Phase 4a (notes §10): the profession and class icon docs are
+                  # now load-bearing for the Professions tab and the class badge.
+                  "profession_media", "playable_class_media")
 
 # --------------------------------------------------------------------------- #
 # Probe endpoints / budgets (tools/bnet/probe.py; Phase 1 contract frozen here)
