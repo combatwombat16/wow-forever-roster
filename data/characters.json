@@ -262,8 +262,14 @@
       "roleSec": "None",
       "race": "Orc",
       "class": "Warlock",
-      "prof1": "Tailoring",
-      "prof2": "Enchanting"
+      "prof1": "Mining",
+      "prof2": "Engineering",
+      "validation": {
+        "state": "validated",
+        "confirmedSlug": "shmorlock-gorelocke",
+        "reviewedBy": "combatwombat16",
+        "reviewedAt": "2026-11-09T06:06:47Z"
+      }
     },
     {
       "id": "1794166751512",
