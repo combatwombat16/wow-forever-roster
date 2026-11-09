@@ -8,7 +8,7 @@
 import { LIFECYCLE, characters, deriveLifecycleState, getFilteredCharacters, getQuery, isLifecycleEditable, registerRenderHook } from './state.js';
 import { byRosterId, formatSyncedAt, isSidecarFresh } from './data.js';
 import { party } from './party.js';
-import { CLASS_COLORS, PROF_ABBR, escapeHtml, getFaction, ownString } from './util.js';
+import { CLASS_COLORS, PROF_ABBR, escapeHtml, getFaction, ownString, ownValue } from './util.js';
 
 // Guild names are shown inline in a ~410px column; anything longer is elided with the
 // full value in the title attribute.
@@ -130,6 +130,29 @@ export function getSidecarMeta(sidecar) {
   return parts.join('<span class="text-slate-600">•</span>');
 }
 
+// The class icon a card borrows from the sidecar (F4) is an untrusted URL, and the host allowlist
+// that decides whether a URL may become an <img> lives in detail.js. detail.js imports this module
+// (getLifecycleBadge), so importing it back would make a module load-order cycle the reason a card
+// paints — the same reason the card's click reaches openCharacterDetail through window. Denied by
+// default: with detail.js not loaded (or not yet loaded) a card renders no icon at all.
+function safeSidecarIconUrl(value) {
+  const url = typeof value === 'string' ? value.trim() : '';
+  if (url === '') return '';
+  return typeof window.isSafeIconUrl === 'function' && window.isSafeIconUrl(url) ? url : '';
+}
+
+// The box is drawn whether or not the icon resolved, so the class names line up across a grid where
+// half the rows have no sidecar row at all (and an out-of-vocabulary class keeps its neutral badge).
+function classIconHtml(sidecar, className) {
+  const row = sidecar && typeof sidecar === 'object' ? sidecar : null;
+  const url = safeSidecarIconUrl(row ? ownValue(row, 'classIconUrl') : null);
+  // The alt describes the IMAGE: the icon is the Battle.net class, which while a mismatch is
+  // flagged differs from the roster word printed next to it.
+  const alt = ownString(ownValue(row, 'class'), 'name') || className || 'Class';
+  return `<span class="wow-card-icon">${url === '' ? ''
+    : `<img src="${escapeHtml(url)}" loading="lazy" alt="${escapeHtml(alt)}" class="wow-card-icon-img">`}</span>`;
+}
+
 // Dense, compact single-row card rendering with Faction background coloring
 export function renderRoster() {
   const grid = document.getElementById('character-grid');
@@ -192,6 +215,7 @@ export function renderRoster() {
             ${factionTag}
           </div>
           <div class="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5 leading-none">
+            ${classIconHtml(sidecar, String(c.class == null ? '' : c.class))}
             <span class="font-semibold ${classBadge.split(' ')[0]}">${escapeHtml(c.class)}</span>
             <span class="text-slate-600">•</span>
             <span class="text-slate-300 font-normal">${escapeHtml(c.race)}</span>

@@ -31,6 +31,11 @@ import { LIFECYCLE, characters, deriveLifecycleState, isLifecycleEditable, regis
 import { byRosterId, ensureTalentTrees, formatSyncedAt, isSidecarFresh, reloadSidecars, talentTreeFor, talentTreesLoading, talentTreesStaticNamespace } from './data.js';
 import { commitValidationOnFresh, dispatchAndAwaitSync, ghHasPat, ghUserLogin, openGhModal, updateRosterInMemory } from './github.js';
 import { getLifecycleBadge } from './roster.js';
+// The two vocabularies the roster is frozen to (pi-warden). Importing them is the whole point of
+// the F3 guard: the tie below must not invent its own copy of the legal race/class/profession
+// lists, and neither module imports this one, so the edge is acyclic.
+import { FOREVER_RACE_CLASSES } from './editchar.js';
+import { ALL_PROFESSIONS } from './professions.js';
 import { CLASS_COLORS, escapeHtml, getFaction, ownString, ownValue, showToast } from './util.js';
 
 // Blizzard's own media hosts. A committed sidecar is untrusted input (the sync writes what
@@ -64,6 +69,9 @@ export const PROGRESS_SECTIONS = [
 // arrive at markup.
 export const PROGRESS_MAX_DEPTH = 4;
 export const PROGRESS_MAX_ROWS = 24;
+// How many skipped names the tie note names before it starts counting. A row whose sidecar is
+// entirely outside the roster vocabulary would otherwise wrap a toast into a paragraph.
+export const TIE_NOTE_MAX_SKIPPED = 6;
 
 const PROGRESS_LABELS = {
   honorableKills: 'Honorable kills',
@@ -187,8 +195,16 @@ export const TOOLTIP_FALLBACK_H = 200;
 
 const TAB_BUTTON_PREFIX = 'detail-tab-';
 const TAB_PANEL_PREFIX = 'detail-panel-';
+// The Talents panel's second-level (spec) tab bar (F1). Its ids are prefixed differently from the
+// top-level bar on purpose: the two bars are different widgets with different accessible names,
+// and the verification readers key top-level panels off `detail-panel-`.
+const SPEC_TAB_PREFIX = 'detail-subtab-';
+const SPEC_PANEL_PREFIX = 'detail-subpanel-';
 
 let activeTab = DEFAULT_DETAIL_TAB;
+// Which spec group the Talents panel is showing (F1). null means "derive it": the active
+// specialization's group, else the first. Per-open like activeTab — never persisted.
+let activeSpecIndex = null;
 // The current paint's tooltip payloads, addressed by the numeric index in the hover handler —
 // the same rule as the candidate radios: only an index crosses into a handler, never a
 // sidecar string.
@@ -279,6 +295,178 @@ export function detailTabKeydown(event, id) {
   if (next === null) return false;
   if (event && typeof event.preventDefault === 'function') event.preventDefault();
   return setDetailTab(DETAIL_TABS[next].id);
+}
+
+// ---------- Phase 4b (F1): the Talents panel's second-level spec sub-tabs ----------
+//
+// A multi-spec character (Arms + Protection, or the "no spec chosen" Hunter case) used to stack one
+// headed section per spec group inside a panel that is itself six tabs deep, so reading the second
+// spec meant scrolling past a whole talent tree. The groups now get a sub-tab row of their own,
+// scoped inside the Talents tabpanel: its own role=tablist with its own accessible name, its own
+// roving tabindex and its own arrow keys — the top-level bar's a11y contract, one level down.
+//
+// Two decisions worth naming:
+//
+//   * every group's section is still RENDERED on every paint and the inactive ones are hidden with
+//     `hidden`, exactly like the top-level panels. Only one is on screen, but a repaint cannot lose
+//     a tree's scroll offset or a tooltip index to a partial build, and the committed geometry can
+//     still be asserted end to end for every spec rather than just the visible one;
+//   * a single-spec character still gets the row (one tab). The alternative — a panel that has a
+//     sub-tab bar for two specs and none for one — is the exact reflow decision #5 refuses, and the
+//     row carries the spent-points label wherever a reader looks for it.
+
+function specTabId(index) { return SPEC_TAB_PREFIX + index; }
+function specPanelId(index) { return SPEC_PANEL_PREFIX + index; }
+
+// Only a small non-negative integer crosses into a sub-tab handler: the same rule the tooltip
+// indices and the candidate radios follow, so no spec name (or anything else off the wire) can
+// become handler source. An index that is not one yields '' and the tab is not rendered at all.
+export const SPEC_TAB_ARG_RE = /^(?:0|[1-9]\d?)$/;
+
+export function specTabArg(value) {
+  const text = String(value == null ? '' : value);
+  return SPEC_TAB_ARG_RE.test(text) ? text : '';
+}
+
+// The index form of a sub-tab argument, for the handler guard, the exported action and the derived
+// selection alike. Numbers and strings both go back through SPEC_TAB_ARG_RE, so `''`/`null`/`1.5`/
+// `'01'`/`100` all yield NaN and every caller refuses them the same way — Number('') is 0, which
+// would otherwise make a blank handler argument silently select the first spec group.
+function specIndexArg(value) {
+  const text = typeof value === 'number'
+    ? (Number.isInteger(value) ? String(value) : '')
+    : String(value == null ? '' : value);
+  return SPEC_TAB_ARG_RE.test(text) ? Number(text) : NaN;
+}
+
+// The spec groups of a sidecar row in payload order, malformed entries dropped. The same reader
+// feeds the tab count, the panel count and the selected-index maths, so the three cannot disagree.
+export function talentSpecGroups(sidecar) {
+  const raw = sidecar && typeof sidecar === 'object' ? ownValue(sidecar, 'talents') : null;
+  return Array.isArray(raw) ? raw.filter(group => group && typeof group === 'object') : [];
+}
+
+// The group a panel opens on: the reviewer's choice when it is still in range, otherwise the active
+// specialization's group, otherwise the first. An out-of-range choice (a repaint after the sidecar
+// changed under the modal) falls back rather than showing an empty panel.
+export function selectedSpecIndex(groups, sidecar, requested = activeSpecIndex) {
+  const list = Array.isArray(groups) ? groups : [];
+  if (list.length === 0) return 0;
+  // null is a state here, not a number: it means "nobody has chosen" (every fresh open), and the
+  // answer to that is the derive path below. Number(null) is 0, so coercing it first would open
+  // every multi-spec character on their FIRST group no matter which specialization is active.
+  const wanted = requested === null || requested === undefined ? NaN : specIndexArg(requested);
+  if (Number.isInteger(wanted) && wanted >= 0 && wanted < list.length) return wanted;
+  const active = sidecar && typeof sidecar === 'object' ? scalarText(ownValue(sidecar, 'activeSpec')) : '';
+  if (active === '') return 0;
+  const derived = list.findIndex(group => scalarText(ownValue(group, 'specName')) === active);
+  // The derived index has to be one the markup can actually address: the handler guard caps it at
+  // two digits, so a 100th group would render neither a tab nor a panel, and selecting it would
+  // leave the panel empty. Unaddressable falls back to the first group, which always renders.
+  return derived === -1 ? 0 : addressableSpecIndex(derived, list);
+}
+
+function addressableSpecIndex(value, list) {
+  const position = specIndexArg(value);
+  return Number.isInteger(position) && position >= 0 && position < list.length ? position : 0;
+}
+
+function openSidecar() {
+  return openId === null ? null : byRosterId(openId).sidecar;
+}
+
+// The sidecar of the open row, read through the same join the render uses.
+function openSpecState() {
+  const sidecar = openSidecar();
+  const groups = talentSpecGroups(sidecar);
+  return { sidecar, groups, selected: selectedSpecIndex(groups, sidecar) };
+}
+
+export function detailActiveSpecIndex() {
+  return openSpecState().selected;
+}
+
+export function setDetailSpecTab(index) {
+  const { groups, selected } = openSpecState();
+  const position = specIndexArg(index);
+  if (!Number.isInteger(position) || position < 0 || position >= groups.length) return false;
+  if (position === selected) return true;
+  activeSpecIndex = position;
+  renderDetail();
+  focusDetailSpecTab(position);
+  return true;
+}
+
+function focusDetailSpecTab(index) {
+  const el = document.getElementById(specTabId(index));
+  // Same guard as the top-level bar: the repaint replaced the button, so focus has to be moved to
+  // its replacement or the keyboard user is dropped at the top of the document.
+  if (el && typeof el.focus === 'function') el.focus();
+}
+
+// Arrow/Home/End move the selected sub-tab within the group list only: the top-level bar is
+// reachable by leaving it (Shift+Tab), and the two bars must not fight over one keypress.
+export function detailSpecTabKeydown(event, index) {
+  const { groups } = openSpecState();
+  const position = specIndexArg(index);
+  if (!Number.isInteger(position) || position < 0 || position >= groups.length) return false;
+  const key = event && typeof event.key === 'string' ? event.key : '';
+  let next = null;
+  if (key === 'ArrowRight') next = (position + 1) % groups.length;
+  else if (key === 'ArrowLeft') next = (position - 1 + groups.length) % groups.length;
+  else if (key === 'Home') next = 0;
+  else if (key === 'End') next = groups.length - 1;
+  if (next === null) return false;
+  if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  return setDetailSpecTab(next);
+}
+
+function specGroupMeta(group) {
+  const spent = numberOr(ownValue(group, 'spentPoints'));
+  const talents = ownValue(group, 'talents');
+  const entries = Array.isArray(talents) ? talents.filter(t => t && typeof t === 'object') : [];
+  return spent === null
+    ? `${entries.length} ${entries.length === 1 ? 'talent' : 'talents'}`
+    : `${spent} pts`;
+}
+
+// The sub-tab row. The active specialization is marked by the data-wow-spec-active attribute (the
+// glyph is CSS) rather than by a second "Active" word: the panel heading below already spells it
+// out, and a tab that reads "Arms Active 5 pts" is three labels on one control.
+export function talentSubTabBarHtml(groups, selected, activeSpec) {
+  const list = Array.isArray(groups) ? groups : [];
+  const tabs = list.map((group, index) => {
+    const arg = specTabArg(index);
+    if (arg === '') return '';
+    const specName = scalarText(ownValue(group, 'specName'));
+    const specId = numberOr(ownValue(group, 'specId'));
+    const label = specName === '' ? `Spec ${specId === null ? '?' : specId}` : specName;
+    const isSelected = index === selected;
+    const isActive = specName !== '' && specName === activeSpec;
+    return `<button type="button" role="tab"
+      id="${specTabId(arg)}"
+      data-detail-subtab="${arg}"
+      aria-controls="${specPanelId(arg)}"
+      aria-selected="${isSelected ? 'true' : 'false'}"
+      tabindex="${isSelected ? '0' : '-1'}"
+      data-wow-spec-active="${isActive ? 'true' : 'false'}"
+      class="wow-subtab"
+      onclick="setDetailSpecTab('${arg}')"
+      onkeydown="detailSpecTabKeydown(event, '${arg}')"
+    >
+      <span class="wow-subtab-label">${escapeHtml(label)}</span>
+      <span class="wow-subtab-meta">${escapeHtml(specGroupMeta(group))}</span>
+    </button>`;
+  }).join('');
+  return `<div role="tablist" aria-label="Talent specializations" class="wow-subtabs shrink-0">${tabs}</div>`;
+}
+
+function talentSpecPanelHtml(group, sidecar, index, selected) {
+  const arg = specTabArg(index);
+  if (arg === '') return '';
+  return `<div role="tabpanel" id="${specPanelId(arg)}" aria-labelledby="${specTabId(arg)}"${selected ? ' tabindex="0"' : ''} class="wow-spec-panel${selected ? '' : ' hidden'}">
+      ${talentSpecHtml(group, sidecar)}
+    </div>`;
 }
 
 // ---------- shared hover/focus tooltip (T2.3, T2.4) ----------
@@ -772,18 +960,22 @@ function talentSpecHtml(group, sidecar) {
 
 export function talentsTabHtml(sidecar) {
   const hasSidecar = sidecar && typeof sidecar === 'object';
-  const raw = hasSidecar ? sidecar.talents : null;
+  const raw = hasSidecar ? ownValue(sidecar, 'talents') : null;
   if (!hasSidecar || !Array.isArray(raw)) return emptyState('No talents data synced yet.');
   if (raw.length === 0) return emptyState('No spec chosen yet — this character has no talent specialization selected.');
-  const groups = raw.filter(g => g && typeof g === 'object');
+  const groups = talentSpecGroups(sidecar);
   if (groups.length === 0) return emptyState('No spec chosen yet — this character has no talent specialization selected.');
   const loading = talentTreesLoading();
-  const sections = groups.map(group => talentSpecHtml(group, sidecar)).join('<div class="pt-2 border-t border-slate-800"></div>');
+  // F1: one sub-tab per group, and one panel per group (the inactive ones hidden). The stacked
+  // `pt-2 border-t` separators between sections are gone: the sub-tab row is the separator now, and
+  // a divider above a hidden section would paint a stray rule at the top of the visible one.
+  const selected = selectedSpecIndex(groups, sidecar);
+  const sections = groups.map((group, index) => talentSpecPanelHtml(group, sidecar, index, index === selected)).join('');
   const notice = loading
     ? '<div class="text-[10px] text-slate-400 italic pb-1">Loading talent tree data…</div>'
     : '';
   const provenance = talentTreesStaticNamespace();
-  return `<div class="space-y-2">${notice}${sections}
+  return `<div class="space-y-2">${notice}${talentSubTabBarHtml(groups, selected, scalarText(ownValue(sidecar, 'activeSpec')))}${sections}
       ${provenance === '' ? '' : `<div class="text-[9px] text-slate-600">Tree geometry: ${escapeHtml(provenance)}</div>`}
     </div>`;
 }
@@ -826,8 +1018,13 @@ function professionHtml(profession) {
       ${recipes.length === 0 ? '<div class="text-[10px] text-slate-500 italic">No recipes known.</div>' : `<div class="flex flex-wrap gap-1 pt-0.5">${recipes.map(recipe => `<span class="wow-recipe">${escapeHtml(recipe)}</span>`).join('')}</div>`}
     </div>`;
   }).join('');
+  // The profession icon (F4) reserves its box whether or not `iconUrl` synced, so a profession with
+  // media and one without line up in the same column.
   return `<div class="rounded border border-slate-800 bg-slate-950/50 p-2 space-y-2">
-      <div class="cinzel text-[12px] font-bold text-amber-200/90">${escapeHtml(name === '' ? 'Profession' : name)}</div>
+      <div class="flex items-center gap-1.5">
+        ${identityIconHtml(ownValue(profession, 'iconUrl'), name === '' ? 'Profession' : name)}
+        <span class="cinzel text-[12px] font-bold text-amber-200/90">${escapeHtml(name === '' ? 'Profession' : name)}</span>
+      </div>
       ${tierBlocks === '' ? '<div class="text-[10px] text-slate-500 italic">No skill tiers synced.</div>' : tierBlocks}
     </div>`;
 }
@@ -1135,6 +1332,7 @@ function resetReviewView() {
 // and a tooltip left open across a row switch would show the previous character's item.
 function resetDetailView() {
   activeTab = DEFAULT_DETAIL_TAB;
+  activeSpecIndex = null;
   dismissDetailTooltip();
 }
 
@@ -1384,9 +1582,13 @@ async function commitValidation(character, nextValidation, { message, success })
     showToast(text, 'error');
     return false;
   }
+  // `success` may be a function because the identity tie (F3) is only known once the mutation has
+  // been applied to the row as the branch holds it: the message then reports what the commit
+  // actually did rather than what this browser's cache predicted it would do.
+  const successText = typeof success === 'function' ? success() : success;
   updateRosterInMemory(result.list);
-  setLastResult(character, 'success', success);
-  showToast(success, 'success');
+  setLastResult(character, 'success', successText);
+  showToast(successText, 'success');
   return true;
 }
 
@@ -1401,27 +1603,192 @@ async function reviewerLogin() {
   return login;
 }
 
+// ---------- Phase 4b (F3): tying the roster row to Battle.net on confirm ----------
+//
+// CONFIRM/RESOLVE is the one moment a human has just asserted "this Battle.net profile IS this
+// roster row", and the sidecar's race, class and primary professions are roster fields the same
+// person would otherwise retype. They are written through the frozen vocabularies rather than
+// straight off the wire, because characters.json has readers beyond this page (pi-warden): `race`
+// must stay a key of FOREVER_RACE_CLASSES, `class` a key of CLASS_COLORS *and* one that race
+// allows, `prof1`/`prof2` one of ALL_PROFESSIONS. Anything outside those lists is skipped and the
+// field keeps what a reviewer typed — a sidecar can be wrong, a roster row may not be unparseable.
+//
+// The lookup is case-insensitive and the value WRITTEN is the vocabulary's own spelling, so the
+// class-colour and profession-abbreviation lookups keep resolving whatever capitalisation the API
+// happened to use for the name.
+
+export const ROSTER_RACE_VOCABULARY = Object.keys(FOREVER_RACE_CLASSES);
+export const ROSTER_CLASS_VOCABULARY = Object.keys(CLASS_COLORS);
+export const ROSTER_PROFESSION_VOCABULARY = Array.isArray(ALL_PROFESSIONS) ? ALL_PROFESSIONS.slice() : [];
+
+// The canonical spelling of a name inside one of those lists, or '' when it is not in it.
+export function canonicalVocabularyName(value, vocabulary) {
+  const text = scalarText(value).toLowerCase();
+  if (text === '' || !Array.isArray(vocabulary)) return '';
+  const hit = vocabulary.find(key => String(key).toLowerCase() === text);
+  return typeof hit === 'string' ? hit : '';
+}
+
+export function rosterClassesForRace(race) {
+  const list = ownValue(FOREVER_RACE_CLASSES, scalarText(race));
+  return Array.isArray(list) ? list : [];
+}
+
+// The professions vocabulary editchar/state persist: the primaries list, in payload order,
+// deduplicated, with anything the matrix cannot count dropped.
+export function sidecarPrimaryProfessions(sidecar) {
+  const professions = sidecar && typeof sidecar === 'object' ? ownValue(sidecar, 'professions') : null;
+  const primaries = professions && typeof professions === 'object' ? ownValue(professions, 'primaries') : null;
+  if (!Array.isArray(primaries)) return { known: [], unknown: [] };
+  const known = [];
+  const unknown = [];
+  primaries.forEach(entry => {
+    const raw = entry && typeof entry === 'object' ? scalarText(ownValue(entry, 'name')) : scalarText(entry);
+    if (raw === '') return;
+    const canonical = canonicalVocabularyName(raw, ROSTER_PROFESSION_VOCABULARY);
+    if (canonical === '') {
+      if (unknown.indexOf(raw) === -1) unknown.push(raw);
+      return;
+    }
+    if (known.indexOf(canonical) === -1) known.push(canonical);
+  });
+  return { known, unknown };
+}
+
+// The guarded patch for one row. Pure over (row, sidecar): `applySidecarTie` is the mutator, and
+// keeping the decision separate is what lets the verification harness walk every vocabulary case
+// without committing a roster.
+export function sidecarTie(row, sidecar) {
+  const patch = {};
+  const written = [];
+  const skipped = [];
+  if (!row || typeof row !== 'object' || !sidecar || typeof sidecar !== 'object') return { patch, written, skipped };
+
+  const rosterRace = scalarText(ownValue(row, 'race'));
+  const rosterClass = scalarText(ownValue(row, 'class'));
+  const raceBlock = sidecarRace(sidecar);
+  const classBlock = sidecarClass(sidecar);
+  const raceName = raceBlock ? canonicalVocabularyName(raceBlock.name, ROSTER_RACE_VOCABULARY) : '';
+  const className = classBlock ? canonicalVocabularyName(classBlock.name, ROSTER_CLASS_VOCABULARY) : '';
+  if (raceBlock && raceName === '') skipped.push(`race ${raceBlock.name || raceBlock.id || '?'}`);
+  if (classBlock && className === '') skipped.push(`class ${classBlock.name || classBlock.id || '?'}`);
+
+  // The two halves of an identity are decided together. A sidecar that says Tauren Priest cannot be
+  // half-adopted: writing only the race would leave an Orc-class list holding a Tauren row, and
+  // writing only the class would leave a Tauren the roster never said. Both go, or neither.
+  let nextRace = raceName;
+  let nextClass = className;
+  if (nextRace !== '' && nextClass !== '') {
+    if (rosterClassesForRace(nextRace).indexOf(nextClass) === -1) {
+      skipped.push(`${nextRace} ${nextClass} (not a legal race/class combination)`);
+      nextRace = '';
+      nextClass = '';
+    }
+  } else if (nextRace !== '' && rosterClassesForRace(nextRace).indexOf(rosterClass) === -1) {
+    skipped.push(`race ${nextRace} (${rosterClass} is not a ${nextRace} class)`);
+    nextRace = '';
+  } else if (nextClass !== '' && rosterClassesForRace(rosterRace).indexOf(nextClass) === -1) {
+    skipped.push(`class ${nextClass} (${rosterRace} cannot be ${nextClass})`);
+    nextClass = '';
+  }
+  if (nextRace !== '' && nextRace !== rosterRace) {
+    patch.race = nextRace;
+    written.push(`race ${nextRace}`);
+  }
+  if (nextClass !== '' && nextClass !== rosterClass) {
+    patch.class = nextClass;
+    written.push(`class ${nextClass}`);
+  }
+
+  const professions = sidecarPrimaryProfessions(sidecar);
+  professions.unknown.forEach(name => skipped.push(`profession ${name}`));
+  // Fewer than two in-vocab primaries is not a skip: the sidecar offered nothing for the second
+  // slot, so it keeps whatever the reviewer typed. Overwriting it with 'None' would be the sidecar
+  // inventing roster data the probe never returned.
+  //
+  // The two slots are written against the PAIR they produce, not one at a time: a sidecar that
+  // offers for prof1 the profession the row still carries in prof2 ("Skinning" in the second slot,
+  // nothing offered for it) would otherwise leave the same profession in both slots, and the
+  // coverage matrix counts a professional the character does not have. The value already on the row
+  // wins, and the offer is reported as skipped rather than silently duplicated.
+  let nextProf1 = professions.known[0] || scalarText(ownValue(row, 'prof1'));
+  let nextProf2 = professions.known[1] || scalarText(ownValue(row, 'prof2'));
+  if (nextProf1 !== '' && nextProf1 === nextProf2) {
+    if (professions.known[0] && nextProf1 !== scalarText(ownValue(row, 'prof1'))) {
+      skipped.push(`profession ${nextProf1} (prof2 already holds it)`);
+      nextProf1 = scalarText(ownValue(row, 'prof1'));
+    } else if (professions.known[1] && nextProf2 !== scalarText(ownValue(row, 'prof2'))) {
+      skipped.push(`profession ${nextProf2} (prof1 already holds it)`);
+      nextProf2 = scalarText(ownValue(row, 'prof2'));
+    }
+  }
+  if (nextProf1 !== '' && nextProf1 !== scalarText(ownValue(row, 'prof1'))) {
+    patch.prof1 = nextProf1;
+    written.push(`prof1 ${nextProf1}`);
+  }
+  if (nextProf2 !== '' && nextProf2 !== scalarText(ownValue(row, 'prof2'))) {
+    patch.prof2 = nextProf2;
+    written.push(`prof2 ${nextProf2}`);
+  }
+  return { patch, written, skipped };
+}
+
+// Apply the tie to a row copy (the row as the branch holds it, inside the commit's mutation), and
+// hand the caller the written/skipped lists for its message.
+export function applySidecarTie(row, sidecar) {
+  const tie = sidecarTie(row, sidecar);
+  Object.keys(tie.patch).forEach(key => { row[key] = tie.patch[key]; });
+  return tie;
+}
+
+// The sentence appended to a confirm's success message. Empty (so the message stays byte-identical)
+// for the overwhelmingly common case where the sidecar carries no identity or agrees with the row.
+export function sidecarTieNote(tie) {
+  if (!tie) return '';
+  const parts = [];
+  if (Array.isArray(tie.written) && tie.written.length > 0) {
+    parts.push(`Roster tied to Battle.net: ${tie.written.join(', ')}.`);
+  }
+  if (Array.isArray(tie.skipped) && tie.skipped.length > 0) {
+    // A sidecar that is entirely outside the roster vocabulary (a classic-era row, a re-import from
+    // a different region) can skip a dozen names, and the toast is one line. Same bound as the
+    // progress line: name the first few, count the rest.
+    const shown = tie.skipped.slice(0, TIE_NOTE_MAX_SKIPPED);
+    const remaining = tie.skipped.length - shown.length;
+    parts.push(`Skipped (outside the roster vocabulary): ${shown.join('; ')}${remaining > 0 ? ` (+${remaining} more)` : ''}.`);
+  }
+  return parts.length === 0 ? '' : ` ${parts.join(' ')}`;
+}
+
 // CONFIRM MATCH: map status ok → validation {state: validated, confirmedSlug: entry.slug, …}
 export async function confirmMatch(id) {
   const character = rowById(id);
   if (guardCommit(character) !== null) return false;
-  const { mapEntry } = byRosterId(character.id);
+  const { mapEntry, sidecar } = byRosterId(character.id);
   const slug = scalarText(mapEntry && mapEntry.slug);
   if (!SLUG_RE.test(slug)) {
     showToast('There is no Battle.net slug to confirm for this row.', 'error');
     return false;
   }
+  const tie = { written: [], skipped: [] };
   return runAction(character, async () => {
     const reviewedBy = await reviewerLogin();
     if (reviewedBy === null) return false;
-    return commitValidation(character, {
-      state: LIFECYCLE.VALIDATED,
-      confirmedSlug: slug,
-      reviewedBy,
-      reviewedAt: nowStamp()
+    return commitValidation(character, copy => {
+      // The tie runs on the FRESH row: the vocabulary guards then apply to the row that is actually
+      // being committed, whatever this browser's cache happened to hold when the modal was opened.
+      const applied = applySidecarTie(copy, sidecar);
+      applied.written.forEach(item => tie.written.push(item));
+      applied.skipped.forEach(item => tie.skipped.push(item));
+      return {
+        state: LIFECYCLE.VALIDATED,
+        confirmedSlug: slug,
+        reviewedBy,
+        reviewedAt: nowStamp()
+      };
     }, {
       message: `Validate ${character.name} as ${slug} [skip ci]`,
-      success: `Confirmed ${character.name} as ${slug}.`
+      success: () => `Confirmed ${character.name} as ${slug}.${sidecarTieNote(tie)}`
     });
   });
 }
@@ -1463,17 +1830,26 @@ export async function confirmSelectedCandidate(id) {
     showToast('Select one candidate first.', 'error');
     return false;
   }
+  // Same tie as CONFIRM MATCH: both paths record a validation, so both are the moment the reviewer
+  // has vouched for the identity (see confirmMatch for the guards).
+  const { sidecar } = byRosterId(character.id);
+  const tie = { written: [], skipped: [] };
   return runAction(character, async () => {
     const reviewedBy = await reviewerLogin();
     if (reviewedBy === null) return false;
-    const ok = await commitValidation(character, {
-      state: LIFECYCLE.VALIDATED,
-      confirmedSlug: slug,
-      reviewedBy,
-      reviewedAt: nowStamp()
+    const ok = await commitValidation(character, copy => {
+      const applied = applySidecarTie(copy, sidecar);
+      applied.written.forEach(item => tie.written.push(item));
+      applied.skipped.forEach(item => tie.skipped.push(item));
+      return {
+        state: LIFECYCLE.VALIDATED,
+        confirmedSlug: slug,
+        reviewedBy,
+        reviewedAt: nowStamp()
+      };
     }, {
       message: `Resolve ${character.name} to ${slug} [skip ci]`,
-      success: `Mapped ${character.name} to ${slug}.`
+      success: () => `Mapped ${character.name} to ${slug}.${sidecarTieNote(tie)}`
     });
     if (ok) chosenSlug = null;
     return ok;
@@ -1674,6 +2050,72 @@ function avatarHtml(sidecar, name) {
   return `<span class="wow-avatar wow-avatar-none cinzel" title="No character render synced">${escapeHtml(initial)}</span>`;
 }
 
+// ---------- Phase 4b (F2/F4): the sidecar identity block, and its icons ----------
+
+// `race` / `class` on a sidecar row are the `{id, name}` shape the sync writes when the probe
+// succeeds. They are OPTIONAL (an older artifact, or a probe that did not answer, simply omits
+// them), so every reader here treats an absent block as "nothing to say" rather than as a mismatch,
+// and an unusable one as no data at all — never as a thrown error in the header.
+function sidecarNamedBlock(source, key) {
+  const block = source && typeof source === 'object' ? ownValue(source, key) : null;
+  if (!block || typeof block !== 'object' || Array.isArray(block)) return null;
+  const name = scalarText(ownValue(block, 'name'));
+  const rawId = ownValue(block, 'id');
+  const id = typeof rawId === 'number' || typeof rawId === 'string' ? scalarText(rawId) : '';
+  return name === '' && id === '' ? null : { name, id };
+}
+
+export function sidecarRace(sidecar) { return sidecarNamedBlock(sidecar, 'race'); }
+export function sidecarClass(sidecar) { return sidecarNamedBlock(sidecar, 'class'); }
+
+// Where the roster's own string and Battle.net's disagree, the reviewer needs to see both before
+// they sign the row off: the mapping can be right (the roster row was simply mistyped) and the
+// mismatch is exactly the evidence for that. Comparison is case-insensitive because these are
+// display strings from two different files, not identity keys.
+export function identityMismatchRows(character, sidecar) {
+  const rows = [];
+  if (!character || typeof character !== 'object' || !sidecar || typeof sidecar !== 'object') return rows;
+  [['race', sidecarRace(sidecar)], ['class', sidecarClass(sidecar)]].forEach(([field, block]) => {
+    if (!block || block.name === '') return;
+    const roster = scalarText(ownValue(character, field));
+    if (roster === '' || roster.toLowerCase() === block.name.toLowerCase()) return;
+    rows.push({ field, roster, bnet: block.name, id: block.id });
+  });
+  return rows;
+}
+
+// A warning, never a gate: it renders on every row that disagrees (with or without a PAT), and it
+// removes no affordance. The tie on confirm (F3) is the action this notice describes, and that one
+// is still a human pressing CONFIRM.
+export function identityMismatchHtml(character, sidecar) {
+  const rows = identityMismatchRows(character, sidecar);
+  if (rows.length === 0) return '';
+  const lines = rows.map(row => `<div class="text-[11px] text-slate-200">`
+    + `Roster says <span class="font-semibold">${escapeHtml(row.roster)}</span>`
+    + ` — Battle.net says <span class="font-semibold">${escapeHtml(row.bnet)}</span>`
+    + `${row.id === '' ? '' : ` <span class="text-slate-500">(id ${escapeHtml(row.id)})</span>`}</div>`).join('');
+  return `<div class="rounded border border-amber-800/60 bg-amber-950/30 px-2 py-1.5 mt-2 space-y-0.5">
+    <div class="text-[9px] uppercase tracking-wider font-bold text-amber-300">⚠ Race / class mismatch</div>
+    ${lines}
+    <div class="text-[9px] text-slate-400">This notice changes nothing. Confirming or resolving the row copies whichever Battle.net race, class and professions the roster vocabulary accepts.</div>
+  </div>`;
+}
+
+// The class icon (F4) sits in a box that is drawn whether or not the URL exists, so a row whose
+// media the probe resolved does not push the header text sideways relative to one it did not. A
+// rejected URL is dropped outright: no <img>, and the host is not named anywhere on the page.
+//
+// There is deliberately no race icon: docs/bnet-api-notes.md §10.3 probed the race-media family nine
+// ways (no media key on the race doc, no media index, no humantype family) and the sync therefore
+// never writes `raceIconUrl`. A slot for a field the API provably does not serve is a placeholder
+// that can never fill, so the race is named in text only.
+function identityIconHtml(url, label) {
+  const src = scalarText(url);
+  return `<span class="wow-id-icon">${isSafeIconUrl(src)
+    ? `<img src="${escapeHtml(src)}" loading="lazy" alt="${escapeHtml(label)}" class="wow-id-icon-img">`
+    : ''}</span>`;
+}
+
 // The whole modal body for one row. Exported for the verification harness: it is pure over
 // (roster row, sidecar row, map entry, badge markup), so the escaping and the section-omission
 // rules can be asserted without a click.
@@ -1692,6 +2134,15 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
   const factionTag = faction === 'alliance'
     ? '<span class="text-[9px] font-bold uppercase tracking-wider text-sky-400 bg-blue-950/80 px-1 py-0.5 rounded border border-blue-800/60">Alliance</span>'
     : '<span class="text-[9px] font-bold uppercase tracking-wider text-red-400 bg-red-950/80 px-1 py-0.5 rounded border border-red-800/60">Horde</span>';
+  const raceText = scalarText(character.race);
+  // F4: the class icon the probe resolved, absent on every row it could not answer for. No new
+  // request: it comes off the sidecar row data.js already loaded. The race has no icon (see above).
+  const classIcon = sidecar && typeof sidecar === 'object' ? scalarText(ownValue(sidecar, 'classIconUrl')) : '';
+  // The alt describes the IMAGE, which is the Battle.net class — while the mismatch flag is up,
+  // the roster word beside it names a different class, so it must not also claim the picture.
+  const sidecarCls = sidecar && typeof sidecar === 'object'
+    ? scalarText(ownValue(ownValue(sidecar, 'class'), 'name')) : '';
+
   const roles = [scalarText(character.role), scalarText(character.roleSec)]
     .filter(r => r !== '' && r !== 'None').join(' / ');
   const synced = formatSyncedAt(sidecar && sidecar.fetchedAt);
@@ -1707,9 +2158,10 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
       <div class="text-[11px] text-slate-400 truncate">Roster: <span class="text-slate-200 font-semibold">${escapeHtml(scalarText(character.name))}</span>${scalarText(character.player) !== '' ? ` <span class="text-slate-500">(${escapeHtml(scalarText(character.player))})</span>` : ''}</div>
       <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-[10px]">
         ${factionTag}
+        ${identityIconHtml(classIcon, sidecarCls !== '' ? sidecarCls : cls === '' ? 'Class' : cls)}
         <span class="font-semibold ${classColor}">${escapeHtml(cls)}</span>
         <span class="text-slate-500">•</span>
-        <span class="text-slate-300">${escapeHtml(scalarText(character.race))}</span>
+        <span class="text-slate-300">${escapeHtml(raceText)}</span>
         ${roles !== '' ? `<span class="text-slate-500">•</span><span class="text-amber-300/90">${escapeHtml(roles)}</span>` : ''}
         <span class="text-slate-500">•</span>
         <span class="text-slate-400">${escapeHtml(trackLabel(character.track))}</span>
@@ -1754,7 +2206,11 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
   const foot = noteSection + reviewNoteSection(character)
     + candidatesIfOpen(lifecycle, mapEntry, character) + actions + noSidecar;
 
-  return `<div class="shrink-0">${header}${body}</div>
+  // The mismatch warning belongs to the identity line above it, and to the reviewer pressing
+  // CONFIRM below it, so it sits between the header and the field grid rather than in a tab.
+  const mismatchFlag = identityMismatchHtml(character, sidecar);
+
+  return `<div class="shrink-0">${header}${mismatchFlag}${body}</div>
     ${tabBarHtml()}
     ${tabPanel('gear', gearTabHtml(sidecar))}
     ${tabPanel('talents', talentsTabHtml(sidecar))}
@@ -1929,5 +2385,10 @@ window.reopenForEditing = reopenForEditing;
 window.refreshFromBattleNet = refreshFromBattleNet;
 window.setDetailTab = setDetailTab;
 window.detailTabKeydown = detailTabKeydown;
+window.setDetailSpecTab = setDetailSpecTab;
+window.detailSpecTabKeydown = detailSpecTabKeydown;
+// roster.js reads this one rather than importing it: it renders a card's class icon, and importing
+// detail.js back would make a module cycle the reason a card paints (see the note in roster.js).
+window.isSafeIconUrl = isSafeIconUrl;
 window.showDetailTooltip = showDetailTooltip;
 window.hideDetailTooltip = hideDetailTooltip;

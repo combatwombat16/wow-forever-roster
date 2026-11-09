@@ -133,6 +133,101 @@ body {
 }
 .wow-gear-chip:hover { border-color: rgba(212, 175, 55, 0.7); color: #fcd34d; }
 
+/* ---------- Phase 4b: spec sub-tabs, the identity flag, Blizzard class/race/profession icons ---------- */
+
+/* The Talents panel's second-level tab row. Deliberately lighter than .wow-tabs: it sits inside a
+   tab panel, so it reads as a sub-bar rather than competing with the six top-level tabs (and its
+   bottom rule is fainter than the bar above it, which is the boundary that matters). Same rule as
+   the top bar: fixed height, always present, so a one-spec row and a two-spec row are the same
+   height and the tree below never jumps. */
+.wow-subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.16);
+}
+.wow-subtab {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  padding: 4px 8px;
+  color: rgb(100 116 139);
+  background: rgba(2, 6, 23, 0.55);
+  border: 1px solid rgba(30, 41, 59, 0.9);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.wow-subtab:hover { color: rgb(252 211 77); background: rgba(30, 41, 59, 0.85); }
+.wow-subtab:focus-visible { outline: 2px solid rgba(252, 211, 77, 0.85); outline-offset: 2px; }
+.wow-subtab[aria-selected="true"] {
+  color: #fcd34d;
+  background: rgba(212, 175, 55, 0.16);
+  border-color: rgba(212, 175, 55, 0.42);
+}
+/* The secondary text (spent points, or the talent count when the payload carries none) is Inter and
+   lower-case: the Cinzel upper-case run is the label's, and a second one would read as a heading. */
+.wow-subtab-meta {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgb(100 116 139);
+}
+.wow-subtab[aria-selected="true"] .wow-subtab-meta { color: rgb(148 163 184); }
+/* The active specialization is marked with a glyph rather than the word "Active": the panel heading
+   under the row already spells that out, and three labels on one control read as noise. */
+.wow-subtab[data-wow-spec-active="true"] .wow-subtab-label::after {
+  content: '\25C6';
+  font-size: 7px;
+  color: #fcd34d;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+/* No `display` here either: the inactive spec panels are hidden with Tailwind's `hidden`. */
+.wow-spec-panel { scrollbar-width: thin; }
+
+/* Small Blizzard media slots (F4): the class icon in the modal header, in the roster card, and one
+   per profession. Each is drawn whether or not a URL passed the host allowlist, so the surrounding
+   text does not move between a row whose media synced and one that did not; an empty slot is a
+   dashed placeholder, the same visual the avatar uses for no render. There is no race slot: the
+   race media family is proven absent (docs/bnet-api-notes.md §10.3), so its placeholder could never
+   fill and detail.js does not ask for the field. */
+.wow-id-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px dashed rgba(148, 163, 184, 0.28);
+  background: rgba(2, 6, 23, 0.5);
+  vertical-align: middle;
+}
+.wow-id-icon-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* The roster card is a denser row than the modal header, so its class icon is smaller; it still
+   reserves the box so class names line up down the grid. */
+.wow-card-icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px dashed rgba(148, 163, 184, 0.22);
+  background: rgba(2, 6, 23, 0.5);
+}
+.wow-card-icon-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
 /* One shared tooltip element (index.html), positioned fixed by js/detail.js so it can flip to
    the other side of a slot near an edge. pointer-events:none is what stops the tooltip itself
    from stealing the hover and strobing. */
