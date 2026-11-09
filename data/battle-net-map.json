@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-09T05:55:09Z",
+  "updatedAt": "2026-11-09T14:50:15Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -23,7 +23,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791919950805": {
@@ -35,7 +35,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791922047617": {
@@ -71,7 +71,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791928613248": {
@@ -83,7 +83,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791928676823": {
@@ -95,7 +95,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791928813281": {
@@ -107,7 +107,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791928886528": {
@@ -131,7 +131,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791929013125": {
@@ -143,7 +143,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791929106142": {
@@ -159,7 +159,7 @@
       "candidates": []
     },
     "1791929283993": {
-      "rosterName": "shewter",
+      "rosterName": "dhella",
       "status": "not_found",
       "slug": null,
       "href": null,
@@ -167,7 +167,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791929450071": {
@@ -179,7 +179,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791929660455": {
@@ -191,7 +191,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791945705052": {
@@ -203,7 +203,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1791945790634": {
@@ -215,7 +215,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1793073514718": {
@@ -227,7 +227,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     },
     "1794163010636": {
@@ -238,8 +238,8 @@
       "bnetName": "Shmorlock",
       "surname": "Gorelocke",
       "matchedForm": "lower_hyphen",
-      "mappedVia": "direct",
-      "note": null,
+      "mappedVia": "confirmed",
+      "note": "user-confirmed",
       "candidates": []
     },
     "1794166751512": {
@@ -251,7 +251,7 @@
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     }
   }
