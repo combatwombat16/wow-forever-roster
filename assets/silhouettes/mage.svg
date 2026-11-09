@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  assets/silhouettes/mage.svg — Human mage in a tall pointed hat and long belted robes,
+  right arm thrust skyward channeling a crackling arcane orb, left hand gathering at the
+  waist, robes, sash and hair streaming upward with arcane lift. Same conventions as the
+  roster files: solid #0a0a0a figure, warm layered backdrop, interior etching, glow
+  accents — accents in arcane violet (etching #a689d0, glow #c9a8f0, bright #e6d4ff).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Human Mage — Channeling Orb, Arcane Lift (WoW style silhouette)</title>
+
+  <!-- ============ backdrop ============ -->
+  <rect width="512" height="512" fill="#1a1410"/>
+  <circle cx="256" cy="255" r="198" fill="#2e2318"/>
+  <circle cx="256" cy="255" r="152" fill="#3d2c1a"/>
+  <!-- rune tick rings -->
+  <circle cx="256" cy="255" r="176" fill="none" stroke="#a689d0" stroke-opacity="0.16" stroke-width="7" stroke-dasharray="3 24"/>
+  <circle cx="256" cy="255" r="128" fill="none" stroke="#a689d0" stroke-opacity="0.10" stroke-width="5" stroke-dasharray="2 17"/>
+  <!-- rising arcane streaks -->
+  <g fill="none" stroke="#a689d0" stroke-opacity="0.22" stroke-width="2.5" stroke-linecap="round">
+    <path d="M 150 420 L 146 396"/>
+    <path d="M 164 452 L 161 432"/>
+    <path d="M 358 430 L 362 406"/>
+    <path d="M 344 458 L 347 438"/>
+    <path d="M 128 340 L 125 320"/>
+    <path d="M 384 350 L 388 330"/>
+  </g>
+  <!-- drifting motes -->
+  <g fill="#a689d0">
+    <circle cx="92" cy="64" r="3" fill-opacity="0.3"/>
+    <circle cx="418" cy="92" r="2.4" fill-opacity="0.3"/>
+    <circle cx="452" cy="180" r="3.2" fill-opacity="0.25"/>
+    <circle cx="70" cy="330" r="2.6" fill-opacity="0.28"/>
+    <circle cx="392" cy="52" r="2" fill-opacity="0.4"/>
+    <circle cx="30" cy="220" r="2" fill-opacity="0.25"/>
+    <circle cx="474" cy="270" r="2.2" fill-opacity="0.3"/>
+    <circle cx="140" cy="44" r="2" fill-opacity="0.3"/>
+    <circle cx="252" cy="26" r="1.8" fill-opacity="0.35"/>
+    <circle cx="436" cy="414" r="2.4" fill-opacity="0.22"/>
+    <circle cx="56" cy="148" r="1.8" fill-opacity="0.28"/>
+    <circle cx="348" cy="302" r="2" fill-opacity="0.18"/>
+  </g>
+  <ellipse cx="256" cy="480" rx="210" ry="18" fill="#0d0a07"/>
+
+  <!-- ============ ground mist ============ -->
+  <path d="M 40 476 C 84 452 122 468 162 458 C 204 448 236 466 278 456 C 320 446 358 464 398 454 C 436 444 466 462 496 456 L 496 512 L 40 512 Z"
+        fill="#0d0a07" fill-opacity="0.45"/>
+  <path d="M 70 490 C 112 476 146 488 186 482 C 228 474 258 486 300 480 C 342 472 378 486 416 480 C 448 473 472 484 492 480 L 492 512 L 70 512 Z"
+        fill="#241a10" fill-opacity="0.4"/>
+
+  <g fill="#0a0a0a" stroke="#0a0a0a" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- ================= HAIR (streaming upward with the lift) ================= -->
+    <path stroke="none" d="M 264 168
+             C 292 156, 322 148, 348 150
+             C 330 158, 316 162, 306 168
+             C 322 170, 336 176, 344 186
+             C 322 182, 302 178, 288 180
+             C 280 182, 272 180, 266 178 Z"/>
+    <path stroke="none" d="M 268 158
+             C 296 140, 324 130, 352 128
+             C 336 138, 324 142, 316 148
+             C 334 148, 348 154, 356 162
+             C 336 158, 314 154, 296 156 Z"/>
+
+    <!-- ================= ROBE (long, hem tongues streaming upward) ================= -->
+    <path stroke="none" d="M 240 212
+             C 226 226, 218 260, 214 300
+             C 210 340, 204 390, 198 430
+             L 190 476 L 206 448 L 212 486 L 228 440 L 238 490
+             L 252 436 L 264 492 L 276 442 L 288 486 L 300 446
+             L 310 476 L 316 430
+             C 312 390, 308 340, 304 300
+             C 300 260, 292 226, 280 214 Z"/>
+
+    <!-- ================= SLEEVES ================= -->
+    <!-- raised right sleeve draping from the armpit -->
+    <path stroke="none" d="M 282 220
+             C 262 250, 252 300, 250 340
+             L 262 322 L 268 348 L 280 326
+             C 286 300, 292 268, 298 240 Z"/>
+    <!-- left sleeve draping from the gathering arm -->
+    <path stroke="none" d="M 218 240
+             C 200 262, 186 300, 184 336
+             L 194 322 L 202 344 L 212 326
+             C 216 300, 220 272, 226 252 Z"/>
+
+    <!-- ================= ARMS ================= -->
+    <!-- raised right arm: shoulder (278,224) elbow (312,162) wrist (330,100) -->
+    <path stroke-width="12" fill="none" d="M 278 224 L 312 162 L 330 102"/>
+    <!-- wide turned-up cuff -->
+    <ellipse cx="325" cy="114" rx="12" ry="8" transform="rotate(-68 325 114)" stroke="none"/>
+    <!-- palm up under the orb -->
+    <circle cx="332" cy="94" r="8" stroke="none"/>
+    <path stroke-width="4" fill="none" d="M 328 88 L 326 78"/>
+    <path stroke-width="4" fill="none" d="M 333 87 L 333 76"/>
+    <path stroke-width="4" fill="none" d="M 338 89 L 341 79"/>
+    <!-- gathering left arm: shoulder (226,226) elbow (198,274) wrist (210,316) -->
+    <path stroke-width="12" fill="none" d="M 226 226 L 198 274 L 210 314"/>
+    <ellipse cx="206" cy="308" rx="11" ry="7" transform="rotate(60 206 308)" stroke="none"/>
+    <!-- cupped palm at the waist -->
+    <circle cx="214" cy="320" r="8" stroke="none"/>
+    <path stroke-width="4" fill="none" d="M 208 316 C 204 310, 206 304, 212 302"/>
+
+    <!-- ================= SASH + lifted sash ends ================= -->
+    <path stroke="none" d="M 224 306 C 240 316, 272 316, 288 308 L 292 326 C 272 336, 238 336, 220 324 Z"/>
+    <circle cx="256" cy="324" r="7" stroke="none"/>
+    <!-- sash ends lifting to the right -->
+    <path stroke="none" d="M 268 324
+             C 290 330, 310 322, 326 310
+             C 318 322, 322 330, 314 338
+             C 298 344, 280 338, 268 330 Z"/>
+
+    <!-- ================= HEAD + TALL POINTED HAT ================= -->
+    <ellipse cx="244" cy="190" rx="17" ry="19" stroke="none"/>
+    <rect x="236" y="200" width="18" height="16" stroke="none"/>
+    <!-- upturned wide brim -->
+    <path stroke="none" d="M 204 178
+             C 222 164, 274 160, 294 172
+             C 274 184, 222 188, 204 178 Z"/>
+    <!-- tall bent crown -->
+    <path stroke="none" d="M 232 172
+             C 240 124, 262 78, 302 40
+             C 288 82, 280 128, 274 170
+             C 260 176, 244 176, 232 172 Z"/>
+    <!-- hat buckle clasp -->
+    <circle cx="250" cy="158" r="5" stroke="none"/>
+
+    <!-- ================= CRACKLING ORB (above the raised palm) ================= -->
+    <circle cx="338" cy="54" r="22" stroke="none"/>
+    <!-- feeding tendrils from the fingers -->
+    <path stroke-width="3" fill="none" d="M 330 82 L 330 74"/>
+    <path stroke-width="3" fill="none" d="M 340 80 L 340 74"/>
+  </g>
+
+  <!-- ============ interior arcane etching ============ -->
+  <g fill="none" stroke="#a689d0" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round">
+    <!-- robe fold sweeps -->
+    <path d="M 226 340 C 220 390, 212 430, 206 458"/>
+    <path d="M 256 336 C 254 390, 252 440, 250 470"/>
+    <path d="M 284 340 C 288 390, 294 430, 300 456"/>
+    <!-- hem flame echo -->
+    <path d="M 196 462 L 208 444 L 220 470 L 234 436 L 246 474 L 260 432
+             L 272 476 L 284 438 L 296 470 L 306 444" stroke-opacity="0.35"/>
+    <!-- front seam -->
+    <path d="M 252 220 C 250 250, 249 280, 250 306"/>
+    <!-- sash edge + knot pin -->
+    <path d="M 226 314 C 242 324, 272 324, 286 314"/>
+    <path d="M 256 320 L 256 328"/>
+    <!-- sash end fold -->
+    <path d="M 276 328 C 292 332, 306 326, 316 318"/>
+    <!-- sleeve folds -->
+    <path d="M 288 236 C 276 264, 268 296, 266 328"/>
+    <path d="M 214 252 C 204 276, 196 304, 194 330"/>
+    <!-- hat band + crown seam -->
+    <path d="M 236 166 C 248 160, 262 158, 272 160"/>
+    <path d="M 246 164 C 254 124, 268 88, 292 54" stroke-opacity="0.35"/>
+    <!-- scattered stars on the robe -->
+    <path d="M 238 380 L 238 388"/>
+    <path d="M 234 384 L 242 384"/>
+    <path d="M 272 412 L 272 420"/>
+    <path d="M 268 416 L 276 416"/>
+    <path d="M 250 444 L 250 452"/>
+    <path d="M 246 448 L 254 448"/>
+    <!-- hair strand lines -->
+    <path d="M 280 164 C 302 158, 324 154, 342 156" stroke-opacity="0.35"/>
+    <path d="M 282 152 C 304 142, 326 136, 346 136" stroke-opacity="0.35"/>
+  </g>
+
+  <!-- ============ glow accents ============ -->
+  <g fill="none" stroke="#c9a8f0" stroke-opacity="0.6" stroke-width="3" stroke-linecap="round">
+    <!-- orb outer ring -->
+    <circle cx="338" cy="54" r="30" stroke-opacity="0.4" stroke-width="2"/>
+    <!-- hat tip + crown left edge + brim -->
+    <path d="M 298 46 L 302 40"/>
+    <path d="M 238 148 C 246 114, 260 82, 284 52"/>
+    <path d="M 206 176 C 216 168, 232 163, 246 161"/>
+    <!-- raised arm outer edge -->
+    <path d="M 318 152 L 334 104"/>
+    <!-- hem flame tips -->
+    <path d="M 228 440 L 230 432"/>
+    <path d="M 252 436 L 252 428"/>
+    <path d="M 276 442 L 278 434"/>
+    <!-- hair stream edges -->
+    <path d="M 306 136 C 324 132, 340 130, 350 130" stroke-opacity="0.4"/>
+    <path d="M 330 150 C 340 149, 346 151, 352 156" stroke-opacity="0.4"/>
+    <!-- gathering swirl above the waist palm -->
+    <path d="M 200 306 C 206 298, 222 298, 228 306" stroke-opacity="0.5"/>
+    <!-- robe left edge -->
+    <path d="M 200 420 C 197 440, 194 458, 192 470"/>
+  </g>
+
+  <!-- crackling bolts around the orb -->
+  <g fill="none" stroke="#e6d4ff" stroke-opacity="0.8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 338 32 L 344 22 L 340 14"/>
+    <path d="M 356 40 L 366 34 L 370 24"/>
+    <path d="M 360 64 L 372 68 L 376 78"/>
+    <path d="M 318 64 L 308 70 L 304 64"/>
+    <path d="M 316 42 L 306 36"/>
+  </g>
+
+  <!-- arcane sparkles -->
+  <g fill="#e6d4ff" fill-opacity="0.9">
+    <path d="M 374 46 L 376 52 L 382 54 L 376 56 L 374 62 L 372 56 L 366 54 L 372 52 Z"/>
+    <path d="M 308 26 L 310 31 L 315 33 L 310 35 L 308 40 L 306 35 L 301 33 L 306 31 Z"/>
+    <path d="M 214 288 L 215 292 L 219 293 L 215 294 L 214 298 L 213 294 L 209 293 L 213 292 Z"/>
+  </g>
+
+  <!-- glowing eyes under the hat brim -->
+  <g stroke="#e6d4ff" stroke-opacity="0.85" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M 228 192 L 236 193"/>
+    <path d="M 242 191 L 249 192"/>
+  </g>
+</svg>

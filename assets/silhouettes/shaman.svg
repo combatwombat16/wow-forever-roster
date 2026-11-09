@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  assets/silhouettes/shaman.svg — Orc shaman standing squared and grounded, both arms
+  outstretched, two totems: a double-headed totem staff planted before the left foot and
+  a horned-skull ground totem with an elemental flame at the right foot (lightning
+  channeled into it from the right hand), lightning-rod crests rising off the pauldrons,
+  head in profile mass with upswept tusks and a segmented braided beard, earth-elemental
+  motes hovering at the feet. Same conventions as the other roster files: solid #0a0a0a
+  figure, warm layered backdrop, interior etching, glow accents — accents in spirit-blue
+  (etching #5a8fc0, glow #7fb2e8, bright #c0dcf5).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Orc Shaman — Outstretched Arms, Double-Headed Totem Staff (WoW style silhouette)</title>
+
+  <!-- ============ backdrop ============ -->
+  <rect width="512" height="512" fill="#1a1410"/>
+  <circle cx="256" cy="255" r="198" fill="#2e2318"/>
+  <circle cx="256" cy="255" r="152" fill="#3d2c1a"/>
+  <!-- rune tick rings -->
+  <circle cx="256" cy="255" r="176" fill="none" stroke="#5a8fc0" stroke-opacity="0.16" stroke-width="7" stroke-dasharray="3 24"/>
+  <circle cx="256" cy="255" r="128" fill="none" stroke="#5a8fc0" stroke-opacity="0.10" stroke-width="5" stroke-dasharray="2 17"/>
+  <!-- drifting motes -->
+  <g fill="#5a8fc0">
+    <circle cx="92" cy="64" r="3" fill-opacity="0.3"/>
+    <circle cx="418" cy="92" r="2.4" fill-opacity="0.3"/>
+    <circle cx="452" cy="180" r="3.2" fill-opacity="0.25"/>
+    <circle cx="70" cy="330" r="2.6" fill-opacity="0.28"/>
+    <circle cx="392" cy="52" r="2" fill-opacity="0.4"/>
+    <circle cx="30" cy="220" r="2" fill-opacity="0.25"/>
+    <circle cx="474" cy="270" r="2.2" fill-opacity="0.3"/>
+    <circle cx="140" cy="44" r="2" fill-opacity="0.3"/>
+    <circle cx="252" cy="26" r="1.8" fill-opacity="0.35"/>
+    <circle cx="436" cy="414" r="2.4" fill-opacity="0.22"/>
+    <circle cx="56" cy="148" r="1.8" fill-opacity="0.28"/>
+    <circle cx="348" cy="302" r="2" fill-opacity="0.18"/>
+  </g>
+  <ellipse cx="256" cy="480" rx="210" ry="18" fill="#0d0a07"/>
+
+  <!-- ============ ground mist ============ -->
+  <path d="M 40 476 C 84 452 122 468 162 458 C 204 448 236 466 278 456 C 320 446 358 464 398 454 C 436 444 466 462 496 456 L 496 512 L 40 512 Z"
+        fill="#0d0a07" fill-opacity="0.45"/>
+  <path d="M 70 490 C 112 476 146 488 186 482 C 228 474 258 486 300 480 C 342 472 378 486 416 480 C 448 473 472 484 492 480 L 492 512 L 70 512 Z"
+        fill="#241a10" fill-opacity="0.4"/>
+
+  <g fill="#0a0a0a" stroke="#0a0a0a" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- ================= LIGHTNING-ROD CRESTS (behind the pauldrons) ================= -->
+    <!-- left pauldron rods -->
+    <path stroke-width="4" fill="none" d="M 196 200 L 184 148"/>
+    <path stroke-width="4" fill="none" d="M 208 194 L 204 140"/>
+    <path stroke-width="4" fill="none" d="M 220 196 L 228 150"/>
+    <circle cx="183" cy="144" r="5" stroke="none"/>
+    <circle cx="203" cy="136" r="5" stroke="none"/>
+    <circle cx="229" cy="146" r="5" stroke="none"/>
+    <!-- right pauldron rods -->
+    <path stroke-width="4" fill="none" d="M 316 200 L 328 148"/>
+    <path stroke-width="4" fill="none" d="M 304 194 L 308 140"/>
+    <path stroke-width="4" fill="none" d="M 292 196 L 284 150"/>
+    <circle cx="329" cy="144" r="5" stroke="none"/>
+    <circle cx="309" cy="136" r="5" stroke="none"/>
+    <circle cx="283" cy="146" r="5" stroke="none"/>
+
+    <!-- ================= OUTSTRETCHED ARMS ================= -->
+    <!-- left arm: shoulder (214,220) elbow (162,228) hand (118,240) -->
+    <path stroke-width="30" fill="none" d="M 214 220 L 162 228 L 120 238"/>
+    <!-- studded left bracer -->
+    <rect x="140" y="216" width="26" height="34" rx="11" stroke="none"/>
+    <circle cx="150" cy="214" r="4" stroke="none"/>
+    <circle cx="150" cy="252" r="4" stroke="none"/>
+    <!-- left open hand, palm down -->
+    <ellipse cx="112" cy="240" rx="13" ry="9" stroke="none"/>
+    <path stroke-width="5" fill="none" d="M 104 244 L 92 250"/>
+    <path stroke-width="5" fill="none" d="M 106 248 L 98 258"/>
+    <path stroke-width="5" fill="none" d="M 110 249 L 108 260"/>
+    <path stroke-width="5" fill="none" d="M 104 236 L 94 232"/>
+    <!-- right arm: shoulder (298,220) elbow (350,228) hand (394,240) -->
+    <path stroke-width="30" fill="none" d="M 298 220 L 350 228 L 392 238"/>
+    <!-- studded right bracer -->
+    <rect x="346" y="216" width="26" height="34" rx="11" stroke="none"/>
+    <circle cx="362" cy="214" r="4" stroke="none"/>
+    <circle cx="362" cy="252" r="4" stroke="none"/>
+    <!-- right open hand, palm down -->
+    <ellipse cx="400" cy="240" rx="13" ry="9" stroke="none"/>
+    <path stroke-width="5" fill="none" d="M 408 244 L 420 250"/>
+    <path stroke-width="5" fill="none" d="M 406 248 L 414 258"/>
+    <path stroke-width="5" fill="none" d="M 402 249 L 404 260"/>
+    <path stroke-width="5" fill="none" d="M 408 236 L 418 232"/>
+
+    <!-- ================= TORSO (heavy, squared) ================= -->
+    <path stroke="none" d="M 210 212
+             C 224 194, 288 194, 302 210
+             C 314 226, 316 252, 310 276
+             C 304 298, 292 312, 278 318
+             C 256 326, 230 324, 220 314
+             C 210 298, 206 260, 208 236 Z"/>
+
+    <!-- ================= PAULDRONS (layered, riveted) ================= -->
+    <path stroke="none" d="M 198 224 C 208 202, 236 194, 258 200 C 248 212, 244 224, 244 238 C 224 246, 206 240, 198 224 Z"/>
+    <path stroke="none" d="M 192 208 C 204 190, 232 182, 254 188 C 246 196, 242 202, 240 210 C 222 216, 202 218, 192 208 Z"/>
+    <circle cx="198" cy="206" r="4" stroke="none"/>
+    <circle cx="216" cy="196" r="4" stroke="none"/>
+    <circle cx="236" cy="190" r="4" stroke="none"/>
+    <path stroke="none" d="M 314 224 C 304 202, 276 194, 254 200 C 264 212, 268 224, 268 238 C 288 246, 306 240, 314 224 Z"/>
+    <path stroke="none" d="M 320 208 C 308 190, 280 182, 258 188 C 266 196, 270 202, 272 210 C 290 216, 310 218, 320 208 Z"/>
+    <circle cx="314" cy="206" r="4" stroke="none"/>
+    <circle cx="296" cy="196" r="4" stroke="none"/>
+    <circle cx="276" cy="190" r="4" stroke="none"/>
+
+    <!-- ================= HEAD (profile mass, facing left) ================= -->
+    <g transform="translate(10 -8)">
+    <ellipse cx="240" cy="156" rx="22" ry="22" stroke="none"/>
+    <rect x="236" y="172" width="26" height="26" stroke="none"/>
+    <!-- face profile: heavy brow, nose -->
+    <path stroke="none" d="M 228 142
+             C 216 146, 210 154, 208 162
+             L 218 168 L 214 174
+             C 214 184, 222 194, 238 196
+             L 244 146 Z"/>
+    <!-- upswept tusk from the lower jaw -->
+    <path stroke="none" d="M 222 190 C 214 180, 210 168, 212 156 L 222 176 L 228 188 Z"/>
+    <!-- lower jaw mass + underbite -->
+    <path stroke="none" d="M 220 178 C 218 190, 228 200, 242 200 C 252 200, 258 194, 258 186 C 246 192, 228 190, 220 178 Z"/>
+    <!-- pointed ear -->
+    <path stroke="none" d="M 258 150 C 270 144, 280 136, 288 126 C 284 142, 276 154, 266 162 Z"/>
+    <!-- braided beard: jaw connector + three segments with binding rings + tail -->
+    <path stroke="none" d="M 220 192 C 216 204, 218 214, 224 220 L 234 216 C 230 206, 230 198, 232 192 Z"/>
+    <circle cx="226" cy="206" r="8" stroke="none"/>
+    <circle cx="222" cy="222" r="7" stroke="none"/>
+    <circle cx="219" cy="238" r="6" stroke="none"/>
+    <path stroke="none" d="M 215 244 L 223 244 L 220 258 L 217 258 Z"/>
+    <circle cx="224" cy="212" r="6" stroke="none"/>
+    <circle cx="220" cy="228" r="5" stroke="none"/>
+    <!-- top-knot bound with a bone ring -->
+    <path stroke="none" d="M 234 136 C 228 120, 234 106, 250 100 C 244 114, 246 126, 256 134 C 246 138, 238 138, 234 136 Z"/>
+    <circle cx="238" cy="122" r="5" stroke="none"/>
+    </g>
+
+    <!-- ================= BELT + harness ================= -->
+    <path stroke="none" d="M 222 310 C 246 322, 278 322, 296 312 L 300 332 C 278 344, 244 344, 218 330 Z"/>
+    <circle cx="228" cy="324" r="4" stroke="none"/>
+    <circle cx="292" cy="322" r="4" stroke="none"/>
+    <circle cx="260" cy="326" r="9" stroke="none"/>
+    <!-- shoulder harness strap -->
+    <path stroke-width="9" fill="none" d="M 228 218 C 244 250, 262 280, 278 308"/>
+    <!-- hip pouch + fang charm -->
+    <path stroke="none" d="M 296 330 L 320 334 L 324 358 C 324 368, 306 370, 298 362 Z"/>
+    <!-- bone-charm necklace over the chest -->
+    <circle cx="240" cy="228" r="3.5" stroke="none"/>
+    <circle cx="252" cy="234" r="3.5" stroke="none"/>
+    <circle cx="264" cy="234" r="3.5" stroke="none"/>
+    <circle cx="276" cy="228" r="3.5" stroke="none"/>
+    <path stroke-width="4" fill="none" d="M 258 240 L 258 254"/>
+    <circle cx="258" cy="239" r="3" stroke="none"/>
+    <circle cx="258" cy="256" r="3" stroke="none"/>
+    <path d="M 226 332 Q 214 350 220 366" stroke-width="5" fill="none" stroke-dasharray="1.5 6"/>
+    <path stroke="none" d="M 214 366 L 226 366 L 222 382 Z"/>
+
+    <!-- ================= LOINCLOTH ================= -->
+    <path stroke="none" d="M 240 336 C 236 360, 234 384, 240 404 C 248 412, 264 412, 270 402 C 274 382, 274 358, 270 336 C 260 342, 248 342, 240 336 Z"/>
+
+    <!-- ================= LEGS (squared, grounded) ================= -->
+    <path stroke-width="34" fill="none" d="M 236 320 L 222 400 L 216 448"/>
+    <path stroke-width="34" fill="none" d="M 286 318 L 300 400 L 306 448"/>
+    <!-- knee spikes: paired -->
+    <path stroke="none" d="M 212 392 L 182 382 L 206 412 Z"/>
+    <path stroke="none" d="M 220 380 L 200 362 L 228 374 Z"/>
+    <path stroke="none" d="M 312 392 L 342 382 L 318 412 Z"/>
+    <path stroke="none" d="M 304 380 L 324 362 L 296 374 Z"/>
+    <!-- boot cuffs -->
+    <ellipse cx="216" cy="442" rx="24" ry="11" stroke="none"/>
+    <ellipse cx="306" cy="442" rx="24" ry="11" stroke="none"/>
+    <!-- left boot -->
+    <path stroke="none" d="M 196 452
+             C 182 458, 170 468, 166 476
+             C 162 484, 170 490, 184 490
+             L 232 490
+             C 242 490, 244 482, 240 474
+             C 234 464, 224 456, 214 452
+             C 208 450, 202 450, 196 452 Z"/>
+    <!-- right boot -->
+    <path stroke="none" d="M 316 452
+             C 330 458, 342 468, 346 476
+             C 350 484, 342 490, 328 490
+             L 280 490
+             C 270 490, 268 482, 272 474
+             C 278 464, 288 456, 298 452
+             C 304 450, 310 450, 316 452 Z"/>
+
+    <!-- ================= TOTEM STAFF (planted before the left foot) ================= -->
+    <g transform="translate(-34 0)">
+    <!-- shaft -->
+    <path stroke-width="10" fill="none" d="M 206 96 L 212 486"/>
+    <!-- wrapped bindings -->
+    <rect x="198" y="180" width="20" height="9" rx="4" transform="rotate(-2 208 184)" stroke="none"/>
+    <rect x="200" y="330" width="20" height="9" rx="4" transform="rotate(-2 210 334)" stroke="none"/>
+    <rect x="202" y="420" width="20" height="9" rx="4" transform="rotate(-2 212 424)" stroke="none"/>
+    <!-- feather dressing mid-shaft -->
+    <path stroke="none" d="M 205 290 C 190 284, 180 292, 176 306 C 188 306, 198 300, 206 298 Z"/>
+    <path stroke="none" d="M 209 292 C 224 286, 234 294, 238 308 C 226 308, 216 302, 208 300 Z"/>
+    <path stroke="none" d="M 206 300 C 194 302, 186 312, 186 324 C 196 320, 203 312, 208 308 Z"/>
+    <!-- double head: two profiles back to back + capstone -->
+    <!-- left head, facing left -->
+    <circle cx="197" cy="84" r="13" stroke="none"/>
+    <path stroke="none" d="M 188 88 L 178 92 L 187 96 Z"/>
+    <path stroke="none" d="M 184 78 L 172 72 L 185 86 Z"/>
+    <!-- right head, facing right -->
+    <circle cx="217" cy="82" r="13" stroke="none"/>
+    <path stroke="none" d="M 226 86 L 236 90 L 227 94 Z"/>
+    <path stroke="none" d="M 230 76 L 242 70 L 229 84 Z"/>
+    <!-- capstone between the heads -->
+    <path stroke="none" d="M 200 66 L 207 50 L 214 66 Z"/>
+    <!-- planted base bundle -->
+    <path stroke="none" d="M 200 470 L 224 470 L 220 492 L 204 492 Z"/>
+    <path stroke="none" d="M 192 478 L 202 474 L 200 490 Z"/>
+    <path stroke="none" d="M 232 478 L 222 474 L 224 490 Z"/>
+    </g>
+
+    <!-- ================= GROUND TOTEM (horned skull + elemental flame, right foot) ================= -->
+    <g>
+      <!-- pillar on a stone base -->
+      <ellipse cx="424" cy="484" rx="26" ry="8"/>
+      <circle cx="402" cy="480" r="7"/>
+      <circle cx="446" cy="480" r="6"/>
+      <path stroke="#0a0a0a" stroke-width="13" fill="none" d="M 422 350 L 426 482"/>
+      <!-- horned skull finial -->
+      <circle cx="420" cy="330" r="15"/>
+      <path d="M 411 342 L 431 342 L 428 356 L 414 356 Z"/>
+      <path stroke="#0a0a0a" stroke-width="6" fill="none" d="M 408 320 C 394 312, 390 300, 394 288"/>
+      <path stroke="#0a0a0a" stroke-width="6" fill="none" d="M 434 318 C 448 310, 452 298, 448 286"/>
+      <!-- elemental flame cupped between the horns -->
+      <path d="M 415 296 C 408 286, 410 272, 420 264
+               C 417 274, 423 279, 423 287
+               C 428 281, 429 273, 427 266
+               C 437 276, 437 291, 427 299 Z"/>
+      <!-- pillar binding wings -->
+      <path d="M 406 380 L 422 376 L 422 386 L 406 390 Z"/>
+      <path d="M 442 382 L 426 378 L 426 388 L 442 392 Z"/>
+    </g>
+
+    <!-- ================= EARTH MOTES (elemental stones at the feet) ================= -->
+    <g stroke="none">
+      <path d="M 138 428 L 148 424 L 152 434 L 142 440 Z"/>
+      <path d="M 118 460 L 126 456 L 130 464 L 121 468 Z"/>
+      <path d="M 468 424 L 477 421 L 480 430 L 471 433 Z"/>
+    </g>
+  </g>
+
+  <!-- ============ interior spirit-blue etching ============ -->
+  <g fill="none" stroke="#5a8fc0" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round">
+    <!-- staff bindings + shaft line -->
+    <g transform="translate(-34 0)">
+    <path d="M 200 184 L 216 183"/>
+    <path d="M 202 334 L 218 333"/>
+    <path d="M 204 424 L 220 423"/>
+    <!-- totem heads: eyes + tusk hint -->
+    <circle cx="193" cy="82" r="2" />
+    <circle cx="221" cy="80" r="2" />
+    <path d="M 184 92 L 189 94"/>
+    <path d="M 230 90 L 225 92"/>
+    <!-- feather veins -->
+    <path d="M 202 294 C 192 294, 184 298, 180 304"/>
+    <path d="M 212 296 C 222 296, 230 300, 234 306"/>
+    <path d="M 206 304 C 198 308, 192 314, 190 320"/>
+    </g>
+    <!-- braid segment weave -->
+    <g transform="translate(10 -8)">
+    <path d="M 220 202 C 228 206, 230 212, 226 218"/>
+    <path d="M 216 218 C 224 222, 226 228, 222 234"/>
+    <path d="M 213 234 C 220 238, 222 242, 219 248"/>
+    </g>
+    <!-- harness strap edges -->
+    <path d="M 224 222 C 240 254, 258 282, 274 306"/>
+    <!-- chest seams -->
+    <path d="M 220 250 C 244 262, 278 262, 300 250"/>
+    <path d="M 222 282 C 246 292, 276 292, 296 282"/>
+    <!-- belt edge -->
+    <path d="M 224 318 C 248 330, 278 330, 294 320"/>
+    <!-- loincloth lines -->
+    <path d="M 250 342 C 248 366, 248 386, 252 402"/>
+    <path d="M 262 342 C 264 366, 264 386, 260 402"/>
+    <!-- pauldron plate seams -->
+    <path d="M 196 210 C 208 196, 230 190, 250 194"/>
+    <path d="M 316 210 C 304 196, 282 190, 262 194"/>
+    <!-- greave flutes -->
+    <path d="M 226 404 C 220 420, 216 434, 214 446"/>
+    <path d="M 298 404 C 304 420, 308 434, 310 446"/>
+    <!-- boot cuff lines -->
+    <path d="M 196 442 L 236 440"/>
+    <path d="M 286 440 L 326 442"/>
+    <!-- base bundle wrappings -->
+    <g transform="translate(-34 0)">
+    <path d="M 202 478 L 222 478"/>
+    <path d="M 203 486 L 221 486"/>
+    </g>
+    <!-- ground totem: pillar bands + skull teeth -->
+    <path d="M 414 400 L 432 402"/>
+    <path d="M 415 440 L 433 442"/>
+    <path d="M 414 346 L 414 354"/>
+    <path d="M 420 346 L 420 354"/>
+    <path d="M 426 346 L 426 354"/>
+    <!-- profile: brow and jaw lines -->
+    <g transform="translate(10 -8)">
+    <path d="M 214 152 C 222 148, 232 146, 240 146"/>
+    <path d="M 222 182 C 230 188, 242 190, 252 186"/>
+    </g>
+  </g>
+
+  <!-- ============ glow accents ============ -->
+  <g fill="none" stroke="#7fb2e8" stroke-opacity="0.6" stroke-width="3" stroke-linecap="round">
+    <!-- lightning rod tips -->
+    <path d="M 178 140 A 6 6 0 0 1 189 141"/>
+    <path d="M 198 132 A 6 6 0 0 1 209 133"/>
+    <path d="M 324 140 A 6 6 0 0 1 335 141"/>
+    <path d="M 304 132 A 6 6 0 0 1 315 133"/>
+    <!-- lightning arcs across the sky of rods -->
+    <path d="M 229 146 L 244 130 L 252 140 L 268 122 L 283 146" stroke-opacity="0.5"/>
+    <!-- totem capstone + head crests -->
+    <g transform="translate(-34 0)">
+    <path d="M 207 52 L 207 60"/>
+    <path d="M 186 70 A 13 13 0 0 1 202 72" stroke-opacity="0.5"/>
+    <path d="M 212 70 A 13 13 0 0 1 228 72" stroke-opacity="0.5"/>
+    <!-- staff outer edge -->
+    <path d="M 202 120 L 207 320"/>
+    <!-- planted base edge -->
+    <path d="M 198 472 L 200 490"/>
+    </g>
+    <!-- boot toes -->
+    <path d="M 168 476 C 172 484, 178 488, 186 490"/>
+    <path d="M 344 476 C 340 484, 334 488, 326 490"/>
+    <!-- hand edges -->
+    <path d="M 106 232 C 100 232, 96 234, 92 232"/>
+    <path d="M 406 232 C 412 232, 416 234, 420 232"/>
+    <!-- tusk edge -->
+    <path d="M 214 172 C 212 164, 212 158, 213 156" stroke-opacity="0.5"/>
+  </g>
+
+  <!-- energy zigzag from the left hand to the staff head -->
+  <g fill="none" stroke="#7fb2e8" stroke-opacity="0.4" stroke-width="2.5" stroke-linecap="round">
+    <path d="M 112 230 L 128 210 L 122 196 L 146 176"/>
+    <path transform="translate(-34 0)" d="M 150 84 L 166 96 L 176 88"/>
+  </g>
+
+  <!-- lightning channeled from the right hand into the ground totem flame -->
+  <g fill="none" stroke="#7fb2e8" stroke-opacity="0.55" stroke-width="2.5" stroke-linecap="round">
+    <path d="M 414 262 L 420 270 L 415 277 L 421 286"/>
+  </g>
+
+  <!-- elemental flame edge + skull glow -->
+  <g fill="none" stroke="#7fb2e8" stroke-opacity="0.6" stroke-width="3" stroke-linecap="round">
+    <path d="M 416 292 C 409 283, 411 271, 419 264"/>
+    <path d="M 396 292 C 392 302, 396 312, 406 319" stroke-opacity="0.45"/>
+    <path d="M 446 290 C 451 300, 447 311, 437 317" stroke-opacity="0.45"/>
+  </g>
+
+  <!-- earth motes glow rings -->
+  <g fill="none" stroke="#7fb2e8" stroke-opacity="0.35" stroke-width="1.5">
+    <circle cx="145" cy="432" r="11"/>
+    <circle cx="124" cy="462" r="9"/>
+    <circle cx="474" cy="427" r="9"/>
+  </g>
+
+  <!-- cracked earth around the planted staff -->
+  <g fill="none" stroke="#5a8fc0" stroke-opacity="0.3" stroke-width="2" stroke-linecap="round" transform="translate(-34 0)">
+    <path d="M 196 496 L 182 502"/>
+    <path d="M 226 496 L 240 502"/>
+    <path d="M 210 498 L 210 508"/>
+  </g>
+
+  <!-- glint on the totem capstone -->
+  <g stroke="#c0dcf5" stroke-opacity="0.9" stroke-width="2.5" stroke-linecap="round" transform="translate(-34 0)">
+    <path d="M 218 44 L 228 44"/>
+    <path d="M 223 39 L 223 49"/>
+  </g>
+
+  <!-- ground totem skull eyes -->
+  <g stroke="#c0dcf5" stroke-opacity="0.7" stroke-width="2.5" stroke-linecap="round">
+    <path d="M 413 330 L 417 331"/>
+    <path d="M 423 329 L 427 330"/>
+  </g>
+
+  <!-- glowing profile eye + totem head eyes -->
+  <g stroke="#c0dcf5" stroke-opacity="0.85" stroke-width="3" stroke-linecap="round" fill="none" transform="translate(10 -8)">
+    <path d="M 216 158 L 226 159"/>
+  </g>
+  <g stroke="#c0dcf5" stroke-opacity="0.7" stroke-width="2.5" stroke-linecap="round" transform="translate(-34 0)">
+    <path d="M 191 82 L 195 82"/>
+    <path d="M 219 80 L 223 80"/>
+  </g>
+</svg>

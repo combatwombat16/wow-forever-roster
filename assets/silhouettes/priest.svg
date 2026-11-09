@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  assets/silhouettes/priest.svg — Human priest in flowing robes and wide bell sleeves,
+  head bowed in prayer, both hands raised open at chest height, a holy book levitating
+  between the palms. Built in the same conventions as warrior.svg / paladin.svg /
+  hunter.svg / rogue.svg: solid #0a0a0a figure, warm layered backdrop, interior etching,
+  glow accents — accents in pale moonlight silver-white (the priest class color).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Human Priest — Bowed Prayer, Levitating Holy Book (WoW style silhouette)</title>
+
+  <!-- ============ backdrop ============ -->
+  <rect width="512" height="512" fill="#1a1410"/>
+  <circle cx="256" cy="255" r="198" fill="#2e2318"/>
+  <circle cx="256" cy="255" r="152" fill="#3d2c1a"/>
+  <!-- rune tick rings -->
+  <circle cx="256" cy="255" r="176" fill="none" stroke="#b8c0cf" stroke-opacity="0.16" stroke-width="7" stroke-dasharray="3 24"/>
+  <circle cx="256" cy="255" r="128" fill="none" stroke="#b8c0cf" stroke-opacity="0.10" stroke-width="5" stroke-dasharray="2 17"/>
+  <!-- faint light shafts descending onto the book -->
+  <g fill="#e6ebf4" fill-opacity="0.05">
+    <path d="M 226 30 L 200 240 L 246 250 Z"/>
+    <path d="M 286 30 L 312 240 L 266 250 Z"/>
+  </g>
+  <!-- halo ring behind the bowed head -->
+  <circle cx="256" cy="146" r="36" fill="none" stroke="#e6ebf4" stroke-opacity="0.28" stroke-width="4"/>
+  <!-- drifting motes -->
+  <g fill="#b8c0cf">
+    <circle cx="92" cy="64" r="3" fill-opacity="0.3"/>
+    <circle cx="418" cy="92" r="2.4" fill-opacity="0.3"/>
+    <circle cx="452" cy="180" r="3.2" fill-opacity="0.25"/>
+    <circle cx="70" cy="330" r="2.6" fill-opacity="0.25"/>
+    <circle cx="392" cy="52" r="2" fill-opacity="0.4"/>
+    <circle cx="30" cy="220" r="2" fill-opacity="0.25"/>
+    <circle cx="474" cy="270" r="2.2" fill-opacity="0.3"/>
+    <circle cx="140" cy="44" r="2" fill-opacity="0.3"/>
+    <circle cx="252" cy="26" r="1.8" fill-opacity="0.35"/>
+    <circle cx="436" cy="414" r="2.4" fill-opacity="0.22"/>
+    <circle cx="56" cy="148" r="1.8" fill-opacity="0.28"/>
+    <circle cx="348" cy="302" r="2" fill-opacity="0.18"/>
+  </g>
+  <!-- suspended motes orbiting the book -->
+  <g fill="#e6ebf4">
+    <circle cx="208" cy="214" r="2.2" fill-opacity="0.35"/>
+    <circle cx="302" cy="208" r="2" fill-opacity="0.35"/>
+    <circle cx="256" cy="192" r="1.8" fill-opacity="0.3"/>
+    <circle cx="226" cy="296" r="2" fill-opacity="0.3"/>
+    <circle cx="286" cy="292" r="2.2" fill-opacity="0.3"/>
+  </g>
+  <ellipse cx="256" cy="480" rx="210" ry="18" fill="#0d0a07"/>
+
+  <!-- ============ ground mist ============ -->
+  <path d="M 40 476 C 84 452 122 468 162 458 C 204 448 236 466 278 456 C 320 446 358 464 398 454 C 436 444 466 462 496 456 L 496 512 L 40 512 Z"
+        fill="#0d0a07" fill-opacity="0.45"/>
+  <path d="M 70 490 C 112 476 146 488 186 482 C 228 474 258 486 300 480 C 342 472 378 486 416 480 C 448 473 472 484 492 480 L 492 512 L 70 512 Z"
+        fill="#241a10" fill-opacity="0.4"/>
+
+  <g fill="#0a0a0a" stroke="#0a0a0a" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- ================= ROBE (bell from neck to floor) ================= -->
+    <path stroke="none" d="M 256 168
+             C 236 172, 222 184, 216 204
+             C 208 240, 204 280, 200 320
+             C 188 370, 168 430, 156 476
+             C 190 488, 322 488, 356 476
+             C 344 430, 324 370, 312 320
+             C 308 280, 304 240, 296 204
+             C 290 184, 276 172, 256 168 Z"/>
+
+    <!-- ================= WIDE SLEEVES ================= -->
+    <!-- arms raised: shoulders open, elbows low, forearms turned up to the book -->
+    <!-- left arm: shoulder (216,210) elbow (192,256) wrist (216,262) -->
+    <path stroke-width="14" fill="none" d="M 216 210 L 192 256 L 214 263"/>
+    <!-- right arm: shoulder (296,210) elbow (320,256) wrist (298,263) -->
+    <path stroke-width="14" fill="none" d="M 296 210 L 320 256 L 298 263"/>
+    <!-- left bell sleeve draping from the elbow -->
+    <path stroke="none" d="M 194 252
+             C 176 272, 166 310, 170 352
+             L 180 342 L 190 358 L 198 344 L 208 354
+             C 208 316, 204 282, 198 256 Z"/>
+    <!-- right bell sleeve draping from the elbow -->
+    <path stroke="none" d="M 318 252
+             C 336 272, 346 310, 342 352
+             L 332 342 L 322 358 L 314 344 L 304 354
+             C 304 316, 308 282, 314 256 Z"/>
+
+    <!-- ================= HANDS (open, palms inward, fingers up) ================= -->
+    <!-- left palm + fingers -->
+    <rect x="220" y="240" width="16" height="20" rx="7" stroke="none"/>
+    <path stroke-width="4.5" fill="none" d="M 222 242 L 220 227"/>
+    <path stroke-width="4.5" fill="none" d="M 227 240 L 226 224"/>
+    <path stroke-width="4.5" fill="none" d="M 232 240 L 233 225"/>
+    <path stroke-width="4.5" fill="none" d="M 236 242 L 239 229"/>
+    <path stroke-width="5" fill="none" d="M 236 254 L 244 250"/>
+    <!-- right palm + fingers -->
+    <rect x="276" y="240" width="16" height="20" rx="7" stroke="none"/>
+    <path stroke-width="4.5" fill="none" d="M 290 242 L 292 227"/>
+    <path stroke-width="4.5" fill="none" d="M 285 240 L 286 224"/>
+    <path stroke-width="4.5" fill="none" d="M 280 240 L 279 225"/>
+    <path stroke-width="4.5" fill="none" d="M 276 242 L 273 229"/>
+    <path stroke-width="5" fill="none" d="M 276 254 L 268 250"/>
+
+    <!-- ================= HOLY BOOK (levitating between the palms) ================= -->
+    <path stroke="#b8c0cf" stroke-opacity="0.75" stroke-width="2" d="M 256 250
+             C 246 242, 234 238, 222 238
+             L 222 222
+             C 236 220, 248 224, 256 230
+             C 264 224, 276 220, 290 222
+             L 290 238
+             C 278 238, 266 242, 256 250 Z"/>
+    <!-- back covers fanning above the pages -->
+    <path stroke="#b8c0cf" stroke-opacity="0.75" stroke-width="2" d="M 222 226 L 226 216 L 256 226 L 286 216 L 290 226 L 256 236 Z"/>
+    <!-- ribbon bookmarks trailing below -->
+    <path stroke="#b8c0cf" stroke-opacity="0.5" stroke-width="1.5" d="M 248 248
+             C 244 270, 246 290, 242 308
+             L 248 300 L 252 316 L 254 296
+             C 252 280, 252 262, 254 250 Z"/>
+    <path stroke="#b8c0cf" stroke-opacity="0.5" stroke-width="1.5" d="M 264 248
+             C 268 268, 266 286, 270 302
+             L 274 296 L 278 310 L 278 292
+             C 276 276, 272 262, 270 248 Z"/>
+
+    <!-- ================= HEAD (bowed forward into prayer) ================= -->
+    <ellipse cx="256" cy="152" rx="21" ry="23" stroke="none"/>
+    <rect x="246" y="166" width="20" height="20" stroke="none"/>
+    <!-- crown of the bowed head + short hair mass -->
+    <path stroke="none" d="M 234 150 C 232 132, 244 124, 256 124 C 268 124, 280 132, 278 150 C 270 140, 242 140, 234 150 Z"/>
+    <!-- circlet band across the crown -->
+    <path stroke-width="4" fill="none" d="M 236 146 C 244 138, 268 138, 276 146"/>
+    <circle cx="256" cy="136" r="4" stroke="none"/>
+
+    <!-- ================= STOLES (vestment bands down the front) ================= -->
+    <path stroke="none" d="M 228 200 C 224 260, 222 340, 224 470 L 238 472 C 238 340, 238 260, 240 202 Z"/>
+    <path stroke="none" d="M 284 200 C 288 260, 290 340, 288 470 L 274 472 C 274 340, 274 260, 272 202 Z"/>
+
+    <!-- ================= NECKLACE: sun-disc medallion ================= -->
+    <path stroke-width="3" fill="none" d="M 244 184 C 250 194, 262 194, 268 184"/>
+    <circle cx="256" cy="202" r="7" stroke="none"/>
+  </g>
+
+  <!-- ============ interior silver etching ============ -->
+  <g fill="none" stroke="#b8c0cf" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round">
+    <!-- robe fold sweeps to the hem -->
+    <path d="M 232 344 C 218 392, 200 440, 184 472"/>
+    <path d="M 256 336 C 254 392, 252 442, 252 480"/>
+    <path d="M 280 344 C 294 392, 312 440, 328 472"/>
+    <path d="M 214 330 C 200 376, 184 424, 170 464" stroke-opacity="0.35"/>
+    <path d="M 298 330 C 312 376, 328 424, 342 464" stroke-opacity="0.35"/>
+    <!-- hem band -->
+    <path d="M 168 468 C 202 480, 310 480, 344 468"/>
+    <!-- sleeve fold lines -->
+    <path d="M 190 268 C 182 296, 178 324, 180 348"/>
+    <path d="M 200 274 C 196 302, 196 326, 200 348"/>
+    <path d="M 322 268 C 330 296, 334 324, 332 348"/>
+    <path d="M 312 274 C 316 302, 316 326, 312 348"/>
+    <!-- book: spine and fanned page lines -->
+    <path d="M 256 232 L 256 248"/>
+    <path d="M 230 228 C 240 228, 248 231, 254 236"/>
+    <path d="M 282 228 C 272 228, 264 231, 258 236"/>
+    <path d="M 234 234 C 242 234, 249 237, 254 241"/>
+    <path d="M 278 234 C 270 234, 263 237, 258 241"/>
+    <!-- stole ornament discs -->
+    <circle cx="233" cy="240" r="3.5"/>
+    <circle cx="279" cy="240" r="3.5"/>
+    <circle cx="231" cy="330" r="3.5"/>
+    <circle cx="281" cy="330" r="3.5"/>
+    <circle cx="231" cy="420" r="3.5"/>
+    <circle cx="281" cy="420" r="3.5"/>
+    <!-- collar + shoulder seams -->
+    <path d="M 240 190 C 248 196, 264 196, 272 190"/>
+    <path d="M 220 208 C 232 200, 244 196, 256 196"/>
+    <path d="M 292 208 C 280 200, 268 196, 256 196"/>
+    <!-- medallion rays -->
+    <path d="M 256 192 L 256 196"/>
+    <path d="M 247 196 L 249 199"/>
+    <path d="M 265 196 L 263 199"/>
+    <path d="M 245 202 L 249 202"/>
+    <path d="M 267 202 L 263 202"/>
+  </g>
+
+  <!-- ============ glow accents ============ -->
+  <g fill="none" stroke="#e6ebf4" stroke-opacity="0.6" stroke-width="3" stroke-linecap="round">
+    <!-- book page edges + spine -->
+    <path d="M 222 222 C 236 220, 248 224, 256 230"/>
+    <path d="M 290 222 C 276 220, 264 224, 256 230"/>
+    <path d="M 256 230 L 256 250"/>
+    <!-- light spilling beneath the book -->
+    <path d="M 238 262 L 234 274"/>
+    <path d="M 256 266 L 256 280"/>
+    <path d="M 274 262 L 278 274"/>
+    <!-- halo arc over the bowed head -->
+    <path d="M 224 132 A 40 40 0 0 1 288 132" stroke-opacity="0.45"/>
+    <!-- circlet gem -->
+    <path d="M 256 132 L 256 128"/>
+    <!-- sleeve drape outer edges -->
+    <path d="M 192 256 C 175 274, 166 310, 170 350"/>
+    <path d="M 320 256 C 337 274, 346 310, 342 350"/>
+    <!-- robe outer edges into the hem -->
+    <path d="M 172 428 C 164 450, 158 466, 156 476"/>
+    <path d="M 340 428 C 348 450, 354 466, 356 476"/>
+    <!-- shoulder crests -->
+    <path d="M 222 194 C 232 182, 246 176, 256 175"/>
+    <path d="M 290 194 C 280 182, 266 176, 256 175"/>
+  </g>
+
+  <!-- medallion glow ring -->
+  <g fill="none" stroke="#e6ebf4" stroke-opacity="0.45" stroke-width="2">
+    <circle cx="256" cy="202" r="10"/>
+  </g>
+
+  <!-- sparkles orbiting the book -->
+  <g fill="#f2f5fa" fill-opacity="0.9">
+    <path d="M 212 208 L 214 214 L 220 216 L 214 218 L 212 224 L 210 218 L 204 216 L 210 214 Z"/>
+    <path d="M 300 202 L 302 207 L 307 209 L 302 211 L 300 216 L 298 211 L 293 209 L 298 207 Z"/>
+    <path d="M 256 184 L 257 188 L 261 189 L 257 190 L 256 194 L 255 190 L 251 189 L 255 188 Z"/>
+  </g>
+</svg>
