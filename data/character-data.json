@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-09T04:41:29Z",
+  "syncedAt": "2026-11-09T05:55:09Z",
   "triggeredBy": "manual",
   "characters": {
     "1791919748959": {
@@ -1130,11 +1130,11 @@
     },
     "1791919870010": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791919950805": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791922047617": {
       "status": "ok",
@@ -3463,23 +3463,19 @@
     },
     "1791928548067": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791928613248": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791928676823": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
-    },
-    "1791928771432": {
-      "status": "needs_review",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791928813281": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791928886528": {
       "status": "ok",
@@ -4361,12 +4357,12 @@
       "fetchedAt": "2026-11-09T04:32:19Z"
     },
     "1791928967366": {
-      "status": "needs_review",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "status": "not_found",
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791929013125": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791929106142": {
       "status": "ok",
@@ -5646,27 +5642,27 @@
     },
     "1791929283993": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791929450071": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791929660455": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791945705052": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1791945790634": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1793073514718": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:08Z"
     },
     "1794163010636": {
       "status": "ok",
@@ -6295,12 +6291,16 @@
           }
         }
       ],
+      "media": {
+        "avatar": "https://render.worldofwarcraft.com/forever-us/character/232/15288296-avatar.jpg",
+        "avatarSd": "https://render.worldofwarcraft.com/forever-us/character/232/15288296-avatar-sd.jpg"
+      },
       "achievementPoints": 0,
       "fetchedAt": "2026-11-08T22:24:57Z"
     },
     "1794166751512": {
       "status": "not_found",
-      "fetchedAt": "2026-11-09T04:41:29Z"
+      "fetchedAt": "2026-11-09T05:55:09Z"
     }
   }
 }

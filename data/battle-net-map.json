@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-09T04:41:29Z",
+  "updatedAt": "2026-11-09T05:55:09Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -98,18 +98,6 @@
       "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
       "candidates": []
     },
-    "1791928771432": {
-      "rosterName": "Tir Rheebeard",
-      "status": "needs_review",
-      "slug": null,
-      "href": null,
-      "bnetName": null,
-      "surname": null,
-      "matchedForm": null,
-      "mappedVia": null,
-      "note": "duplicate normalization with id 1791928967366",
-      "candidates": []
-    },
     "1791928813281": {
       "rosterName": "Vlinder Stormveil",
       "status": "not_found",
@@ -136,14 +124,14 @@
     },
     "1791928967366": {
       "rosterName": "Tir Rheebeard",
-      "status": "needs_review",
+      "status": "not_found",
       "slug": null,
       "href": null,
       "bnetName": null,
       "surname": null,
       "matchedForm": null,
       "mappedVia": null,
-      "note": "duplicate normalization with id 1791928771432",
+      "note": "404 on all forms — likely not opted in (task 0.4); guild roster fetch failed for heghmoh",
       "candidates": []
     },
     "1791929013125": {
