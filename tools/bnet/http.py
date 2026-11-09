@@ -149,6 +149,22 @@ def require_allowed_url(url, what="request"):
     return url
 
 
+def allowed_asset_url(url):
+    """True only for an https request to the Blizzard render host (Phase B HEADs)."""
+    return isinstance(url, str) and bool(config.ASSET_ORIGIN_RE.match(url))
+
+
+def require_allowed_asset_url(url, what="request"):
+    """Host-pinned assertion for the ONE request that carries no credential.
+
+    H1 is about where the bearer token goes, and this path has no token to leak —
+    but it is still a socket the sync opens on a URL that came out of a response,
+    so it is refused off the asset allowlist before a connection is made."""
+    if not allowed_asset_url(url):
+        raise UnsafeUrl(f"URL allowlist refused the {what}: {redact(str(url))[:120]}")
+    return url
+
+
 def register_mint_forms(client_id, client_secret):
     """Build the Basic pair for the token mint and register every derived form.
 
@@ -297,7 +313,7 @@ class Cache:
 
 
 class Client:
-    """Conditional-GET client for the nightly sync."""
+    """Conditional-GET client for the nightly sync, plus the uncredentialed HEAD."""
 
     def __init__(self, cache, force):
         self.cache = cache
@@ -417,6 +433,45 @@ class Client:
             if parsed is not None:
                 self.cache.store(url, lowered.get("last-modified"), parsed)
         return Resp(status, lowered, raw)
+
+    def head(self, url):
+        """HEAD the render host: existence proof for an asset URL (Phase B).
+
+        A first-class send path, not a GET with the body thrown away. It shares every
+        transport invariant of ``get()``: the same ``send()`` and therefore the same
+        ``NO_REDIRECT_OPENER`` (H1: a 3xx is a status to report, never a hop to take
+        — and this is exactly the path where a derived URL is most likely to be
+        redirected somewhere the caller never asked for), the same
+        ``config.HTTP_TIMEOUT_S`` inside ``send()``, the same ``config.USER_AGENT``,
+        the same ``REQUEST_SPACING_S`` pacing and the same ``MAX_REQUESTS`` per-run
+        cap (a HEAD is a request; the cap counts requests, not credentialed ones).
+
+        The one deliberate difference is the credential. ``ALLOWED_API_ORIGIN_RE``
+        pins the bearer token to the two Blizzard API origins and the render host is
+        neither of them, so this request carries NO Authorization header and is
+        host-pinned to ``config.ASSET_ORIGIN_RE`` instead — the same boundary the
+        browser already crosses to load an icon. No token is minted here, no
+        conditional header is sent and nothing is cached: a HEAD answers with no
+        body, and amendment 3's Last-Modified reuse is a GET mechanism.
+
+        Returns a ``Resp`` with a ``None`` body so the caller reads ``.status``: 200
+        is the only publishable answer, and a transport failure is ``Resp(None, ...)``
+        exactly as ``get()`` reports one. ``BudgetExhausted`` propagates like any
+        other request past the cap — the run is over either way."""
+        require_allowed_asset_url(url, "HEAD")
+        if self.requests_made >= config.MAX_REQUESTS:
+            raise BudgetExhausted(f"request cap ({config.MAX_REQUESTS}) reached")
+        request = urllib.request.Request(
+            url, method="HEAD",
+            headers={"Accept": "*/*", "User-Agent": config.USER_AGENT})
+        self.requests_made += 1
+        status, hdrs, _body, error = send(request)
+        time.sleep(config.REQUEST_SPACING_S)
+        if error is not None:
+            return Resp(None, None, None)
+        if status is not None:
+            self.status_counts[str(status)] += 1
+        return Resp(status, {str(k).lower(): v for k, v in (hdrs or {}).items()}, None)
 
 
 # --------------------------------------------------------------------------- #

@@ -98,7 +98,21 @@ PROFESSION_TIER_KEYS = {"skillPoints", "maxSkillPoints", "tierId", "tierName", "
 RECIPE_KEYS = {"id", "name"}
 REPUTATION_KEYS = {"factionId", "factionName", "standing"}
 STANDING_KEYS = {"raw", "value", "max", "tier", "name"}
-MEDIA_KEYS = {"avatar", "avatarSd"}
+# Phase B (roster-ui-tasks.md): ``fullRender`` is the derived + HEAD-validated
+# full-body render the gear paper doll is drawn around. CONVENTION (mirrored in
+# bnet.artifacts.MEDIA_KEYS and written by bnet.Fetcher):
+#
+#   * the key is OPTIONAL in a committed artifact — every row written before Phase B
+#     has no fullRender key at all, so a gate that demanded it would red-line the
+#     nightly against data that predates the feature (this checkout's
+#     data/character-data.json is exactly that case);
+#   * a media block written FROM Phase B on always carries the key: a render-host URL
+#     this run saw served with HTTP 200 at the URL derived from that row's own
+#     ``avatar``, or an explicit ``null`` saying "derived and probed, nothing served";
+#   * so null means "no render" and a MISSING key means "row predates the probe" —
+#     the UI draws the generic silhouette for both, and neither is ever a placeholder
+#     URL or a guess at one.
+MEDIA_KEYS = {"avatar", "avatarSd", "fullRender"}
 TREE_KEYS = {"treeId", "classId", "className", "specId", "specName", "name", "nodes"}
 TREE_NODE_KEYS = {"id", "displayRow", "displayCol", "rawPositionX", "rawPositionY",
                   "unlocks", "lockedBy", "ranks"}
@@ -139,6 +153,31 @@ ARTIFACT_HOSTS = {"us.api.blizzard.com", "us.battle.net", "render.worldofwarcraf
 PROFILE_HREF_RE = re.compile(r"^https://us\.api\.blizzard\.com/profile/wow/character/[^/?]+/?(\?.*)?$")
 TOKEN_LITERAL_RE = re.compile(r"(?:Basic|Bearer)\s+(?!\$|\{\{|f\"|f')[A-Za-z0-9+/=_-]{20,}")
 MAX_ARTIFACT_BYTES = 500 * 1024
+
+
+# --- Phase B: the render-suffix swap, read from bnet.config, not copied ----------
+# The two suffixes are the sync's contract (config is the one place a patch can move
+# them), so this gate reads them out of that module: a literal copy here would keep
+# passing for hours after the shipped code started deriving a different URL.
+def _config_string(name):
+    """One ``NAME = "value"`` constant from tools/bnet/config.py, or None."""
+    try:
+        src = (PKG / "config.py").read_text(encoding="utf-8")
+    except OSError:
+        return None
+    found = re.search(rf"^{name}\s*=\s*\"([^\"]*)\"", src, flags=re.M)
+    return found.group(1) if found else None
+
+
+AVATAR_SUFFIX = _config_string("AVATAR_ASSET_SUFFIX")
+FULL_RENDER_SUFFIX = _config_string("FULL_RENDER_ASSET_SUFFIX")
+
+
+def render_sibling(avatar):
+    """The full-render URL this avatar implies, derived exactly as bnet.fetch does."""
+    if not isinstance(avatar, str) or not AVATAR_SUFFIX or not avatar.endswith(AVATAR_SUFFIX):
+        return None
+    return avatar[:-len(AVATAR_SUFFIX)] + (FULL_RENDER_SUFFIX or "")
 
 fails = []
 passes = 0
@@ -675,11 +714,24 @@ def main():
             media = char.get("media")
             if media is not None:
                 check(isinstance(media, dict) and set(media) <= MEDIA_KEYS,
-                      f"data entry {rid} media carries only avatar/avatarSd (no inset/headshot exist)")
+                      f"data entry {rid} media carries only avatar/avatarSd/fullRender "
+                      f"(no inset/headshot exist)")
                 for media_key in (MEDIA_KEYS & set(media or {})):
                     media_url = media[media_key]
                     check(media_url is None or (isinstance(media_url, str) and ICON_URL_RE.match(media_url)),
                           f"data entry {rid} media.{media_key} is null or on the render host")
+                # Phase B, read as the convention above says: absent is legal (the row
+                # predates the probe), null is a probed refusal, a URL must be the
+                # render host AND the exact suffix swap of THIS row's avatar. A
+                # fullRender that is not its own avatar's sibling is either a hand-edit
+                # or a sync bug pointing every doll at one character's render.
+                if "fullRender" in media and media["fullRender"] is not None:
+                    render_url = media["fullRender"]
+                    check(isinstance(render_url, str) and render_url.endswith(FULL_RENDER_SUFFIX),
+                          f"data entry {rid} media.fullRender ends in {FULL_RENDER_SUFFIX!r}")
+                    check(isinstance(render_url, str) and isinstance(media.get("avatar"), str)
+                          and render_url == render_sibling(media["avatar"]),
+                          f"data entry {rid} media.fullRender is the suffix swap of its own avatar")
 
             # --- Phase 4a additive keys (notes §10) -------------------------- #
             # race/class are read off the already-fetched profile (§3.1), so a row
@@ -920,6 +972,44 @@ def main():
     check(re.search(r"def redirect_request\([^)]*\):\s*\n\s+return None", HTTP) is not None,
           "redirect_request returns None, so a 3xx is reported instead of followed with credentials")
     check("NO_REDIRECT_OPENER.open(" in HTTP, "send() dispatches through the no-redirect opener")
+
+    # --- Phase B: the uncredentialed HEAD path, host-pinned like everything else --- #
+    # A derived URL is the one value in this pipeline that no endpoint ever returned,
+    # so the probe that turns it into a publishable render is a security-relevant send:
+    # it must be a real HEAD, must go out uncredentialed (the token belongs to the two
+    # API origins, and the render host is neither), must be pinned to the render host
+    # before the socket opens, and must count against the same per-run cap.
+    head_body = body_of(HTTP, r"\n    def head\(self, url\):(.*?)\nclass ProbeResponse:")
+    check(head_body != "" and 'method="HEAD"' in head_body,
+          "Client.head sends an actual HEAD, not a GET with the body discarded")
+    check(head_body != "" and "send(request)" in head_body,
+          "the HEAD probe goes through send(), so the no-redirect opener owns it")
+    check(head_body != "" and "require_allowed_asset_url(" in head_body,
+          "the HEAD probe is host-pinned to the asset allowlist before it is sent")
+    # Quoted, because the method's own docstring is the place that explains the rule
+    # and the word may appear there in prose; a header entry is what would matter.
+    check(head_body != "" and '"Authorization"' not in head_body and "Bearer " not in head_body
+          and "mint_token" not in head_body,
+          "no credential is ever attached to, and no token minted for, a render-host HEAD")
+    check(head_body != "" and "config.MAX_REQUESTS" in head_body
+          and "config.USER_AGENT" in head_body and "config.REQUEST_SPACING_S" in head_body,
+          "the HEAD probe honours the per-run cap, the UA and the pacing like a GET does")
+    check(AVATAR_SUFFIX and FULL_RENDER_SUFFIX,
+          f"the render-suffix swap is declared in config and read here "
+          f"(avatar={AVATAR_SUFFIX!r} -> render={FULL_RENDER_SUFFIX!r})")
+    derive_body = body_of(FETCH, r"\ndef derive_full_render_url\(avatar_url\):(.*?)\ndef ")
+    check(derive_body != "" and "config.AVATAR_ASSET_SUFFIX" in derive_body
+          and "config.FULL_RENDER_ASSET_SUFFIX" in derive_body
+          and "safe_artifact_url(" in derive_body,
+          "derive_full_render_url is a config-declared suffix swap whose result clears the H2 validator")
+    check(derive_body != "" and ".endswith(" in derive_body and "return None" in derive_body,
+          "a suffix miss returns None — the derivation cannot invent a URL")
+    probe_body = body_of(FETCH, r"\n    def full_render_url\(self, avatar_url, character_id=None\):(.*?)\n    def ")
+    check(probe_body != "" and "self.client.head(" in probe_body and "== 200" in probe_body,
+          "only an explicit HTTP 200 on the derived URL publishes media.fullRender")
+    check('media_block["fullRender"] = self.full_render_url(' in FETCH,
+          "media.fullRender is written in the media enrichment path, next to the avatar "
+          "it was derived from (URL or explicit null, never a placeholder)")
 
     # --- H2: response-derived URLs are validated before they are persisted ----------- #
     check('startswith("http")' not in SYNC_TEXT,

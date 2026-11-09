@@ -43,9 +43,15 @@ class TableClient:
     def __init__(self, table=None):
         self.table = dict(table or {})
         self.urls = []
+        self.heads = []               # Phase B render probes, kept out of urls
 
     def get(self, url):
         self.urls.append(url)
+        status, payload = self.table.get(url, (404, None))
+        return Resp(status, payload)
+
+    def head(self, url):
+        self.heads.append(url)
         status, payload = self.table.get(url, (404, None))
         return Resp(status, payload)
 

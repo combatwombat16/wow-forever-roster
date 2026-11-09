@@ -72,6 +72,14 @@ PLAYABLE_CLASS_MEDIA_PATH = "/data/wow/media/playable-class/{class_id}"
 # 404, so the index carries names and ids only. There is deliberately no
 # playable-race index-for-icons use: §10.3 keeps race icons unavailable.
 PROFESSION_INDEX = "/data/wow/profession/index"
+# Phase B (roster-ui-tasks.md): the armory page's full-body character render is the
+# avatar asset at the same path with its suffix swapped (owner-verified 2026-11-09
+# against the committed avatars: 200, image/png, 1600x1200, ~660 KB). Both halves of
+# the swap live here so an asset rename is one edit, and the match is anchored to the
+# END of the avatar URL: an avatar that does not end in ``AVATAR_ASSET_SUFFIX``
+# produces no candidate at all — the sync never publishes a render URL it guessed.
+AVATAR_ASSET_SUFFIX = "-avatar.jpg"
+FULL_RENDER_ASSET_SUFFIX = "-main-raw.png"
 # The static namespace is version-pinned and must be re-discovered every run
 # from hrefs in fresh payloads (notes §5); plain static-forever-us is 403.
 STATIC_NS_RE = re.compile(r"namespace=(static-[A-Za-z0-9._-]+)")
@@ -89,6 +97,12 @@ ALLOWED_API_ORIGIN_RE = re.compile(r"^https://(us\.battle\.net|us\.api\.blizzard
 PROFILE_HREF_RE = re.compile(r"^https://us\.api\.blizzard\.com/profile/wow/character/[^/?]+/?(\?.*)?$")
 ICON_URL_RE = re.compile(r"^https://render\.worldofwarcraft\.com/")
 ARTIFACT_URL_RES = {"href": PROFILE_HREF_RE, "iconUrl": ICON_URL_RE}
+# The render host is also a *send* target (Phase B HEAD-validates the derived full
+# render), and an anchored origin rule of its own is what gates that send. It is not
+# folded into ALLOWED_API_ORIGIN_RE on purpose: that list pins where the bearer
+# credential may go, and no credential ever goes here — the browser already loads
+# every asset on this host anonymously, so the sync does too.
+ASSET_ORIGIN_RE = re.compile(r"^https://render\.worldofwarcraft\.com(/|\?|$)")
 # Anything textual (fetch_error notes, warnings, step-summary lines, cached bodies)
 # is also withheld from non-Blizzard URLs: a refusal note that quotes the attacker's
 # URL would otherwise be committed into a public artifact.

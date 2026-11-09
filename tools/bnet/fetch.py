@@ -311,13 +311,42 @@ def normalize_professions(payload):
     return {"primaries": primaries, "secondaries": secondaries}
 
 
+def derive_full_render_url(avatar_url):
+    """media.avatar -> the full-body render URL | None. Pure, and never a guess.
+
+    Phase B (roster-ui-tasks.md): the armory page loads the character's full render
+    at the avatar's own path with ``-main-raw.png`` where the avatar has
+    ``-avatar.jpg`` (owner-verified 2026-11-09: 200, image/png, 1600x1200). The
+    match is anchored to the END of the URL, so:
+
+    * ``…/249157-avatar.jpg``     -> ``…/249157-main-raw.png``
+    * ``…/249157-avatar-sd.jpg``  -> None (an ``avatarSd``, not an ``avatar``)
+    * ``…/249157-something.jpg``  -> None (Blizzard renamed the asset; do not invent)
+    * None / a non-string         -> None
+
+    The result is passed back through the H2 icon validator even though its input is
+    already a validated artifact value: the rule is that no URL enters a committed
+    artifact without clearing ``safe_artifact_url``, and a derivation is not exempt.
+    Being derived is exactly why it must be checked — the caller still has to HEAD it
+    before it is publishable (``Fetcher.full_render_url``).
+    """
+    if not isinstance(avatar_url, str) or not avatar_url.endswith(config.AVATAR_ASSET_SUFFIX):
+        return None
+    stem = avatar_url[:-len(config.AVATAR_ASSET_SUFFIX)]
+    return safe_artifact_url(stem + config.FULL_RENDER_ASSET_SUFFIX, "iconUrl")
+
+
 def normalize_media(payload):
     """character-media/1 (§9.5) -> {avatar, avatarSd} | None.
 
     Forever serves exactly ``main-raw``, ``main-sd-raw``, ``avatar``,
     ``avatar-sd`` — there is no inset/headshot key (amendment 3), so T1.5
     targets these two. Values go through the H2 icon validator like every other
-    URL written into a committed artifact."""
+    URL written into a committed artifact.
+
+    No ``fullRender`` here on purpose: validating the derived render costs a HEAD, so
+    the Fetcher adds the key after the probe (``Fetcher.full_render_url``), and this
+    extractor stays free of I/O for the offline tests."""
     if not isinstance(payload, dict):
         return None
     wanted = {"avatar": "avatar", "avatar-sd": "avatarSd"}
@@ -541,6 +570,12 @@ class Fetcher:
         self.guild_fetch_failures = set()
         self.icon_urls = {}          # media URL -> icon URL (in-run dedup)
         self.icon_failures = 0
+        # Phase B (media.fullRender): the derived full render is probed with one HEAD
+        # per enriched character. A refusal is a published null, not an error, so it
+        # gets its own tally rather than an entry in feature_failures (which means
+        # "a block the sync could not store"); the run summary reports it as a NOTE.
+        self.render_validated = 0
+        self.render_failures = 0
         self.drift = []
         self._drift_seen = set()
         self.warnings = []
@@ -674,6 +709,40 @@ class Fetcher:
         url = (f"{config.API_BASE}{path.format(**identifiers)}"
                f"?namespace={self.static_ns}")
         return self.icon_for(url, w, surface=surface)
+
+    def full_render_url(self, avatar_url, character_id=None):
+        """HEAD-validate the derived full render (Phase B) -> the URL, or None.
+
+        Returns the URL only on an explicit HTTP 200 from the render host. A 3xx is
+        a *result* here, not a hop (the opener never follows one), so a redirect away
+        from the derived path is a refusal; 404/5xx, a transport error, a refused
+        off-allowlist URL, an absent avatar and an avatar whose name does not end in
+        the configured suffix are all the same answer. Every one of them publishes
+        ``media.fullRender: null`` — the gear doll shows the generic silhouette
+        instead of hotlinking a URL this run never saw served.
+
+        Costs one request per enriched character; the request is uncredentialed and
+        goes through ``Client.head``, which owns the pacing, the timeout, the
+        no-redirect opener and the per-run cap.
+        """
+        derived = derive_full_render_url(avatar_url)
+        if derived is None:
+            return None
+        try:
+            resp = self.client.head(derived)
+        except http.UnsafeUrl as exc:
+            # The URL is derived from an already-validated avatar, so reaching this
+            # line means config moved under the run; report it, publish nothing.
+            self.warnings.append(
+                f"id {character_id}: full-render HEAD refused by the asset allowlist: "
+                f"{http.redact(str(exc))[:120]}")
+            self.render_failures += 1
+            return None
+        if getattr(resp, "status", None) == 200:
+            self.render_validated += 1
+            return derived
+        self.render_failures += 1
+        return None
 
     def profession_icon(self, profession_id, w):
         """Profession icon for a primaries/secondaries entry (notes §9.2, §10)."""
@@ -1069,6 +1138,15 @@ class Fetcher:
         media_payload = self.sub_payload(w, "character_media", link("media", "character-media"))
         media_block = normalize_media(media_payload)
         if media_block:
+            # Phase B (roster-ui-tasks.md): the gear paper doll hangs on the full-body
+            # render, derived from this avatar and HEAD-validated before it is
+            # written. The convention (mirrored in bnet.artifacts.MEDIA_KEYS and
+            # gated in .pi/scripts/verify_sync_artifacts.py): a media block written
+            # from now on ALWAYS carries fullRender — the 200-validated URL or an
+            # explicit null — while a row with no character-media payload carries no
+            # media key at all. Null is the published answer for "no render", never a
+            # placeholder URL.
+            media_block["fullRender"] = self.full_render_url(media_block.get("avatar"), rid)
             out["media"] = media_block
         else:
             self.note_feature_failure(rid, "character-media", "no avatar/avatar-sd asset served")

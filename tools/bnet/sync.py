@@ -123,6 +123,11 @@ class Sync:
         lines.extend(f"DRIFT {line}" for line in f.drift)
         if f.icon_failures:
             lines.append(f"WARNING: {f.icon_failures} item icon fetch(es) failed; those gear rows carry iconUrl null")
+        if f.render_failures:
+            # Phase B: a render this run could not validate is a published null, not a
+            # failed fetch — so it is a NOTE, and it never shares the sub-failure line.
+            lines.append(f"NOTE: {f.render_failures} character render(s) not validated this run; "
+                         "media.fullRender is null for those rows (the UI shows the silhouette)")
         if f.sub_failures:
             # The exact status per refused surface (T1.7: an endpoint failure is a
             # recorded error, never a silently missing feature block).

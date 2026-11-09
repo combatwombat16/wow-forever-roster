@@ -47,6 +47,19 @@ CHARACTER_KEYS = ("status", "bnet", "level", "guild", "activeSpec", "itemLevel",
                   # permanent null, and the verify gate warns if a row ever grows one.
                   "race", "class", "classIconUrl", "raceIconUrl")
 BNET_KEYS = ("name", "surname", "href")
+# media (T1.5 + Phase B): the two avatar renders character-media serves, plus the
+# full-body render the gear paper doll is drawn around. CONVENTION, stated once here
+# and gated in .pi/scripts/verify_sync_artifacts.py:
+#
+#   * ``fullRender`` is OPTIONAL in the committed artifact — every row written before
+#     Phase B simply has no such key, and the gate must keep accepting that;
+#   * a media block written FROM Phase B on always carries the key, as a render-host
+#     URL or as an explicit null. Null is a published statement ("derived and
+#     HEAD-checked this run, nothing served"), never a placeholder URL;
+#   * a row with no character-media payload has no media block, so it has no
+#     fullRender key either — the absence of the block, not a null, says "we never
+#     got media".
+MEDIA_KEYS = ("avatar", "avatarSd", "fullRender")
 # race / class: {id: int, name: str} read off the profile (§3.1), and a profession
 # entry now carries the §10 icon next to its id and name.
 IDENTITY_KEYS = ("id", "name")
