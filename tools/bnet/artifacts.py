@@ -55,14 +55,18 @@ CHARACTER_KEYS = ("status", "bnet", "level", "guild", "activeSpec", "itemLevel",
                   "race", "class", "classIconUrl", "raceIconUrl")
 BNET_KEYS = ("name", "surname", "href")
 # media (T1.5 + Phase B): the two avatar renders character-media serves, plus the
-# full-body render the gear paper doll is drawn around. CONVENTION, stated once here
-# and gated in .pi/scripts/verify_sync_artifacts.py:
+# full-body render the gear paper doll is drawn around. CONVENTION, stated once here,
+# PERMITTED AND SHAPE-CHECKED in .pi/scripts/verify_sync_artifacts.py — the gate admits the
+# key and validates every value it carries, and deliberately does NOT gate PRESENCE:
 #
 #   * ``fullRender`` is OPTIONAL in the committed artifact — every row written before
-#     Phase B simply has no such key, and the gate must keep accepting that;
-#   * a media block written FROM Phase B on always carries the key, as a render-host
-#     URL or as an explicit null. Null is a published statement ("derived and
-#     HEAD-checked this run, nothing served"), never a placeholder URL;
+#     Phase B simply has no such key, and the gate must keep accepting that, so a
+#     presence rule is exactly what it cannot be;
+#   * a media block written FROM Phase B on is written WITH the key by this package
+#     (bnet.fetch.enrich sets it unconditionally), as a render-host URL or as an explicit
+#     null. Null is a published statement ("derived and HEAD-checked this run, nothing
+#     served"), never a placeholder URL — and the gate checks the shape of a value that is
+#     there, not the fact that it is;
 #   * a row with no character-media payload has no media block, so it has no
 #     fullRender key either — the absence of the block, not a null, says "we never
 #     got media".

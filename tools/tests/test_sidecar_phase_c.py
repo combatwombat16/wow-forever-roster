@@ -23,6 +23,14 @@ The last group imports the shipped verify gate itself and proves the widened sto
 vocabulary still REJECTS anything that is not ``validated`` / ``pending`` — a gate widened
 without a test goes soft the first time someone copy-pastes it.
 
+``VerifyGateRosterRowRules`` is deliberately heavy, because review C1 was a one-space bug:
+``note = v.get("note")`` and ``reported_ids.add(rec["id"])`` had drifted inside
+``if "guild" in rec:``, which made the note ceiling and the design §2 reported-id rule dead for
+every guild-less row and crashed the whole gate on a row carrying ``guild`` with no
+``validation`` block. Importing the module and calling a helper cannot see an indentation
+mistake, so those tests copy the repository to a temp dir, mutate its ``data/`` documents and
+run ``.pi/scripts/verify_sync_artifacts.py`` the way the nightly's CI step runs it.
+
 Stdlib unittest only: no network, no credentials, every write redirected to a temp dir.
 
 Run: python3 -m unittest discover -s tools -p "test_*"
@@ -33,6 +41,8 @@ import copy
 import importlib.util
 import io
 import json
+import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -72,6 +82,20 @@ def profile(name, surname=None, guild_slug=None, guild_name=None):
     if guild_slug:
         payload["guild"] = {"slug": guild_slug, "name": guild_name or guild_slug, "id": 246033}
     return payload
+
+
+def load_verify_gate(name="verify_sync_artifacts"):
+    """The shipped CI gate as an importable module (it is a script, so it has to be loaded)."""
+    path = Path(__file__).resolve().parents[2] / ".pi" / "scripts" / "verify_sync_artifacts.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def doc_row(document, rid):
+    """One roster row out of a parsed ``characters.json`` document, by id."""
+    return next(r for r in document["characters"] if r["id"] == rid)
 
 
 def guild_roster(members):
@@ -275,6 +299,8 @@ class AppendGuard(unittest.TestCase):
         self.assertIsNone(artifacts.roster_append_refusal([], [row("9", "Whatever")]))
 
     def test_a_mutated_row_is_refused(self):
+        # The comparator, handed two separate object graphs. True of any snapshot implementation
+        # — see SyncRunAppendsAndResolves for the test that pins the CALL site (review C3).
         changed = copy.deepcopy(self.ROWS)
         changed[0]["track"] = "flowmasters"
         self.assertIn("would mutate roster row",
@@ -335,7 +361,12 @@ class SyncRunAppendsAndResolves(unittest.TestCase):
         if self._step_summary is not None:
             __import__("os").environ["GITHUB_STEP_SUMMARY"] = self._step_summary
 
-    def run_sync_with(self, records, prev_entries, table, extra=None, dry_run=False):
+    def run_sync_with(self, records, prev_entries, table, extra=None, dry_run=False,
+                      mutate=None):
+        """Drive one ``run_sync``. ``mutate`` is a hook for the C3 pair of tests: it is called
+        with the very roster list the run holds, from ``resolver.dedupe_slugs`` — the last step
+        before ``artifacts.roster_append_refusal`` reads its snapshot — which is exactly the
+        window an in-run bug would mutate a row in."""
         args = argparse.Namespace(dry_run=dry_run, lookup=None, force=False,
                                   state_dir=self.tmp / "state")
         s = sync.Sync(args)
@@ -345,6 +376,14 @@ class SyncRunAppendsAndResolves(unittest.TestCase):
         f = fetch.Fetcher(client, cache)
         s.cache, s.client, s.f, s.resolver = cache, client, f, resolve.Resolver(f)
         f.enrich = lambda w: {"status": "ok", "fetchedAt": http.iso_now(), "level": 20}
+        if mutate is not None:
+            original_dedupe = s.resolver.dedupe_slugs
+
+            def dedupe_then_mutate(work, ids):
+                original_dedupe(work, ids)
+                mutate(records)
+
+            s.resolver.dedupe_slugs = dedupe_then_mutate
         out = io.StringIO()
         with redirect_stdout(out):
             code = s.run_sync(records, prev_entries)
@@ -434,6 +473,37 @@ class SyncRunAppendsAndResolves(unittest.TestCase):
         self.assertFalse(self.roster_file.exists(), "dry-run wrote the roster")
         self.assertFalse(self.map_file.exists(), "dry-run wrote the map")
 
+    def test_an_in_run_edit_of_a_held_row_is_refused(self):
+        """Review C3, at the call site: ``sync.py`` snapshots the roster and then keeps working on
+        the same row objects, so the snapshot has to be deep. Driven through ``run_sync`` rather
+        than by calling the comparator, because the comparator was always correct."""
+        records, prev, table, extra = self.one_known_member_and_one_visible_stranger()
+
+        def edit_a_held_row(recs):
+            recs[0]["track"] = "flowmasters"          # same dict the run resolved and will write
+
+        code, out, _client = self.run_sync_with(records, prev, table, extra,
+                                                mutate=edit_a_held_row)
+        self.assertEqual(code, 1, out)
+        self.assertIn("would mutate roster row", out)
+        self.assertFalse(self.roster_file.exists(), "a run that mutated a row wrote characters.json")
+        self.assertFalse(self.map_file.exists(), "a run that mutated a row wrote the map")
+        self.assertFalse(self.data_file.exists(), "a run that mutated a row wrote the sidecar")
+
+    def test_an_in_run_key_reorder_of_a_held_row_is_refused(self):
+        """The second half of the same guard: equal values in a different key order are still a
+        rewrite of a row the nightly has no right to touch."""
+        records, prev, table, extra = self.one_known_member_and_one_visible_stranger()
+
+        def reorder_keys_of_a_held_row(recs):
+            recs[0]["name"] = recs[0].pop("name")     # identical value, new key position
+
+        code, out, _client = self.run_sync_with(records, prev, table, extra,
+                                                mutate=reorder_keys_of_a_held_row)
+        self.assertEqual(code, 1, out)
+        self.assertIn("would mutate roster row", out)
+        self.assertFalse(self.roster_file.exists(), "a rekeyed run wrote characters.json")
+
     def test_the_existing_rows_survive_the_run_byte_for_byte(self):
         records, prev, table, extra = self.one_known_member_and_one_visible_stranger()
         records = [row("1", "Alpha One"), row("2", "Bravo Two", track="alts",
@@ -453,11 +523,7 @@ class VerifyGateVocabulary(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        path = (Path(__file__).resolve().parents[2] / ".pi" / "scripts"
-                / "verify_sync_artifacts.py")
-        spec = importlib.util.spec_from_file_location("verify_sync_artifacts", path)
-        cls.gate = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(cls.gate)
+        cls.gate = load_verify_gate("verify_sync_artifacts_vocabulary")
 
     def test_pending_and_validated_and_absent_are_stored_states(self):
         for state in ("validated", "pending", None):
@@ -482,6 +548,129 @@ class VerifyGateVocabulary(unittest.TestCase):
             self.assertTrue(set(rec) <= self.gate.ROSTER_KEYS, rec.get("id"))
             self.assertTrue(self.gate.validation_state_ok((rec.get("validation") or {})
                                                           .get("state")), rec.get("id"))
+
+
+class VerifyGateRosterRowRules(unittest.TestCase):
+    """Review C1, end to end: the shipped CI gate still enforces the two per-row validation rules.
+
+    ``.pi/scripts/verify_sync_artifacts.py`` resolves ``ROOT`` from its own location, so the
+    fixture is a copy of the repository under a temp dir with the mutation applied to that copy's
+    ``data/`` documents, and the gate is then run exactly as ``pages.yml`` / ``sync-bnet.yml`` run
+    it. The copy carries no ``.git``, which is the gate's own documented skip path for the
+    additive-vs-HEAD guard (it prints a WARN and is never counted as a pass), so a fixture that
+    appends a row does not trip a rule these tests are not about.
+    """
+
+    REPO = Path(__file__).resolve().parents[2]
+    # staticmethod(): a plain class attribute holding a function would bind to ``self`` and
+    # hand copytree three positional arguments.
+    IGNORE = staticmethod(shutil.ignore_patterns(
+        ".git", ".env", ".zvec-grep", ".pytest_cache", ".mypy_cache", "__pycache__", "*.pyc",
+        "node_modules", "subagents"))
+    REPORTED_ID = "9991113335557"      # synthetic, 13 digits, cannot collide with a real row
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.tree = self.tmp / "repo"
+        shutil.copytree(self.REPO, self.tree, ignore=self.IGNORE)
+        self.gate = self.tree / ".pi" / "scripts" / "verify_sync_artifacts.py"
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def run_gate(self):
+        proc = subprocess.run([sys.executable, str(self.gate)], capture_output=True, text=True)
+        return proc, proc.stdout + proc.stderr
+
+    def edit_json(self, name, mutate):
+        path = self.tree / "data" / name
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        mutate(doc)
+        path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return doc
+
+    def test_a_row_with_guild_and_no_validation_block_clears_the_gate(self):
+        """The shape that aborted the whole script: ``guild`` present, ``validation`` absent.
+
+        ``1791928548067`` is committed with no validation block at all, so this is the everyday
+        curation edit a maintainer makes when they file a row under a guild — and the CI step used
+        to die on it with ``AttributeError: 'NoneType' object has no attribute 'get'``."""
+        target = "1791928548067"
+
+        def add_guild(doc):
+            rec = next(r for r in doc["characters"] if r["id"] == target)
+            self.assertNotIn("validation", rec, "the fixture row needs to stay validation-free")
+            rec["guild"] = GUILD_NAME
+
+        self.edit_json("characters.json", add_guild)
+        proc, output = self.run_gate()
+        self.assertNotIn("Traceback", output, "the gate crashed on a schema-legal roster row")
+        self.assertIn(f"PASS roster {target} guild is absent, null or a string (found str)", output)
+        self.assertEqual(proc.returncode, 0, output[-2000:])
+        self.assertIn("0 failed", output)
+
+    def test_a_reported_row_without_a_guild_key_still_trips_the_section_2_map_rule(self):
+        """A reviewer's open note buys a row immunity from an ``ok`` map identity — guild key or not.
+
+        A pure append (roster row + map entry + sidecar row, nothing existing touched), so the
+        coverage and additive rules stay satisfied and the only thing left to catch the fixture is
+        the design §2 mirror. With the note read back under ``if v is not None:`` it is caught."""
+        def append_a_reported_row(doc):
+            row = {"id": self.REPORTED_ID, "player": "Reviewer", "name": "Reported Person",
+                   "track": "alts", "role": "DPS", "roleSec": "None", "race": "Tauren",
+                   "class": "Druid", "prof1": "None", "prof2": "None",
+                   "validation": {"note": "mapped to the wrong character",
+                                  "reportedBy": "combatwombat16",
+                                  "reportedAt": "2026-01-01T00:00:00Z"}}
+            # The whole finding turns on this key being absent: the reported row is an ordinary
+            # hand-added row, not one the nightly appended under a guild.
+            self.assertNotIn("guild", row)
+            doc["characters"].append(row)
+
+        self.edit_json("characters.json", append_a_reported_row)
+
+        def publish_it_as_ok(doc):
+            doc["entries"][self.REPORTED_ID] = {
+                "rosterName": "Reported Person", "status": "ok", "slug": "reported-person",
+                "href": f"{API}/profile/wow/character/reported-person?namespace=profile",
+                "bnetName": "Reported", "surname": "Person", "matchedForm": "name+surname",
+                "mappedVia": "guild_roster", "note": "", "candidates": [],
+            }
+
+        self.edit_json("battle-net-map.json", publish_it_as_ok)
+        self.edit_json("character-data.json",
+                       lambda doc: doc["characters"].__setitem__(
+                           self.REPORTED_ID, {"status": "not_found",
+                                              "fetchedAt": http.iso_now()}))
+        proc, output = self.run_gate()
+        self.assertNotIn("Traceback", output)
+        self.assertEqual(proc.returncode, 1,
+                         "a map that publishes an ok identity for a reported row must not pass")
+        self.assertIn(f"FAIL reported id {self.REPORTED_ID} is needs_review in the map, not ok "
+                      "(the note rule of §2)", output)
+        # Exactly one failure: the append itself is clean, so the §2 mirror is the only thing the
+        # fixture violates — a second failure would mean the fixture, not the gate, was the test.
+        self.assertEqual([l for l in output.splitlines() if l.startswith("  FAIL ")],
+                         [f"  FAIL reported id {self.REPORTED_ID} is needs_review in the map, "
+                          "not ok (the note rule of §2)"], output[-2000:])
+
+    def test_the_240_character_note_ceiling_still_applies_to_a_guild_less_row(self):
+        """The other rule that went dead: ``validation.note`` is capped for EVERY row, not just
+        the ones the nightly happens to have appended with a guild name."""
+        target = "1791928493125"        # a committed, guild-less, validated row
+        ceiling = load_verify_gate("verify_sync_artifacts_note_ceiling").REPORT_NOTE_MAX
+
+        def overlong_note(doc):
+            rec = doc_row(doc, target)
+            self.assertNotIn("guild", rec)
+            rec["validation"]["note"] = "x" * (ceiling + 1)
+
+        self.edit_json("characters.json", overlong_note)
+        proc, output = self.run_gate()
+        self.assertNotIn("Traceback", output)
+        self.assertEqual(proc.returncode, 1, output[-2000:])
+        self.assertIn(f"FAIL roster {target} validation.note is a non-empty string of at most "
+                      f"{ceiling} characters", output)
 
 
 class AutoAddTrustBoundary(unittest.TestCase):

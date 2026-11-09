@@ -146,12 +146,16 @@ STANDING_KEYS = {"raw", "value", "max", "tier", "name"}
 #     has no fullRender key at all, so a gate that demanded it would red-line the
 #     nightly against data that predates the feature (this checkout's
 #     data/character-data.json is exactly that case);
-#   * a media block written FROM Phase B on always carries the key: a render-host URL
-#     this run saw served with HTTP 200 at the URL derived from that row's own
-#     ``avatar``, or an explicit ``null`` saying "derived and probed, nothing served";
-#   * so null means "no render" and a MISSING key means "row predates the probe" —
-#     the UI draws the generic silhouette for both, and neither is ever a placeholder
-#     URL or a guess at one.
+#   * what THIS gate enforces is that ``fullRender`` is PERMITTED beside avatar/avatarSd
+#     and, when it carries a value, that the value is a render-host URL and the exact
+#     suffix swap of that row's own ``avatar``. PRESENCE is not gated and cannot be, from
+#     the bullet above: "this writer always sets the key" is a property of bnet.Fetcher
+#     (which does, on every media block it emits), not a property a committed artifact can
+#     be failed for;
+#   * so a value means "this run saw the render served with HTTP 200", an explicit ``null``
+#     means "derived and probed, nothing served", and a MISSING key means "row predates the
+#     probe" — the UI draws the generic silhouette for the last two, and neither is ever a
+#     placeholder URL or a guess at one.
 MEDIA_KEYS = {"avatar", "avatarSd", "fullRender"}
 TREE_KEYS = {"treeId", "classId", "className", "specId", "specName", "name", "nodes"}
 TREE_NODE_KEYS = {"id", "displayRow", "displayCol", "rawPositionX", "rawPositionY",
@@ -222,6 +226,7 @@ def render_sibling(avatar):
 fails = []
 passes = 0
 warnings = []
+notes = []
 
 
 def check(cond, msg):
@@ -251,6 +256,16 @@ def check_soft(cond, msg, warn_msg=None):
         text = warn_msg or msg
         warnings.append(text)
         print(f"  WARN {text}")
+
+
+def note(msg):
+    """An informational line: printed, never counted, never fatal.
+
+    ``check(True, msg)`` cannot fail, so it is not an assertion and counting it inflates the
+    pass total a reviewer reads as coverage. Use this for a fact the gate reports (what it
+    compared, how many rows) rather than a property it proved."""
+    notes.append(msg)
+    print(f"  NOTE {msg}")
 
 
 def bail():
@@ -450,6 +465,47 @@ def permission_pairs(text):
     return pairs
 
 
+# --- Phase B/E: the stylesheet url() rule, scoped to the reference that needs scoping --------
+# A CSS background is the one asset reference nothing resolves at run time: a missing <img>
+# 404s visibly, a missing background-image simply paints nothing. So the doll's own silhouette
+# must resolve on disk AND sit on the published asset path. Every OTHER url() a stylesheet may
+# grow — an inline url(data:…) SVG, an @font-face src, an asset dir a later phase publishes —
+# is an ordinary reference, and demanding that it also live under assets/silhouettes/ would
+# red-line the next legitimate edit. The three helpers below therefore split the two halves of
+# the rule: what a stylesheet references, which of those references is the doll, and which of
+# them names a file at all.
+URL_CALL_RE = re.compile(r"url\(\s*([^)\s]+)\s*\)")
+DOLL_FIGURE_RULE_RE = re.compile(r"\.wow-doll-figure\b[^{}]*\{([^{}]*)\}", re.S)
+DOLL_FIGURE_BACKGROUND_RE = re.compile(r"background(?:-image)?\s*:\s*([^;{}]*)")
+NOT_A_FILE_REF_RE = re.compile(r"^(?:data:|blob:|about:|https?:|//|#)", re.I)
+
+
+def css_url_refs(css_text):
+    """Every url() argument in a stylesheet, quotes stripped, in document order."""
+    return [m.group(1).strip("\"'") for m in URL_CALL_RE.finditer(css_text)]
+
+
+def doll_figure_background_refs(css_text):
+    """The url() arguments of the background declarations inside ``.wow-doll-figure``."""
+    return [ref
+            for body in DOLL_FIGURE_RULE_RE.findall(css_text)
+            for decl in DOLL_FIGURE_BACKGROUND_RE.findall(body)
+            for ref in css_url_refs(decl)]
+
+
+def css_ref_target(ref):
+    """The file a url() argument names, or None when it names nothing on disk.
+
+    ``data:``, ``blob:``, absolute URLs, protocol-relative refs and bare ``#fragment`` targets
+    carry no path this gate could stat, and a trailing ``#fragment`` or ``?query`` on an asset
+    ref (an SVG clip id, a cache-buster) is not part of the filename either. Those are exempt
+    from the resolve-on-disk half; nothing here can guess at a file they meant."""
+    if NOT_A_FILE_REF_RE.match(ref or ""):
+        return None
+    path_part = re.split(r"[?#]", ref, maxsplit=1)[0]
+    return (ROOT / "css" / path_part).resolve() if path_part else None
+
+
 def body_of(text, pattern):
     """The text of one def block, for scope-accurate source checks."""
     m = re.search(pattern, text, flags=re.S)
@@ -515,15 +571,42 @@ def main():
         check(isinstance(rec, dict) and isinstance(rec.get("id"), str) and bool(rec["id"]),
               f"roster record has a string id ({rec.get('id')})")
         check(set(rec) <= ROSTER_KEYS,
-              f"roster {rec.get('id')} carries only the ten original fields plus validation")
+              f"roster {rec.get('id')} carries only the ten original fields plus the optional "
+              "validation block and the optional guild key")
         v = rec.get("validation")
         if v is not None:
             check(isinstance(v, dict) and set(v) <= VALIDATION_KEYS,
                   f"roster {rec.get('id')} validation block has no unknown keys")
-            check(validation_state_ok(v.get("state")),
-                  f"roster {rec.get('id')} validation.state {v.get('state')!r} is inside the stored "
-                  f"vocabulary {list(ROSTER_STORED_STATES)} (validated = a human signed it off, "
-                  "pending = the nightly auto-add's unreviewed placeholder)")
+            if not isinstance(v, dict):
+                # A FAIL is already on the record above; reading ``.get`` off whatever the row
+                # actually held would abort the whole gate instead of reporting it, so the
+                # three rules below are skipped for this row and said out loud.
+                note(f"roster {rec.get('id')} validation is {type(v).__name__}, not an object: the "
+                     "stored-state, note-ceiling and §2 reported-id rules cannot read it")
+            else:
+                check(validation_state_ok(v.get("state")),
+                      f"roster {rec.get('id')} validation.state {v.get('state')!r} is inside the "
+                      f"stored vocabulary {list(ROSTER_STORED_STATES)} (validated = a human signed "
+                      "it off, pending = the nightly auto-add's unreviewed placeholder)")
+                # The note ceiling and the §2 reported-id set belong to the VALIDATION block,
+                # not to the optional guild key. Phase C left them inside ``if "guild" in rec:``,
+                # which made both rules dead for the 21/21 committed rows that carry no guild and
+                # crashed this script outright on the schema-legal shape "guild present, no
+                # validation block". Both shapes are pinned by
+                # tools/tests/test_sidecar_phase_c.py, which runs this file end to end.
+                review_note = v.get("note")
+                if review_note is not None:
+                    check(isinstance(review_note, str)
+                          and 0 < len(review_note.strip()) <= REPORT_NOTE_MAX,
+                          f"roster {rec.get('id')} validation.note is a non-empty string of at most "
+                          f"{REPORT_NOTE_MAX} characters")
+                # An open report: not validated, and carrying a usable note. The sync turns exactly
+                # this into a map needs_review row on every run (bnet.roster.reported_note /
+                # bnet.resolve.reported_note_entry), and the map-side mirror below keeps the two
+                # documents honest about it.
+                if v.get("state") != "validated" and isinstance(review_note, str) \
+                        and review_note.strip():
+                    reported_ids.add(rec["id"])
         if "guild" in rec:
             # Optional and additive: absent stays legal forever (every row written before
             # Phase C has no such key), a value must be a string, and only an empty one is
@@ -537,17 +620,6 @@ def main():
                            f"roster {rec.get('id')} guild string is not blank",
                            f"roster {rec.get('id')} carries a blank guild string; the UI treats it "
                            f"the same as no guild at all")
-            note = v.get("note")
-            if note is not None:
-                check(isinstance(note, str) and 0 < len(note.strip()) <= REPORT_NOTE_MAX,
-                      f"roster {rec.get('id')} validation.note is a non-empty string of at most "
-                      f"{REPORT_NOTE_MAX} characters")
-            # An open report: not validated, and carrying a usable note. The sync turns exactly
-            # this into a map needs_review row on every run (bnet.roster.reported_note /
-            # bnet.resolve.reported_note_entry), and the map-side mirror below keeps the two
-            # documents honest about it.
-            if v.get("state") != "validated" and isinstance(note, str) and note.strip():
-                reported_ids.add(rec["id"])
     roster_ids = [rec["id"] for rec in roster]
     by_id = {rec["id"]: rec for rec in roster}
     collision_ids = {rid for norm, ids
@@ -593,10 +665,12 @@ def main():
                     first_difference = index
                     break
             if first_difference is None:
-                check(True,
-                      f"every roster row committed at HEAD is unchanged and in order "
-                      f"({len(head_rows)} at HEAD, {len(roster)} on disk, "
-                      f"{len(roster) - len(head_rows)} appended)")
+                # The loop above either broke with a difference (a FAIL) or walked every HEAD
+                # row without one, so there is nothing left to assert here — reporting the
+                # comparison as a fact keeps the pass total counting assertions only.
+                note(f"every roster row committed at HEAD is unchanged and in order "
+                     f"({len(head_rows)} at HEAD, {len(roster)} on disk, "
+                     f"{len(roster) - len(head_rows)} appended)")
             else:
                 check(False,
                       f"roster row index {first_difference} differs from git HEAD — the sync may "
@@ -829,11 +903,24 @@ def main():
                 # or a sync bug pointing every doll at one character's render.
                 if "fullRender" in media and media["fullRender"] is not None:
                     render_url = media["fullRender"]
-                    check(isinstance(render_url, str) and render_url.endswith(FULL_RENDER_SUFFIX),
-                          f"data entry {rid} media.fullRender ends in {FULL_RENDER_SUFFIX!r}")
-                    check(isinstance(render_url, str) and isinstance(media.get("avatar"), str)
-                          and render_url == render_sibling(media["avatar"]),
-                          f"data entry {rid} media.fullRender is the suffix swap of its own avatar")
+                    if not FULL_RENDER_SUFFIX:
+                        # ``check`` records and keeps going, so an unguarded
+                        # ``render_url.endswith(FULL_RENDER_SUFFIX)`` here would raise TypeError
+                        # the moment config.py stops declaring the suffix and take the whole
+                        # gate (and with it the Actions step) down instead of reporting the one
+                        # thing that broke. The missing constant is its own FAIL below.
+                        check(False,
+                              f"data entry {rid} media.fullRender could not be suffix-checked: "
+                              "FULL_RENDER_ASSET_SUFFIX is missing from tools/bnet/config.py")
+                    else:
+                        check(isinstance(render_url, str)
+                              and render_url.endswith(FULL_RENDER_SUFFIX),
+                              f"data entry {rid} media.fullRender ends in {FULL_RENDER_SUFFIX!r}")
+                        check(isinstance(render_url, str)
+                              and isinstance(media.get("avatar"), str)
+                              and render_url == render_sibling(media["avatar"]),
+                              f"data entry {rid} media.fullRender is the suffix swap of its own "
+                              "avatar")
 
             # --- Phase 4a additive keys (notes §10) -------------------------- #
             # race/class are read off the already-fetched profile (§3.1), so a row
@@ -1380,20 +1467,35 @@ def main():
         # doll's silhouette is a CSS background layer rather than an <img>, so nothing resolves it
         # at run time — a missing <img> 404s visibly, a missing background-image simply paints
         # nothing. Renaming generic.svg, or moving it off the published asset path, would ship a
-        # site of empty paper-doll boxes with every other gate green. So every url() the shipped
-        # stylesheets reference must resolve on disk AND land on the published asset path.
-        css_urls = sorted({
-            m.group(1).strip("\"'")
-            for sheet in sorted((ROOT / "css").glob("*.css"))
-            for m in re.finditer(r"url\(\s*([^)\s]+)\s*\)", read(sheet) or "")
-        })
+        # site of empty paper-doll boxes with every other gate green. The published-path half of
+        # that rule therefore belongs to the doll's own background reference and to nothing else
+        # (E2); every other url() in a shipped stylesheet is held to resolve on disk, if it names
+        # a file at all.
+        css_sheets = {sheet.name: read(sheet) or ""
+                      for sheet in sorted((ROOT / "css").glob("*.css"))}
+        css_urls = sorted({ref for text in css_sheets.values() for ref in css_url_refs(text)})
         check(bool(css_urls), "the shipped stylesheets reference at least one asset url")
         published_dir = (ROOT / "assets" / "silhouettes").resolve()
         for ref in css_urls:
-            target = (ROOT / "css" / ref).resolve()
+            target = css_ref_target(ref)
+            if target is None:
+                continue
             check(target.is_file(), f"css url({ref}) resolves to a file that exists")
-            check(target.suffix == ".svg" and target.parent == published_dir,
-                  f"css url({ref}) sits on the assets/silhouettes/ path the copy step publishes")
+        # The doll's own reference, read out of the rule that uses it rather than guessed from
+        # the file list: keeping it tied to ``.wow-doll-figure`` is what stops the published-path
+        # gate from going vacuous if someone moves the background somewhere the gate cannot see.
+        doll_refs = sorted({ref for text in css_sheets.values()
+                            for ref in doll_figure_background_refs(text)})
+        check(bool(doll_refs),
+              "the paper doll still paints a CSS background silhouette "
+              "(.wow-doll-figure declares a background url, so the published-path rule below "
+              "has something to check)")
+        for ref in doll_refs:
+            target = css_ref_target(ref)
+            check(target is not None and target.suffix == ".svg"
+                  and target.parent == published_dir,
+                  f"the doll silhouette url({ref}) sits on the assets/silhouettes/ path the copy "
+                  "step publishes")
         check("actions/upload-pages-artifact@v" in pages and "actions/deploy-pages@v" in pages
               and "actions/configure-pages@v" in pages,
               "deploy goes through the official configure-pages + upload-pages-artifact + deploy-pages actions")
@@ -1428,6 +1530,10 @@ def main():
           f"pi-warden vocabularies loaded from js/ (classes={len(CLASS_VOCAB)}, "
           f"races={len(RACE_VOCAB)})")
     print(f"\n{passes} passed, {len(fails)} failed")
+    if notes:
+        print(f"{len(notes)} NOTE(S) (reported facts, not counted as assertions):")
+        for item in notes:
+            print(f"  ~ {item}")
     if warnings:
         print(f"{len(warnings)} WARNING(s) (advisory, not failures):")
         for item in warnings:

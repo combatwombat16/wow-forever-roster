@@ -5,6 +5,8 @@
 
 # Local tooling state
 .zvec-grep/
+# Subagent orchestration scratch (transcripts, briefs, review artifacts): never public
+.pi/subagents/
 
 # Python (tools/, .pi/scripts/)
 __pycache__/

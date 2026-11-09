@@ -61,6 +61,7 @@ Exit codes:
 """
 
 import argparse
+import copy
 import os
 import re
 import sys
@@ -316,7 +317,14 @@ class Sync:
         started = time.monotonic()
         # The rows as this run found them, kept so the append below can be proven purely
         # additive before anything is written (bnet.artifacts.roster_append_refusal).
-        roster_before = [rec for rec in roster_records]
+        #
+        # A DEEP copy is the whole point: the guard compares values AND key order, and this run
+        # hands it the very row objects it went on to resolve, enrich and append to. A list copy
+        # ([rec for rec in …]) keeps those same dicts, so an in-run edit or a key reorder would
+        # compare a row against itself and pass — the guard would only ever see a row that was
+        # removed or replaced. tools/tests/test_sidecar_phase_c.py drives exactly that shape
+        # through run_sync, which is the test that fails if this line ever goes shallow again.
+        roster_before = copy.deepcopy(roster_records)
         ordered_ids = [rec["id"] for rec in roster_records]
         roster_ids = set(ordered_ids)
         pruned = sorted(i for i in prev_entries if i not in roster_ids)

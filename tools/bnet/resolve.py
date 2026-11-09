@@ -296,8 +296,15 @@ class Resolver:
     # -- tier 2: guild roster lever ------------------------------------------- #
     def guild_lever(self, work, ordered_ids):
         """Tier 2 (amendments 4): resolve remaining ids through guild rosters
-        discovered from already-resolved characters. One-directional: guild
-        members who are not in the tracker are ignored, never added."""
+        discovered from already-resolved characters. One-directional in itself: this pass
+        only READS a guild roster to place ids the tracker already lists, and never writes a
+        roster row.
+
+        It is no longer true that a visible member the tracker does not list is ignored: since
+        Phase C, ``bnet.autoadd`` turns exactly those members into ``validation.state:
+        "pending""` rows (``Sync.auto_add``, run right after this pass from ``run_sync``).
+        That append is autoadd's decision, gated by its own pure plan and by
+        ``artifacts.roster_append_refusal`` — the lever stays a resolver."""
         unresolved = [work[rid] for rid in ordered_ids if work[rid]["entry"] is None]
         if not unresolved:
             return

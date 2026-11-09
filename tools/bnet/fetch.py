@@ -1141,11 +1141,15 @@ class Fetcher:
             # Phase B (roster-ui-tasks.md): the gear paper doll hangs on the full-body
             # render, derived from this avatar and HEAD-validated before it is
             # written. The convention (mirrored in bnet.artifacts.MEDIA_KEYS and
-            # gated in .pi/scripts/verify_sync_artifacts.py): a media block written
-            # from now on ALWAYS carries fullRender — the 200-validated URL or an
-            # explicit null — while a row with no character-media payload carries no
-            # media key at all. Null is the published answer for "no render", never a
-            # placeholder URL.
+            # PERMITTED AND SHAPE-CHECKED — not presence-gated — in
+            # .pi/scripts/verify_sync_artifacts.py): this writer always SETS fullRender on
+            # every media block it emits, the 200-validated URL or an explicit null, while
+            # a row with no character-media payload carries no media key at all. The gate
+            # admits the key beside avatar/avatarSd and validates any value it finds (render
+            # host, and the exact suffix swap of that row's own avatar); nothing enforces
+            # presence, because the rows committed before Phase B legitimately lack it, so
+            # this assignment is the only thing that puts the key there. Null is the
+            # published answer for "no render", never a placeholder URL.
             media_block["fullRender"] = self.full_render_url(media_block.get("avatar"), rid)
             out["media"] = media_block
         else:

@@ -56,9 +56,13 @@ as it did before the Battle.net integration.
    `"<name> <surname>"`, `player` set to the member's name as a stand-in alias, `track:
    "alts"`, `guild` set to the guild's name, `"None"` in the role and profession columns,
    and `validation.state: "pending"` to mark it as unreviewed. **Appending is all it may
-   do:** before it publishes anything the run checks, against `git HEAD`, that every row it
-   was given is still there, unchanged and in order — and a run that would remove, reorder
-   or rewrite a row writes nothing at all, roster or artifacts. Curation afterwards is manual, through the site's
+   do:** before it publishes anything the run re-checks every row it was given against the
+   snapshot it took of the roster when the run started (`copy.deepcopy` in `bnet.sync`, so an
+   edit made by the run itself is caught too), and a run that would remove, reorder or
+   rewrite a row writes nothing at all, roster or artifacts. The independent witness is a
+   separate step, not part of `bnet`: the `verify_sync_artifacts` gate
+   (`.pi/scripts/verify_sync_artifacts.py`, run in CI) compares the rows on disk with the
+   roster committed at `git HEAD`. Curation afterwards is manual, through the site's
    edit UI, exactly like any other draft row.
 
    Stated plainly, because it is a limit rather than a bug: only characters whose owners
