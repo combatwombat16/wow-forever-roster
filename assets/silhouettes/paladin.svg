@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  assets/silhouettes/paladin.svg — Human paladin in heavy plate, solemn guardianship stance.
+  Tall kite shield planted at the left side (tip grounded), war hammer raised overhead in
+  benediction in the right hand, tabard draping from the belt to the feet, winged pauldrons,
+  crested helmet, classic WoW style. Built in the same conventions as warrior.svg:
+  solid #0a0a0a figure, warm layered backdrop, gold interior etching, holy glow accents.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Human Paladin — Planted Kite Shield, Hammer Raised in Benediction (WoW style silhouette)</title>
+
+  <!-- ============ backdrop ============ -->
+  <rect width="512" height="512" fill="#1a1410"/>
+  <circle cx="256" cy="255" r="198" fill="#2e2318"/>
+  <circle cx="256" cy="255" r="152" fill="#3d2c1a"/>
+  <!-- rune tick rings -->
+  <circle cx="256" cy="255" r="176" fill="none" stroke="#c9a24a" stroke-opacity="0.18" stroke-width="7" stroke-dasharray="3 24"/>
+  <circle cx="256" cy="255" r="128" fill="none" stroke="#c9a24a" stroke-opacity="0.12" stroke-width="5" stroke-dasharray="2 17"/>
+  <!-- benediction light rays falling from the raised hammer -->
+  <g fill="#e8c060" fill-opacity="0.07">
+    <path d="M 336 56 L 236 268 L 296 278 Z"/>
+    <path d="M 344 56 L 448 260 L 388 276 Z"/>
+  </g>
+  <!-- faint halo behind the head -->
+  <circle cx="268" cy="164" r="46" fill="none" stroke="#eec25c" stroke-opacity="0.14" stroke-width="5"/>
+  <!-- drifting golden motes -->
+  <g fill="#c9a24a">
+    <circle cx="92" cy="64" r="3" fill-opacity="0.35"/>
+    <circle cx="418" cy="92" r="2.4" fill-opacity="0.3"/>
+    <circle cx="452" cy="180" r="3.2" fill-opacity="0.25"/>
+    <circle cx="70" cy="330" r="2.6" fill-opacity="0.3"/>
+    <circle cx="392" cy="52" r="2" fill-opacity="0.4"/>
+    <circle cx="30" cy="220" r="2" fill-opacity="0.25"/>
+    <circle cx="474" cy="270" r="2.2" fill-opacity="0.3"/>
+    <circle cx="140" cy="44" r="2" fill-opacity="0.3"/>
+    <circle cx="252" cy="26" r="1.8" fill-opacity="0.35"/>
+    <circle cx="436" cy="414" r="2.4" fill-opacity="0.22"/>
+    <circle cx="56" cy="148" r="1.8" fill-opacity="0.3"/>
+    <circle cx="348" cy="302" r="2" fill-opacity="0.18"/>
+  </g>
+  <ellipse cx="256" cy="480" rx="210" ry="18" fill="#0d0a07"/>
+
+  <!-- ============ serene mist behind the feet ============ -->
+  <path d="M 40 476 C 84 452 122 468 162 458 C 204 448 236 466 278 456 C 320 446 358 464 398 454 C 436 444 466 462 496 456 L 496 512 L 40 512 Z"
+        fill="#0d0a07" fill-opacity="0.45"/>
+  <path d="M 70 490 C 112 476 146 488 186 482 C 228 474 258 486 300 480 C 342 472 378 486 416 480 C 448 473 472 484 492 480 L 492 512 L 70 512 Z"
+        fill="#241a10" fill-opacity="0.4"/>
+
+  <g fill="#0a0a0a" stroke="#0a0a0a" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- ================= WAR HAMMER (raised in benediction, vertical at right) ================= -->
+    <g transform="translate(340 120)" stroke="none">
+      <!-- haft, resting down onto the right pauldron -->
+      <rect x="-7" y="-24" width="14" height="116" rx="6"/>
+      <!-- leather grip wrap bulge at the fist -->
+      <rect x="-11" y="-16" width="22" height="30" rx="10"/>
+      <!-- pommel diamond -->
+      <path d="M 0 86 L 11 98 L 0 112 L -11 98 Z"/>
+      <!-- hammer head: collar, block, top flange -->
+      <rect x="-28" y="-32" width="56" height="12" rx="5"/>
+      <rect x="-38" y="-78" width="76" height="52" rx="8"/>
+      <rect x="-31" y="-88" width="62" height="14" rx="5"/>
+      <!-- side flanges (war-hammer wings) -->
+      <path d="M -38 -74 L -58 -66 L -58 -40 L -38 -32 Z"/>
+      <path d="M 38 -74 L 58 -66 L 58 -40 L 38 -32 Z"/>
+      <!-- crown finial -->
+      <path d="M -8 -88 L 0 -102 L 8 -88 Z"/>
+    </g>
+
+    <!-- ================= LEFT ARM (shield side) ================= -->
+    <!-- shoulder (206,218) elbow (186,258) fist (158,296) -->
+    <path d="M 206 218 L 186 258 L 160 294" stroke-width="24" fill="none"/>
+    <!-- studded bracer -->
+    <path d="M 178 272 L 168 288" stroke-width="30" fill="none"/>
+    <circle cx="184" cy="264" r="4" stroke="none"/>
+    <circle cx="176" cy="278" r="4" stroke="none"/>
+    <!-- gauntlet fist behind the boss -->
+    <circle cx="158" cy="296" r="16" stroke="none"/>
+
+    <!-- ================= RIGHT ARM (hammer side, raised) ================= -->
+    <!-- shoulder (318,214) elbow (352,172) fist (344,118) -->
+    <path d="M 318 214 L 352 172 L 344 120" stroke-width="25" fill="none"/>
+    <!-- studded bracer on the forearm -->
+    <path d="M 350 158 L 346 136" stroke-width="30" fill="none"/>
+    <circle cx="357" cy="156" r="4" stroke="none"/>
+    <circle cx="355" cy="142" r="4" stroke="none"/>
+    <!-- gauntlet fist gripping the haft -->
+    <circle cx="342" cy="120" r="17" stroke="none"/>
+    <circle cx="342" cy="120" r="14"/>
+
+    <!-- ================= KITE SHIELD (planted, tip grounded) ================= -->
+    <path stroke="none" d="M 148 230
+             L 198 258
+             C 202 322, 186 394, 148 482
+             C 110 394, 94 322, 98 258 Z"/>
+    <!-- shield top finial -->
+    <circle cx="148" cy="226" r="6" stroke="none"/>
+    <path stroke="none" d="M 148 210 L 154 222 L 142 222 Z"/>
+    <!-- shield boss over the grip -->
+    <circle cx="152" cy="298" r="18" stroke="none"/>
+    <path stroke="none" d="M 152 274 L 156 286 L 148 286 Z"/>
+    <!-- rim rivets -->
+    <circle cx="106" cy="272" r="4" stroke="none"/>
+    <circle cx="190" cy="272" r="4" stroke="none"/>
+    <circle cx="112" cy="360" r="4" stroke="none"/>
+    <circle cx="184" cy="360" r="4" stroke="none"/>
+
+    <!-- ================= TORSO (heavy plate) ================= -->
+    <path stroke="none" d="M 226 208
+             C 240 192, 288 192, 306 204
+             C 320 216, 322 240, 318 262
+             C 314 282, 304 296, 292 302
+             C 268 312, 240 310, 230 300
+             C 222 284, 220 254, 222 232
+             C 222 218, 224 212, 226 208 Z"/>
+    <!-- gorget collar plate -->
+    <path stroke="none" d="M 240 196 C 254 206, 284 206, 298 196 L 302 210 C 284 220, 252 220, 236 210 Z"/>
+
+    <!-- ================= winged pauldrons ================= -->
+    <!-- left pauldron (shield side): three layered plates -->
+    <path stroke="none" d="M 192 222 C 202 202, 228 194, 250 200 C 240 210, 236 220, 236 232 C 218 240, 200 236, 192 222 Z"/>
+    <path stroke="none" d="M 186 208 C 198 190, 224 182, 246 188 C 238 196, 234 202, 232 208 C 216 214, 196 216, 186 208 Z"/>
+    <path stroke="none" d="M 184 194 C 196 178, 222 172, 242 178 C 236 184, 232 188, 230 194 C 214 200, 194 202, 184 194 Z"/>
+    <!-- left wing rising off the pauldron -->
+    <path stroke="none" d="M 202 182 C 190 166, 190 146, 202 132 C 204 148, 212 158, 224 164 C 214 172, 208 178, 202 182 Z"/>
+    <path stroke="none" d="M 216 176 C 210 162, 214 148, 224 140 C 224 152, 230 160, 240 164 C 230 170, 222 174, 216 176 Z"/>
+    <circle cx="192" cy="204" r="4" stroke="none"/>
+    <circle cx="208" cy="194" r="4" stroke="none"/>
+    <circle cx="228" cy="188" r="4" stroke="none"/>
+    <!-- right pauldron (hammer side): two plates + wing -->
+    <path stroke="none" d="M 310 226 C 318 208, 340 200, 358 206 C 354 214, 352 222, 354 230 C 338 238, 318 236, 310 226 Z"/>
+    <path stroke="none" d="M 314 210 C 322 194, 344 188, 360 192 C 356 198, 354 202, 354 208 C 340 214, 322 216, 314 210 Z"/>
+    <path stroke="none" d="M 336 188 C 342 172, 354 162, 368 158 C 360 168, 358 178, 360 186 C 352 190, 342 190, 336 188 Z"/>
+    <circle cx="320" cy="222" r="3.5" stroke="none"/>
+    <circle cx="338" cy="212" r="3.5" stroke="none"/>
+
+    <!-- ================= HEAD (crested helmet) ================= -->
+    <ellipse cx="268" cy="162" rx="22" ry="25" stroke="none"/>
+    <rect x="256" y="178" width="26" height="26" stroke="none"/>
+    <!-- brow band -->
+    <path stroke="none" d="M 246 154 C 254 144, 284 142, 292 150 L 290 162 C 280 154, 258 154, 248 164 Z"/>
+    <!-- blade crest with circlet -->
+    <path stroke="none" d="M 258 140 C 252 122, 260 106, 278 100 C 270 116, 272 130, 282 138 C 272 142, 264 142, 258 140 Z"/>
+    <circle cx="265" cy="122" r="5" stroke="none"/>
+    <circle cx="273" cy="108" r="4" stroke="none"/>
+    <!-- helmet side wings -->
+    <path stroke="none" d="M 246 160 C 234 154, 228 144, 228 134 C 238 142, 246 146, 254 148 C 250 152, 248 156, 246 160 Z"/>
+    <path stroke="none" d="M 290 156 C 300 150, 306 142, 307 132 C 298 140, 290 143, 283 145 C 287 149, 289 152, 290 156 Z"/>
+    <!-- aventail / neck chain -->
+    <path stroke="none" d="M 250 180 C 248 192, 252 200, 258 204 L 280 204 C 286 200, 290 192, 288 180 C 276 188, 262 188, 250 180 Z"/>
+
+    <!-- ================= BELT: studded strap + hammer buckle ================= -->
+    <path stroke="none" d="M 228 298 C 250 310, 282 310, 298 300 L 302 320 C 282 332, 250 332, 224 320 Z"/>
+    <circle cx="234" cy="312" r="4" stroke="none"/>
+    <circle cx="294" cy="312" r="4" stroke="none"/>
+    <!-- square buckle plate -->
+    <rect x="250" y="302" width="28" height="22" rx="4" stroke="none"/>
+    <!-- hanging holy symbol chain, left hip -->
+    <path d="M 234 320 Q 222 338 226 354" stroke-width="5" fill="none" stroke-dasharray="1.5 6"/>
+    <path stroke="none" d="M 219 354 L 233 354 L 230 362 L 222 362 Z"/>
+    <path stroke="none" d="M 224 362 L 228 362 L 228 378 L 224 378 Z"/>
+
+    <!-- ================= TABARD (draping to the feet) ================= -->
+    <path stroke="none" d="M 236 322
+             C 232 370, 228 420, 226 452
+             L 222 470 L 232 462 L 242 476 L 252 464 L 262 480
+             L 272 464 L 282 476 L 292 462 L 300 470 L 296 452
+             C 292 420, 288 370, 284 322 Z"/>
+
+    <!-- ================= LEGS ================= -->
+    <path d="M 240 315 L 230 446" stroke-width="32" fill="none"/>
+    <path d="M 288 313 L 300 446" stroke-width="32" fill="none"/>
+    <!-- knee poleyns with spikes -->
+    <circle cx="236" cy="392" r="14" stroke="none"/>
+    <path stroke="none" d="M 224 384 L 206 372 L 222 398 Z"/>
+    <circle cx="296" cy="390" r="14" stroke="none"/>
+    <path stroke="none" d="M 308 382 L 326 370 L 310 396 Z"/>
+    <!-- turned-down boot cuffs -->
+    <ellipse cx="230" cy="442" rx="24" ry="11" stroke="none"/>
+    <ellipse cx="300" cy="442" rx="24" ry="11" stroke="none"/>
+    <!-- left boot -->
+    <path stroke="none" d="M 216 448
+             C 202 454, 190 464, 186 472
+             C 182 480, 190 486, 204 486
+             L 248 486
+             C 256 486, 258 478, 254 470
+             C 248 460, 240 452, 232 448
+             C 226 446, 220 446, 216 448 Z"/>
+    <!-- right boot -->
+    <path stroke="none" d="M 296 448
+             C 310 452, 324 462, 330 470
+             C 334 478, 326 484, 312 484
+             L 276 484
+             C 268 484, 266 476, 270 468
+             C 276 458, 284 450, 292 446
+             C 294 446, 295 447, 296 448 Z"/>
+  </g>
+
+  <!-- ============ interior gold etching ============ -->
+  <g fill="none" stroke="#c9a24a" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round">
+    <!-- hammer: face cross, flange seams, grip wraps, haft line -->
+    <g transform="translate(340 120)">
+      <path d="M 0 -70 L 0 -36"/>
+      <path d="M -16 -58 L 16 -58"/>
+      <path d="M -30 -62 L -30 -42"/>
+      <path d="M 30 -62 L 30 -42"/>
+      <path d="M -5 -6 L 5 -6"/>
+      <path d="M -5 2 L 5 2"/>
+      <path d="M -5 -14 L 5 -14"/>
+      <path d="M 0 20 L 0 78"/>
+    </g>
+    <!-- shield: inner rim band -->
+    <path d="M 148 246 L 186 268 C 189 324, 176 388, 148 456 C 120 388, 107 324, 110 268 Z"/>
+    <!-- shield: blessing cross below the boss -->
+    <path d="M 148 322 L 148 408"/>
+    <path d="M 124 348 L 172 348"/>
+    <!-- boss ring -->
+    <circle cx="152" cy="298" r="10"/>
+    <!-- breastplate seams and V -->
+    <path d="M 232 242 C 254 252, 284 252, 306 242"/>
+    <path d="M 240 216 L 266 238 L 292 216"/>
+    <!-- gorget seam -->
+    <path d="M 242 205 C 256 213, 282 213, 296 205"/>
+    <!-- pauldron plate seams -->
+    <path d="M 190 210 C 202 196, 224 190, 244 194"/>
+    <path d="M 186 196 C 198 184, 218 178, 238 182"/>
+    <path d="M 314 216 C 324 204, 342 198, 356 202"/>
+    <!-- wing feather lines -->
+    <path d="M 206 172 C 202 160, 204 148, 210 140"/>
+    <path d="M 342 182 C 348 172, 356 166, 362 162"/>
+    <!-- helmet brow and nasal -->
+    <path d="M 250 158 C 258 150, 280 148, 288 156"/>
+    <path d="M 268 158 L 268 182"/>
+    <!-- belt edge -->
+    <path d="M 230 306 C 252 318, 280 318, 296 308"/>
+    <!-- buckle cross -->
+    <path d="M 264 306 L 264 320"/>
+    <path d="M 257 312 L 271 312"/>
+    <!-- tabard trim lines -->
+    <path d="M 244 332 C 240 380, 236 428, 234 456"/>
+    <path d="M 276 332 C 280 380, 284 428, 286 456"/>
+    <!-- tabard hem zigzag echo -->
+    <path d="M 230 458 L 240 468 L 250 456 L 260 470 L 270 456 L 280 468 L 290 458"/>
+    <!-- greave seams -->
+    <path d="M 238 356 L 230 434"/>
+    <path d="M 292 354 L 300 434"/>
+  </g>
+
+  <!-- tabard emblem: sun disc with cross -->
+  <g fill="none" stroke="#c9a24a" stroke-opacity="0.5" stroke-width="2">
+    <circle cx="260" cy="372" r="11"/>
+    <path d="M 260 364 L 260 380"/>
+    <path d="M 252 372 L 268 372"/>
+  </g>
+
+  <!-- ============ holy glow accents ============ -->
+  <g fill="none" stroke="#eec25c" stroke-opacity="0.6" stroke-width="3" stroke-linecap="round">
+    <!-- hammer head edges -->
+    <path d="M 308 42 L 372 42"/>                    <!-- top flange -->
+    <path d="M 282 54 L 282 80"/>                    <!-- left flange -->
+    <path d="M 398 54 L 398 80"/>                    <!-- right flange -->
+    <path d="M 340 18 L 340 30"/>                    <!-- crown finial -->
+    <!-- shield outer rim, left edge to planted tip -->
+    <path d="M 100 262 C 97 322, 112 394, 144 468"/>
+    <!-- shield top finial -->
+    <path d="M 148 212 L 148 218"/>
+    <!-- halo arc above the helm -->
+    <path d="M 236 150 A 44 44 0 0 1 300 150" stroke-opacity="0.35"/>
+    <!-- helmet crest -->
+    <path d="M 260 136 C 254 120, 262 106, 276 102"/>
+    <!-- left pauldron crest + wing tip -->
+    <path d="M 192 212 C 202 194, 226 186, 246 190"/>
+    <path d="M 202 136 L 204 130"/>
+    <!-- boot toes -->
+    <path d="M 188 470 C 194 478, 200 482, 208 484"/>
+    <path d="M 328 468 C 332 474, 330 480, 322 483"/>
+  </g>
+
+  <!-- glowing benediction runes on the haft -->
+  <g fill="none" stroke="#f0cc6e" stroke-opacity="0.6" stroke-width="2" stroke-linecap="round">
+    <g transform="translate(340 158)">
+      <path d="M 0 -5 L 0 5"/>
+      <path d="M -4 -2 L 4 -2"/>
+    </g>
+    <g transform="translate(340 180)">
+      <path d="M 0 -5 L 0 5"/>
+      <path d="M -4 -2 L 4 -2"/>
+    </g>
+  </g>
+
+  <!-- tabard emblem glow -->
+  <g fill="none" stroke="#eec25c" stroke-opacity="0.4" stroke-width="1.5">
+    <circle cx="260" cy="372" r="14"/>
+  </g>
+
+  <!-- glint on the hammer crown -->
+  <g stroke="#f5d072" stroke-opacity="0.85" stroke-width="2.5" stroke-linecap="round">
+    <path d="M 364 36 L 376 36"/>
+    <path d="M 370 30 L 370 42"/>
+  </g>
+  <!-- glint on the shield tip -->
+  <g stroke="#f5d072" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round">
+    <path d="M 142 476 L 152 476"/>
+    <path d="M 147 471 L 147 481"/>
+  </g>
+  <!-- glowing visor slits -->
+  <g stroke="#f5d072" stroke-opacity="0.85" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M 252 168 L 262 170"/>
+    <path d="M 276 168 L 286 170"/>
+  </g>
+</svg>
