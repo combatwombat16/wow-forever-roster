@@ -1,6 +1,33 @@
 # Character Modal Rework — Tasks & Goals
 
-Status: **Phase 0 COMPLETE** (2026-11-08, user checkpoint passed). Phase 1–3 in execution. Execute phases in order.
+Status: **Phases 0–4 COMPLETE** (2026-11-09). V.4 manual pass passed by the user; V.5 push still pending. **Phase 5 PLANNED** (below) — execute when the user greenlights. Execute phases in order.
+
+**Phase 4 outcome (shipped 2026-11-09, commits `8863d9d` + `e29d551`):**
+- Sidecar now carries `race {id,name}`, `class {id,name}`, `classIconUrl`, per-profession `iconUrl` (evidence: `docs/bnet-api-notes.md` §10).
+- Race icons are **UNAVAILABLE** (nine-way probe evidence, §10.3): the key is never emitted; a soft WARN fires if one ever appears. No placeholder UI.
+- Talents panel: per-spec sub-tabs (derive-from-active-spec pinned by mutation-tested fixtures).
+- Pre-confirm race/class mismatch flag; on confirm/resolve, Blizzard race/class (and prof1/prof2, deduped, bounded skip note) auto-tie into the roster row, vocabulary-guarded.
+- Class icons in modal header + roster cards via the sidecar join (no new fetch). alt text describes the image (Battle.net class), not the roster word.
+- `verify_search_detail.mjs` 97 → 344 checks; `verify_sync_artifacts.py` 1948 → 2086; unit tests 118.
+
+## Phase 5 — Sub-tabbed modal sections + site-wide Blizzard icons (PLANNED, agreed 2026-11-09)
+
+**P5.A — Section sub-tabs** (reuse the Talents sub-tab machinery: scoped tablist, roving tabindex, arrow keys, hidden-not-unbuilt, per-open reset):
+- Stats → Attributes · Combat · Crit & Ratings · Resistances (default: first group with data).
+- Progress → Raid · Mythic+ · PvP (default: first with data).
+- Professions → one sub-tab per profession (primaries then secondaries), each with its skill bar + recipe list.
+- Empty-state rule (extends decision #5): whole-tab empty → the current single empty state; any section with data → full sub-tab bar, data-less sections show their own empty state. Bar shape never depends on data richness.
+- Gear and Reputation stay single-view (gear doll is one unit; reputation has no API grouping — `reputation-category` 404s).
+
+**P5.B — Static icon maps** (new sync artifacts, proven routes only):
+- `data/class-icons.json` — all playable classes via the §10 class-media prefix route.
+- `data/profession-icons.json` — all professions via the §9.2 profession-media route.
+- Version-pinned to the static namespace like `talent-trees.json`; `safe_artifact_url` gated; schema-gated in `verify_sync_artifacts.py` **in the same commit** as the data; `.github/workflows/sync-bnet.yml` commit paths extended.
+
+**P5.C — Site icon integration** (from P5.B maps, one shared lazy fetch):
+- Class distribution bars: Blizzard class icon per row. Guild professions matrix: icon per profession tag. Party slots: class icon beside each name.
+- Race distribution bars stay **text-only** — Blizzard race icons are proven nonexistent; nothing is invented.
+- Guards carry over: `isSafeIconUrl`, own-data lookups (`ownValue`/`ownString`), no layout shift when an icon is absent.
 
 **Phase 0 outcome amendments (user-approved 2026-11-08; supersede conflicting text below — see `docs/bnet-api-notes.md` §9 for evidence):**
 1. Item stat numbers **AVAILABLE** inside `/equipment` (`equipped_items[].stats[]`); zero extra requests. Tooltips include stats.
