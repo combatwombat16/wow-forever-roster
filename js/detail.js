@@ -194,6 +194,11 @@ let activeTab = DEFAULT_DETAIL_TAB;
 // sidecar string.
 const tooltipTargets = [];
 let tooltipHideTimer = null;
+// The node that currently carries `aria-describedby="detail-tooltip"`. One element describes many
+// slots, so at most one node may claim it at a time, and the claim has to be dropped rather than
+// left dangling: a repaint (or a close) throws the trigger away before its mouseleave/blur can
+// run, which would leave a removed-or-replaced node pointing at an empty tooltip.
+let lastTooltipTrigger = null;
 
 // Ids written by this module's own markup are composed by function rather than spelled out at a
 // call site: the invariant that every such lookup resolves is about index.html's shell, and these
@@ -434,7 +439,11 @@ export function showDetailTooltip(event, index) {
   positionTooltip(trigger);
   // Point the hovered node at the tooltip while it is up: the shared element can only describe
   // the one it belongs to, so the reference is set on the live node rather than baked into the
-  // markup of all nineteen slots.
+  // markup of all nineteen slots. Retargeting clears the previous node first, so a cursor that
+  // moves slot → slot (with no leave in between, as happens across a repaint) never leaves two
+  // nodes claiming the same tooltip.
+  clearTooltipDescription();
+  lastTooltipTrigger = trigger;
   if (trigger && typeof trigger.setAttribute === 'function') trigger.setAttribute('aria-describedby', 'detail-tooltip');
   return true;
 }
@@ -461,6 +470,18 @@ function dismissDetailTooltip() {
     tip.innerHTML = '';
     tip.setAttribute('aria-hidden', 'true');
   }
+  // A tooltip with no content describes nothing, so the node that pointed at it must stop saying
+  // it does — otherwise an assistive tech reading the (repainted) slot announces the previous
+  // character's item.
+  clearTooltipDescription();
+}
+
+// Method-guarded because the DOM in play is not always a browser's: the verification harnesses
+// drive these paths with stub nodes that implement only what the code under test needs.
+function clearTooltipDescription() {
+  const previous = lastTooltipTrigger;
+  lastTooltipTrigger = null;
+  if (previous && typeof previous.removeAttribute === 'function') previous.removeAttribute('aria-describedby');
 }
 
 // ---------- gear tab (T2.3) ----------
@@ -567,6 +588,18 @@ export function gearTabHtml(sidecar) {
 // what lets two specs of one class sit side by side in one modal.
 export const TREE_CELL = 68;      // px between node centres — must match .wow-tree in app.css
 export const TREE_NODE = 52;      // px node size — must match .wow-tree-node in app.css
+// displayRow/displayCol arrive from data/talent-trees.json, a committed file any reviewer can
+// hand-edit, so a coordinate is response data, not a trusted layout number: uncoerced it reaches
+// the page as `left:1e+21px` / an SVG viewBox of the same order, which no browser can lay out.
+// The cap is the same poison-proofing standard rgbaColor() applies to the colour triple — far
+// wider than any real tree (1,470 columns) yet small enough to stay renderable.
+export const TREE_PIXEL_MAX = 100000;
+
+export function clampTreePx(value) {
+  const n = numberOr(value);
+  if (n === null) return 0;
+  return Math.min(TREE_PIXEL_MAX, Math.max(0, Math.round(n)));
+}
 
 function treeNumber(value) {
   const n = numberOr(value);
@@ -628,8 +661,8 @@ function treeNodeHtml(node, ctx) {
     ? `<img src="${escapeHtml(entry.iconUrl)}" loading="lazy" alt="${escapeHtml(name)}" class="w-full h-full object-cover">`
     : `<span class="wow-tree-glyph">${escapeHtml(name === '' ? '?' : name.charAt(0))}</span>`;
   const offset = (TREE_CELL - TREE_NODE) / 2;
-  const left = (col - ctx.minCol) * TREE_CELL + offset;
-  const top = (row - ctx.minRow) * TREE_CELL + offset;
+  const left = clampTreePx((col - ctx.minCol) * TREE_CELL + offset);
+  const top = clampTreePx((row - ctx.minRow) * TREE_CELL + offset);
   const fill = state.maxRanks === 0 ? 0 : Math.round((state.taken / state.maxRanks) * 100);
   return `<button type="button" class="wow-tree-node" data-wow-state="${visual}"
     style="left:${left}px;top:${top}px"
@@ -652,16 +685,16 @@ function talentTreeHtml(tree, selection) {
   const maxRow = Math.max.apply(null, rowValues);
   const minCol = Math.min.apply(null, colValues);
   const maxCol = Math.max.apply(null, colValues);
-  const width = (maxCol - minCol + 1) * TREE_CELL;
-  const height = (maxRow - minRow + 1) * TREE_CELL;
+  const width = clampTreePx((maxCol - minCol + 1) * TREE_CELL);
+  const height = clampTreePx((maxRow - minRow + 1) * TREE_CELL);
   const byId = new Map();
   nodes.forEach(node => {
     const id = numberOr(node.id);
     if (id !== null) byId.set(id, node);
   });
   const centre = node => ({
-    x: (treeNumber(node.displayCol) - minCol) * TREE_CELL + TREE_CELL / 2,
-    y: (treeNumber(node.displayRow) - minRow) * TREE_CELL + TREE_CELL / 2
+    x: clampTreePx((treeNumber(node.displayCol) - minCol) * TREE_CELL + TREE_CELL / 2),
+    y: clampTreePx((treeNumber(node.displayRow) - minRow) * TREE_CELL + TREE_CELL / 2)
   });
   // Connector lines come from the payload's own unlock edges, so the picture is the API's
   // dependency graph rather than a guess from positions.
@@ -1856,7 +1889,7 @@ export function renderDetail() {
   // A repaint replaces every node, so the panel's scroll offset and any open tooltip are
   // re-established by hand: without this, a background Refresh would throw a reader back to the
   // top of a long reputation list with the tooltip still showing a row that no longer exists.
-  const panelId = TAB_PANEL_PREFIX + detailActiveTab();
+  const panelId = tabPanelId(detailActiveTab());
   const before = document.getElementById(panelId);
   const scrollTop = before ? Number(before.scrollTop) || 0 : 0;
   dismissDetailTooltip();
