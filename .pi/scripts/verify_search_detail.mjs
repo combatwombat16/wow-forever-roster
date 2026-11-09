@@ -3098,6 +3098,43 @@ ok(!p11Modal.includes('>Horde<') && p11Modal.includes('>Unknown<'),
 ok(!p11Modal.includes('\u2694\uFE0F') && countOf('>\u2022<', p11Modal) === 0,
   'and its identity line reaches the track word with no class, no race and no bullet behind them');
 detail.closeDetail();
+// Party slot (review C2, party side, re-review): the slot's faction LABEL and its alias • race
+// line are separate renderers from the backdrop, the card and the modal, and the label was still
+// a two-branch ternary — a race-less row placed in a slot printed "Horde" in red on the fix's own
+// neutral slate backdrop, with a dangling bullet behind the empty race. The raced controls (a
+// Human row and an Orc row) prove the guard rewrites nothing for rows that DO have a race.
+const p12Mate = { id: 'P12', player: 'allialead', name: 'Alliance Twelve', track: 'alts',
+  role: 'None', roleSec: 'None', race: 'Human', class: 'Priest' };
+state.setCharacters([...rosterG.characters, placeholder, p12Mate]);
+state.renderAll();
+partyMod.clearParty();
+partyMod.togglePartyMember('P11');
+partyMod.togglePartyMember('P12');
+partyMod.togglePartyMember('P1');
+const partySlotHtml = name => {
+  const hits = byId('party-slots').children.filter(s => s.innerHTML.includes(`>${name}<`));
+  return hits.length === 1 ? hits[0].innerHTML : '';
+};
+const slotLabel = html => /class="text-\[8px\] font-bold([^"]*)">([^<]*)</.exec(html) || ['', '', ''];
+const p11Slot = partySlotHtml('Awaiting Pick');
+const p12Slot = partySlotHtml('Alliance Twelve');
+const p1Slot = partySlotHtml('Guilded One');
+ok(p11Slot !== '' && p12Slot !== '' && p1Slot !== '',
+  'the race-less placeholder and both raced controls each own exactly one party slot');
+const p11Lbl = slotLabel(p11Slot);
+ok(p11Lbl[2] === 'Unknown' && !p11Lbl[1].includes('text-red-400') && p11Lbl[1].includes('text-slate-400'),
+  `the slot faction label is three-way: Unknown in the neutral slate tone, never red (${p11Lbl[1].trim() || 'no class'} / "${p11Lbl[2]}")`);
+ok(countOf('\u2022', p11Slot) === 0,
+  `no dangling bullet on the slot identity line with no race (${countOf('\u2022', p11Slot)} bullets)`);
+const p12Lbl = slotLabel(p12Slot);
+ok(p12Lbl[2] === 'Alliance' && p12Lbl[1].includes('text-sky-400'),
+  `a raced slot is unchanged: Alliance still prints in sky (${p12Lbl[1].trim()} / "${p12Lbl[2]}")`);
+ok(p12Slot.includes('allialead') && p12Slot.includes('Human') && countOf('\u2022', p12Slot) === 1,
+  'and its identity line keeps both words with the single bullet between them');
+const p1Lbl = slotLabel(p1Slot);
+ok(p1Lbl[2] === 'Horde' && p1Lbl[1].includes('text-red-400'),
+  `the three-way branch still answers Horde in red for a Horde race (${p1Lbl[1].trim()} / "${p1Lbl[2]}")`);
+partyMod.clearParty();
 state.setCharacters(rosterG.characters);
 state.renderAll();
 

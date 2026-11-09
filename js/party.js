@@ -59,11 +59,24 @@ export function renderParty() {
         : faction === 'horde'
           ? 'bg-gradient-to-b from-red-950/60 to-slate-950/90 border-red-900/60'
           : 'bg-slate-950/60 border-slate-700/60';
+      // The label is three-way for the same reason the backdrop above already is (review C2, the
+      // re-review caught this two lines below the fixed one): a race-less row on the neutral
+      // slate printed "Horde" in red, contradicting its own backdrop. Same three answers as the
+      // card tag (js/roster.js) and the modal tag (js/detail.js); every class is one the compiled
+      // css already ships.
+      const factionLabel = faction === 'alliance'
+        ? '<span class="text-[8px] font-bold text-sky-400">Alliance</span>'
+        : faction === 'horde'
+          ? '<span class="text-[8px] font-bold text-red-400">Horde</span>'
+          : '<span class="text-[8px] font-bold text-slate-400">Unknown</span>';
       // Own-data lookup (see util.js): a prototype-shaped class falls back to neutral rather
       // than handing a function to `.split()`.
       const color = ownString(CLASS_COLORS, char.class) || 'text-slate-300';
       const isOffspec = char.assignedRole && char.assignedRole === char.roleSec;
       const slotIcon = partySlotIconHtml(char.class);
+      // The identity words join only what exists (review C2, the shape js/detail.js identityLine
+      // uses): a row with no race prints its alias alone, never "alias • " behind an empty word.
+      const slotIdentity = [char.player, char.race].filter(Boolean).map(escapeHtml).join(' • ');
 
       slotEl.className = `${factionBg} border rounded-lg p-2.5 flex flex-col justify-between min-h-[95px] shadow-sm`;
       slotEl.innerHTML = `
@@ -72,12 +85,12 @@ export function renderParty() {
             <span>${slotLabels[i]}</span>
             <div class="flex items-center gap-1">
               ${isOffspec ? '<span class="text-[8px] text-sky-300 font-semibold bg-sky-950 px-1 rounded border border-sky-800/40">Off-spec</span>' : ''}
-              <span class="text-[8px] font-bold ${faction === 'alliance' ? 'text-sky-400' : 'text-red-400'}">${faction === 'alliance' ? 'Alliance' : 'Horde'}</span>
+              ${factionLabel}
             </div>
           </div>
           <div class="flex items-center gap-1.5 mt-0.5">${slotIcon}<span class="font-bold text-sm text-slate-100 truncate">${escapeHtml(char.name)}</span></div>
           <div class="text-xs font-semibold ${color.split(' ')[0]}">${escapeHtml(char.class)}</div>
-          <div class="text-[10px] text-slate-400">${escapeHtml(char.player)} • ${escapeHtml(char.race)}</div>
+          <div class="text-[10px] text-slate-400">${slotIdentity}</div>
         </div>
         <button onclick="removeFromPartyIndex(${i})" class="text-[10px] text-red-400 hover:text-red-300 mt-1.5 text-left">Remove</button>
       `;
