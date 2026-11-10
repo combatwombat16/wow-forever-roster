@@ -446,7 +446,7 @@ scopeMod.applyGuildScope();
 const heghmohOnly = rosterChars.filter(c => rawGuildBucket(c).toLowerCase() === 'heghmoh').map(c => c.id);
 const heghmohWanted = rosterChars.filter(c => ['Guildless', 'Unknown'].includes(rawGuildBucket(c))
   || rawGuildBucket(c).toLowerCase() === 'heghmoh').map(c => String(c.id)).sort().join();
-ok(state.getIncludedGuild() === 'heghmoh' && heghmohOnly.length === 1
+ok(state.getIncludedGuild() === 'heghmoh' && heghmohOnly.length > 0
   && state.getFilteredCharacters().map(c => String(c.id)).sort().join() === heghmohWanted,
   `typing a hidden guild and pressing Set swaps the roster to it: its ${heghmohOnly.length} row(s) plus the guildless ones (${heghmohWanted.split(',').length} total), and the previously included guild's rows are gone`);
 ok(!state.getFilteredCharacters().some(c => rawGuildBucket(c).toLowerCase() === INCLUDED_GUILD.toLowerCase()),
@@ -558,10 +558,15 @@ const before = panelSnapshot();
 const narrowQuery = classOf.toLowerCase();
 state.setQuery(narrowQuery);
 const after = panelSnapshot();
-const pool = rosterChars.filter(c => c.class.toLowerCase().includes(narrowQuery));
+// A row with no class cannot match a class query (search reads the field, it does not invent one),
+// and a row with no race/class is not a row in the bars — the same two rules stats.js applies
+// (tallyBy skips a falsy key; the auto-add legitimately produces such rows for a guild member found
+// by roster discovery and not yet resolved). Before the nightly auto-added members, every committed
+// row carried both fields, so this file never had to say which of the two it meant.
+const pool = rosterChars.filter(c => String(c.class || '').toLowerCase().includes(narrowQuery));
 
-const raceRows = new Set(pool.map(c => c.race)).size;
-const classRows = new Set(pool.map(c => c.class)).size;
+const raceRows = new Set(pool.map(c => c.race).filter(Boolean)).size;
+const classRows = new Set(pool.map(c => c.class).filter(Boolean)).size;
 const coveredProfs = new Set(pool.flatMap(c => [c.prof1, c.prof2]).filter(p => p && p !== 'None')).size;
 ok(before.roster !== after.roster && cards().length === pool.length
   && after.roster.includes(pool[0].name),
@@ -753,9 +758,15 @@ const richRow = rosterChars.find(c => c.id === RICH_ID);
 const treesDoc = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'talent-trees.json'), 'utf8'));
 const writesBeforePhase2 = storageWrites.length;
 
-ok(richSidecar && richSidecar.gear.length > 0 && richSidecar.talents.length === 2
+// What the sections below actually need from a LIVE row: gear, stats, reputations, media.
+// "…and two specs" used to be part of this premise, and the nightly deleted it (a player respec'd,
+// and data/character-data.json is machine-owned, so nothing was wrong with the page). The two-spec
+// contract is pinned by the fixture in [e0] instead — a UI behaviour must not be rented from
+// whichever builds a random character happens to have.
+ok(richSidecar && richSidecar.gear.length > 0 && richSidecar.talents.length >= 1
   && richSidecar.reputations.length > 0 && richSidecar.stats && richSidecar.media,
-  `the rich fixture row ${RICH_ID} carries gear+stats, two specs, professions, reputations, media`);
+  `the rich live row ${RICH_ID} carries gear, stats, professions, reputations and media`
+  + ` (${richSidecar ? `${richSidecar.gear.length} gear, ${richSidecar.talents.length} spec group(s), ${richSidecar.reputations.length} reputations` : 'row missing'})`);
 ok(sparseSidecar && !sparseSidecar.gear && !sparseSidecar.reputations && !sparseSidecar.stats
   && !sparseSidecar.talents && !sparseSidecar.professions,
   `the sparse row ${SPARSE_ID} is status-only, so all six of its tabs must be empty states`);
@@ -1122,15 +1133,93 @@ ok(tip.classList.contains('hidden') && tip.innerHTML === '' && tip.getAttribute(
 detail.closeDetail();
 ok(byId('detail-tooltip') === tipIdentity, 'the tooltip stays one element across opens, closes and repaints');
 
+// ---------- e0. a two-spec fixture the repo owns, built from the committed geometry ----------
+//
+// These are the file's only gates on the TREE and the spec SUB-TAB row, and they used to borrow a
+// live sidecar row and require it to hold two spec groups. That is not a contract, it is a
+// coincidence: on 2026-11-10 the nightly re-fetched the Warrior this section read (1791928493125)
+// and it came back with one group, and eleven gates about detail.js markup went red on a page whose
+// code had not been touched. A UI contract has to be pinned to data the repo controls, so the fixture
+// is built here — a roster row, a sidecar row, and a selection assembled out of the real nodes of
+// data/talent-trees.json, the same document every assertion below re-derives its grid, rank counts
+// and unlock edges from. What stays under test is exactly what was under test before: the geometry
+// mapping, the rank maths against a real selection, the connector lines, and the sub-tab row.
+const TREE_ID = 'tree-fixture-two-spec';
+const FIXTURES_TREES = mkdtempSync(path.join(os.tmpdir(), '4e-trees-'));
+fs.mkdirSync(path.join(FIXTURES_TREES, 'data'), { recursive: true });
+// Warrior: Arms (26) and Protection (257), both present in the committed namespace. Active is the
+// FIRST group here on purpose — the committed row it replaced had it first, and the section below
+// asserts that the second group is the one that is NOT active (a fixture with the active group
+// second would test the derive path but stop testing this one; 4c already covers the second case).
+const TREE_SPEC_IDS = ['26', '257'];
+const treeSpecDocs = TREE_SPEC_IDS.map(id => treesDoc.specs[id]);
+treeSpecDocs.forEach((s, i) => ok(s && Array.isArray(s.nodes) && s.nodes.length > 0,
+  `the fixture spec #${i + 1} (${s ? `${s.specId} ${s.specName}` : 'missing'}) exists with nodes in the committed geometry`));
+function fixtureSelection(spec) {
+  // Take the first placed nodes that actually carry ranks and give each a rank of 1..max, so the
+  // rank labels, the "a non-empty selection lights at least one node" rule and the unlock-edge
+  // count all have real material instead of an empty tree.
+  const placed = (spec.nodes || []).filter(n => n && typeof n === 'object'
+    && n.displayRow !== null && n.displayRow !== undefined);
+  const talents = [];
+  placed.forEach(node => {
+    const ranks = (node.ranks || []).filter(r => r && typeof r === 'object');
+    if (ranks.length === 0) return;
+    const chosen = ranks[0];
+    talents.push({ talentId: chosen.talentId === undefined ? null : chosen.talentId,
+      spellId: chosen.spellId === undefined ? null : chosen.spellId, rank: 1 });
+  });
+  return talents.slice(0, 6);
+}
+const treeSidecar = {
+  status: 'ok', level: 60, fetchedAt: new Date().toISOString(), guild: 'Flowmasters',
+  race: { id: 7, name: 'Orc' }, class: { id: 1, name: 'Warrior' },
+  activeSpec: treeSpecDocs[0].specName,
+  talents: treeSpecDocs.map(spec => ({
+    specId: spec.specId, specName: spec.specName, spentPoints: 3, talents: fixtureSelection(spec),
+  })),
+};
+{
+  const rosterTrees = { schemaVersion: 2, characters: [
+    { id: TREE_ID, player: 'fixture', name: 'Two Spec Fixture', track: 'flowmasters', role: 'DPS',
+      roleSec: 'None', race: 'Orc', class: 'Warrior', prof1: 'None', prof2: 'None', guild: 'Flowmasters' },
+  ] };
+  fs.writeFileSync(path.join(FIXTURES_TREES, 'data', 'characters.json'), JSON.stringify(rosterTrees, null, 2));
+  fs.writeFileSync(path.join(FIXTURES_TREES, 'data', 'battle-net-map.json'), JSON.stringify(
+    { schemaVersion: 2, updatedAt: new Date().toISOString(), entries: {} }, null, 2));
+  fs.writeFileSync(path.join(FIXTURES_TREES, 'data', 'character-data.json'), JSON.stringify(
+    { schemaVersion: 2, syncedAt: new Date().toISOString(), triggeredBy: 'harness',
+      characters: { [TREE_ID]: treeSidecar } }, null, 2));
+  // The geometry travels with the fixture: detail.js loads it through the same relative fetch as
+  // every other sidecar, and the copy is byte-identical to the committed file, so nothing here
+  // diverges from what deploy ships.
+  fs.copyFileSync(path.join(ROOT, 'data', 'talent-trees.json'),
+    path.join(FIXTURES_TREES, 'data', 'talent-trees.json'));
+  fs.copyFileSync(path.join(ROOT, 'data', 'guild-config.json'),
+    path.join(FIXTURES_TREES, 'data', 'guild-config.json'));
+}
+const treesSourceDirWas = sourceDir;
+sourceDir = FIXTURES_TREES;
+await dataMod.loadSidecars();
+state.setCharacters([{ id: TREE_ID, player: 'fixture', name: 'Two Spec Fixture', track: 'flowmasters',
+  role: 'DPS', roleSec: 'None', race: 'Orc', class: 'Warrior', prof1: 'None', prof2: 'None',
+  guild: 'Flowmasters' }]);
+state.renderAll();          // setCharacters assigns; the repaint is the caller's (state.js:131)
+ok(treeSidecar.talents.length === 2 && treeSidecar.talents.every(g => g.talents.length > 0),
+  `the two-spec fixture is built: ${treeSidecar.talents.map(g => `${g.specName} (${g.talents.length} picks)`).join(' + ')}`);
+ok(cards().map(c => c.attrs['data-character-id']).join() === TREE_ID
+  && state.getIncludedGuild() === 'Flowmasters',
+  `and it is the only row on screen under the copied guild config (${cards().length} card(s), scope "${state.getIncludedGuild()}")`);
+
 // ---------- e. the visual talent tree vs data/talent-trees.json ----------
 
 detail.closeDetail();
-openRow(RICH_ID);
+openRow(TREE_ID);
 detail.setDetailTab('talents');
 const talentsHtml = panelSlice(contentHtml(), 'talents');
 ok(talentsHtml.includes(`Tree geometry: ${esc(treesDoc.staticNamespace)}`),
   `the panel states the static namespace the geometry was built against (${treesDoc.staticNamespace})`);
-const richSpecs = richSidecar.talents.filter(g => g && typeof g === 'object');
+const richSpecs = treeSidecar.talents.filter(g => g && typeof g === 'object');
 const treeBlocks = (() => {
   const marker = '<div class="wow-tree overflow-hidden"';
   const positions = [];
@@ -1146,8 +1235,8 @@ ok(countOf('<div class="pt-2 border-t border-slate-800"></div>', talentsHtml) ==
   'the stacked section dividers are gone now that the spec groups are sub-tabs (a rule above a hidden panel would paint inside the visible one)');
 ok(richSpecs.every(s => talentsHtml.includes(`>${esc(s.specName)}</h4>`)),
   `both spec headings render (${richSpecs.map(s => s.specName).join(', ')})`);
-ok(countOf('>Active<', talentsHtml) === 1 && talentsHtml.includes(`>${esc(richSidecar.activeSpec)}</h4>`),
-  `exactly the active specialization is badged (${richSidecar.activeSpec})`);
+ok(countOf('>Active<', talentsHtml) === 1 && talentsHtml.includes(`>${esc(treeSidecar.activeSpec)}</h4>`),
+  `exactly the active specialization is badged (${treeSidecar.activeSpec})`);
 
 // Node grid, rank labels and unlock edges, re-derived from the JSON here.
 function selectionMapsFor(group) {
@@ -1247,9 +1336,9 @@ detail.closeDetail();
 // contract the top-level bar is: one named tablist, one tab per group, aria-controls /
 // aria-labelledby pairs, one aria-selected, one tabindex="0", arrow keys that wrap, focus that
 // follows the repaint, and a top-level bar that does not move one byte.
-const activeSpecPosition = richSpecs.findIndex(g => g.specName === richSidecar.activeSpec);
+const activeSpecPosition = richSpecs.findIndex(g => g.specName === treeSidecar.activeSpec);
 detail.closeDetail();
-openRow(RICH_ID);
+openRow(TREE_ID);
 detail.setDetailTab('talents');
 const subHtml = panelSlice(contentHtml(), 'talents');
 ok(countOf('role="tablist"', subHtml) === 1 && countOf('role="tablist"', contentHtml()) === 2,
@@ -1269,14 +1358,14 @@ ok(subTabs.every(t => t.controls === `detail-subpanel-${t.subtab}`)
   `every sub-tab's aria-controls names its own sub-panel and each panel points back (${subPanels.map(p => p.id).join(', ') || 'none'})`);
 ok(subTabs.filter(t => t.selected === 'true').length === 1
   && (subTabs.find(t => t.selected === 'true') || {}).subtab === String(activeSpecPosition),
-  `the default selection is the active specialization's group (${richSidecar.activeSpec} = index ${activeSpecPosition})`);
+  `the default selection is the active specialization's group (${treeSidecar.activeSpec} = index ${activeSpecPosition})`);
 ok(detail.detailActiveSpecIndex() === activeSpecPosition,
   `detailActiveSpecIndex() agrees with the markup (${detail.detailActiveSpecIndex()})`);
 ok(subTabs.filter(t => t.tabindex === '0').length === 1
   && (subTabs.find(t => t.tabindex === '0') || {}).subtab === String(activeSpecPosition)
   && subTabs.filter(t => t.tabindex === '-1').length === subTabs.length - 1,
   'the sub-bar has its own roving tabindex: the selected tab is the only one in the tab sequence');
-ok(subTabs.filter(t => t.specActive === 'true').map(t => t.name).join() === esc(richSidecar.activeSpec)
+ok(subTabs.filter(t => t.specActive === 'true').map(t => t.name).join() === esc(treeSidecar.activeSpec)
   && subTabs.filter(t => t.specActive === 'false').length === subTabs.length - 1,
   `the active spec is marked on its tab and the others are not (${subTabs.map(t => `${t.name}:${t.specActive}`).join(', ')})`);
 ok(subTabs.every((t, i) => t.meta === `${richSpecs[i].spentPoints} pts`),
@@ -1364,10 +1453,10 @@ ok(subPanelSlice(degraded, 0).includes('No tree geometry synced for this spec')
 ok(!subPanelSlice(degraded, 0).includes('wow-tree'), 'a group with no geometry renders no tree shell at all');
 // A group list that disagrees with the cached selection falls back to the derived one rather than
 // showing an empty panel (the sidecar can change under an open modal).
-ok(detail.selectedSpecIndex(richSpecs, richSidecar, 42) === activeSpecPosition
-  && detail.selectedSpecIndex(richSpecs, richSidecar, null) === activeSpecPosition
+ok(detail.selectedSpecIndex(richSpecs, treeSidecar, 42) === activeSpecPosition
+  && detail.selectedSpecIndex(richSpecs, treeSidecar, null) === activeSpecPosition
   && detail.selectedSpecIndex(richSpecs, { activeSpec: 'Not A Spec' }, null) === 0
-  && detail.selectedSpecIndex([], richSidecar, 3) === 0,
+  && detail.selectedSpecIndex([], treeSidecar, 3) === 0,
   'selectedSpecIndex: out-of-range and unknown fall back to the active spec, then to the first group');
 // The same fallbacks with the active specialization in the SECOND group. Every committed row in this
 // roster happens to have activeSpec at index 0, where a "null means index 0" bug and "null means
@@ -1380,7 +1469,7 @@ const laterGroupSidecar = {
   activeSpec: richSpecs[1].specName,
   talents: [{ ...richSpecs[0] }, { ...richSpecs[1] }],
 };
-ok(richSpecs.length === 2 && richSpecs[1].specName !== richSidecar.activeSpec
+ok(richSpecs.length === 2 && richSpecs[1].specName !== treeSidecar.activeSpec
   && detail.selectedSpecIndex(laterGroupSidecar.talents, laterGroupSidecar, null) === 1
   && detail.selectedSpecIndex(laterGroupSidecar.talents, laterGroupSidecar, undefined) === 1
   && detail.selectedSpecIndex(laterGroupSidecar.talents, laterGroupSidecar, '') === 1
@@ -1403,6 +1492,16 @@ ok(detail.selectedSpecIndex(Array.from({ length: 101 }, (unused, i) => ({ specId
 
 
 detail.closeDetail();
+
+
+// Put the page back for the sections after this one, which read the committed roster again.
+sourceDir = treesSourceDirWas;
+await dataMod.loadSidecars();
+state.setCharacters(rosterChars);
+state.setQuery('');
+state.renderAll();
+// [f] continues in the modal [e2] left open, so put it back on the live rich row before it does.
+detail.openCharacterDetail(RICH_ID);
 
 // ---------- f. professions / stats / progress tab content ----------
 
@@ -2724,7 +2823,16 @@ const SOCKET_RE = /<[^>]*class="[^"]*wow-doll-slot[^"]*"\s+style="left:([\d.]+)%
 const parseSockets = html => [...html.matchAll(SOCKET_RE)].map(m => ({ slot: m[3], x: Number(m[1]), y: Number(m[2]) }));
 const posOf = (sockets, slot) => sockets.find(s => s.slot === slot) || { x: NaN, y: NaN };
 const RENDER_OK = 'https://render.worldofwarcraft.com/forever-us/character/53/877365-main-raw.png';
-const dollHtml = detail.gearTabHtml(richSidecar, richRow);
+// The doll needs BOTH shapes of one row — with a render and without — and "whatever the committed
+// sidecar happens to carry" stopped being the second one: on 2026-11-10 the nightly wrote a
+// -main-raw.png for this very character, so the "no render" baseline became a render and the
+// container gained its `has-render` token under a gate that was counting the plain form. A baseline
+// that depends on which assets Blizzard served this morning is not a baseline; both variants are
+// built here, from the same row, so every other count in this section (19 sockets, 17 item images)
+// still describes the gear it really synced.
+const dollNoRender = { ...richSidecar, media: { avatar: null, avatarSd: null, fullRender: null } };
+const dollWithRender = { ...richSidecar, media: { avatar: null, avatarSd: null, fullRender: RENDER_OK } };
+const dollHtml = detail.gearTabHtml(dollNoRender, richRow);
 const dollSockets = parseSockets(dollHtml);
 // Phase F put an optional ` is-<slug>` token on the figure element, so the figure checks below
 // match the class attribute in both forms — with and without the token — and never by pinning
@@ -2951,7 +3059,7 @@ ok(detail.gearTabHtml({ status: 'ok', gear: [] }).includes('No gear data')
 
 // The figure image: exactly one, only through the allowlist, lazy, and self-hiding.
 const dollImgs = sidecar => (detail.gearTabHtml(sidecar).match(/<img/g) || []).length;
-const renderDoll = detail.gearTabHtml({ ...richSidecar, media: { avatar: null, avatarSd: null, fullRender: RENDER_OK } });
+const renderDoll = detail.gearTabHtml(dollWithRender, richRow);
 const renderImg = (renderDoll.match(/<img class="wow-doll-render"[^>]*>/) || [''])[0];
 ok(countOf('<img class="wow-doll-render"', renderDoll) === 1 && renderImg.includes(`src="${esc(RENDER_OK)}"`),
   'the validated fullRender becomes exactly one figure <img> with the URL escaped as-is');
@@ -2979,7 +3087,7 @@ ok(detail.dollRenderFailed(null) === undefined && detail.dollRenderFailed({}) ==
 // One image, not two: the class art is suppressed wherever the real render is painted (the raw PNG
 // is RGBA with a transparent ground, so both figures showed through each other).
 ok(renderDoll.includes('class="wow-doll has-render"') && !dollHtml.includes('has-render'),
-  'a doll with a render carries has-render, a doll without one does not');
+  'a doll with a render carries has-render, and the same row without one does not');
 ok(/\.wow-doll\.has-render \.wow-doll-figure \{[^}]*background-image:\s*none/.test(appCssText),
   'css/app.css suppresses the silhouette background under .wow-doll.has-render (three classes, so it outranks the is-<slug> art rules)');
 ok(detail.isSafeIconUrl(RENDER_OK) === true
@@ -2994,9 +3102,8 @@ const rejectedBad = REJECTED_RENDERS.map(url => {
 }).filter(x => x !== '');
 ok(rejectedBad.length === 0,
   `a rejected render URL becomes no <img>, no src and no echoed host (${REJECTED_RENDERS.length} shapes tried, including a look-alike host suffix)`);
-ok(dollImgs({ ...richSidecar, media: { fullRender: RENDER_OK } })
-  === dollImgs(richSidecar) + 1,
-  `the render is the only image the figure adds (${dollImgs(richSidecar)} → ${dollImgs({ ...richSidecar, media: { fullRender: RENDER_OK } })} <img> in the panel)`);
+ok(dollImgs(dollWithRender) === dollImgs(dollNoRender) + 1,
+  `the render is the only image the figure adds (${dollImgs(dollNoRender)} → ${dollImgs(dollWithRender)} <img> in the panel)`);
 // No shift when the image is absent: from the figure layer down, the markup is identical once the
 // tooltip registry's call-order index is normalised (it counts registrations across the whole
 // process, so it is bookkeeping rather than layout — every other byte is compared as-is).

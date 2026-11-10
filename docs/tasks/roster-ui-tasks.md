@@ -271,3 +271,38 @@ Two minor items, fixed: the scope field no longer overwrites un-applied typing o
 the last paint wrote), and the render is eager (G1). One, accepted: the first paint runs before
 `guild-config.json` resolves, so a first-ever visit shows unscoped for a frame and then settles — a
 browser that has ever pressed Set reads its value synchronously from `localStorage` and never sees it.
+
+### G4 — the nightly moved the data under the harnesses (same day, after the push)
+
+`3015804 Sync Battle.net character data` landed while Phase G was being reviewed, and it was the
+first run to write data the harnesses had never seen: **11 auto-added Heghmoh members with no
+`race`/`class`** (correct — discovery gives you a name, resolution gives you the rest), **14 sidecar
+rows with a `media.fullRender`** (so G1 became visible immediately rather than after "the next
+nightly", which is what this document said earlier), and a re-fetch that left the Warrior the Talents
+gates were reading with **one** spec group instead of two.
+
+Two gates were wrong about the app, and one whole section was wrong about what a fixture is:
+
+- **`verify_stats.mjs`** tallied every row's `race`/`class`, so the rows without them appeared as a
+  phantom bucket and the bars "should" have summed to 100. `stats.js` is the authority and it does
+  two different things on purpose: `tallyBy` skips a falsy key (`stats.js:19`) while
+  `renderDistribution` is handed `chars.length` as the denominator (`stats.js:88`) — a row nobody has
+  resolved is counted in *N Chars* and absent from the bars. The harness now mirrors that, derives
+  the expected bar-width sum from the **covered share** instead of assuming 100, and asserts the
+  uncovered rows leak no stringified `undefined` label into the UI. Same reasoning for the printed
+  percentages.
+- **`verify_search_detail.mjs`** crashed on `c.class.toLowerCase()`. A row with no class cannot match
+  a class query and is not a row in the bars; both rules are now written down where the query
+  composition is asserted.
+- **The Talents section, and the doll's "no render" baseline, were rented from live data.** Eleven
+  gates about `detail.js` markup went red because a random player respec'd, and the doll baseline
+  broke because the same character was given a `-main-raw.png` under it. Both are now built by the
+  harness: a two-spec fixture row assembled out of the node grid of the committed
+  `data/talent-trees.json` (the same document every geometry assertion re-derives from, so the
+  checks bind to real coordinates and a real selection), and explicit `dollNoRender` /
+  `dollWithRender` variants of one row. A UI behaviour is pinned to data the repo controls; live data
+  is used for the gates that are *about* live data — the sidecar shape, the guild buckets, the counts.
+
+The rule this leaves behind: **machine-owned files are inputs, never fixtures.** `data/` changes on a
+schedule nobody reviews, so a gate that needs a shape builds that shape, and a gate that needs the
+committed content asserts the content and fails loudly when the shape it assumed is gone.

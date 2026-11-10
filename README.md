@@ -19,7 +19,7 @@ GitHub Pages serves the repository's static files.
 | `data/` | `guild-config.json` (the one hand-maintained setting: which guild this roster tracks), `characters.json` (the roster, schema v2), `character-data.json` (Battle.net display data incl. gear tooltip fields, combat stats, talents, professions, reputations, avatar/class icons), `battle-net-map.json` (roster id → Battle.net resolution), `talent-trees.json` (spec talent-tree geometry, pinned to the static namespace). `guild-config.json` is the one file a human owns and the sync never writes. All sidecars are optional: any missing or unreadable file just means less decoration, never a broken page. `class-icons.json` and `profession-icons.json` (static Blizzard icon maps, pinned to the static namespace). |
 | `tools/` | The Python side: `bnet/` is the sync + probe package (stdlib only, run as `python3 -m bnet sync`), `tests/` its offline unit tests, `migrate_v2.py` the one-shot roster migration. |
 | `.github/workflows/` | `sync-bnet.yml` (nightly + manual Battle.net sync — the only workflow holding credentials) and `pages.yml` (Tailwind build + Pages deploy — zero secrets). |
-| `.pi/scripts/` | Deterministic verification scripts (see below). |
+| `.pi/scripts/` | Deterministic verification scripts (see below). Machine-owned `data/` files are inputs to them, never fixtures: a gate that needs a shape (two spec groups, a sidecar with no render) builds it, because `data/` is rewritten nightly by a job nobody reviews. |
 | `docs/` | `bnet-api-notes.md` (the probed Battle.net contract), `refactor-design.md` (the design as built, with implementation deltas), `bnet-probe-raw.json` (captured probe payloads). |
 
 All page-internal paths are relative, because the site is served under a subpath.

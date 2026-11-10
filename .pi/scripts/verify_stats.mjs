@@ -156,10 +156,21 @@ function runApp(seededChars) {
   return { api, registry, missing, documentStub };
 }
 
+// Mirrors js/stats.js tallyBy(): a row with no race (or no class) is skipped by the tally while
+// STILL counting in the denominator, because renderDistribution() is handed `chars.length` as
+// `total` (stats.js:88) and `tallyBy` skips a falsy key (stats.js:19). That is not the harness
+// making peace with a bug — it is the shape the auto-add produces on purpose: a discovered
+// guild member arrives with no race/class until someone resolves them (tools/bnet/autoadd.py),
+// so a roster legitimately contains these rows and both panels have to say something sensible
+// about them. What they say is: counted in "N Chars", absent from the bars. The gate that used to
+// assume every row carries both fields broke the moment the nightly auto-added 11 such members;
+// the percentages therefore sum to the COVERED share, which is what the next check derives
+// instead of assuming 100. If the panels ever grow an "Unknown" bucket, that is a product change
+// and this expectation changes with it.
 const expected = (chars) => {
   const tally = (key) => {
     const m = new Map();
-    chars.forEach(c => m.set(c[key], (m.get(c[key]) || 0) + 1));
+    chars.forEach(c => { if (c[key]) m.set(c[key], (m.get(c[key]) || 0) + 1); });
     return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   };
   return { race: tally('race'), class: tally('class') };
@@ -178,14 +189,19 @@ for (const track of TRACKS) {
   api.setFilter(track);
   const pool = track === 'all' ? repoChars : repoChars.filter(c => c.track === track);
   const exp = expected(pool);
-  checkPanel('race', 'race-stats', 'race-summary', 'Races', exp.race, track);
-  checkPanel('class', 'class-stats', 'class-summary', 'Classes', exp.class, track);
+  checkPanel('race', 'race-stats', 'race-summary', 'Races', exp.race, track, pool.length);
+  checkPanel('class', 'class-stats', 'class-summary', 'Classes', exp.class, track, pool.length);
 }
 
-function checkPanel(kind, containerId, summaryId, unit, rows, track) {
+function checkPanel(kind, containerId, summaryId, unit, rows, track, poolSize) {
   const htmlOut = registry.get(containerId).innerHTML;
   const summary = registry.get(summaryId).innerText;
-  const total = rows.reduce((n, [, c]) => n + c, 0);
+  // The denominator is the FILTERED POOL, not the sum of the bars (stats.js:88 passes
+  // chars.length). They coincide exactly when every row carries the field, which is the case the
+  // old harness silently required; with auto-added rows in the pool they do not.
+  const total = poolSize;
+  const covered = rows.reduce((n, [, c]) => n + c, 0);
+  ok(covered <= total, `[${track}] ${kind} bars cover at most the pool (${covered}/${total})`);
   const names = rows.map(([n]) => n);
   ok(summary === `${rows.length} ${unit} / ${total} Chars`, `[${track}] ${kind} summary "${summary}"`);
   const renderedAll = names.every(n => htmlOut.includes(`>${n}<`) &&
@@ -193,11 +209,27 @@ function checkPanel(kind, containerId, summaryId, unit, rows, track) {
   ok(renderedAll, `[${track}] ${kind} renders ${rows.length} rows with count + %`);
   const strays = (kind === 'race' ? ALL_RACES : ALL_CLASSES).filter(n => !names.includes(n) && htmlOut.includes(`>${n}<`));
   ok(strays.length === 0, `[${track}] ${kind} shows no zero-count rows (strays: ${strays.join(',') || 'none'})`);
+  // Same derivation as the bar widths below: the printed percentages are relative to the pool, so
+  // they sum to the covered share plus rounding, not to 100, whenever a row lacks the field.
   const pctSum = rows.reduce((n, [, c]) => n + Math.round(c / total * 100), 0);
-  ok(Math.abs(pctSum - 100) <= rows.length, `[${track}] ${kind} rounded percentages sum to ${pctSum} (~100)`);
+  const coveredLabelPct = rows.reduce((n, [, c]) => n + c, 0) / (total || 1) * 100;
+  ok(Math.abs(pctSum - coveredLabelPct) <= rows.length,
+    `[${track}] ${kind} rounded percentages sum to ${pctSum} (~${coveredLabelPct.toFixed(0)} = covered share)`);
   const widths = [...htmlOut.matchAll(/width:([\d.]+)%/g)].map(m => parseFloat(m[1]));
-  ok(widths.length === rows.length && Math.abs(widths.reduce((a, b) => a + b, 0) - 100) < 1.5,
-    `[${track}] ${kind} bar widths sum to ${widths.reduce((a, b) => a + b, 0).toFixed(2)}%`);
+  // Derived, not assumed: the bars sum to the covered share of the pool, which is 100% exactly when
+  // no row is missing the field. Asserting a literal 100 here would have pinned the old
+  // every-row-has-a-race assumption a second time.
+  const coveredPct = total === 0 ? 0 : covered / total * 100;
+  const widthSum = widths.reduce((a, b) => a + b, 0);
+  ok(widths.length === rows.length && Math.abs(widthSum - coveredPct) < 1.5,
+    `[${track}] ${kind} bar widths sum to ${widthSum.toFixed(2)}% = the ${covered}/${total} covered share`);
+  if (covered < total) {
+    // And the uncovered rows are genuinely absent from the bars rather than surfacing under some
+    // invented label — the panel has no "Unknown" bucket, so a row named "undefined" would be the
+    // stringified key leaking into the UI.
+    ok(!/>undefined<|>null</.test(htmlOut),
+      `[${track}] ${kind} leaks no stringified empty key into the bars (${total - covered} row(s) uncovered)`);
+  }
   const order = [...htmlOut.matchAll(/font-semibold truncate [^"]*">([^<]+)</g)].map(m => m[1]);
   const sortedOk = order.every((n, i) => i === 0 || rows.findIndex(r => r[0] === order[i - 1]) <= i - 1 && rows.findIndex(r => r[0] === n) === i);
   ok(sortedOk, `[${track}] ${kind} rows ordered by count desc, then name`);
