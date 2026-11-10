@@ -4,8 +4,11 @@
 
   One stylised humanoid in one accent colour (the site gold, at a low fill-opacity so the item
   sockets painted on top of it stay readable). There is deliberately no text, no race detail and
-  no per-character variant here: Phase F of roster-ui-tasks.md owns bespoke per-character art, and
-  it will land as separate files under assets/silhouettes/char/ rather than by editing this one.
+  no per-character variant here. Phase F has since SHIPPED (2026-11-09) as owner-authored
+  PER-CLASS art: nine files beside this one (druid, hunter, mage, paladin, priest, rogue, shaman,
+  warlock, warrior), chosen by the allowlisted is-<slug> token in js/detail.js and mapped in
+  css/app.css. This file remains the fallback doll for class-less rows — every deviation from it
+  lives in the stylesheet, and this art is not edited to accommodate the doll.
 
   The canvas is 300x400 (3:4), centred on x=150, because app.css paints it with `background-size:
   contain` inside the fixed 420px-tall .wow-doll box. A box at least 315px wide — every doll from

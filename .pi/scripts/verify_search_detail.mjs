@@ -24,6 +24,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { execFileSync } from 'child_process';
 import { mkdtempSync } from 'fs';
 import { pathToFileURL } from 'url';
 
@@ -2496,13 +2497,18 @@ const SOCKET_RE = /<[^>]*class="[^"]*wow-doll-slot[^"]*"\s+style="left:([\d.]+)%
 const parseSockets = html => [...html.matchAll(SOCKET_RE)].map(m => ({ slot: m[3], x: Number(m[1]), y: Number(m[2]) }));
 const posOf = (sockets, slot) => sockets.find(s => s.slot === slot) || { x: NaN, y: NaN };
 const RENDER_OK = 'https://render.worldofwarcraft.com/forever-us/character/53/877365-main-raw.png';
-const dollHtml = detail.gearTabHtml(richSidecar);
+const dollHtml = detail.gearTabHtml(richSidecar, richRow);
 const dollSockets = parseSockets(dollHtml);
+// Phase F put an optional ` is-<slug>` token on the figure element, so the figure checks below
+// match the class attribute in both forms — with and without the token — and never by pinning
+// the exact generic string, which would fail at the first classed row rather than at a defect.
+const FIGURE_TAG_RE = /<div class="(wow-doll-figure(?: is-[a-z]+)?)"><\/div>/g;
+const figureTags = html => [...html.matchAll(FIGURE_TAG_RE)].map(m => m[1]);
 
 ok(!detailJsText.includes('grid-cols-5'),
   'the two five-across grids are gone from js/detail.js (the doll replaced them, and the bare utility left the generated stylesheet with them)');
-ok(countOf('class="wow-doll">', dollHtml) === 1 && countOf('<div class="wow-doll-figure"></div>', dollHtml) === 1,
-  `exactly one doll container with one figure layer (${countOf('class="wow-doll">', dollHtml)} box, ${countOf('<div class="wow-doll-figure"></div>', dollHtml)} figure)`);
+ok(countOf('class="wow-doll">', dollHtml) === 1 && figureTags(dollHtml).length === 1,
+  `exactly one doll container with one figure layer (${countOf('class="wow-doll">', dollHtml)} box, ${figureTags(dollHtml).length} figure)`);
 ok(DOLL_SLOTS.length === 19 && dollSockets.length === 19
   && dollSockets.map(s => s.slot).join('·') === DOLL_SLOTS.join('·'),
   `all 19 sockets are placed in the const order, filled or not (${dollSockets.length} parsed of ${richSidecar.gear.length} items)`);
@@ -2745,7 +2751,8 @@ ok(dollImgs({ ...richSidecar, media: { fullRender: RENDER_OK } })
 // process, so it is bookkeeping rather than layout — every other byte is compared as-is).
 const belowFigure = html => {
   const stripped = html.replace(/<img class="wow-doll-render"[^>]*>/g, '');
-  return stripped.slice(stripped.indexOf('<div class="wow-doll-figure"></div>'))
+  const at = stripped.search(/<div class="wow-doll-figure[^"]*"><\/div>/);
+  return stripped.slice(at)
     .replace(/showDetailTooltip\(event, \d+\)/g, 'showDetailTooltip(event, N)');
 };
 ok(belowFigure(renderDoll) === belowFigure(dollHtml) && belowFigure(renderDoll).length > 1000
@@ -2773,6 +2780,123 @@ ok(fs.existsSync(path.join(ROOT, 'assets', 'silhouettes', 'generic.svg')),
 ok(!/<img[^>]+src="[^"]*silhouette/i.test(dollHtml) && !dollHtml.includes('generic.svg')
   && !dollHtml.includes('assets/'),
   'no markup path can turn the silhouette into an <img> (the constraint that keeps the <img> host and src pins above honest)');
+
+// ---- Phase F: the allowlisted class token, the per-class art urls, and a PIXEL alignment probe
+//
+// js/detail.js picks the class silhouette from (sidecar.class.name) || row.class, trims and
+// case-folds it, and emits one of nine hardcoded tokens or none — so the question the gate has
+// to answer is not "does Warrior work" but "can NOTHING ELSE reach the stylesheet": an unknown
+// class, a class-less auto-added row, and hostile strings must all land on the bare generic
+// figure, and no string may smuggle a token, a URL or an attribute. And because the owner's nine
+// canvases are 512x512 SQUARE while the doll's Head-7/Feet-92 bands were contracted against 3:4
+// art, the per-class background-size/position rules in app.css are gated the E1/R1 way: not
+// against a remembered table, but against chrome-headless-shell screenshots of the committed
+// stylesheet itself (probe_doll_art.py), measured on the figure's exact #0a0a0a pixels.
+console.log('\n[4f-F] Phase F: nine allowlisted tokens, resolvable art urls, hostile strings inert, probe-measured alignment');
+
+const CLASS_ART = { druid: 'Druid', hunter: 'Hunter', mage: 'Mage', paladin: 'Paladin',
+  priest: 'Priest', rogue: 'Rogue', shaman: 'Shaman', warlock: 'Warlock', warrior: 'Warrior' };
+const figureAttr = html => (html.match(/<div class="(wow-doll-figure[^"]*)"><\/div>/) || [, ''])[1];
+const gearRowF = extra => ({ id: 'F1', player: 'one', name: 'Char', track: 'alts',
+  role: 'DPS', roleSec: 'None', race: 'Orc', ...extra });
+const gearSidecarF = extra => ({ status: 'ok', gear: [{ slot: 'Chest', name: 'C', ilvl: 1 }], ...extra });
+const dollFor = (sidecar, row) => detail.gearTabHtml(sidecar || gearSidecarF({}), row || null);
+
+const tokenBad = [];
+Object.entries(CLASS_ART).forEach(([slug, name]) => {
+  const bySidecar = figureAttr(dollFor(gearSidecarF({ class: { id: 7, name } })));
+  const byRow = figureAttr(dollFor(gearSidecarF({}), gearRowF({ class: name })));
+  if (bySidecar !== `wow-doll-figure is-${slug}`) tokenBad.push(`${name} via sidecar -> ${bySidecar || 'none'}`);
+  if (byRow !== `wow-doll-figure is-${slug}`) tokenBad.push(`${name} via row -> ${byRow || 'none'}`);
+  const body = (appCssText.match(new RegExp(`\\.wow-doll-figure\\.is-${slug} \\{([^{}]*)\\}`)) || [, ''])[1];
+  const url = (body.match(/background-image:\s*url\("([^"]+)"\)/) || [, ''])[1];
+  if (url !== `../assets/silhouettes/${slug}.svg`
+    || !fs.existsSync(path.join(ROOT, 'assets', 'silhouettes', `${slug}.svg`))) {
+    tokenBad.push(`${name}: css url ${url || '(absent)'} not the shipped ../assets/silhouettes/${slug}.svg`);
+  }
+});
+ok(tokenBad.length === 0,
+  `all nine class names render their exact is-<slug> token from BOTH the sidecar {class:{name}} and the roster string, and app.css ships a resolvable url() per slug (${Object.keys(CLASS_ART).length} classes × 2 sources checked${tokenBad.length ? `; broken: ${tokenBad.slice(0, 4).join(' | ')}` : ''})`);
+
+const bareBad = [
+  ['row with no class at all', dollFor(gearSidecarF({}), gearRowF({}))],
+  ['auto-added row shape', dollFor(null, gearRowF({}))],
+  ['sidecar class without a name', dollFor(gearSidecarF({ class: { id: 99 } }), null)],
+  ['unknown class name (Deathknight)', dollFor(gearSidecarF({ class: { id: 6, name: 'Deathknight' } }), null)],
+].filter(([, html]) => figureAttr(html) !== 'wow-doll-figure')
+  .map(([what]) => what);
+ok(bareBad.length === 0,
+  `no class, a nameless sidecar class and an unknown class all render the bare generic figure (${bareBad.join('; ') || '4/4 bare'})`);
+
+const HOSTILE = ['Evil ../../x', 'Warrior" onload="x'];
+const hostileBad = [];
+HOSTILE.forEach(bad => {
+  [[`sidecar name ${JSON.stringify(bad)}`, dollFor(gearSidecarF({ class: { id: 1, name: bad } }))],
+    [`row class ${JSON.stringify(bad)}`, dollFor(gearSidecarF({}), gearRowF({ class: bad }))]]
+    .forEach(([what, html]) => {
+      if (figureAttr(html) !== 'wow-doll-figure') hostileBad.push(`${what} -> ${figureAttr(html)}`);
+      if (html.includes('../') || html.includes('silhouettes/') || /\burl\(/.test(html)) hostileBad.push(`${what}: a path or url() leaked into the markup`);
+      if (bad.includes('onload') && html.includes('onload="x')) hostileBad.push(`${what}: attribute injection reached the markup`);
+      if (countOf('wow-doll-figure', html) !== 1) hostileBad.push(`${what}: ${countOf('wow-doll-figure', html)} figure layers`);
+    });
+});
+ok(hostileBad.length === 0,
+  `hostile class strings emit NO extra token, NO url, ONE figure layer and no attribute leak (${HOSTILE.length} strings × 2 sources${hostileBad.length ? `; leaks: ${hostileBad.slice(0, 3).join(' | ')}` : ''})`);
+
+ok(figureAttr(dollFor(gearSidecarF({ class: { id: 11, name: 'Druid' } }), gearRowF({ class: 'Warrior' }))) === 'wow-doll-figure is-druid',
+  'sidecar.class beats row.class when they differ (Druid sidecar over a Warrior roster row)');
+ok(figureAttr(dollFor(gearSidecarF({ class: { id: 6, name: 'Deathknight' } }), gearRowF({ class: 'Warrior' }))) === 'wow-doll-figure',
+  'a name the nine files do not have never falls through to the row or to a guessed url (Deathknight sidecar + Warrior row = generic)');
+ok(figureAttr(dollFor(gearSidecarF({}), gearRowF({ class: '  PALADIN  ' }))) === 'wow-doll-figure is-paladin'
+  && figureAttr(dollFor(gearSidecarF({ class: { name: 'warlocK ' } }))) === 'wow-doll-figure is-warlock',
+  'the fold trims and case-folds before matching ("  PALADIN  " and "warlocK " hit their files)');
+
+// The alignment gate, per the E1/R1 lesson: everything is measured or derived, nothing re-typed.
+// probe_doll_art.py loads THE COMMITTED app.css, renders each is-<slug> figure at the reference
+// padding box (both numbers parsed out of .wow-doll there), and returns the figure bbox from
+// exact #0a0a0a pixels. The bands it is judged against are parsed from THIS run's sockets, and
+// the tolerance split follows the stylesheet itself: a class whose rule re-scales (a committed
+// background-size) must land its head on the Head band and keep its feet by the Feet band;
+// a class kept on plain contain is held to the design\'s original 8-point deviation allowance.
+let probe = null;
+let probeErr = '';
+try {
+  probe = JSON.parse(execFileSync('python3',
+    [path.join(ROOT, '.pi', 'scripts', 'probe_doll_art.py'), '--ref-only'],
+    { encoding: 'utf8', maxBuffer: 8 << 20, timeout: 300000 }));
+} catch (error) {
+  probeErr = `${error.message.split('\n')[0]} — chrome-headless-shell (override with DOLL_CHROME=…) and Pillow are required for the alignment gate; it fails rather than skipping green`;
+}
+ok(!!probe, probeErr || 'the doll alignment probe ran (chrome-headless-shell + Pillow available)');
+const headBand = posOf(dollSockets, 'Head').y;
+const feetBand = posOf(dollSockets, 'Feet').y;
+const alignBad = [];
+if (probe) {
+  Object.keys(CLASS_ART).forEach(slug => {
+    const entry = probe.slugs[slug];
+    const tuned = entry && entry.tuned && entry.tuned.ref;
+    if (!tuned) { alignBad.push(`${slug}: no tuned probe result (app.css lost its .is-${slug} rule?)`); return; }
+    if (!tuned.covered) alignBad.push(`${slug}: art does not cover the ${probe.boxes.ref.join('x')} reference box (white gap under the doll)`);
+    // Non-vacuity in the measured direction: the stylesheet MUST re-scale every class whose RAW
+    // (contain) head sits more than the design's 8 points below the Head band — that is the whole
+    // reason Option C exists — and a rule that stopped scaling falls back under the 8-point
+    // allowance check, where the raw measurement shows it cannot pass.
+    const raw = entry.raw && entry.raw.ref;
+    const ruleBody = (appCssText.match(new RegExp(`\\.wow-doll-figure\\.is-${slug} \\{([^{}]*)\\}`)) || [, ''])[1]
+      .replace(/\/\*[\s\S]*?\*\//g, '');
+    if (raw && raw.top - headBand > 8 && !/background-size:/.test(ruleBody)) {
+      alignBad.push(`${slug}: raw head ${raw.top}% is >8 points below the Head band and the rule does not re-scale (Option C regressed)`);
+    }
+    if (/background-size:/.test(ruleBody)) {
+      if (Math.abs(tuned.top - headBand) > 0.7) alignBad.push(`${slug}: head at ${tuned.top}% is off the Head band ${headBand}% by more than 0.7`);
+      if (tuned.bot < feetBand - 0.5 || tuned.bot > feetBand + 4.6) alignBad.push(`${slug}: feet at ${tuned.bot}% outside [${feetBand - 0.5}, ${feetBand + 4.6}] around the Feet band ${feetBand}%`);
+    } else if (Math.abs(tuned.top - headBand) > 8 || Math.abs(tuned.bot - feetBand) > 8) {
+      alignBad.push(`${slug}: contain-kept figure deviates past the 8-point allowance (head ${tuned.top}%, feet ${tuned.bot}%)`);
+    }
+  });
+}
+ok(probe && alignBad.length === 0,
+  probe ? `every class figure bbox lands on the Head ${headBand}%/Feet ${feetBand}% bands at the ${probe.boxes.ref.join('x')} reference box, measured from the committed CSS (${Object.keys(CLASS_ART).map(s => `${s} ${(probe.slugs[s].tuned && probe.slugs[s].tuned.ref || { top: 'x', bot: 'x' }).top}/${(probe.slugs[s].tuned && probe.slugs[s].tuned.ref || { top: 'x', bot: 'x' }).bot}`).join(' · ')})` : `alignment probe unavailable: ${probeErr}`);
 detail.closeDetail();
 
 // ------------------------------------------- 4g. Phase C: the guild chips

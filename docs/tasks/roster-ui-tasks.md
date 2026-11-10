@@ -1,13 +1,15 @@
 # Roster UI Adjustments (Round 2) — Tasks & Goals
 
-Status: **SHIPPED** (implemented 2026-11-09, Phases A–E, commits `e8a7432..2fd9ae4`);
-bespoke silhouette art (F) remains a queued, separate task list.
+Status: **SHIPPED** (implemented 2026-11-09, Phases A–E, commits `e8a7432..2fd9ae4`); bespoke
+silhouette art (F) also **SHIPPED 2026-11-09** as owner-authored **per-class** art (see Phase F
+for the deviation from the original per-validated-character plan).
 
 Outcome notes (what the implementation decided or changed relative to this plan):
 
 - **Owner decisions during implementation:** (1) the gear-doll fallback art is exactly ONE
-  generic `assets/silhouettes/generic.svg` (no per-race files) — Phase F swaps in bespoke art
-  per validated character later; its SVG header carries the measured art↔socket contract.
+  generic `assets/silhouettes/generic.svg` (no per-race files) — its SVG header carries the
+  measured art↔socket contract; when Phase F shipped it kept that one generic as the
+  class-less fallback and added per-class art beside it (see Phase F).
   (2) The nightly sync is now an approved ADDITIVE writer of `data/characters.json` and
   `sync-bnet.yml` commits it; README documents the third writer + only-visible-members caveat.
   (3) The Pages bundle allowlist widened narrowly to `assets/silhouettes/*.svg` (gate widened
@@ -110,11 +112,31 @@ Verified facts this plan rests on (checked 2026-11-09, do not re-litigate):
 - Regenerate `css/tailwind.css` with the deploy's exact command; reviewer pass
   (`subagent: reviewer`) on the full diff before push.
 
-## Phase F — Bespoke SVG silhouettes per validated character (QUEUED, separate list)
+## Phase F — Owner-authored SVG silhouettes (SHIPPED 2026-11-09)
 
-- One bespoke stylized silhouette per character with `validation.state: "validated"`
-  (currently 4: see `data/characters.json`), committed under `assets/silhouettes/char/`.
-- Used as the gear-doll fallback art (replaces the generic race silhouette for those
-  characters when the Battle.net render is absent/fails).
-- Does not block A–E: Phase B ships with generic race silhouettes; F swaps in bespoke
-  art per character as it lands.
+**Deviation from the original plan (recorded deliberately):** this list was written as one
+bespoke silhouette *per validated character* under `assets/silhouettes/char/`. What shipped is
+owner-authored art **per class** — nine files covering **all nine roster classes**
+(`assets/silhouettes/{druid,hunter,mage,paladin,priest,rogue,shaman,warlock,warrior}.svg`,
+512×512, solid #0a0a0a figure on a warm layered backdrop) — plus the existing `generic.svg`
+which **remains the fallback** for class-less rows (auto-added characters), unknown classes
+and any hostile class string.
+
+- Mapping: `js/detail.js` `dollClassToken()` folds `(sidecar.class.name) || row.class` and emits
+  exactly one of nine allowlisted `is-<slug>` tokens on the figure element, or none. No path is
+  ever built from data; the silhouette stays a CSS background layer (no `<img>` — the Phase B
+  invariant, still gated in `verify_search_detail.mjs` [4f]/[4f-F]).
+- Alignment: the nine canvases are square where `generic.svg` is 3:4, so five classes (druid,
+  hunter, priest, rogue, warlock) would otherwise paint their Head socket over bare backdrop
+  (raw deviation +8.6 to +22.7 points). The alignment is achieved **by CSS scale + position in
+  `css/app.css`** (uniform `background-size` 110–132% with a bottom anchor; measured head lands
+  at 6.5–7.0% against the Head-7 band) **over the owner art — the SVG files are intentionally
+  unmodified** (owner decision: our drawing stays byte-identical, every adjustment is reversible
+  in our stylesheet). A **viewBox bake-in remains a possible future consolidation** if the owner
+  ever wants the socket contract in the files themselves.
+- The phone-width residual (square art letterboxes at the 294px floor) is documented per class
+  in the `css/app.css` rule comments and is not hidden; measured by
+  `.pi/scripts/probe_doll_art.py` (chrome-headless-shell, exact-#0a0a0a figure pixels), which
+  the harness gate also runs — assertions measure the committed stylesheet, never a table.
+- Docs touch-up shipped alongside: `warrior.svg`'s stale `test-4.svg` path comment corrected
+  (comment only, zero art changes).

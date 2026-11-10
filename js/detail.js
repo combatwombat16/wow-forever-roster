@@ -969,7 +969,28 @@ function gearChipsHtml(items) {
   }).join('');
 }
 
-export function gearTabHtml(sidecar) {
+// The nine silhouettes the owner authored under assets/silhouettes/ (Phase F), keyed exactly by
+// file name minus .svg. css/app.css maps every token to its own background rule; this Set is the
+// only path from class data to that stylesheet, and it is the reason no data string can ever
+// become a URL: the emitted attribute is either one of these nine literals or nothing, so a
+// class-less auto-added row, an unknown class and a hostile string ('Evil ../../x',
+// 'Warrior" onload="x') all keep the bare .wow-doll-figure — generic.svg as before.
+const DOLL_CLASS_SLUGS = new Set(['druid', 'hunter', 'mage', 'paladin', 'priest', 'rogue',
+  'shaman', 'warlock', 'warrior']);
+
+// The doll's class token: the sidecar's Battle.net class name when it has one, else the roster
+// row's class string (auto-added rows carry neither), trimmed and case-folded, and only ever
+// returned when the fold is one of the nine files. Sidecar precedence mirrors the identity line:
+// what the API answered beats what the roster guessed.
+export function dollClassToken(sidecar, character) {
+  const sc = sidecar && typeof sidecar === 'object'
+    ? scalarText(ownValue(ownValue(sidecar, 'class'), 'name')) : '';
+  const row = character && typeof character === 'object' ? scalarText(character.class) : '';
+  const folded = (sc !== '' ? sc : row).trim().toLowerCase();
+  return DOLL_CLASS_SLUGS.has(folded) ? folded : '';
+}
+
+export function gearTabHtml(sidecar, character = null) {
   const gear = sidecar && typeof sidecar === 'object' && Array.isArray(sidecar.gear) ? sidecar.gear : null;
   if (!gear || gear.length === 0) return emptyState('No gear data synced yet.');
   const bySlot = new Map();
@@ -989,14 +1010,18 @@ export function gearTabHtml(sidecar) {
   // the figure is the CSS layer plus (only when it exists) the validated render. .wow-doll-figure
   // carries no aria-hidden: the element is empty and its only content is a CSS background, which no
   // screen reader reads, and the modal reserves that attribute for the rejected-icon placeholders.
+  // Phase F: the one allowlisted token appended below picks the class silhouette in app.css; the
+  // art itself stays a CSS layer, and the token is the only art choice any data ever makes.
   const sockets = [...GEAR_BODY_SLOTS, ...GEAR_HAND_SLOTS]
     .map(slot => gearSlotHtml(slot, bySlot.get(slot) || null, dollRegionStyle(slot)))
     .join('');
+  const token = dollClassToken(sidecar, character);
+  const figureClass = token === '' ? 'wow-doll-figure' : `wow-doll-figure is-${token}`;
   const known = [...bySlot.values()].length;
   if (known === 0 && other.length === 0) return emptyState('No gear data synced yet.');
   return `<div class="space-y-1.5">
     <div class="wow-doll">
-      <div class="wow-doll-figure"></div>
+      <div class="${figureClass}"></div>
       ${dollRenderHtml(sidecar)}
       ${sockets}
     </div>
@@ -2548,7 +2573,7 @@ export function detailHtml(character, sidecar, mapEntry, lifecycle, badgeHtml = 
   const visibleTab = detailActiveTab();
   return `<div class="shrink-0">${header}${mismatchFlag}${body}</div>
     ${tabBarHtml()}
-    ${tabPanel('gear', gearTabHtml(sidecar))}
+    ${tabPanel('gear', gearTabHtml(sidecar, character))}
     ${tabPanel('talents', talentsTabHtml(sidecar))}
     ${tabPanel('professions', professionsTabHtml(sidecar, { subTabs: visibleTab === 'professions' }))}
     ${tabPanel('reputation', reputationTabHtml(sidecar))}
