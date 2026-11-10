@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  assets/silhouettes/druid.svg — Tauren druid standing calm and rooted, antlered helm
+  crowned high, gnarled living staff cradled in the left forepaw, right hand resting at
+  the chest in a healing gesture, a faint translucent bear-spirit rising behind the
+  shoulders. Same conventions as the roster files: solid #0a0a0a figure, warm layered
+  backdrop, interior etching, glow accents — accents in amber gold (etching #cf9a52,
+  glow #f0b45f, bright #ffd9a0) with leaf motifs; the bear spirit is drawn at low
+  opacity behind the figure group.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Tauren Druid — Antlered Helm, Living Staff, Bear Spirit (WoW style silhouette)</title>
+
+  <!-- ============ backdrop ============ -->
+  <rect width="512" height="512" fill="#1a1410"/>
+  <circle cx="256" cy="255" r="198" fill="#2e2318"/>
+  <circle cx="256" cy="255" r="152" fill="#3d2c1a"/>
+  <!-- rune tick rings -->
+  <circle cx="256" cy="255" r="176" fill="none" stroke="#cf9a52" stroke-opacity="0.16" stroke-width="7" stroke-dasharray="3 24"/>
+  <circle cx="256" cy="255" r="128" fill="none" stroke="#cf9a52" stroke-opacity="0.10" stroke-width="5" stroke-dasharray="2 17"/>
+  <!-- drifting leaves -->
+  <g fill="#cf9a52" fill-opacity="0.3">
+    <path d="M 400 118 C 406 110, 416 110, 420 118 C 416 126, 406 126, 400 118 Z" transform="rotate(24 410 118)"/>
+    <path d="M 88 178 C 94 170, 104 170, 108 178 C 104 186, 94 186, 88 178 Z" transform="rotate(-18 98 178)"/>
+    <path d="M 386 338 C 392 330, 402 330, 406 338 C 402 346, 392 346, 386 338 Z" transform="rotate(52 396 338)"/>
+  </g>
+  <!-- drifting motes -->
+  <g fill="#cf9a52">
+    <circle cx="92" cy="64" r="3" fill-opacity="0.3"/>
+    <circle cx="418" cy="92" r="2.4" fill-opacity="0.3"/>
+    <circle cx="452" cy="180" r="3.2" fill-opacity="0.25"/>
+    <circle cx="70" cy="330" r="2.6" fill-opacity="0.28"/>
+    <circle cx="392" cy="52" r="2" fill-opacity="0.4"/>
+    <circle cx="30" cy="220" r="2" fill-opacity="0.25"/>
+    <circle cx="474" cy="270" r="2.2" fill-opacity="0.3"/>
+    <circle cx="140" cy="44" r="2" fill-opacity="0.3"/>
+    <circle cx="436" cy="414" r="2.4" fill-opacity="0.22"/>
+    <circle cx="56" cy="148" r="1.8" fill-opacity="0.28"/>
+    <circle cx="348" cy="302" r="2" fill-opacity="0.18"/>
+  </g>
+  <ellipse cx="256" cy="480" rx="210" ry="18" fill="#0d0a07"/>
+
+  <!-- ============ bear spirit (translucent, behind the shoulders) ============ -->
+  <g fill="none" stroke="#f0b45f">
+    <path fill="#f0b45f" fill-opacity="0.12" stroke-opacity="0.3" stroke-width="3"
+          d="M 210 150
+             C 196 130, 200 104, 218 92
+             C 214 78, 222 66, 236 66
+             C 244 66, 250 72, 252 80
+             L 260 80
+             C 262 72, 268 66, 276 66
+             C 290 66, 298 78, 294 92
+             C 312 104, 316 130, 302 150
+             C 306 170, 296 188, 276 194
+             C 268 200, 244 200, 236 194
+             C 216 188, 206 170, 210 150 Z"/>
+    <ellipse fill="#f0b45f" fill-opacity="0.09" stroke="none" cx="256" cy="172" rx="21" ry="14"/>
+    <!-- calm closed bear eyes -->
+    <path stroke-opacity="0.35" stroke-width="2.5" stroke-linecap="round" d="M 230 138 Q 237 144, 244 138"/>
+    <path stroke-opacity="0.35" stroke-width="2.5" stroke-linecap="round" d="M 268 138 Q 275 144, 282 138"/>
+    <!-- rising wisps from the spirit into the shoulders -->
+    <path stroke-opacity="0.22" stroke-width="2" stroke-linecap="round" d="M 214 196 C 208 210, 206 224, 210 238"/>
+    <path stroke-opacity="0.22" stroke-width="2" stroke-linecap="round" d="M 298 196 C 304 210, 306 224, 302 238"/>
+  </g>
+
+  <!-- ============ ground mist ============ -->
+  <path d="M 40 476 C 84 452 122 468 162 458 C 204 448 236 466 278 456 C 320 446 358 464 398 454 C 436 444 466 462 496 456 L 496 512 L 40 512 Z"
+        fill="#0d0a07" fill-opacity="0.45"/>
+  <path d="M 70 490 C 112 476 146 488 186 482 C 228 474 258 486 300 480 C 342 472 378 486 416 480 C 448 473 472 484 492 480 L 492 512 L 70 512 Z"
+        fill="#241a10" fill-opacity="0.4"/>
+
+  <g fill="#0a0a0a" stroke="#0a0a0a" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- ================= ANTLERED HELM (crowned high) ================= -->
+    <!-- left antler: beam + tines + knobs -->
+    <path stroke-width="7" fill="none" d="M 234 192 C 222 160, 208 130, 196 100"/>
+    <path stroke-width="4.5" fill="none" d="M 226 168 C 214 158, 204 152, 192 150"/>
+    <path stroke-width="4.5" fill="none" d="M 218 140 C 206 132, 198 128, 186 126"/>
+    <circle cx="196" cy="100" r="4.5" stroke="none"/>
+    <circle cx="192" cy="150" r="3.5" stroke="none"/>
+    <circle cx="186" cy="126" r="3.5" stroke="none"/>
+    <!-- right antler -->
+    <path stroke-width="7" fill="none" d="M 278 192 C 290 160, 304 130, 316 100"/>
+    <path stroke-width="4.5" fill="none" d="M 286 168 C 298 158, 308 152, 320 150"/>
+    <path stroke-width="4.5" fill="none" d="M 294 140 C 306 132, 314 128, 326 126"/>
+    <circle cx="316" cy="100" r="4.5" stroke="none"/>
+    <circle cx="320" cy="150" r="3.5" stroke="none"/>
+    <circle cx="326" cy="126" r="3.5" stroke="none"/>
+    <!-- helm cap -->
+    <path stroke="none" d="M 230 218
+             C 232 194, 244 182, 256 182
+             C 268 182, 280 194, 282 218
+             C 268 224, 244 224, 230 218 Z"/>
+    <!-- helm band rivet -->
+    <circle cx="256" cy="196" r="4" stroke="none"/>
+
+    <!-- ================= TAUREN HEAD ================= -->
+    <ellipse cx="256" cy="226" rx="24" ry="18" stroke="none"/>
+    <!-- wide ears out of the sides -->
+    <ellipse cx="219" cy="228" rx="13" ry="6" transform="rotate(-24 219 228)" stroke="none"/>
+    <ellipse cx="293" cy="228" rx="13" ry="6" transform="rotate(24 293 228)" stroke="none"/>
+    <!-- muzzle -->
+    <ellipse cx="256" cy="246" rx="18" ry="13" stroke="none"/>
+
+    <!-- ================= TORSO + PONCHO ================= -->
+    <path stroke="none" d="M 236 212
+             C 214 218, 198 232, 194 252
+             C 190 280, 194 310, 200 334
+             L 312 334
+             C 318 310, 322 280, 318 252
+             C 314 232, 298 218, 276 212
+             C 264 208, 248 208, 236 212 Z"/>
+    <!-- poncho fringe -->
+    <path stroke="none" d="M 208 334 L 212 350 L 216 334 Z"/>
+    <path stroke="none" d="M 226 334 L 230 350 L 234 334 Z"/>
+    <path stroke="none" d="M 278 334 L 282 350 L 286 334 Z"/>
+    <path stroke="none" d="M 296 334 L 300 350 L 304 334 Z"/>
+
+    <!-- ================= LIVING STAFF (cradled in the left forepaw) ================= -->
+    <path stroke-width="9" fill="none" d="M 168 486 L 212 105"/>
+    <!-- gnarled side branches -->
+    <path stroke-width="5" fill="none" d="M 194 236 C 184 226, 178 218, 172 210"/>
+    <path stroke-width="5" fill="none" d="M 200 172 C 210 164, 218 158, 226 152"/>
+    <path stroke-width="4.5" fill="none" d="M 186 340 C 176 334, 170 328, 164 320"/>
+    <!-- crown twigs -->
+    <path stroke-width="5" fill="none" d="M 212 108 L 202 86"/>
+    <path stroke-width="5" fill="none" d="M 212 108 L 213 80"/>
+    <path stroke-width="5" fill="none" d="M 212 108 L 224 88"/>
+    <!-- leaf clusters -->
+    <path stroke="none" d="M 196 84 C 202 74, 214 74, 218 82 C 212 90, 200 92, 196 84 Z"/>
+    <path stroke="none" d="M 220 92 C 228 84, 240 86, 242 94 C 234 100, 224 100, 220 92 Z"/>
+    <path stroke="none" d="M 188 96 C 182 86, 170 86, 166 94 C 172 102, 184 104, 188 96 Z"/>
+    <path stroke="none" d="M 168 208 C 160 200, 148 202, 146 210 C 154 216, 164 216, 168 208 Z"/>
+    <path stroke="none" d="M 230 150 C 238 142, 250 144, 252 152 C 244 158, 234 158, 230 150 Z"/>
+    <path stroke="none" d="M 162 318 C 154 312, 144 314, 142 322 C 150 327, 159 326, 162 318 Z"/>
+
+    <!-- ================= LEFT ARM (cradling the staff) ================= -->
+    <!-- shoulder (212,252) elbow (190,292) forepaw (188,318) -->
+    <path stroke-width="16" fill="none" d="M 212 252 L 190 292 L 188 314"/>
+    <circle cx="188" cy="320" r="10" stroke="none"/>
+    <!-- toes/fingers curling around the shaft -->
+    <path stroke-width="4.5" fill="none" d="M 182 314 L 192 310"/>
+    <path stroke-width="4.5" fill="none" d="M 183 321 L 194 318"/>
+    <path stroke-width="4.5" fill="none" d="M 185 328 L 195 326"/>
+
+    <!-- ================= RIGHT ARM (healing gesture at the chest) ================= -->
+    <!-- shoulder (302,252) elbow (320,296) palm (264,282) -->
+    <path stroke-width="15" fill="none" d="M 302 252 L 320 296 L 268 286"/>
+    <circle cx="263" cy="283" r="9" stroke="none"/>
+    <path stroke-width="4.5" fill="none" d="M 257 277 L 249 266"/>
+    <path stroke-width="4.5" fill="none" d="M 262 274 L 257 261"/>
+    <path stroke-width="4.5" fill="none" d="M 268 274 L 267 260"/>
+    <path stroke-width="4.5" fill="none" d="M 273 277 L 277 264"/>
+
+    <!-- ================= BEARD (chin fall with iron band) ================= -->
+    <path stroke="none" d="M 246 254
+             C 242 272, 244 290, 252 302
+             L 262 298
+             C 258 284, 258 268, 262 254 Z"/>
+    <rect x="243" y="274" width="19" height="6" rx="3" stroke="none"/>
+
+    <!-- ================= KILT + LEGS + HOOVES ================= -->
+    <path stroke="none" d="M 208 336
+             C 204 370, 204 405, 210 440
+             L 224 432 L 236 444 L 252 432 L 264 444 L 280 432
+             L 292 442 L 302 440
+             C 308 405, 308 370, 304 336 Z"/>
+    <path stroke-width="22" fill="none" d="M 236 434 L 232 462"/>
+    <path stroke-width="22" fill="none" d="M 276 434 L 280 462"/>
+    <path stroke="none" d="M 222 460
+             C 219 469, 219 479, 224 488
+             L 246 488
+             C 251 479, 251 469, 248 460 Z"/>
+    <path stroke="none" d="M 268 460
+             C 265 469, 265 479, 270 488
+             L 292 488
+             C 297 479, 297 469, 294 460 Z"/>
+
+    <!-- ================= BELT + pouches ================= -->
+    <path stroke="none" d="M 210 336 C 232 348, 284 348, 304 336 L 306 350 C 284 362, 230 362, 208 350 Z"/>
+    <circle cx="258" cy="352" r="6" stroke="none"/>
+    <!-- herb pouch left hip -->
+    <path stroke="none" d="M 206 352 L 224 356 L 222 374 C 220 382, 208 382, 204 374 Z"/>
+    <!-- vine-wrapped belt charm right -->
+    <path stroke-width="4" fill="none" d="M 300 350 C 310 358, 312 368, 306 376"/>
+    <path stroke="none" d="M 300 372 C 306 366, 312 368, 314 374 C 308 378, 302 378, 300 372 Z"/>
+
+    <!-- ================= rooted ground details ================= -->
+    <path stroke-width="4" fill="none" d="M 168 486 C 156 490, 146 490, 136 486"/>
+    <path stroke-width="4" fill="none" d="M 168 486 C 176 492, 184 494, 192 492"/>
+    <path stroke-width="4" fill="none" d="M 232 486 C 224 492, 216 494, 208 492"/>
+    <path stroke-width="4" fill="none" d="M 284 486 C 294 492, 304 492, 312 488"/>
+    <!-- tiny mushrooms at the edge -->
+    <path stroke="none" d="M 348 470 C 348 462, 362 462, 362 470 C 358 474, 352 474, 348 470 Z"/>
+    <rect x="352" y="472" width="5" height="10" rx="2" stroke="none"/>
+    <path stroke="none" d="M 366 476 C 366 470, 376 470, 376 476 C 373 479, 369 479, 366 476 Z"/>
+    <rect x="369" y="478" width="4" height="8" rx="2" stroke="none"/>
+  </g>
+
+  <!-- ============ interior amber etching ============ -->
+  <g fill="none" stroke="#cf9a52" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round">
+    <!-- staff spiral grain -->
+    <path d="M 172 460 C 180 448, 176 438, 168 432"/>
+    <path d="M 184 380 C 192 368, 188 358, 180 352"/>
+    <path d="M 198 280 C 206 268, 202 258, 194 252"/>
+    <path d="M 206 200 C 214 188, 210 178, 202 172"/>
+    <!-- poncho folds -->
+    <path d="M 214 240 C 210 268, 210 300, 216 330" stroke-opacity="0.4"/>
+    <path d="M 298 240 C 302 268, 302 300, 296 330" stroke-opacity="0.4"/>
+    <path d="M 236 226 C 248 232, 264 232, 276 226"/>
+    <!-- poncho neck band -->
+    <path d="M 232 216 C 246 222, 266 222, 280 216"/>
+    <!-- kilt folds + hem echo -->
+    <path d="M 222 352 C 218 384, 218 412, 222 436"/>
+    <path d="M 258 356 C 258 388, 258 414, 256 436"/>
+    <path d="M 292 352 C 296 384, 296 412, 292 436"/>
+    <path d="M 214 330 L 224 340 L 236 330 L 252 340 L 264 330 L 280 340 L 292 330" stroke-opacity="0.3"/>
+    <!-- muzzle nostrils + mouth -->
+    <circle cx="249" cy="244" r="2.2"/>
+    <circle cx="263" cy="244" r="2.2"/>
+    <path d="M 250 254 C 254 257, 258 257, 262 254"/>
+    <!-- ear inner lines -->
+    <path d="M 212 226 C 218 224, 224 224, 228 226" stroke-opacity="0.4"/>
+    <path d="M 284 226 C 290 224, 296 224, 300 226" stroke-opacity="0.4"/>
+    <!-- beard strands -->
+    <path d="M 250 262 C 248 278, 250 292, 256 300"/>
+    <path d="M 257 260 C 256 276, 257 288, 260 296"/>
+    <!-- belt edge -->
+    <path d="M 212 344 C 234 354, 284 354, 302 344"/>
+    <!-- hoof clefts -->
+    <path d="M 235 466 L 235 486"/>
+    <path d="M 281 466 L 281 486"/>
+  </g>
+
+  <!-- ============ glow accents ============ -->
+  <g fill="none" stroke="#f0b45f" stroke-opacity="0.6" stroke-width="3" stroke-linecap="round">
+    <!-- antler outer edges -->
+    <path d="M 232 190 C 220 158, 206 128, 196 102"/>
+    <path d="M 280 190 C 292 158, 306 128, 316 102"/>
+    <path d="M 224 166 C 214 158, 204 153, 194 151" stroke-opacity="0.4"/>
+    <path d="M 288 166 C 298 158, 308 153, 318 151" stroke-opacity="0.4"/>
+    <!-- helm crest -->
+    <path d="M 234 210 C 238 194, 248 186, 256 185"/>
+    <!-- staff crown + leaf edge glows -->
+    <path d="M 200 82 C 206 76, 214 76, 218 82"/>
+    <path d="M 186 94 C 180 88, 172 88, 168 92"/>
+    <path d="M 210 108 L 212 92"/>
+    <!-- staff outer edge lower -->
+    <path d="M 172 430 L 184 336" stroke-opacity="0.4"/>
+    <!-- healing radiance around the chest palm -->
+    <path d="M 246 260 L 242 252"/>
+    <path d="M 258 254 L 257 245"/>
+    <path d="M 270 253 L 272 244"/>
+    <path d="M 281 258 L 286 251"/>
+    <!-- ear tips -->
+    <path d="M 208 234 L 205 237" stroke-opacity="0.45"/>
+    <path d="M 304 234 L 307 237" stroke-opacity="0.45"/>
+    <!-- hoof fronts -->
+    <path d="M 224 484 L 244 484" stroke-opacity="0.45"/>
+    <path d="M 272 484 L 292 484" stroke-opacity="0.45"/>
+  </g>
+
+  <!-- healing leaf sparkles at the hand -->
+  <g fill="#ffd9a0" fill-opacity="0.9">
+    <path d="M 252 240 L 254 245 L 259 247 L 254 249 L 252 254 L 250 249 L 245 247 L 250 245 Z"/>
+    <path d="M 288 244 L 289 248 L 293 249 L 289 250 L 288 254 L 287 250 L 283 249 L 287 248 Z"/>
+    <path d="M 232 130 L 233 134 L 237 135 L 233 136 L 232 140 L 231 136 L 227 135 L 231 134 Z"/>
+  </g>
+
+  <!-- beard ring glint -->
+  <g stroke="#ffd9a0" stroke-opacity="0.7" stroke-width="2.5" stroke-linecap="round">
+    <path d="M 246 277 L 258 277"/>
+  </g>
+
+  <!-- calm closed druid eyes under the helm -->
+  <g stroke="#ffd9a0" stroke-opacity="0.75" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M 241 222 Q 246 226, 251 222"/>
+    <path d="M 261 222 Q 266 226, 271 222"/>
+  </g>
+</svg>
