@@ -96,7 +96,39 @@ def log_safe(value):
     return " ".join(text.split())[:LOG_LINE_MAX]
 
 
+def same_guild(a, b):
+    """True when two strings name the same guild: trimmed, case-folded, and compared with every
+    character outside letters/digits gone.
+
+    One comparison rather than an exact one with a forgiving fallback, so that the answer cannot
+    depend on which form of the question was asked first. Dropping the punctuation is what lets ``data/guild-config.json`` hold the display name
+    ("Twelve Guards") and still match the slug the profile carried (``twelve-guards``), so the
+    maintainer writes whichever form they know. An empty side never matches anything, not even
+    another empty side: a blank name must not scope the run to "every guild".
+
+    This is not the sync's private rule. ``js/state.js`` ``guildNameEquals()`` decides which rows the
+    SITE admits under the same scope, and the two answers have to be one answer: where they differ,
+    the nightly appends members the browser then never lists and nobody sees an error. All three
+    implementations (here, there, and the copy the artifact gate compares against) are pinned to ONE
+    table, ``tools/tests/fixtures/guild-name-cases.json`` -- asserted by ``test_sidecar_phase_c.py``,
+    by ``verify_search_detail.mjs`` and by ``verify_sync_artifacts.py``. A rule change edits the
+    table first, never a reader."""
+    # One comparison, not "exact first, then forgiving": the squashed form IS the name, and a value
+    # that squashes to nothing ("---") is not a name and matches nothing -- not even itself. A
+    # case-folded shortcut would answer True for that pair and js/state.js would answer False, which
+    # is exactly the kind of pair this function was written to make impossible.
+    left = "".join(ch for ch in str(a or "").strip().casefold() if ch.isalnum())
+    right = "".join(ch for ch in str(b or "").strip().casefold() if ch.isalnum())
+    return left != "" and left == right
+
+
 class Sync:
+    # Class-level defaults for the guild scope, so an instance built without __init__ (the summary
+    # tests construct one through __new__ and hand it only the collaborators it reports on) still
+    # summarises. __init__ overwrites both; discover_guilds rewrites them every auto-add pass.
+    guild_scope = None
+    guild_scope_excluded = frozenset()
+
     def __init__(self, args):
         self.args = args
         self.cache = http.Cache(args.state_dir, args.dry_run)
@@ -105,6 +137,12 @@ class Sync:
         self.f = fetch.Fetcher(self.client, self.cache)
         self.resolver = resolve.Resolver(self.f)
         self.budget_hit = False
+        # The guild the ADDITIVE auto-add is scoped to (data/guild-config.json, owner request
+        # 2026-11-10) and the guilds this run saw and did not add from. Both written by
+        # discover_guilds and reported by summary_lines, so a run that added nobody because of the
+        # scope says so instead of looking like a guild with no new members.
+        self.guild_scope = None
+        self.guild_scope_excluded = set()
 
     # -- run summary ----------------------------------------------------------- #
     def summary_lines(self, statuses, total, runtime_s, extra_lines=None):
@@ -154,6 +192,12 @@ class Sync:
                          + (" …" if len(f.icon_map_failures) > 12 else ""))
         if f.guild_fetch_failures:
             lines.append(f"WARNING: guild roster fetch failed for: {', '.join(sorted(f.guild_fetch_failures))}")
+        if self.guild_scope:
+            # Not a warning: scoping the auto-add is the configured behaviour. It is stated because
+            # "0 rows added" has more than one cause and a reviewer should not have to guess which.
+            lines.append(f"guild scope: {self.guild_scope} (auto-add reads only that guild's roster"
+                         + (f"; skipped: {', '.join(sorted(self.guild_scope_excluded))}"
+                            if self.guild_scope_excluded else "") + ")")
         if self.budget_hit:
             lines.append(f"WARNING: request cap ({config.MAX_REQUESTS}) reached; remaining work skipped this run")
         if statuses.get("fetch_error"):
@@ -224,12 +268,23 @@ class Sync:
         return lines
 
     # -- Phase C: additive guild-member auto-add -------------------------------- #
-    def discover_guilds(self, work):
-        """``{guild slug: display name}`` for every guild this run made discoverable.
+    def discover_guilds(self, work, *, guild_config_path=None):
+        """``{guild slug: display name}`` for the guilds this run made discoverable AND keeps.
 
         A guild slug is only ever discoverable from a resolved member's profile (notes
         §7.2: there is no guild search), so the profiles the resolver already fetched are
-        the whole source and this reads nothing."""
+        the whole source and this reads nothing.
+
+        What it returns is then scoped by ``data/guild-config.json`` (owner request 2026-11-10):
+        this roster keeps one guild, so the nightly stops discovering — and therefore stops
+        fetching, and stops adding members of — anybody else's. Everything above the filter is
+        untouched, so an unscoped config (no file, blank, unreadable) yields exactly the Phase C
+        behaviour. Resolution is deliberately NOT scoped: the guild-lever pass still resolves the
+        characters already on the roster however they were found, because the scope decides who may
+        ARRIVE, not who gets refreshed.
+
+        ``guild_config_path`` is injectable for the same reason ``IdAllocator(seed=…)`` is: a test
+        must be able to say what the scope is without rewriting a committed file."""
         found = {}
         for w in work.values():
             profile = w.get("profile")
@@ -246,6 +301,16 @@ class Sync:
             # iteration order was; the slug is still enough to fetch the roster.
             if slug not in found or (not found[slug] and name):
                 found[slug] = name
+        scope = config.included_guild(guild_config_path)
+        self.guild_scope = scope
+        if scope and found:
+            kept = {slug: name for slug, name in found.items()
+                    if same_guild(name, scope) or same_guild(slug, scope)}
+            self.guild_scope_excluded = {name or slug
+                                         for slug, name in found.items() if slug not in kept}
+            found = kept
+        else:
+            self.guild_scope_excluded = set()
         return found
 
     def auto_add(self, roster_records, ordered_ids, work):
@@ -268,6 +333,8 @@ class Sync:
         published (and refuses the whole run if the append is not purely additive).
         """
         lines = []
+        # No path here: the nightly scopes with the committed file, which is the whole point of
+        # committing it. discover_guilds takes the path so a test can scope without rewriting one.
         discovered = self.discover_guilds(work)
         if not discovered:
             return [], lines

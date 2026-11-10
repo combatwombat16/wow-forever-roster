@@ -252,10 +252,31 @@ const MAP_NAMES = id => {
     .filter(v => typeof v === 'string' || typeof v === 'number')
     .map(v => String(v));
 };
+// The committed guild scope (data/guild-config.json), read independently of the app. An absent or
+// blank file is "unscoped", which is the same reading js/state.js gives it.
+const GUILD_CONFIG_PATH = path.join(ROOT, 'data', 'guild-config.json');
+const INCLUDED_GUILD = fs.existsSync(GUILD_CONFIG_PATH)
+  ? String(JSON.parse(fs.readFileSync(GUILD_CONFIG_PATH, 'utf8')).includedGuild ?? '').trim()
+  : '';
+// The raw four-step bucket (sidecar guild → the row's own guild → Guildless → Unknown), then the
+// scope over it: the included guild plus the no-guild buckets, and nothing else.
+const rawGuildBucket = c => {
+  const sc = charDataDoc.characters[String(c.id)];
+  const scGuild = sc && typeof sc.guild === 'string' ? sc.guild.trim() : '';
+  if (scGuild !== '') return scGuild;
+  const rowGuild = typeof c.guild === 'string' ? c.guild.trim() : '';
+  if (rowGuild !== '') return rowGuild;
+  return sc ? 'Guildless' : 'Unknown';
+};
+const inGuildScope = c => INCLUDED_GUILD === ''
+  || ['Guildless', 'Unknown'].includes(rawGuildBucket(c))
+  || rawGuildBucket(c).toLowerCase() === INCLUDED_GUILD.toLowerCase();
+
 function expectedIds(track, query) {
   const terms = String(query).toLowerCase().split(/\s+/).filter(Boolean);
   return rosterChars.filter(c => {
     if (track !== 'all' && c.track !== track) return false;
+    if (!inGuildScope(c)) return false;
     if (terms.length === 0) return true;
     const fields = [c.name, c.player, c.class, c.role, c.roleSec]
       .concat(SIDECAR_GUILD(c.id), MAP_NAMES(c.id))
@@ -294,6 +315,212 @@ for (const track of TRACKS) {
 }
 ok(compositionFails === 0,
   `${checkedCombinations.length} track×query combinations match an independent tally (${TRACKS.length} tracks × ${QUERIES.length} queries)`);
+
+// ---- one guild-name rule, two languages ---------------------------------------------------- #
+// tools/tests/fixtures/guild-name-cases.json is the CONTRACT for "does this name select the included
+// guild?". bnet.sync.same_guild answers it in Python (which guild rosters the nightly fetches and
+// auto-adds) and state.guildNameEquals answers it here (which rows the scope admits, and which chip
+// they land on). A divergence is silent by construction: the run appends members the browser then
+// never lists, so the roster grows rows nobody can see and no log says so. test_sidecar_phase_c.py
+// pins the sync to the table; this is the site's half, and verify_sync_artifacts.py pins its own copy.
+const nameRuleTable = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/tests/fixtures/guild-name-cases.json'), 'utf8'));
+const tableCases = Array.isArray(nameRuleTable.cases) ? nameRuleTable.cases : [];
+ok(tableCases.length >= 8, `the shared guild-name table has cases to pin a rule (${tableCases.length})`);
+ok(tableCases.some(c => c.equal) && tableCases.some(c => !c.equal),
+  'the shared table pins both answers, so a compare that always returns one still fails here');
+for (const c of tableCases) {
+  ok(state.guildNameEquals(c.a, c.b) === c.equal,
+    `guildNameEquals(${JSON.stringify(c.a)}, ${JSON.stringify(c.b)}) === ${c.equal} — ${c.why || ''}`);
+  ok(state.guildNameEquals(c.b, c.a) === c.equal,
+    `…reversed for ${JSON.stringify(c.b)} / ${JSON.stringify(c.a)} — the chip row dedupes on this`);
+  // The dedupe key has to be the SAME equivalence class as the predicate, or the chip row folds names
+  // the predicate then splits again (two chips whose rows are indistinguishable). One exception, on
+  // purpose: the EMPTY class is not a class — a name that squashes to nothing is not a name, so
+  // guildKey('---') === guildKey('???') while the predicate calls them unequal (and matches nothing).
+  ok((state.guildKey(c.a) !== '' && state.guildKey(c.a) === state.guildKey(c.b)) === c.equal,
+    `guildKey agrees with guildNameEquals on ${JSON.stringify(c.a)} / ${JSON.stringify(c.b)}` +
+    ` (both empty-squash: ${state.guildKey(c.a) === '' && state.guildKey(c.b) === ''})`);
+}
+// And the rule is what the chips run on. Two spellings of one guild must be ONE chip, and that chip
+// must return BOTH rows: unscoped, matchesGuild used an exact compare while guildBuckets folded, so
+// the losing spelling had no chip that returned it — reachable by pressing Set with an empty field.
+{
+  const beforeScope = state.getIncludedGuild();
+  const before = state.getCharacters();
+  const guildfilterForTable = await import(moduleUrl('guildfilter.js'));   // same instance as scopeMod
+  // Neutral predicates for the duration: an earlier section leaves a track filter and a search query
+  // behind, and a row hidden by THOSE would look like a strangled guild row. (There is no getter for
+  // the track filter; the section after this one sets both of these itself.)
+  const foundQuery = state.getQuery();
+  state.setFilter('all');
+  state.setQuery('');
+  const twin = Object.assign({}, before[0],
+    { id: 'case-twin-row', name: 'Case Twin', player: 'Case Twin', guild: 'flowmasters' });
+  const spelled = before.concat([twin]);
+  state.setIncludedGuild('');                     // unscoped — the mode the exact compare used to run in
+  state.setCharacters(spelled);
+  const foldChips = state.guildBuckets().filter(b => b !== 'Guildless' && b !== 'Unknown'
+    && state.guildNameEquals(b, 'Flowmasters'));
+  const twinBucket = state.getGuildBucket(twin);
+  const chipRows = state.getFilteredCharacters().filter(c => {
+    const b = state.getGuildBucket(c);
+    return b !== 'Guildless' && b !== 'Unknown' && state.guildNameEquals(b, 'Flowmasters');
+  });
+  ok(foldChips.length === 1 && twinBucket === 'flowmasters'
+    && chipRows.length >= 2 && chipRows.some(c => c.id === twin.id),
+    `two spellings of one guild are one chip AND one bucket set: ${foldChips.length} chip ` +
+    `(${foldChips.join('/') || 'none'}), ${chipRows.length} rows including the twin ` +
+    `(${chipRows.some(c => c.id === twin.id)})`);
+  state.setCharacters(before);
+  state.setQuery(foundQuery);
+  guildfilterForTable.clearGuildScopeOverride();      // no override left behind for the sections after
+  ok(state.getIncludedGuild() === beforeScope,
+    `and the fixture leaves the scope exactly as it found it ("${state.getIncludedGuild()}" over "${beforeScope}")`);
+}
+// ---- the guild scope, on the committed data
+// The claim is not "a chip filters" but "the roster holds one guild, and every other guild's rows
+// are absent from every panel". So the tally above only matched once it applied the same scope,
+// and these three say the scope is real, comes from the committed file, and hides foreign-guild
+// rows rather than the guildless ones.
+state.setFilter('all');
+state.setQuery('');
+const scopedOut = rosterChars.filter(c => !inGuildScope(c)).map(c => String(c.id));
+ok(state.getIncludedGuild() === INCLUDED_GUILD,
+  `state.getIncludedGuild() is data/guild-config.json's value ("${state.getIncludedGuild()}")`);
+ok(state.getFilteredCharacters().map(c => String(c.id)).sort().join()
+  === rosterChars.filter(c => inGuildScope(c)).map(c => String(c.id)).sort().join(),
+  `All shows the included guild plus the no-guild rows and nothing else (hidden: ${scopedOut.join(', ') || 'nobody'})`);
+// Non-empty first: `every` over an empty list is true, so without this the claim below — "the scope
+// hides a NAMED guild" — would PASS on a roster with nothing to hide, which is the one case where a
+// silently-inert scope is exactly the bug.
+ok(scopedOut.length > 0,
+  `the committed scope hides something on the committed roster (${scopedOut.length} row(s)) — an inert scope is not a scoped roster`);
+ok(scopedOut.every(id => state.getGuildBucket(rosterChars.find(c => String(c.id) === id)) !== 'Guildless'
+  && state.getGuildBucket(rosterChars.find(c => String(c.id) === id)) !== 'Unknown'),
+  `what the scope hides is a NAMED foreign guild, never a guildless row (${scopedOut.map(id => `${id}=${state.getGuildBucket(rosterChars.find(c => String(c.id) === id))}`).join(', ') || 'nothing hidden'})`);
+ok(state.guildBuckets().every(b => b === INCLUDED_GUILD || b === 'Guildless')
+  && state.guildBuckets().includes(INCLUDED_GUILD),
+  `the chips are All, ${state.guildBuckets().join(' and ') || 'nothing'} — no foreign guild is offered while the scope holds`);
+
+// The control itself: the owner asked to INPUT and SELECT the guild, so it is a text field with a
+// datalist of the roster's own guilds, not a fixed select. Typing it is what re-admits a guild the
+// committed config hides, which is why the datalist is built from the RAW buckets and not the
+// scoped ones.
+const scopeMod = await import(moduleUrl('guildfilter.js'));
+ok(markup.includes('id="guild-scope-input"') && /id="guild-scope-input"[\s\S]{0,200}list="guild-scope-list"/.test(markup),
+  'index.html declares the guild input with a datalist of the roster\'s own guild names');
+ok(/id="guild-scope-set"[\s\S]{0,200}?onclick="applyGuildScope\(\)"/.test(markup)
+  && /id="guild-scope-reset"[\s\S]{0,200}?onclick="clearGuildScopeOverride\(\)"/.test(markup),
+  'the Set and ↺ buttons are declared in the markup and point at published handlers');
+ok(byId('guild-scope-input').value === INCLUDED_GUILD,
+  `the input opens showing the committed scope ("${byId('guild-scope-input').value}")`);
+// The ↺ is shown by renderGuildScope with classList.toggle('hidden', …). The committed Tailwind
+// preflight enforces [hidden]{display:none} at AUTHOR level, so the boolean attribute here could
+// never be undone by a class change: the button would stay display:none forever, and an owner who
+// pressed Set once could never hand the decision back. Every other hidden element in index.html uses
+// the class for exactly this reason — measured in chrome-headless-shell, attribute-hid + class shown
+// = display:none.
+const resetMarkup = /<button[^>]*id="guild-scope-reset"[^>]*>/.exec(markup);
+// Attribute NAMES only (values blanked), so `class="… hidden"` cannot be mistaken for the boolean
+// attribute — which is precisely the confusion that made the button unreachable.
+const resetAttrNames = resetMarkup ? resetMarkup[0].replace(/="[^"]*"/g, '=""') : '';
+ok(resetMarkup && !/\shidden(?:\s|=|>)/.test(resetAttrNames)
+  && /class="[^"]*\bhidden\b[^"]*"/.test(resetMarkup[0]),
+  'the ↺ is hidden with the `hidden` CLASS, not the attribute (the attribute outranks the toggle)');
+const datalistOptions = () => [...byId('guild-scope-list').innerHTML.matchAll(/<option value="([^"]*)"/g)].map(m => m[1]);
+ok(datalistOptions().length >= 1
+  && datalistOptions().every(name => name !== 'Guildless' && name !== 'Unknown'),
+  `the datalist offers guild names only, never a synthetic bucket (${datalistOptions().join(', ')})`);
+// Name them, do not just count: "some option that is not the included guild" is also true when the
+// only extra option is a guild that is already visible and the hidden one is missing — the exact
+// failure this list exists to prevent.
+const hiddenGuildNames = [...new Set(rosterChars.map(c => state.getGuildBucket(c))
+  .filter(b => b !== 'Guildless' && b !== 'Unknown' && b.toLowerCase() !== INCLUDED_GUILD.toLowerCase()))];
+ok(hiddenGuildNames.length > 0 && hiddenGuildNames.every(name => datalistOptions().includes(name)),
+  `the datalist offers every guild the scope currently hides (${hiddenGuildNames.join(', ') || 'none hidden'}) — that list is how a guild comes back`);
+
+// Type a different guild and press Set: the roster swaps guilds, it does not merely re-filter one.
+const scopeStoreKey = 'wow_forever_guild_scope';
+byId('guild-scope-input').value = 'heghmoh';
+scopeMod.applyGuildScope();
+const heghmohOnly = rosterChars.filter(c => rawGuildBucket(c).toLowerCase() === 'heghmoh').map(c => c.id);
+const heghmohWanted = rosterChars.filter(c => ['Guildless', 'Unknown'].includes(rawGuildBucket(c))
+  || rawGuildBucket(c).toLowerCase() === 'heghmoh').map(c => String(c.id)).sort().join();
+ok(state.getIncludedGuild() === 'heghmoh' && heghmohOnly.length === 1
+  && state.getFilteredCharacters().map(c => String(c.id)).sort().join() === heghmohWanted,
+  `typing a hidden guild and pressing Set swaps the roster to it: its ${heghmohOnly.length} row(s) plus the guildless ones (${heghmohWanted.split(',').length} total), and the previously included guild's rows are gone`);
+ok(!state.getFilteredCharacters().some(c => rawGuildBucket(c).toLowerCase() === INCLUDED_GUILD.toLowerCase()),
+  'and it really swaps rather than unions: no Flowmasters row survives a switch to Heghmoh');
+ok(store.get(scopeStoreKey) === 'heghmoh',
+  'the choice is this browser\'s: written to localStorage, never to a data file');
+// …and the way back must be on screen at the same moment the override is. An override this browser
+// cannot remove would outrank data/guild-config.json forever, including after a deploy changes it.
+ok(hidden('guild-scope-input') === false && hidden('guild-scope-reset') === false,
+  `with an override set, ↺ is visible (hidden=${hidden('guild-scope-reset')}) — otherwise "back to the committed config" has no control`);
+state.setFilter('all');
+ok(state.guildBuckets().join('·') === 'Guildless·Heghmoh'
+  || state.guildBuckets().join('·') === 'Heghmoh·Guildless',
+  `the chips re-derive around the new scope (${state.guildBuckets().join(' · ')})`);
+
+// An empty field is an answer: it unscopes this browser.
+byId('guild-scope-input').value = '';
+scopeMod.applyGuildScope();
+ok(state.getIncludedGuild() === '' && state.getFilteredCharacters().length === rosterChars.length,
+  `an empty Set clears the scope and every row is back (${state.getFilteredCharacters().length}/${rosterChars.length})`);
+ok(store.get(scopeStoreKey) === '',
+  'and clearing it is stored too — an absent key and an empty one are different answers on purpose');
+
+// ↺ hands the decision back to data/guild-config.json.
+scopeMod.clearGuildScopeOverride();
+ok(state.getIncludedGuild() === INCLUDED_GUILD && !state.guildScopeIsOverridden()
+  && !store.has(scopeStoreKey),
+  `↺ drops the override and the committed default holds again ("${state.getIncludedGuild()}")`);
+ok(hidden('guild-scope-reset') === true,
+  'and ↺ hides itself again, because there is nothing left to undo');
+
+// A FAILED re-read is not a config that says nothing. loadSidecar() cannot tell 404 from 5xx, and
+// reloadSidecars() runs after every Battle.net refresh — precisely when a blip is likely — so
+// collapsing the two would unscope the roster mid-session and label it "No guild selected", which
+// reads like a decision. The last value the app actually saw has to survive it.
+{
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async url => (String(url).includes('guild-config.json')
+    ? { ok: false, status: 503, json: async () => null } : realFetch(url));
+  await dataMod.reloadSidecars();
+  globalThis.fetch = realFetch;
+  ok(state.getIncludedGuild() === INCLUDED_GUILD && state.getFilteredCharacters().length > 0,
+    `a 503 on data/guild-config.json keeps the scope it already had ("${state.getIncludedGuild()}") instead of unscoping the roster`);
+}
+// A document that IS present and says nothing does clear: that is a real config, not a failure.
+{
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async url => (String(url).includes('guild-config.json')
+    ? { ok: true, status: 200, json: async () => ({ schemaVersion: 1, includedGuild: '   ' }) }
+    : realFetch(url));
+  await dataMod.reloadSidecars();
+  globalThis.fetch = realFetch;
+  ok(state.getIncludedGuild() === '',
+    'a config that is present but blank really does unscope (a failed read and an empty value differ)');
+  await dataMod.loadSidecars();
+}
+
+// Both spellings of "no guild" survive a scope: the sidecar that says guild:null, and the row there
+// is no sidecar to ask about at all (Unknown). Neither is a guild, so neither is what the scope
+// hides — and the 16 hand-added rows have to stay reachable under something.
+const noGuildIds = rosterChars.filter(c => ['Guildless', 'Unknown'].includes(rawGuildBucket(c)))
+  .map(c => String(c.id)).sort();
+const otherGuildIds = rosterChars.filter(c => !['Guildless', 'Unknown'].includes(rawGuildBucket(c))
+  && rawGuildBucket(c).toLowerCase() !== INCLUDED_GUILD.toLowerCase()).map(c => String(c.id));
+const scopedWanted = [...noGuildIds, ...rosterChars.filter(c => rawGuildBucket(c).toLowerCase()
+  === INCLUDED_GUILD.toLowerCase()).map(c => String(c.id))].sort().join();
+ok(noGuildIds.length > 0 && otherGuildIds.length > 0
+  && state.getFilteredCharacters().map(c => String(c.id)).sort().join() === scopedWanted,
+  `back on the committed scope: every one of the ${noGuildIds.length} no-guild rows is still listed (of ${rosterChars.length}) and only the ${otherGuildIds.length} other-guild row(s) are not`);
+state.setGuildFilter('Guildless');
+ok(state.getFilteredCharacters().map(c => c.id).sort().join()
+  === rosterChars.filter(c => ['Guildless', 'Unknown'].includes(rawGuildBucket(c))).map(c => String(c.id)).sort().join(),
+  'the Guildless chip answers for both spellings of "no guild": the sidecar that says so and the row nobody asked about');
+state.setGuildFilter('all');
 ok(expectedIds('all', surnameOf).length > 0 && expectedIds('alts', 'zzzz-no-such-character').length === 0,
   `the fixture set exercises both a sidecar-only hit (${expectedIds('all', surnameOf).length}) and the empty case`);
 
@@ -2728,9 +2955,33 @@ const renderDoll = detail.gearTabHtml({ ...richSidecar, media: { avatar: null, a
 const renderImg = (renderDoll.match(/<img class="wow-doll-render"[^>]*>/) || [''])[0];
 ok(countOf('<img class="wow-doll-render"', renderDoll) === 1 && renderImg.includes(`src="${esc(RENDER_OK)}"`),
   'the validated fullRender becomes exactly one figure <img> with the URL escaped as-is');
-ok(renderImg.includes('loading="lazy"'), 'the render is lazy (a full-size PNG must not block the modal paint)');
-ok(/onerror="this\.style\.display='none'"/.test(renderImg),
-  'a render that fails at read time hides itself, which is what reveals the silhouette underneath');
+// Eager, and NOT lazy: the silhouette is suppressed by the same markup that emits this <img>, so a
+// fetch the browser deferred to intersection left the doll as gradient and sockets for the whole
+// round trip — inside a modal the user just opened, where the image is the entire point. (This gate
+// used to require lazy, which is what made the doll blank; the trade is one PNG on an explicit open
+// against a hero that never arrives.)
+ok(!renderImg.includes('loading='), 'the doll render loads eagerly (lazy deferred it behind a suppressed silhouette)');
+ok(/onerror="dollRenderFailed\(this\)"/.test(renderImg),
+  'the render\'s onerror is a named handler (it has to reach the doll box, not just itself)');
+// The handler's whole job is the pair: hide the dead image AND ask for the fallback art back. A
+// handler that only hid it would leave a validated row staring out of an empty box, because a real
+// render now suppresses the silhouette rather than layering over it.
+const failDoll = new El('doll-probe', 'div');
+failDoll.classList.add('wow-doll', 'has-render');
+const failImg = { style: {}, parentNode: failDoll };
+detail.dollRenderFailed(failImg);
+ok(failImg.style.display === 'none' && !failDoll.classList.contains('has-render')
+  && failDoll.classList.contains('wow-doll'),
+  'dollRenderFailed(img) hides the image and drops has-render, which puts the class silhouette back');
+ok(detail.dollRenderFailed(null) === undefined && detail.dollRenderFailed({}) === undefined
+  && detail.dollRenderFailed({ style: {}, parentNode: null }) === undefined,
+  'and it is inert on a missing element rather than throwing from an inline handler');
+// One image, not two: the class art is suppressed wherever the real render is painted (the raw PNG
+// is RGBA with a transparent ground, so both figures showed through each other).
+ok(renderDoll.includes('class="wow-doll has-render"') && !dollHtml.includes('has-render'),
+  'a doll with a render carries has-render, a doll without one does not');
+ok(/\.wow-doll\.has-render \.wow-doll-figure \{[^}]*background-image:\s*none/.test(appCssText),
+  'css/app.css suppresses the silhouette background under .wow-doll.has-render (three classes, so it outranks the is-<slug> art rules)');
 ok(detail.isSafeIconUrl(RENDER_OK) === true
   && detail.ICON_HOSTS.includes('render.worldofwarcraft.com'),
   'the render goes through the same ICON_HOSTS/isSafeIconUrl path the icons use (no second, wider allowlist)');
@@ -3350,7 +3601,13 @@ ok(state.getCharacters().length === roster5.characters.length && hidden('detail-
 
 // ---------------------------------------------------------------- 6. storage
 console.log('\n[6] persistence boundary');
-const strayKeys = [...new Set([...storeKeysBefore, ...storageWrites])].filter(k => k !== 'wow_forever_roster' && k !== 'wow_gh_config');
+// Three keys are the app's whole persistence surface: the roster mirror, the GitHub config, and —
+// since the guild scope — this browser's answer to "which guild is this roster?". The third is
+// deliberately browser-scoped rather than committed, because a reviewer experimenting with a guild
+// must not be one keystroke away from a commit to data/guild-config.json.
+const strayKeys = [...new Set([...storeKeysBefore, ...storageWrites])]
+  .filter(k => k !== 'wow_forever_roster' && k !== 'wow_gh_config'
+    && k !== 'wow_forever_guild_scope');
 ok(strayKeys.length === 0, `no new localStorage keys (all writes: ${[...new Set(storageWrites)].join(', ') || 'none'})`);
 const persistedBlob = [...store.values()].join('\n');
 ok(!persistedBlob.includes('gear-man') && !persistedBlob.includes('Molten Core')

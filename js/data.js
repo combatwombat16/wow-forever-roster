@@ -12,13 +12,18 @@
 // leaves the panels that need it showing nothing extra and the site behaving as it
 // did before they existed.
 
-import { STORAGE_KEY, getCharacters, normalizeRoster, registerRenderHook, registerSearchProvider, renderAll, setCharacters } from './state.js';
+import { STORAGE_KEY, getCharacters, normalizeRoster, registerRenderHook, registerSearchProvider, renderAll, setCharacters, setGuildScopeDefault } from './state.js';
 import { ownValue } from './util.js';
 import { escapeHtml } from './util.js';
 
 export const ROSTER_PATH = 'data/characters.json';
 export const CHARACTER_DATA_PATH = 'data/character-data.json';
 export const BATTLE_NET_MAP_PATH = 'data/battle-net-map.json';
+// The one hand-maintained setting the site reads: which guild this roster is a roster OF. Like the
+// sidecars it is display-side configuration that never enters localStorage (a copy in storage would
+// outlive the commit that changed it), and like them a 404 degrades to "no value": an absent file
+// means an unscoped roster, not a broken one.
+export const GUILD_CONFIG_PATH = 'data/guild-config.json';
 // Talent-tree geometry is static-namespace data (the file pins its own staticNamespace), not
 // per-character data, so it is fetched lazily on the first Talents tab instead of on every page
 // view: it is the largest committed artifact (~200 KB) and only the handful of characters that
@@ -374,12 +379,36 @@ export async function loadSidecar(path, opts = {}) {
 // arrives with a new deploy, so a cache-busting re-read of ~200 KB after every Refresh would buy
 // nothing. ensureTalentTrees() owns it instead.
 export async function loadSidecars(opts = {}) {
-  const [data, map] = await Promise.all([
+  const [data, map, guildConfig] = await Promise.all([
     loadSidecar(CHARACTER_DATA_PATH, opts),
-    loadSidecar(BATTLE_NET_MAP_PATH, opts)
+    loadSidecar(BATTLE_NET_MAP_PATH, opts),
+    // NOT cache-busted, on purpose (the talent-trees rule): the sync never writes this file, so a
+    // Refresh has no new copy of it to show. It changes with a deploy, and a deploy is a new page.
+    loadSidecar(GUILD_CONFIG_PATH, {})
   ]);
   characterData = data;
   battleNetMap = map;
+  // The committed guild scope — and the one place where "the read failed" must NOT become "the
+  // config says nothing". loadSidecar() cannot tell a 404 (this site has no scope) from a 503 or a
+  // dropped connection, and reloadSidecars() runs after every Battle.net refresh, which is exactly
+  // when a blip is most likely: collapsing both into '' would unscope the roster for the rest of the
+  // session and label it "No guild selected", which reads like a choice the user made. So a failed
+  // read keeps the last value the app actually saw (at boot that is still '', so an absent file is
+  // still "unscoped", and this browser's own override is never touched by a read at all).
+  if (guildConfig !== null) {
+    // Own-data lookup on a committed file (util.js discipline). A document that is present but says
+    // nothing — missing key, non-string, blank — is a real "no scope", and it does clear.
+    const configured = ownValue(guildConfig, 'includedGuild');
+    setGuildScopeDefault(typeof configured === 'string' ? configured.trim() : '');
+  } else if (!opts.cacheBust) {
+    // The boot read is the one that gets to answer "does this deployment have a scope at all", and
+    // at boot the value it overwrites is '' anyway, so a failure here is free. A FAILED REFRESH is
+    // not: cacheBust means a sync run just finished and we went looking for its output, so this read
+    // failing says nothing about the config and everything about the network — and the alternative
+    // (clearing) would hand the user "No guild selected" as though they had chosen it, unscoped, for
+    // the rest of the session. Keep what the page last read; the next successful refresh settles it.
+    setGuildScopeDefault('');
+  }
   renderSyncLine();
   renderAll();
 }

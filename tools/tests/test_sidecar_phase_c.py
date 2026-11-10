@@ -686,5 +686,158 @@ class AutoAddTrustBoundary(unittest.TestCase):
 
 
 
+class GuildScopeLimitsTheAutoAdd(unittest.TestCase):
+    """Owner request (2026-11-10): this roster keeps ONE guild.
+
+    The scope lives in ``data/guild-config.json`` and the nightly reads it in exactly one place —
+    ``Sync.discover_guilds`` — which is the only reason the auto-add ever has a guild to add from.
+    Filter there and the excluded guild is never fetched and never planned; filter later and the
+    requests are still spent. These tests pin the filter, the name/slug matching it does, the
+    "no config means the old behaviour" default, and the summary line that keeps "0 rows added
+    because of the scope" distinguishable from "0 rows added because the guild is complete".
+    """
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.cfg = self.tmp / "guild-config.json"
+
+    def write_config(self, text):
+        self.cfg.write_text(text, encoding="utf-8")
+        return self.cfg
+
+    # ---------- config.included_guild ---------- #
+
+    def test_the_committed_config_names_the_guild_this_roster_keeps(self):
+        self.assertEqual(config.included_guild(), "Flowmasters")
+
+    def test_value_is_trimmed_and_a_missing_or_blank_file_is_no_scope(self):
+        self.assertEqual(config.included_guild(self.write_config(
+            '{"schemaVersion": 1, "includedGuild": "  Twelve Guards  "}')), "Twelve Guards")
+        self.assertIsNone(config.included_guild(self.tmp / "absent.json"))
+        self.assertIsNone(config.included_guild(self.write_config('{"includedGuild": "   "}')))
+        self.assertIsNone(config.included_guild(self.write_config('{"includedGuild": null}')))
+        self.assertIsNone(config.included_guild(self.write_config('{"includedGuild": 7}')))
+        self.assertIsNone(config.included_guild(self.write_config('not json at all')))
+        self.assertIsNone(config.included_guild(self.write_config('["Flowmasters"]')))
+
+    # ---------- sync.same_guild ---------- #
+
+    def test_a_display_name_matches_its_own_slug_form(self):
+        self.assertTrue(sync.same_guild("Flowmasters", "flowmasters"))
+        self.assertTrue(sync.same_guild("Twelve Guards", "twelve-guards"))
+        self.assertTrue(sync.same_guild("  FLOWMASTERS  " "", "flowmasters"))
+        self.assertFalse(sync.same_guild("Flowmasters", "Heghmoh"))
+        # An empty side is never a match, or a blank config would "match" every guild.
+        self.assertFalse(sync.same_guild("", "flowmasters"))
+        self.assertFalse(sync.same_guild(None, None))
+        self.assertFalse(sync.same_guild("---", "___"))
+
+    # ---------- Sync.discover_guilds ---------- #
+
+    def discover(self, profiles, *, config_text=None):
+        s = sync.Sync.__new__(sync.Sync)
+        s.guild_scope = None
+        s.guild_scope_excluded = set()
+        if config_text is not None:
+            self.write_config(config_text)
+        work = {str(i): {"profile": p} for i, p in enumerate(profiles)}
+        return s, s.discover_guilds(work, guild_config_path=self.cfg)
+
+    def test_an_unscoped_run_discovers_every_guild_it_saw(self):
+        _s, found = self.discover([profile("Alpha", "One", "flowmasters", "Flowmasters"),
+                                   profile("Beta", "Two", "heghmoh", "Heghmoh")])
+        self.assertEqual(found, {"flowmasters": "Flowmasters", "heghmoh": "Heghmoh"})
+
+    def test_only_the_included_guild_survives_the_scope(self):
+        s, found = self.discover(
+            [profile("Alpha", "One", "flowmasters", "Flowmasters"),
+             profile("Beta", "Two", "heghmoh", "Heghmoh"),
+             profile("Gamma", "Three")],
+            config_text='{"schemaVersion": 1, "includedGuild": "Flowmasters"}')
+        self.assertEqual(found, {"flowmasters": "Flowmasters"})
+        self.assertEqual(s.guild_scope, "Flowmasters")
+        self.assertEqual(s.guild_scope_excluded, {"Heghmoh"})
+
+    def test_the_scope_matches_on_slug_when_the_profile_omitted_the_name(self):
+        _s, found = self.discover(
+            [profile("Alpha", "One", "flowmasters", None),
+             profile("Beta", "Two", "heghmoh", "Heghmoh")],
+            config_text='{"schemaVersion": 1, "includedGuild": "Flowmasters"}')
+        # profile() defaults the display name to the slug, so the slug form is what matched here.
+        self.assertEqual(found, {"flowmasters": "flowmasters"})
+
+    def test_a_scope_that_matches_nothing_discovers_nothing(self):
+        # Loud by construction: the run then has no guild roster to read, so it adds nobody and the
+        # summary names the guilds it passed over instead of implying the roster was complete.
+        s, found = self.discover(
+            [profile("Alpha", "One", "flowmasters", "Flowmasters")],
+            config_text='{"schemaVersion": 1, "includedGuild": "Some Other Guild"}')
+        self.assertEqual(found, {})
+        self.assertEqual(s.guild_scope_excluded, {"Flowmasters"})
+
+    def test_the_summary_states_the_scope_and_what_it_skipped(self):
+        s = sync.Sync.__new__(sync.Sync)
+        s.args = argparse.Namespace(dry_run=True, lookup=None, force=False,
+                                    state_dir=self.tmp / "state")
+        s.cache = http.Cache(self.tmp / "state", dry_run=True)
+        s.client = FakeClient({})
+        s.f = fetch.Fetcher(s.client, s.cache)
+        s.budget_hit = False
+        s.guild_scope = "Flowmasters"
+        s.guild_scope_excluded = {"Heghmoh"}
+        lines = s.summary_lines({"ok": 1}, 1, 0.0)
+        scope_lines = [ln for ln in lines if "guild scope" in ln]
+        self.assertEqual(len(scope_lines), 1)
+        self.assertIn("Flowmasters", scope_lines[0])
+        self.assertIn("skipped: Heghmoh", scope_lines[0])
+        # And an unscoped run says nothing about a scope it does not have.
+        s.guild_scope = None
+        self.assertFalse([ln for ln in s.summary_lines({"ok": 1}, 1, 0.0) if "guild scope" in ln])
+
+
+
+class GuildNameRuleIsTheSharedTable(unittest.TestCase):
+    """One table, three readers: bnet.sync.same_guild, js/state.js guildNameEquals, and the copy the
+    artifact gate compares against.
+
+    The table is ``tools/tests/fixtures/guild-name-cases.json``. It exists because the nightly and
+    the browser decide the same question — does this name select the included guild? — in two
+    languages, and a scope they answer differently is invisible: the run appends members the site
+    then never lists, so the roster grows rows nobody can see and no log says so. These cases are
+    the rule; the implementations follow it, not the other way round.
+    """
+
+    CASES_PATH = Path(__file__).resolve().parent / "fixtures" / "guild-name-cases.json"
+
+    def cases(self):
+        doc = json.loads(self.CASES_PATH.read_text(encoding="utf-8"))
+        cases = doc.get("cases")
+        self.assertIsInstance(cases, list, "the table has a cases list")
+        self.assertGreaterEqual(len(cases), 8, "the table is not empty")
+        self.assertTrue(any(case["equal"] for case in cases)
+                        and any(not case["equal"] for case in cases),
+                        "the table pins both answers, so a rule that always returns one still fails")
+        return cases
+
+    def test_same_guild_answers_the_table(self):
+        for case in self.cases():
+            with self.subTest(pair=[case["a"], case["b"]]):
+                self.assertEqual(sync.same_guild(case["a"], case["b"]), case["equal"],
+                                 case.get("why", ""))
+
+    def test_the_rule_is_symmetric_and_idempotent(self):
+        # An equivalence relation, because the chip row dedupes on it: an asymmetric compare would
+        # make "which spelling labels the chip" depend on roster order, and a non-idempotent one
+        # would make the chip row shrink or grow between repaints of the same data.
+        for case in self.cases():
+            with self.subTest(pair=[case["b"], case["a"]]):
+                self.assertEqual(sync.same_guild(case["b"], case["a"]), case["equal"],
+                                 "reversed arguments agree")
+            with self.subTest(pair=[case["a"], case["a"]]):
+                self.assertEqual(sync.same_guild(case["a"], case["a"]),
+                                 bool(str(case["a"]).strip().strip("-?_")),
+                                 "a name equals itself unless it squashes to nothing")
+
+
 if __name__ == "__main__":
     unittest.main()

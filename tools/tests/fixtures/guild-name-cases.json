@@ -1,0 +1,124 @@
+{
+  "_comment": [
+    "The guild-name equality contract, as ONE table read by both readers of data/guild-config.json.",
+    "",
+    "bnet.sync.same_guild (the nightly: which guild rosters to fetch and auto-add) and",
+    "js/state.js guildNameEquals (the site: which rows the scope admits, and which chip they land on)",
+    "must answer identically for every pair, because a scope the two readers disagree about is silent:",
+    "the nightly appends members the site then never lists, and a chip can strand rows it owns.",
+    "",
+    "test_sidecar_phase_c.py asserts same_guild() against this table; verify_search_detail.mjs asserts",
+    "guildNameEquals() against the same file; verify_sync_artifacts.py gates the file's existence, shape",
+    "and consumption by both. Add the pair here when a rule changes — never by editing one side.",
+    "",
+    "Rule, in words: trim, case-fold, drop every character outside letters/digits, and compare that — one",
+    "comparison, not exact-then-forgiving. A name that squashes away to nothing (\"---\") is not a name and",
+    "matches nothing, not even itself. A Blizzard guild slug is its display name with the punctuation",
+    "flattened, which is why 'twelve-guards' IS 'Twelve Guards'.",
+    "Neither reader folds composed and decomposed accents, so the NFC/NFD pair below is FALSE on",
+    "purpose: it is a known limit written down, not an oversight.",
+    "One limit neither reader can share, so it is written here rather than tested: Python casefold()",
+    "folds 'ss' from 'sz' and from the sharp s, while JS toLowerCase() leaves 'ss' alone. A pair like",
+    "('Straße','Strasse') is therefore equal to the nightly and unequal to the site. No guild name in",
+    "this roster (or in Blizzard's forever-us index today) contains one, so the pair is out of the",
+    "table on purpose: a table entry Python passes and JS fails would be a lie about one of them."
+  ],
+  "cases": [
+    {
+      "a": "Flowmasters",
+      "b": "Flowmasters",
+      "equal": true,
+      "why": "identical"
+    },
+    {
+      "a": "flowmasters",
+      "b": "Flowmasters",
+      "equal": true,
+      "why": "case is not part of a guild's identity"
+    },
+    {
+      "a": "  Flowmasters  ",
+      "b": "Flowmasters",
+      "equal": true,
+      "why": "the config value and a typed name are both trimmed"
+    },
+    {
+      "a": "twelve-guards",
+      "b": "Twelve Guards",
+      "equal": true,
+      "why": "the slug form of a display name (the reason the squash exists)"
+    },
+    {
+      "a": "Flow-masters",
+      "b": "Flowmasters",
+      "equal": true,
+      "why": "punctuation flattened on one side"
+    },
+    {
+      "a": "Flow Masters",
+      "b": "Flowmasters",
+      "equal": true,
+      "why": "spaces are punctuation too — the deliberate cost of accepting slugs"
+    },
+    {
+      "a": "Flowmasters",
+      "b": "Heghmoh",
+      "equal": false,
+      "why": "two guilds"
+    },
+    {
+      "a": "Flowmaster",
+      "b": "Flowmasters",
+      "equal": false,
+      "why": "a different guild, not a prefix match"
+    },
+    {
+      "a": "",
+      "b": "Flowmasters",
+      "equal": false,
+      "why": "an empty name never scopes to a real guild"
+    },
+    {
+      "a": "",
+      "b": "",
+      "equal": false,
+      "why": "not even empty matches empty: a blank scope means unscoped"
+    },
+    {
+      "a": "---",
+      "b": "Flowmasters",
+      "equal": false,
+      "why": "punctuation alone squashes to empty, which matches nothing"
+    },
+    {
+      "a": "---",
+      "b": "???",
+      "equal": false,
+      "why": "two empty squashes are still no name"
+    },
+    {
+      "a": "Rösche",
+      "b": "Rösche",
+      "equal": false,
+      "why": "NFC vs NFD: documented non-goal, both readers leave it distinct"
+    },
+    {
+      "a": " guild-config ",
+      "b": "guildconfig",
+      "equal": true,
+      "why": "the rule is about names, not about this file"
+    },
+    {
+      "a": "---",
+      "b": "---",
+      "equal": false,
+      "why": "punctuation alone is not a name, so it matches nothing — including itself; an exact-match shortcut would say True here and js/state.js would say False"
+    },
+    {
+      "a": "  ",
+      "b": "  ",
+      "equal": false,
+      "why": "whitespace alone likewise"
+    }
+  ]
+}

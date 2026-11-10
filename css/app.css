@@ -276,6 +276,20 @@ body {
   /* raw head 1.20% (−5.8, raised axe), feet 98.56% (+6.6): already in band, contain stays.
      Floor residual +9.0/−8.0. */
 }
+/* A real Battle.net render REPLACES the silhouette instead of layering over it (owner request,
+   2026-11-10). `media.fullRender` is the armory's `-main-raw.png`: 1600x1200 RGBA with a transparent
+   ground (measured — corner alpha 0), so painting it over the class art showed both figures at once:
+   the silhouette's head behind the character's. js/detail.js puts `has-render` on the doll box when
+   and only when it emits that <img>, and this rule (three classes, so it outranks the two-class
+   `.wow-doll-figure.is-<slug>` art rules and the bare `.wow-doll-figure` one) is what makes the
+   silhouette a fallback rather than a second layer. The figure element itself stays in the DOM: the
+   render's onerror drops the flag, so a URL that validated at sync time and failed at read time gets
+   the art back rather than an empty box. Socket geometry is untouched — the figure is a background
+   layer at inset 0 either way. */
+.wow-doll.has-render .wow-doll-figure {
+  background-image: none;
+}
+
 .wow-doll-render {
   position: absolute;
   inset: 0;

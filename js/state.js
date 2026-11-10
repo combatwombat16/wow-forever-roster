@@ -218,19 +218,176 @@ export function getGuildBucket(character) {
   return info.hasSidecar ? GUILD_GUILDLLESS : GUILD_UNKNOWN;
 }
 
+export function getGuildFilter() {
+  return currentGuildFilter;
+}
+
+// ---------- guild scope (owner request, 2026-11-10) ----------
+// The guild filter answers "which guild's rows do I want to look at?". The scope answers a
+// different question the roster actually has: "which guild IS this roster?" — a Flowmasters
+// tracker should not spend half its grid on a Heghmoh character the nightly happened to see
+// through one member's profile.
+//
+// So the scope is a visibility rule, not a fourth predicate: with a guild included, a row is in
+// the roster at all only when its bucket is that guild or a no-guild bucket, and every other
+// guild's rows are absent from the grid, the party pool, the profession matrix and both
+// distribution panels — they all read getFilteredCharacters(), so there is nothing to forget.
+//
+// The three buckets the row then offers are exactly All / the included guild / Guildless, and
+// Unknown folds into Guildless: "never looked up" is not a third guild, and the 16 rows a hand-
+// maintaining human added without ever being resolved have to stay reachable under something.
+//
+// Two sources, in a documented order:
+//   1. this browser's localStorage value, when the key exists (the input's Set button writes it,
+//      including the empty string, which means "scope off" — an absent key and an empty one are
+//      deliberately different states);
+//   2. data/guild-config.json, the committed default the deploy and the nightly both read.
+// With neither, the scope is inert and the guild UI behaves exactly as Phase C shipped it.
+
+export const GUILD_SCOPE_STORAGE_KEY = 'wow_forever_guild_scope';
+
+// The committed default ('' == no config read / config says nothing), and this browser's override
+// (null == no override, '' == explicitly scoped off). Read once at boot like the roster seed.
+let includedGuildFile = '';
+let includedGuildOverride = null;
+try {
+  const scopeStored = localStorage.getItem(GUILD_SCOPE_STORAGE_KEY);
+  if (scopeStored !== null) includedGuildOverride = String(scopeStored).trim();
+} catch (e) {
+  includedGuildOverride = null;
+}
+
+// The ONE guild-name rule, shared with the nightly's bnet.sync.same_guild: trimmed and case-folded,
+// and — because a Blizzard guild SLUG is its display name with the punctuation flattened — again
+// with every letter/digit outside it gone. That second comparison is what lets the config hold
+// "Twelve Guards" and still match the slug a profile carried (twelve-guards), and it is why the
+// browser and the sync cannot disagree about who is in the scope: an owner who typed the slug form
+// used to be admitted by the nightly and hidden by the site, which grows rows nobody can ever see.
+// (Neither reader folds composed vs decomposed accents; verify_sync_artifacts says so out loud.)
+// Display always keeps whatever spelling the row itself carries.
+export function guildNameEquals(a, b) {
+  const left = guildKey(a);
+  const right = guildKey(b);
+  // An empty name matches nothing — including another empty one — exactly as same_guild() does, so
+  // a blank config value can never scope the site to "every guild".
+  return left !== '' && left === right;
+}
+
+// The equivalence class guildNameEquals() compares on, as a single string: squashed, so it is also
+// the dedupe key the chip row and the datalist use. Exported for exactly that: anywhere the UI folds
+// guild names into one entry must fold on the SAME class the predicate matches with, or two surfaces
+// disagree about whether two spellings are one guild.
+export function guildKey(name) {
+  const folded = String(name == null ? '' : name).trim().toLowerCase();
+  return folded === '' ? '' : squashGuildName(folded);
+}
+
+// "Flow-masters" and "Flowmasters" are one name; the squash only ever runs on the comparison, never
+// on what the UI prints.
+function squashGuildName(name) {
+  return name.replace(/[^\p{L}\p{N}]/gu, '');
+}
+
+// The guild this roster includes, or '' when the roster is unscoped.
+export function getIncludedGuild() {
+  if (includedGuildOverride !== null) return includedGuildOverride;
+  return includedGuildFile;
+}
+
+// True when this browser's input has said something other than the committed default — what the
+// filter row shows its "reset to the committed config" affordance on.
+export function guildScopeIsOverridden() {
+  return includedGuildOverride !== null;
+}
+
+// The committed default, written by the module that loads data/guild-config.json (data.js) — the
+// same provider discipline the guild chips use, so this file stays the leaf that imports nothing.
+export function setGuildScopeDefault(name) {
+  const value = typeof name === 'string' ? name.trim() : '';
+  if (value === includedGuildFile) return;
+  includedGuildFile = value;
+  renderAll();
+}
+
+// The filter row's Set action. The empty string is a real answer here ("unscope this browser"),
+// which is why the write is unconditional and the key's PRESENCE is the override, not its value.
+export function setIncludedGuild(name) {
+  const value = typeof name === 'string' ? name.trim() : '';
+  includedGuildOverride = value;
+  try {
+    localStorage.setItem(GUILD_SCOPE_STORAGE_KEY, value);
+  } catch (e) {
+    // A storage that refuses writes costs persistence, not the filter: the in-memory scope above
+    // is what the repaint reads.
+  }
+  renderAll();
+}
+
+// Drop this browser's override and go back to data/guild-config.json.
+export function resetIncludedGuild() {
+  includedGuildOverride = null;
+  try {
+    localStorage.removeItem(GUILD_SCOPE_STORAGE_KEY);
+  } catch (e) {
+    // As above: the in-memory reset still repaints the scope correctly.
+  }
+  renderAll();
+}
+
+// The bucket a row is OFFERED under the scope, or '' when the scope hides the row entirely.
+// getGuildBucket stays the raw four-step fact; this is the view of it the guild UI filters and
+// labels with, so a foreign-guild row is excluded by one rule rather than by every reader
+// remembering to skip it.
+export function getScopedGuildBucket(character) {
+  const bucket = getGuildBucket(character);
+  const scope = getIncludedGuild();
+  if (scope === '') return bucket;
+  // The row's own spelling, not the typed one: the chip is labelled with what the roster says, so a
+  // config that reads "flowmasters" never puts a lower-case word in the UI.
+  if (guildNameEquals(bucket, scope)) return bucket;
+  if (bucket === GUILD_GUILDLLESS || bucket === GUILD_UNKNOWN) return GUILD_GUILDLLESS;
+  return '';
+}
+
+// Is this row in the roster at all right now? True for every row when the roster is unscoped.
+export function isIncludedByGuildScope(character) {
+  return getScopedGuildBucket(character) !== '';
+}
+
 // The buckets to offer, derived from the roster as it stands: guild names alphabetically
 // (case-insensitively, so the chip order does not depend on which sync wrote a file first),
-// then the two synthetic buckets in a fixed order. A bucket nobody is in is not offered.
+// then the two synthetic buckets in a fixed order. A bucket nobody is in is not offered —
+// EXCEPT the scoped guild, which is offered while a scope is set even at zero rows: the scope is
+// a choice the user made, and a chip row that hid it whenever it was momentarily empty would
+// fight renderGuildFilter()'s "a selection with no chip falls back to All" guard.
 export function guildBuckets() {
+  const scope = getIncludedGuild();
   const names = new Set();
   let hasGuildless = false;
   let hasUnknown = false;
+  const foldedSeen = new Set();
   characters.forEach(c => {
-    const bucket = getGuildBucket(c);
+    const bucket = scope === '' ? getGuildBucket(c) : getScopedGuildBucket(c);
+    if (bucket === '') return;
     if (bucket === GUILD_GUILDLLESS) hasGuildless = true;
     else if (bucket === GUILD_UNKNOWN) hasUnknown = true;
-    else names.add(bucket);
+    else if (!foldedSeen.has(guildKey(bucket) || bucket)) {
+      // Two rows spelling one guild differently are one bucket, labelled with the first spelling
+      // they appear in — a chip per spelling would be two chips whose rows are indistinguishable.
+      // The key is guildNameEquals' equivalence class, so the chip row and matchesGuild() can never
+      // disagree about whether two names are one guild.
+      // `|| bucket`: a name with no letters or digits at all ('---') squashes to the empty class,
+      // which guildNameEquals() says matches NOTHING — so it must not become one shared bucket here.
+      foldedSeen.add(guildKey(bucket) || bucket);
+      names.add(bucket);
+    }
   });
+  if (scope !== '') {
+    // Scoped: Unknown is not a chip (it folded into Guildless above), and the guild is offered even
+    // at zero rows, because the user just asked for it.
+    hasUnknown = false;
+    if (!foldedSeen.has(guildKey(scope))) names.add(scope);
+  }
   const sorted = [...names].sort((a, b) => {
     const x = a.toLowerCase();
     const y = b.toLowerCase();
@@ -241,15 +398,16 @@ export function guildBuckets() {
   return sorted;
 }
 
-export function getGuildFilter() {
-  return currentGuildFilter;
-}
-
-// Empty/no selection matches everything, which is what "no guild filter active" means and
-// what keeps the guild predicate inert until a chip is clicked.
+// An empty selection matches everything the scope lets through, which is what "no guild filter
+// active" means and what keeps the guild predicate inert until a chip is clicked.
 export function matchesGuild(character, bucket = currentGuildFilter) {
-  if (bucket === GUILD_FILTER_ALL) return true;
-  return getGuildBucket(character) === bucket;
+  const scoped = getScopedGuildBucket(character);
+  if (bucket === GUILD_FILTER_ALL) return scoped !== '';
+  // The same folded comparison in BOTH modes, because guildBuckets() folds in both modes too: a
+  // chip row that offers one spelling of a guild and then matches only that exact spelling strands
+  // every row spelled differently — no chip on screen returns it, not even "All" (which is scoped).
+  // That state is reachable without touching the config, by pressing Set with an empty field.
+  return scoped !== '' && guildNameEquals(scoped, bucket);
 }
 
 // The chip row is the only writer. It repaints through renderAll() like setFilter() does, so

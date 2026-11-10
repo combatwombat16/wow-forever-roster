@@ -922,18 +922,48 @@ function dollRegionStyle(slot) {
   return `left:${region[0]}%;top:${region[1]}%`;
 }
 
-// The character render inside the doll (Phase B): exactly one <img>, only for a `media.fullRender`
-// the sync HEAD-validated and this host allowlist re-checks at render time, and never anything else
-// — a rejected or absent URL emits no tag, no src and no host name, leaving the generic silhouette
-// app.css paints as the doll's background layer as the whole picture. `onerror` hides the broken
-// image over the same silhouette, so a URL that validated at sync time and failed at read time
-// degrades to the fallback art instead of a broken-image glyph.
-function dollRenderHtml(sidecar) {
+// The doll's real image (Phase B): the `media.fullRender` the sync HEAD-validated, re-checked
+// against this host allowlist at render time. A rejected or absent URL returns '' and therefore
+// emits no tag, no src and no host name, which is what leaves the silhouette as the whole picture.
+//
+// It returns the URL rather than the markup because the URL decides a second thing (owner request,
+// 2026-11-10): whether the doll paints the silhouette at all. `-main-raw.png` is RGBA with a
+// TRANSPARENT ground (measured: 1600x1200, corner alpha 0), so painting it over the class art put a
+// second figure behind the character — the silhouette's head showing through the render's, which is
+// what read as "both images at once". Where a real render exists it REPLACES the silhouette
+// (`has-render` on the doll box, see css/app.css); the silhouette stays the fallback for every row
+// that has no render.
+function dollRenderUrl(sidecar) {
   const media = sidecar && typeof sidecar === 'object' ? ownValue(sidecar, 'media') : null;
   const raw = media && typeof media === 'object' && !Array.isArray(media) ? ownValue(media, 'fullRender') : '';
   const render = scalarText(raw);
-  if (!isSafeIconUrl(render)) return '';
-  return `<img class="wow-doll-render" src="${escapeHtml(render)}" loading="lazy" alt="" onerror="this.style.display='none'">`;
+  return isSafeIconUrl(render) ? render : '';
+}
+
+function dollRenderHtml(renderUrl) {
+  if (renderUrl === '') return '';
+  // `onerror` hides the failed image AND asks for the silhouette back (dollRenderFailed below), so
+  // a URL that validated at sync time and died at read time degrades to the fallback art instead of
+  // a bare box or a broken-image glyph. It is a named handler rather than the old inline
+  // `this.style.display='none'` because the restore needs the doll box, which the <img> reaches
+  // through its parent.
+  // No loading="lazy" on this one: it is what the doll IS, inside a modal the user just opened, and
+  // the silhouette is suppressed from the markup — so a fetch the browser deferred to intersection
+  // showed gradient and sockets for the whole round trip. Eager, it starts with the paint. A URL
+  // that 404s still hands the silhouette back through the onerror below.
+  return `<img class="wow-doll-render" src="${escapeHtml(renderUrl)}" alt="" onerror="dollRenderFailed(this)">`;
+}
+
+// Called by a doll render that failed to load: hide the image, then put the class silhouette back by
+// dropping the flag that suppressed it. Defensive about shape (this runs from an inline handler on
+// an element this module built, but nothing about the DOM past that is guaranteed) and about `this`
+// being undefined when a host calls it directly.
+export function dollRenderFailed(img) {
+  if (!img || typeof img.style === 'undefined') return;
+  img.style.display = 'none';
+  const doll = img.parentNode;
+  if (!doll || typeof doll.classList === 'undefined') return;
+  doll.classList.remove('has-render');
 }
 
 function gearSlotHtml(slot, item, regionStyle) {
@@ -1017,12 +1047,18 @@ export function gearTabHtml(sidecar, character = null) {
     .join('');
   const token = dollClassToken(sidecar, character);
   const figureClass = token === '' ? 'wow-doll-figure' : `wow-doll-figure is-${token}`;
+  // The flag lives on the doll box, not on the figure, so the figure markup stays exactly the
+  // allowlisted `wow-doll-figure[ is-<slug>]` element every Phase F assertion matches, and the one
+  // thing that changes is whether the CSS background layer paints (app.css: `.wow-doll.has-render
+  // .wow-doll-figure { background-image: none }`).
+  const renderUrl = dollRenderUrl(sidecar);
+  const dollClass = renderUrl === '' ? 'wow-doll' : 'wow-doll has-render';
   const known = [...bySlot.values()].length;
   if (known === 0 && other.length === 0) return emptyState('No gear data synced yet.');
   return `<div class="space-y-1.5">
-    <div class="wow-doll">
+    <div class="${dollClass}">
       <div class="${figureClass}"></div>
-      ${dollRenderHtml(sidecar)}
+      ${dollRenderHtml(renderUrl)}
       ${sockets}
     </div>
     ${other.length === 0 ? '' : `<div class="pt-0.5">
@@ -2753,5 +2789,7 @@ window.detailSectionSubTabKeydown = detailSectionSubTabKeydown;
 // roster.js reads this one rather than importing it: it renders a card's class icon, and importing
 // detail.js back would make a module cycle the reason a card paints (see the note in roster.js).
 window.isSafeIconUrl = isSafeIconUrl;
+// The doll render's onerror handler (js/detail.js: dollRenderFailed).
+window.dollRenderFailed = dollRenderFailed;
 window.showDetailTooltip = showDetailTooltip;
 window.hideDetailTooltip = hideDetailTooltip;

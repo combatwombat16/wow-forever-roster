@@ -140,3 +140,134 @@ and any hostile class string.
   the harness gate also runs — assertions measure the committed stylesheet, never a table.
 - Docs touch-up shipped alongside: `warrior.svg`'s stale `test-4.svg` path comment corrected
   (comment only, zero art changes).
+
+## Phase G — One image in the doll, one guild in the roster (SHIPPED 2026-11-10)
+
+Two owner adjustments, both of which turned out to be about *which source wins* rather than about
+markup, so both are written up with the measurement that decided them.
+
+### G1 — a real render replaces the silhouette (it no longer layers over it)
+
+**What the owner saw:** "both are being used in some cases". **Why:** `media.fullRender` is the
+armory's `-main-raw.png`, and the committed asset is **1600×1200 RGBA with a transparent ground**
+(measured with a fetch of the committed URL: corner alpha 0). The doll painted the class silhouette
+as a CSS background and the render as an `<img>` over it, so the silhouette's head read from behind
+the character's head. Not a data bug and not a stale-cache bug — a layering contract that had never
+been stated.
+
+- **Rule now:** the doll shows one image. Where a safe `fullRender` exists, `js/detail.js` puts
+  `has-render` on the doll box and `css/app.css` stops the silhouette background from painting
+  (`.wow-doll.has-render .wow-doll-figure { background-image: none }`). Three classes, so it outranks
+  the two-class `is-<slug>` art rules without touching them; `generic.svg` still backs every row with
+  no render, exactly as in Phase B/F.
+- **Degrades, not regresses:** the render's `onerror` is now the named `dollRenderFailed(this)`
+  instead of an inline `display='none'` — because restoring the fallback art needs the doll box, not
+  just the image. A URL that validated at sync time and died at read time hides itself *and* puts the
+  class silhouette back, so the row never ends up as an empty frame.
+- **Eager, not lazy** (review round): the `<img>` dropped `loading="lazy"`. The suppression ships with
+  the markup, so a fetch the browser deferred to intersection showed gradient and sockets for the whole
+  round trip — in a modal the user just opened, where that image is the whole point.
+- **Chosen over the alternatives (owner decision):** `avatarSd`/`avatar` were considered as a
+  fallback "real image" and rejected for the doll — they are an **84×84 opaque bust on a red
+  backdrop** (measured), which stretched into the 420px doll is a blurry headshot that no longer lines
+  up with the Head-7/Feet-92 bands. They stay exactly where they belong: the modal header avatar.
+  Consequence stated rather than hidden: `media.fullRender` is on **0 of the 21 committed sidecar
+  rows** (that file predates the writer that always sets it), so G1 becomes visible on the next
+  nightly that writes it. Until then every doll is one silhouette, which is also correct.
+- Gated in `verify_search_detail.mjs` [4f]: one `has-render` iff a render, the CSS rule's existence,
+  the handler's two effects (image hidden, flag dropped) and its inertness on a missing element.
+
+### G2 — the roster tracks one guild (input + select), and other guilds leave the list
+
+Before: the guild chips listed every guild the sidecars happened to mention, so one Heghmoh member
+(whose profile is what made that guild discoverable) sat in a Flowmasters roster forever.
+
+- **Source of truth:** `data/guild-config.json` — `{ "schemaVersion": 1, "includedGuild":
+  "Flowmasters" }`. Committed, hand-maintained, read by the site (`js/data.js` →
+  `state.setGuildScopeDefault`) and by the nightly (`bnet.config.included_guild()`). No file, blank
+  or unreadable ⇒ **unscoped**, i.e. the Phase C behaviour: a setting nobody configured must not hide
+  rows.
+- **Visibility, not a fourth predicate:** a row is in the roster only when its bucket is the included
+  guild or a no-guild bucket. Every panel reads `getFilteredCharacters()`, so the grid, the party pool,
+  the profession matrix and both distributions cannot disagree — the rule lives in one function
+  (`getScopedGuildBucket`) and the raw four-step fact (`getGuildBucket`) is untouched under it.
+- **The chips are then exactly All / Flowmasters / Guildless**, which is what the owner asked for.
+  `Unknown` folds into `Guildless` (owner decision): "never looked up" is not a third guild, and 16
+  hand-added rows had to stay reachable under something. The scoped guild is offered even at zero
+  rows, so a chip row can never strand the current selection.
+- **Input and select:** the filter row gained a text field that datalists every guild the roster
+  knows *raw* — hidden ones included, which is how a guild comes back — with **Set** / Enter and a ↺
+  that returns to the committed default. A typed choice is this browser's (`localStorage
+  wow_forever_guild_scope`, third and last key the app writes); the empty string is an answer
+  (unscope), and an absent key means "use the file", so the two states stay distinguishable. Nothing
+  in the UI commits — changing the committed scope is a git change.
+- **The nightly is scoped too:** `Sync.discover_guilds` filters what it discovered before returning
+  it, so an out-of-scope guild's roster is never fetched (requests conserved) and never planned.
+  Resolution is deliberately *not* scoped: the guild-lever pass still resolves characters already on
+  the roster however they were found. Scope decides who may **arrive**; it never decides who gets
+  refreshed, and it never removes a row. The summary line now says `guild scope: Flowmasters
+  (auto-add reads only that guild's roster; skipped: Heghmoh)`.
+- **One name rule, one table.** "Does this name select the included guild?" is answered twice per
+  change — in Python by `bnet.sync.same_guild` (which rosters to fetch and auto-add) and in JS by
+  `state.guildNameEquals` (which rows the scope admits, and which chip they land on). Both are pinned
+  to `tools/tests/fixtures/guild-name-cases.json` (16 pairs, each with the reason), and so is the
+  gate's own copy of the rule, which is what found the first divergence: an exact-compare shortcut
+  made `---` equal to itself in Python while JS called it nameless. Trim, case-fold, drop everything
+  outside letters/digits, compare — one comparison, so the answer cannot depend on which form of the
+  question was asked first. Neither reader folds composed vs decomposed accents (a pair like
+  `Rösche` NFC/NFD stays distinct on both sides), and `casefold`/`toLowerCase` differ for `ß`; both
+  are written into the table's comment as limits rather than left as surprises.
+- Gated in `verify_search_detail.mjs` [1] (scope honoured on the committed data, hidden rows are a
+  *named* foreign guild and never a guildless one, the hidden set is non-empty so an inert scope cannot
+  pass, chips limited, input/datalist/Set/↺ behaviour, swap-not-union, both spellings of "no guild"
+  survive, the datalist names each hidden guild rather than counting options) plus the shared table on
+  the JS side, and in `tools/tests/test_sidecar_phase_c.py` (`GuildScopeLimitsTheAutoAdd`: config
+  parsing, name↔slug matching, unscoped default, summary line; `GuildNameRuleIsTheSharedTable`: the
+  same table, plus symmetry and idempotence — the chip row dedupes on this relation, so it has to be
+  one).
+- **Known consequence:** the site now hides rows by default. If a character looks deleted, the first
+  thing to check is the guild note under the chips ("1 other-guild row(s) hidden"), not the sync.
+
+### G3 — what an independent review found after every gate was green
+
+Five defects, all shipped past a green suite, which is the reason they are written down. Each is now
+gated where it was measured, not where it was convenient.
+
+1. **↺ was unreachable.** `index.html` hid it with the boolean `hidden` attribute; `renderGuildScope`
+   shows it with `classList.toggle('hidden', …)`. The committed Tailwind preflight enforces
+   `[hidden]{display:none}` at author level, so the class change could never win: pressed **Set** once
+   and the browser was pinned to the typed value with no control to hand the decision back — including
+   after a deploy changed `includedGuild`. Every other hidden element in the file uses the class. The
+   harness missed it because its element stubs read `class="…"` and drop attributes; the gate now
+   parses the button's **attribute names** (values blanked) and refuses the boolean form, and asserts
+   the ↺ is visible exactly while an override exists. Re-measured in headless Chromium against the
+   committed stylesheets: `none → inline-block → none`.
+2. **A failed re-read unscoped the session.** `loadSidecar` returns `null` for 404 and for 503 alike,
+   and `reloadSidecars()` runs after every Battle.net refresh — exactly when a blip is likely — so one
+   503 collapsed the scope to `''` and the note said "No guild selected", which reads like a choice.
+   Now: the **boot** read is the one that answers "does this deployment have a scope" (at boot the
+   value it overwrites is `''` anyway, so failing is free); a failed **refresh** keeps the last value
+   the page actually read. A document that is present but blank still really does clear — that is a
+   config, not a failure. Gated by injecting a 503 and then a blank-`includedGuild` 200.
+3. **Unscoped, the chip row folded case and the predicate did not.** `guildBuckets()` dedupes
+   spellings, `matchesGuild()` compared exactly outside a scope, so the losing spelling had **no chip
+   that returned it** — reachable by pressing Set with an empty field, i.e. the documented way to
+   unscope. One folded comparison in both modes now, and a fixture row spelled `flowmasters` next to
+   `Flowmasters` proves one chip returns both.
+4. **The two readers disagreed about who is in the guild** (fixed by the table above). The failure mode
+   was the worst kind: the nightly admitted members the site then never listed, so the roster grew rows
+   nobody could see and no log said so.
+5. **Five gates asserted less than their messages.** `scopedOut.every(…)` passed on an empty hidden
+   set; "offers the guilds the scope hides" passed when the only extra option was a guild already
+   visible; "no sync module writes the config" was a same-line substring test that would have passed
+   `json.dump(doc, open(config.GUILD_CONFIG_FILE, "w"))` and a two-line `p = …; p.write_text(...)`;
+   "never commits the scope" would have passed `git add -A`; and a "no gear content persisted" gate
+   passed only because an unrelated section happened to clear the scope key. Each now tests the thing
+   its message claims — naming what must be present, scanning who may *name the path at all*, and
+   staging explicit files only.
+
+Two minor items, fixed: the scope field no longer overwrites un-applied typing on an unrelated repaint
+(clicking the search box used to revert it — focus alone is not "unsaved", so the field now tracks what
+the last paint wrote), and the render is eager (G1). One, accepted: the first paint runs before
+`guild-config.json` resolves, so a first-ever visit shows unscoped for a frame and then settles — a
+browser that has ever pressed Set reads its value synchronously from `localStorage` and never sees it.

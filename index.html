@@ -101,6 +101,37 @@
           <div id="guild-filter-chips" class="flex flex-wrap items-center gap-1"></div>
         </div>
 
+        <!-- Guild scope (owner request, 2026-11-10): which guild this roster IS. Type a name (or
+             pick one from the roster's own guilds) and press Set / Enter: the roster then holds
+             that guild plus the no-guild rows, and every other guild's characters leave the list,
+             the party pool and the stats. The chips above shrink to All / <guild> / Guildless to
+             match, because a filter over buckets the scope already hid is not a choice. The value
+             defaults to data/guild-config.json and a Set here overrides it for this browser only
+             (↺ hands it back). Painted and driven by js/guildfilter.js; the state is in state.js. -->
+        <div class="flex items-center gap-1">
+          <input type="text" id="guild-scope-input" list="guild-scope-list" autocomplete="off" spellcheck="false"
+            placeholder="Include guild…" aria-label="Guild to include"
+            onkeydown="onGuildScopeKey(event)"
+            class="min-w-0 flex-1 bg-slate-950/80 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400">
+          <datalist id="guild-scope-list"></datalist>
+          <button type="button" id="guild-scope-set" onclick="applyGuildScope()"
+            title="Scope the roster to this guild (empty clears it)"
+            class="px-1.5 py-1 rounded text-[11px] font-bold transition-all text-slate-400 hover:text-white border border-transparent">
+            Set
+          </button>
+          <!-- Hidden with the `hidden` CLASS, not the attribute: renderGuildScope() shows it with
+               classList.toggle('hidden', …), and the committed Tailwind preflight enforces the
+               attribute at author level ([hidden]{display:none}), so an attribute here could never
+               be undone by a class change. Same convention as every other hidden element in this
+               file; verify_search_detail.mjs [4g] gates it. -->
+          <button type="button" id="guild-scope-reset" onclick="clearGuildScopeOverride()"
+            title="Back to data/guild-config.json"
+            class="px-1 py-0.5 text-[11px] leading-none text-slate-500 hover:text-amber-300 hidden">
+            ↺
+          </button>
+        </div>
+        <div id="guild-scope-note" class="text-[10px] text-slate-500"></div>
+
         <!-- Roster search: instant, composed with the Squad Filter (search AND track).
              The query lives in state.js; every panel follows it through renderAll(). -->
         <div class="relative">

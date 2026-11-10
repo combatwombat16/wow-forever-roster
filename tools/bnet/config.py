@@ -10,6 +10,7 @@ them, so there must be exactly one place to re-verify them against
 docs/bnet-api-notes.md.
 """
 
+import json
 import re
 from pathlib import Path
 
@@ -34,7 +35,35 @@ TALENT_TREES_FILE = DATA_DIR / "talent-trees.json"
 CLASS_ICON_FILE = DATA_DIR / "class-icons.json"
 PROFESSION_ICON_FILE = DATA_DIR / "profession-icons.json"
 PROBE_OUT_FILE = REPO / "docs" / "bnet-probe-raw.json"
+# Owner request (2026-11-10): this roster tracks ONE guild. ``includedGuild`` is the single
+# hand-maintained setting the site and the nightly both read — the site scopes its guild chips and
+# its character list with it, and the sync scopes its ADDITIVE auto-add with it, so a member of a
+# guild this tracker does not keep stops arriving as a new row. It deliberately does not scope
+# resolution or enrichment: characters already in the roster keep being resolved, refreshed and
+# reported on whoever guilds them, because hiding a row is the UI's job and deleting one never is.
+# Read-only for the sync (it never writes this file), and absent/malformed means "unscoped".
+GUILD_CONFIG_FILE = DATA_DIR / "guild-config.json"
 DEFAULT_STATE_DIR = Path.home() / ".cache" / "wow-bnet-sync"
+
+
+def included_guild(path=None):
+    """``data/guild-config.json``'s ``includedGuild``, or ``None`` when the roster is unscoped.
+
+    A missing file, unreadable JSON, a non-string value and a blank string all answer ``None``:
+    "nobody configured a guild" and "this roster keeps no particular guild" must behave the same
+    way, which is the whole auto-add as it shipped in Phase C. A wrong-but-plausible name is NOT
+    guessed at — it scopes to a guild with no members, which is loud (the run reports zero adds and
+    names the guilds it skipped) rather than silently adding the wrong people.
+    """
+    target = GUILD_CONFIG_FILE if path is None else Path(path)
+    try:
+        doc = json.loads(target.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    value = doc.get("includedGuild") if isinstance(doc, dict) else None
+    if not isinstance(value, str):
+        return None
+    return value.strip() or None
 
 # --------------------------------------------------------------------------- #
 # Auth / API contract

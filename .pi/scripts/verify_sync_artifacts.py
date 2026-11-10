@@ -45,6 +45,10 @@ TREES = ROOT / "data" / "talent-trees.json"
 # Phase 5b (P5.B, notes §11): the two site-wide static icon maps.
 CLASS_ICONS = ROOT / "data" / "class-icons.json"
 PROFESSION_ICONS = ROOT / "data" / "profession-icons.json"
+# The one hand-maintained setting the site and the nightly BOTH read (owner request 2026-11-10):
+# which guild this roster keeps. Gated here because it is committed, published, and — unlike every
+# other data/ file — it is never written by the sync.
+GUILD_CONFIG = ROOT / "data" / "guild-config.json"
 WORKFLOW = ROOT / ".github" / "workflows" / "sync-bnet.yml"
 PAGES_WORKFLOW = ROOT / ".github" / "workflows" / "pages.yml"
 ENV = ROOT / ".env"
@@ -1044,6 +1048,106 @@ def main():
                                            roster_prof_words, "roster prof1/prof2 columns",
                                            floor=9)     # the roster alone names 9 distinct professions
 
+    # --- data/guild-config.json (the guild scope, owner request 2026-11-10) ------------ #
+    # Both readers derive from this one file, so the gate is where they are pinned together: the
+    # browser (js/data.js → state.setGuildScopeDefault) limits what is LISTED, and the nightly
+    # (bnet.config.included_guild → Sync.discover_guilds) limits what may ARRIVE. A typo here is
+    # invisible in code review and loud in the UI, so the shape and the path are gated rather than
+    # trusted, and a name the roster has never seen is a NOTE (a real state after a guild rename) and
+    # never a silent pass.
+    guild_config_text = read(GUILD_CONFIG)
+    check(guild_config_text is not None,
+          "data/guild-config.json exists (the committed guild scope both readers share)")
+    guild_scope_name = ""
+    if guild_config_text is not None:
+        try:
+            guild_doc = json.loads(guild_config_text)
+        except ValueError as exc:
+            guild_doc = None
+            check(False, f"data/guild-config.json parses as JSON: {exc}")
+        if isinstance(guild_doc, dict):
+            check(set(guild_doc) == {"schemaVersion", "includedGuild"},
+                  f"guild-config.json carries exactly schemaVersion + includedGuild ({sorted(guild_doc)})")
+            check(guild_doc.get("schemaVersion") == 1,
+                  f"guild-config.json schemaVersion == 1 ({guild_doc.get('schemaVersion')!r})")
+            included = guild_doc.get("includedGuild")
+            check(isinstance(included, str),
+                  f"guild-config.json includedGuild is a string ({type(included).__name__})")
+            if isinstance(included, str):
+                guild_scope_name = included.strip()
+                check(included == guild_scope_name,
+                      "guild-config.json includedGuild carries no surrounding whitespace "
+                      "(the readers trim, but a padded committed value reads like a mistake)")
+        else:
+            check(False, "data/guild-config.json is a JSON object")
+    # The name has to be one this roster could contain, or the scope hides the entire roster and the
+    # only clue is a note in the filter row. Soft, because "the guild renamed itself overnight" is a
+    # fact about Blizzard, not about this file.
+    seen_guilds = {rec.get("guild") for rec in characters.values() if isinstance(rec, dict)}
+    seen_guilds |= {rec.get("guild") for rec in roster if isinstance(rec, dict)}
+    seen_guilds = {g.strip() for g in seen_guilds if isinstance(g, str) and g.strip()}
+
+    # --- the guild-name table, and this script's own copy of the rule ------------------ #
+    # Same argument the fixture makes: the nightly answers "does this name select the included
+    # guild?" in Python, the site answers it in JS, and this gate answers it again to judge the
+    # committed value. A fourth hand-rolled rule would be the drift nobody can see — a plain
+    # casefold here once called a slug-form scope "unmatched" while both readers agreed fine. So the
+    # copy is pinned to the same table the two readers are, and then used.
+    def name_rule(a, b):
+        left = "".join(ch for ch in str(a or "").strip().casefold() if ch.isalnum())
+        right = "".join(ch for ch in str(b or "").strip().casefold() if ch.isalnum())
+        return left != "" and left == right
+
+    name_table_path = ROOT / "tools" / "tests" / "fixtures" / "guild-name-cases.json"
+    name_table_text = read(name_table_path)
+    check(name_table_text is not None,
+          "tools/tests/fixtures/guild-name-cases.json exists (the guild-name contract)")
+    name_cases = []
+    if name_table_text is not None:
+        try:
+            name_cases = json.loads(name_table_text).get("cases") or []
+        except ValueError as exc:
+            check(False, f"the guild-name table parses as JSON: {exc}")
+        check(isinstance(name_cases, list) and len(name_cases) >= 8,
+              f"the guild-name table has cases to pin a rule ({len(name_cases) if isinstance(name_cases, list) else 'not a list'})")
+        shaped = [c for c in name_cases if isinstance(c, dict) and "a" in c and "b" in c
+                  and isinstance(c.get("equal"), bool) and str(c.get("why") or "")]
+        check(len(shaped) == len(name_cases),
+              f"every case carries a, b, a boolean equal and a why ({len(shaped)}/{len(name_cases)})")
+        check(any(c["equal"] for c in shaped) and any(not c["equal"] for c in shaped),
+              "the table pins both answers, so a rule that always returns one still fails")
+        check(any("-" in str(c["a"]) or " " in str(c["a"]) for c in shaped if c["equal"]),
+              "the table pins the slug/display pair, which is the whole reason the rule squashes")
+        for case in shaped:
+            check(name_rule(case["a"], case["b"]) == case["equal"],
+                  f"this gate's own rule answers the table on {case['a']!r}/{case['b']!r} "
+                  f"({case['why']})")
+        # Both readers must actually consume it; a table nothing reads is a comment with an extension.
+        check("guild-name-cases.json" in read(ROOT / "tools" / "tests" / "test_sidecar_phase_c.py"),
+              "the sync's tests pin bnet.sync.same_guild to the guild-name table")
+        check("guild-name-cases.json" in read(ROOT / ".pi" / "scripts" / "verify_search_detail.mjs"),
+              "the browser harness pins js/state.js guildNameEquals to the guild-name table")
+
+    if guild_scope_name:
+        matched = sorted(g for g in seen_guilds if name_rule(guild_scope_name, g))
+        check_soft(bool(matched),
+                   f"the configured guild is one the roster/sidecars report ({guild_scope_name!r} selects "
+                   f"{matched or 'nothing'} of {sorted(seen_guilds) or 'no guild names'})",
+                   f"guild scope names {guild_scope_name!r}, which no sidecar or roster row reports under "
+                   f"the shared name rule today — the site lists only the no-guild rows until someone "
+                   f"joins ({sorted(seen_guilds) or 'none'})")
+    # One path, two readers: a rename that reaches one side and not the other silently unscopes the
+    # nightly (site keeps scoping, sync keeps adding other guilds' members).
+    check('GUILD_CONFIG_FILE = DATA_DIR / "guild-config.json"' in CFG
+          and "def included_guild(" in CFG,
+          "bnet.config owns the guild-config path and the only reader of it")
+    check("config.included_guild(" in SYNC,
+          "the sync scopes its auto-add through config.included_guild (no second reader)")
+    js_data = read(ROOT / "js" / "data.js")
+    check("GUILD_CONFIG_PATH = 'data/guild-config.json'" in js_data
+          and "setGuildScopeDefault(" in js_data,
+          "js/data.js loads the same data/guild-config.json the sync reads")
+
     # --- secret scan ------------------------------------------------------------- #
     secrets = []
     if ENV.exists():
@@ -1062,6 +1166,7 @@ def main():
     scanned.update({".github/workflows/sync-bnet.yml": read(WORKFLOW),
                     ".github/workflows/pages.yml": read(PAGES_WORKFLOW),
                     "tools/migrate_v2.py": read(ROOT / "tools" / "migrate_v2.py"),
+                    "data/guild-config.json": guild_config_text,
                     "data/characters.json": roster_text,
                     "data/battle-net-map.json": map_text,
                     "data/character-data.json": data_text,
@@ -1138,6 +1243,50 @@ def main():
         # invariant is gated above, against git HEAD, not here.
         check(any("data/characters.json" in ln for ln in add_lines),
               f"commit step adds the roster the auto-add may have grown ({add_lines})")
+        # The scope is a human decision, so the nightly may read it and must never write it: a run
+        # that adjusted its own filter could quietly narrow what a reviewer is able to see.
+        check(not any("guild-config.json" in ln for ln in add_lines),
+              f"the sync never commits the guild scope ({add_lines})")
+        # …and an allowlist is only an allowlist if it stages nothing broader: `git add -A` or
+        # `git add data/` satisfies the line above and commits the human's setting from a nightly run.
+        broad = []
+        for ln in add_lines:
+            args = ln.split("git add", 1)[1].split("#")[0].split()
+            flags = [tok for tok in args if tok.startswith("-")]
+            targets = [tok for tok in args if not tok.startswith('-')]
+            if any(f in ('-A', '--all') for f in flags) or any(
+                    t in (".", "data") or t.endswith("/") for t in targets):
+                broad.append(ln.strip())
+        check(not broad, f"the commit step stages explicit files only, no directory-wide add ({broad})")
+    # Who may touch the path at all. A substring test for ".write" on the same line would pass
+    # json.dump(doc, open(config.GUILD_CONFIG_FILE, "w")) and would pass p = config.GUILD_CONFIG_FILE
+    # on one line followed by p.write_text(...) on the next — i.e. it would pass the two things it
+    # claims to forbid. Naming the file is the surface, so the gate is on naming it.
+    namers = [n for n in PKG_MODULES if "GUILD_CONFIG_FILE" in sources[n]]
+    check(namers == ["config.py"],
+          f"only bnet/config.py names the guild-config path at all ({namers})")
+    writer_lines = [ln.strip() for ln in sources["config.py"].splitlines()
+                    if "GUILD_CONFIG_FILE" in ln
+                    and re.search(r"\.write|open\(|json\.dump|touch\(|mkdir", ln)]
+    check(not writer_lines,
+          f"bnet/config.py touches the guild-config path read-only ({writer_lines})")
+    # Nothing in the browser may persist a data path anywhere. Storage keys are how a committed file
+    # quietly becomes a second source of truth, so the gate is on the keys themselves rather than on a
+    # guess at the shape of a write call: a key with a slash or a .json suffix means some module keeps
+    # a copy of a committed artifact in localStorage.
+    storage_keys = set()
+    for js_module in sorted((ROOT / "js").glob("*.js")):
+        text = read(js_module) or ""
+        for verb in ("setItem", "getItem", "removeItem"):
+            # Parsed rather than regexed: the key is the first quoted argument, and there is no
+            # reason to nest three quote styles inside one pattern to read it.
+            for chunk in text.split(verb + "(")[1:]:
+                stripped = chunk.lstrip()
+                quote = stripped[:1]
+                if quote in ("'", '"'):
+                    storage_keys.add(stripped[1:].split(quote, 1)[0])
+    check(not {k for k in storage_keys if ".json" in k or "/" in k},
+          f"no js/ module uses a data path as a storage key ({sorted(storage_keys)})")
 
     # --- Phase C: the auto-add is pure, additive and sequenced before the write -------- #
     check(re.search(r"def plan\(roster_records, guilds", AUTOADD) is not None

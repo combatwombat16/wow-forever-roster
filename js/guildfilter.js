@@ -14,11 +14,21 @@ import { byRosterId } from './data.js';
 import { escapeHtml } from './util.js';
 import {
   GUILD_FILTER_ALL,
+  GUILD_GUILDLLESS,
+  GUILD_UNKNOWN,
+  getCharacters,
+  getGuildBucket,
   getGuildFilter,
+  getIncludedGuild,
   guildBuckets,
+  guildKey,
+  guildNameEquals,
+  guildScopeIsOverridden,
   registerGuildProvider,
   registerRenderHook,
-  setGuildFilter
+  resetIncludedGuild,
+  setGuildFilter,
+  setIncludedGuild
 } from './state.js';
 
 // The sidecar half of the join. It degrades to `{ guild: '', hasSidecar: false }` when
@@ -67,6 +77,7 @@ function chipHtml(index, bucket, active) {
 // paint (the sidecars, then data/characters.json, then the Contents API pull): a chip row
 // written once would go stale the moment a guild appeared or disappeared.
 export function renderGuildFilter() {
+  renderGuildScope();
   const el = chipsEl();
   if (!el || typeof el.classList === 'undefined') return;
   const selected = getGuildFilter();
@@ -95,7 +106,133 @@ export function setGuildFilterIndex(index) {
   setGuildFilter(bucket);
 }
 
+// ---------- the guild scope input (owner request, 2026-11-10) ----------
+// The chips say which bucket of THIS roster to look at; the input says which guild this roster IS.
+// Typing a name and pressing Set (or Enter) scopes the roster to it, which both limits the chips to
+// All / Guildless / <that guild> and removes every other guild's characters from every panel — the
+// scope is a visibility rule inside state.getFilteredCharacters(), so the grid, the party pool and
+// the distribution panels cannot disagree about it.
+//
+// The value lives in state.js (this browser's localStorage override over the committed
+// data/guild-config.json default); this module only paints the control and forwards the edit, which
+// is the same split the chips already use.
+
+function scopeInputEl() {
+  return document.getElementById('guild-scope-input');
+}
+
+// What renderGuildScope() last wrote into the field, or null before its first paint. This is what
+// distinguishes "the state moved" from "the owner is typing" — see renderGuildScope().
+let scopePaintedValue = null;
+
+// Every guild name the roster knows — sidecar guild, the guild an auto-added row carries — raw,
+// NOT scope-filtered: the point of the list is also to let you pick a guild the scope currently
+// hides, which is how a guild comes back. Synthetics (Guildless/Unknown) are not guilds.
+function knownGuildNames() {
+  const names = new Map();
+  getCharacters().forEach(character => {
+    const bucket = getGuildBucket(character);
+    if (bucket === GUILD_GUILDLLESS || bucket === GUILD_UNKNOWN) return;
+    const key = guildKey(bucket);
+    if (!names.has(key)) names.set(key, bucket);
+  });
+  const current = getIncludedGuild();
+  if (current !== '' && !names.has(guildKey(current))) names.set(guildKey(current), current);
+  return [...names.keys()].sort().map(key => names.get(key));
+}
+
+function renderGuildScope() {
+  const input = scopeInputEl();
+  const list = document.getElementById('guild-scope-list');
+  const note = document.getElementById('guild-scope-note');
+  const reset = document.getElementById('guild-scope-reset');
+  const scope = getIncludedGuild();
+  if (list && typeof list.classList !== 'undefined') {
+    // A datalist, not a <select>: the owner asked to both type and pick. The names come from the
+    // roster, so the list cannot offer a guild nobody is in — and it still offers the current scope
+    // even when the scope just emptied it, so the value on screen is always selectable.
+    list.innerHTML = knownGuildNames()
+      .map(name => `<option value="${escapeHtml(name)}"></option>`)
+      .join('');
+  }
+  if (input && typeof input.classList !== 'undefined') {
+    // Follow the state only while the field holds what this function last put there. Checking focus
+    // is not enough: clicking anywhere else (the search box repaints through renderAll) blurs the
+    // field, and a typed-but-unapplied name would silently revert to the current scope. Set, Enter
+    // and ↺ all land here with the field equal to the scope or with the state changed, so each of
+    // them still repaints the field.
+    const untouchedSincePaint = scopePaintedValue === null || input.value === scopePaintedValue;
+    if (input.value === scope || untouchedSincePaint) {
+      input.value = scope;
+      scopePaintedValue = scope;
+    }
+  }
+  if (reset && typeof reset.classList !== 'undefined') {
+    reset.classList.toggle('hidden', !guildScopeIsOverridden());
+    reset.title = 'Back to data/guild-config.json (currently '
+      + (getIncludedGuild() === '' ? 'no guild' : getIncludedGuild()) + ')';
+  }
+  if (note && typeof note.classList !== 'undefined') {
+    const hidden = hiddenByScopeCount();
+    if (scope === '') {
+      note.innerHTML = 'No guild selected — every guild shows';
+      note.title = 'Type a guild above (or set includedGuild in data/guild-config.json) to scope '
+        + 'the roster to it';
+    } else {
+      note.innerHTML = `Included: <span class="text-amber-300 font-semibold">${escapeHtml(scope)}</span>`
+        + `<span class="text-slate-600"> ·</span> ${hidden} other-guild row(s) hidden`
+        + (guildScopeIsOverridden() ? '<span class="text-slate-600"> ·</span> this browser'
+          : '<span class="text-slate-600"> ·</span> guild-config.json');
+      note.title = 'Rows in any other guild are out of the roster list, the party pool and the '
+        + 'stats until the scope changes.';
+    }
+  }
+}
+
+// Rows the scope currently hides. Counted from every row's raw bucket, so the note answers
+// "what is this setting costing me?" rather than restating what is visible.
+function hiddenByScopeCount() {
+  if (getIncludedGuild() === '') return 0;
+  let hidden = 0;
+  getCharacters().forEach(character => {
+    const bucket = getGuildBucket(character);
+    if (bucket === GUILD_GUILDLLESS || bucket === GUILD_UNKNOWN) return;
+    if (!guildNameMatches(getIncludedGuild(), bucket)) hidden += 1;
+  });
+  return hidden;
+}
+
+// THE state.js comparison, not a second one: the count in the note and the rows state.js admits
+// have to agree, or the note would say "1 hidden" while a chip showed the row.
+function guildNameMatches(a, b) {
+  return guildNameEquals(a, b);
+}
+
+// The Set button. An empty field is an answer, not a no-op: it unscopes this browser (state.js
+// writes the empty string, which outranks the committed default until ↺ clears the override).
+export function applyGuildScope() {
+  const input = scopeInputEl();
+  setIncludedGuild(input && typeof input.value === 'string' ? input.value : '');
+}
+
+// Enter in the field does what the button next to it does.
+export function onGuildScopeKey(event) {
+  const key = event && typeof event === 'object' ? event.key : '';
+  if (key === 'Enter') {
+    if (typeof event.preventDefault === 'function') event.preventDefault();
+    applyGuildScope();
+  }
+}
+
+// Drop this browser's override and take the committed default back.
+export function clearGuildScopeOverride() {
+  resetIncludedGuild();
+}
+
 registerRenderHook(renderGuildFilter);
 
 // Inline on*="…" handlers resolve against the global scope.
 window.setGuildFilterIndex = setGuildFilterIndex;
+window.applyGuildScope = applyGuildScope;
+window.onGuildScopeKey = onGuildScopeKey;
+window.clearGuildScopeOverride = clearGuildScopeOverride;

@@ -14,9 +14,9 @@ GitHub Pages serves the repository's static files.
 | Path | What it is |
 |---|---|
 | `index.html` | The whole page: markup shell plus one `<script type="module" src="js/main.js">`. No inline app code. |
-| `js/` | The app as ES modules. `main.js` bootstraps; `state.js` holds the single source of truth (characters + track filter + search query) and the `renderAll()` dispatcher; `data.js` loads the JSON files and joins them by roster id; `github.js` owns the PAT settings, the Contents API pull/commit and the refresh dispatch; `roster.js` paints the grid (status dot, Lv/iLvl/guild chips, lifecycle badge); `detail.js` is the character modal plus the review actions; `search.js`, `editchar.js`, `party.js`, `professions.js`, `stats.js` are the remaining panels; `util.js` holds the single HTML escaper and the class-colour maps. |
+| `js/` | The app as ES modules. `main.js` bootstraps; `state.js` holds the single source of truth (characters + track filter + search query) and the `renderAll()` dispatcher; `data.js` loads the JSON files and joins them by roster id; `github.js` owns the PAT settings, the Contents API pull/commit and the refresh dispatch; `roster.js` paints the grid (status dot, Lv/iLvl/guild chips, lifecycle badge); `detail.js` is the character modal plus the review actions; `guildfilter.js` owns the guild chip row, the include-a-guild input and their handlers (it holds no state — the buckets and the scope live in `state.js`); `search.js`, `editchar.js`, `party.js`, `professions.js`, `stats.js` are the remaining panels; `util.js` holds the single HTML escaper and the class-colour maps. |
 | `css/` | `app.css` is hand-written (borders, fonts, gradients). `tailwind.css` is **generated** by the deploy workflow from `tailwind.config.js`; a compiled copy is committed so local preview needs no build. Do not hand-edit it. |
-| `data/` | `characters.json` (the roster, schema v2), `character-data.json` (Battle.net display data incl. gear tooltip fields, combat stats, talents, professions, reputations, avatar/class icons), `battle-net-map.json` (roster id → Battle.net resolution), `talent-trees.json` (spec talent-tree geometry, pinned to the static namespace). All sidecars are optional: any missing or unreadable file just means less decoration, never a broken page. `class-icons.json` and `profession-icons.json` (static Blizzard icon maps, pinned to the static namespace). |
+| `data/` | `guild-config.json` (the one hand-maintained setting: which guild this roster tracks), `characters.json` (the roster, schema v2), `character-data.json` (Battle.net display data incl. gear tooltip fields, combat stats, talents, professions, reputations, avatar/class icons), `battle-net-map.json` (roster id → Battle.net resolution), `talent-trees.json` (spec talent-tree geometry, pinned to the static namespace). `guild-config.json` is the one file a human owns and the sync never writes. All sidecars are optional: any missing or unreadable file just means less decoration, never a broken page. `class-icons.json` and `profession-icons.json` (static Blizzard icon maps, pinned to the static namespace). |
 | `tools/` | The Python side: `bnet/` is the sync + probe package (stdlib only, run as `python3 -m bnet sync`), `tests/` its offline unit tests, `migrate_v2.py` the one-shot roster migration. |
 | `.github/workflows/` | `sync-bnet.yml` (nightly + manual Battle.net sync — the only workflow holding credentials) and `pages.yml` (Tailwind build + Pages deploy — zero secrets). |
 | `.pi/scripts/` | Deterministic verification scripts (see below). |
@@ -55,7 +55,12 @@ as it did before the Battle.net integration.
    for, the run appends one placeholder row — a fresh 13-digit id, the member's
    `"<name> <surname>"`, `player` set to the member's name as a stand-in alias, `track:
    "alts"`, `guild` set to the guild's name, `"None"` in the role and profession columns,
-   and `validation.state: "pending"` to mark it as unreviewed. **Appending is all it may
+   and `validation.state: "pending"` to mark it as unreviewed. Since the guild-scope change the
+   run appends from **one** guild only: `data/guild-config.json`'s `includedGuild` (see §1a), so a
+   member of some other guild stops arriving as a new row. Resolution and enrichment are not
+   scoped — a character already on the roster is still resolved and refreshed whoever guilds them,
+   because the scope decides who may arrive and the UI decides what is listed; the nightly never
+   removes a row. **Appending is all it may
    do:** before it publishes anything the run re-checks every row it was given against the
    snapshot it took of the roster when the run started (`copy.deepcopy` in `bnet.sync`, so an
    edit made by the run itself is caught too), and a run that would remove, reorder or
@@ -77,6 +82,35 @@ as it did before the Battle.net integration.
    the guild name there so the guild filter can place a character that has no sidecar row
    yet), and everything is wrapped in a `{ "schemaVersion": 2, "characters": [ … ] }`
    envelope.
+
+1a. **Guild scope (`data/guild-config.json`).** `{ "schemaVersion": 1, "includedGuild":
+   "Flowmasters" }` — the roster keeps one guild, so the site and the nightly both ask that file
+   instead of every surface deciding for itself.
+
+   * **The site** (`js/state.js` `getIncludedGuild()`): a row is in the roster at all only when its
+     bucket is the included guild or a no-guild bucket. Every other guild's characters are absent
+     from the grid, the party pool and both distribution panels — they all read
+     `getFilteredCharacters()`, so there is no panel that can forget the rule. The guild chips then
+     offer exactly **All**, the included guild and **Guildless** (`Unknown` — no sidecar row to ask
+     — folds into `Guildless`, because "never looked up" is not a third guild and 16 hand-added
+     rows have to stay reachable under something). Names compare trimmed, case-folded and with
+     punctuation gone, so `"flowmasters"`, `"Flowmasters"` and the slug `flow-masters` all select the
+     same guild: that rule is not a per-reader convention, it is
+     [`tools/tests/fixtures/guild-name-cases.json`](tools/tests/fixtures/guild-name-cases.json), which
+     pins the nightly's `bnet.sync.same_guild` and the site's `state.guildNameEquals` to one table —
+     where they differ, the sync adds members the browser then never lists.
+   * **The filter row** (bottom of the roster aside) can *input* a guild as well as pick one: the
+     text field datalists every guild the roster knows — including the hidden ones, which is how a
+     guild comes back — and **Set** / Enter applies it for this browser only, in localStorage under
+     `wow_forever_guild_scope` (an empty field is an answer: it unscopes). The ↺ button drops the
+     override and takes the committed default back. Nothing about this is a commit: an experiment
+     with a guild cannot become a write to `data/guild-config.json`.
+   * **The nightly** (`bnet.config.included_guild()`, applied in `Sync.discover_guilds`) reads the
+     same file and discovers only that guild, so an excluded guild's roster is never fetched and
+     never planned. The run summary then states the scope and names the guilds it passed over,
+     because "0 rows added" has more than one cause.
+   * A missing, unreadable or blank file means **unscoped**, which is the pre-change behaviour: a
+     setting nobody configured must not hide rows.
 2. **Battle.net sidecars (`data/character-data.json`, `data/battle-net-map.json`).** Written
    only by the sync pipeline, never by the browser: a scheduled run each night, plus
    on-demand refreshes a maintainer dispatches from the character modal. The sync mints a

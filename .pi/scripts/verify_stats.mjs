@@ -20,8 +20,13 @@ console.log('\n[1] module extraction + static structure');
 // following only: the same assertions now run over the concatenation of the module
 // sources, in dependency order, with import/export syntax stripped so the behavioural
 // harness below can still evaluate them as one script body.
+// guildfilter.js belongs to this list for the same reason every other module does: it publishes
+// inline handlers (setGuildFilterIndex, applyGuildScope, clearGuildScopeOverride) that only exist
+// as strings in index.html, and a handler written in a module nobody scans is a handler nobody
+// checks is global.
 const MODULES = ['util.js', 'state.js', 'data.js', 'github.js', 'roster.js', 'party.js',
-  'professions.js', 'stats.js', 'editchar.js', 'detail.js', 'search.js', 'main.js'];
+  'professions.js', 'stats.js', 'editchar.js', 'detail.js', 'search.js', 'guildfilter.js',
+  'main.js'];
 const moduleSrc = {};
 MODULES.forEach(f => {
   const file = path.join(ROOT, 'js', f);
@@ -233,8 +238,12 @@ ok(/SIDECAR_FRESH_HOURS = 36/.test(dataSrc), 'the 36h freshness threshold is sta
 
 // The sidecars are display-only: nothing may persist them, so every localStorage write
 // in the app must be keyed by the roster key or the PAT settings key.
+// Three keys and no more: the roster mirror, the PAT settings, and the guild scope — which is a
+// per-browser choice about what to LOOK at, never a fact about a character, and is the reason a
+// reviewer can try a guild without one keystroke becoming a commit to data/guild-config.json.
 const persistedKeys = [...new Set([...src.matchAll(/localStorage\.setItem\(\s*([^,)]+)/g)].map(m => m[1].trim()))];
-const strayWrites = persistedKeys.filter(k => k !== 'STORAGE_KEY' && k !== "'wow_gh_config'");
+const strayWrites = persistedKeys.filter(k => k !== 'STORAGE_KEY' && k !== "'wow_gh_config'"
+  && k !== 'GUILD_SCOPE_STORAGE_KEY');
 ok(strayWrites.length === 0, `no sidecar data is persisted (keys written: ${persistedKeys.join(', ')})`);
 
 // Header provenance line: declared in markup, rendered by data.js, degraded when the

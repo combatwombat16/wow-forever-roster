@@ -23,7 +23,10 @@ PROBE_PATH = PKG_DIR / "probe.py"
 ENV_PATH = ROOT / ".env"
 ROSTER_PATH = ROOT / "data" / "characters.json"
 
-STDLIB = {"base64", "json", "os", "re", "sys", "time", "urllib", "collections", "pathlib",
+# The standard library, as the gate's own wording claims it: every module the sync package may
+# import without a dependency. `copy` belongs here (tools/bnet/sync.py imports it to snapshot the
+# roster before mutating it) and its absence made this gate report a stdlib import as a violation.
+STDLIB = {"base64", "json", "os", "re", "sys", "time", "urllib", "collections", "copy", "pathlib",
           "__future__", "typing", "datetime", "hashlib", "textwrap", "argparse"}
 FILE_SUFFIX = (".json", ".md", ".html", ".py", ".txt", ".yml", ".yaml", ".mjs")
 PATH_RE = re.compile(r"^[a-z_][a-z0-9_]*(?:\.[a-z_][a-z0-9_]*|\[\])*$")
