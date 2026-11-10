@@ -1,7 +1,655 @@
 {
   "staticNamespace": "static-1.60.1_70399-forever-us",
-  "updatedAt": "2026-11-09T14:50:15Z",
+  "updatedAt": "2026-11-10T14:06:40Z",
   "specs": {
+    "6": {
+      "treeId": 1112,
+      "classId": 8,
+      "className": "Mage",
+      "specId": 6,
+      "specName": "Frost",
+      "name": "Frost",
+      "nodes": [
+        {
+          "id": 105780,
+          "displayRow": 1,
+          "displayCol": 14,
+          "rawPositionX": 9080,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135310,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135850.jpg",
+              "spellId": 11189,
+              "spellName": "Frost Warding",
+              "description": "Increases the Armor and resistances granted by your Frost Armor and Ice Armor spells by 15%, gives your Frost Ward a 10% chance to negate the warded damage spell, and increases the amount absorbed by your Ice Barrier and Frost Ward by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135310,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135850.jpg",
+              "spellId": 11189,
+              "spellName": "Frost Warding",
+              "description": "Increases the Armor and resistances granted by your Frost Armor and Ice Armor spells by 30%, gives your Frost Ward a 20% chance to negate the warded damage spell, and increases the amount absorbed by your Ice Barrier and Frost Ward by 20%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105779,
+          "displayRow": 1,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135309,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135846.jpg",
+              "spellId": 11070,
+              "spellName": "Improved Frostbolt",
+              "description": "Reduces the casting time of your Frostbolt spell by 0.1 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135309,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135846.jpg",
+              "spellId": 11070,
+              "spellName": "Improved Frostbolt",
+              "description": "Reduces the casting time of your Frostbolt spell by 0.2 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135309,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135846.jpg",
+              "spellId": 11070,
+              "spellName": "Improved Frostbolt",
+              "description": "Reduces the casting time of your Frostbolt spell by 0.3 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135309,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135846.jpg",
+              "spellId": 11070,
+              "spellName": "Improved Frostbolt",
+              "description": "Reduces the casting time of your Frostbolt spell by 0.4 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135309,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135846.jpg",
+              "spellId": 11070,
+              "spellName": "Improved Frostbolt",
+              "description": "Reduces the casting time of your Frostbolt spell by 0.5 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105778,
+          "displayRow": 1,
+          "displayCol": 16,
+          "rawPositionX": 10280,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135308,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135989.jpg",
+              "spellId": 29438,
+              "spellName": "Precision",
+              "description": "Improves your chance to hit with all spells by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135308,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135989.jpg",
+              "spellId": 29438,
+              "spellName": "Precision",
+              "description": "Improves your chance to hit with all spells by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135308,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135989.jpg",
+              "spellId": 29438,
+              "spellName": "Precision",
+              "description": "Improves your chance to hit with all spells by 6%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105777,
+          "displayRow": 2,
+          "displayCol": 14,
+          "rawPositionX": 9080,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135307,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135855.jpg",
+              "spellId": 11207,
+              "spellName": "Ice Shards",
+              "description": "Increases the critical strike damage bonus of your Frost spells by 20%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135307,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135855.jpg",
+              "spellId": 11207,
+              "spellName": "Ice Shards",
+              "description": "Increases the critical strike damage bonus of your Frost spells by 40%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135307,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135855.jpg",
+              "spellId": 11207,
+              "spellName": "Ice Shards",
+              "description": "Increases the critical strike damage bonus of your Frost spells by 60%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135307,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135855.jpg",
+              "spellId": 11207,
+              "spellName": "Ice Shards",
+              "description": "Increases the critical strike damage bonus of your Frost spells by 80%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135307,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135855.jpg",
+              "spellId": 11207,
+              "spellName": "Ice Shards",
+              "description": "Increases the critical strike damage bonus of your Frost spells by 100%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105774,
+          "displayRow": 2,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135304,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135842.jpg",
+              "spellId": 11071,
+              "spellName": "Frostbite",
+              "description": "Gives your Chill effects a 5% chance to Freeze the target for 5 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135304,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135842.jpg",
+              "spellId": 11071,
+              "spellName": "Frostbite",
+              "description": "Gives your Chill effects a 10% chance to Freeze the target for 5 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135304,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135842.jpg",
+              "spellId": 11071,
+              "spellName": "Frostbite",
+              "description": "Gives your Chill effects a 15% chance to Freeze the target for 5 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105775,
+          "displayRow": 2,
+          "displayCol": 16,
+          "rawPositionX": 10280,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135305,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135840.jpg",
+              "spellId": 11165,
+              "spellName": "Improved Frost Nova",
+              "description": "Reduces the cooldown of your Frost Nova spell by 2 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135305,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135840.jpg",
+              "spellId": 11165,
+              "spellName": "Improved Frost Nova",
+              "description": "Reduces the cooldown of your Frost Nova spell by 4 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105776,
+          "displayRow": 2,
+          "displayCol": 17,
+          "rawPositionX": 10880,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135306,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135864.jpg",
+              "spellId": 11175,
+              "spellName": "Permafrost",
+              "description": "Increases the duration of your Chill effects by 11% and reduces the target's speed by an additional 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135306,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135864.jpg",
+              "spellId": 11175,
+              "spellName": "Permafrost",
+              "description": "Increases the duration of your Chill effects by 22% and reduces the target's speed by an additional 7%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135306,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135864.jpg",
+              "spellId": 11175,
+              "spellName": "Permafrost",
+              "description": "Increases the duration of your Chill effects by 33% and reduces the target's speed by an additional 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105772,
+          "displayRow": 3,
+          "displayCol": 14,
+          "rawPositionX": 9080,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135302,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135860.jpg",
+              "spellId": 11160,
+              "spellName": "Frost Channeling",
+              "description": "Reduces the mana cost of your Frost spells by 5% and reduces the threat caused by your Frost spells by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135302,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135860.jpg",
+              "spellId": 11160,
+              "spellName": "Frost Channeling",
+              "description": "Reduces the mana cost of your Frost spells by 10% and reduces the threat caused by your Frost spells by 20%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135302,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135860.jpg",
+              "spellId": 11160,
+              "spellName": "Frost Channeling",
+              "description": "Reduces the mana cost of your Frost spells by 15% and reduces the threat caused by your Frost spells by 30%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105771,
+          "displayRow": 3,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135301,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135857.jpg",
+              "spellId": 11185,
+              "spellName": "Improved Blizzard",
+              "description": "Adds a Chill effect to your Blizzard spell. This effect lowers the target's movement speed by 15% for 1.5 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135301,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135857.jpg",
+              "spellId": 11185,
+              "spellName": "Improved Blizzard",
+              "description": "Adds a Chill effect to your Blizzard spell. This effect lowers the target's movement speed by 25% for 1.5 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135301,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135857.jpg",
+              "spellId": 11185,
+              "spellName": "Improved Blizzard",
+              "description": "Adds a Chill effect to your Blizzard spell. This effect lowers the target's movement speed by 40% for 1.5 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105767,
+          "displayRow": 3,
+          "displayCol": 16,
+          "rawPositionX": 10280,
+          "rawPositionY": 3330,
+          "unlocks": [
+            105764
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135297,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135844.jpg",
+              "spellId": 1312002,
+              "spellName": "Ice Lance",
+              "description": "Deals 28 to 33 Frost damage to an enemy target. Deals 300% increased damage to Frozen targets.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 105770,
+          "displayRow": 4,
+          "displayCol": 14,
+          "rawPositionX": 9080,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135300,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136141.jpg",
+              "spellId": 16757,
+              "spellName": "Arctic Reach",
+              "description": "Increases the range of your Frostbolt, Ice Lance, and Blizzard spells and the radius of your Frost Nova and Cone of Cold spells by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135300,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136141.jpg",
+              "spellId": 16757,
+              "spellName": "Arctic Reach",
+              "description": "Increases the range of your Frostbolt, Ice Lance, and Blizzard spells and the radius of your Frost Nova and Cone of Cold spells by 20%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105769,
+          "displayRow": 4,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135299,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135841.jpg",
+              "spellId": 11958,
+              "spellName": "Ice Block",
+              "description": "You become encased in a block of ice, protecting you from all physical attacks and spells for 10 sec, but during that time you cannot attack, move, or cast spells.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 105768,
+          "displayRow": 4,
+          "displayCol": 17,
+          "rawPositionX": 10880,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135298,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135849.jpg",
+              "spellId": 11170,
+              "spellName": "Shatter",
+              "description": "Increases the critical strike chance of all your spells against Frozen targets by 17%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135298,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135849.jpg",
+              "spellId": 11170,
+              "spellName": "Shatter",
+              "description": "Increases the critical strike chance of all your spells against Frozen targets by 33%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135298,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135849.jpg",
+              "spellId": 11170,
+              "spellName": "Shatter",
+              "description": "Increases the critical strike chance of all your spells against Frozen targets by 50%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105765,
+          "displayRow": 5,
+          "displayCol": 14,
+          "rawPositionX": 9080,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135295,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135852.jpg",
+              "spellId": 11190,
+              "spellName": "Improved Cone of Cold",
+              "description": "Increases the damage dealt by your Cone of Cold spell by 12%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135295,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135852.jpg",
+              "spellId": 11190,
+              "spellName": "Improved Cone of Cold",
+              "description": "Increases the damage dealt by your Cone of Cold spell by 23%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135295,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135852.jpg",
+              "spellId": 11190,
+              "spellName": "Improved Cone of Cold",
+              "description": "Increases the damage dealt by your Cone of Cold spell by 35%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105766,
+          "displayRow": 5,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 4530,
+          "unlocks": [
+            105762
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135296,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135865.jpg",
+              "spellId": 12472,
+              "spellName": "Cold Snap",
+              "description": "Finishes the remaining cooldown on all your other Frost spells.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 105764,
+          "displayRow": 5,
+          "displayCol": 16,
+          "rawPositionX": 10280,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [
+            105767
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135294,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236227.jpg",
+              "spellId": 400647,
+              "spellName": "Fingers of Frost",
+              "description": "Gives your Chill effects a 15% chance to grant you the Fingers of Frost effect, which treats your next 1 spell cast as if the target were Frozen. Lasts 15 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135294,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236227.jpg",
+              "spellId": 400647,
+              "spellName": "Fingers of Frost",
+              "description": "Gives your Chill effects a 15% chance to grant you the Fingers of Frost effect, which treats your next 2 spells cast as if the target were Frozen. Lasts 15 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105763,
+          "displayRow": 6,
+          "displayCol": 16,
+          "rawPositionX": 10280,
+          "rawPositionY": 5130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135293,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135836.jpg",
+              "spellId": 11180,
+              "spellName": "Winter's Chill",
+              "description": "Gives your Frostbolt and Fingers of Frost empowered Ice Lance spells a 20% chance to apply Winter's Chill, increasing the target's damage taken from your next Cone of Cold by 20% and it gains an additional 7% of your spell damage, stacking up to 5 times.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135293,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135836.jpg",
+              "spellId": 11180,
+              "spellName": "Winter's Chill",
+              "description": "Gives your Frostbolt and Fingers of Frost empowered Ice Lance spells a 40% chance to apply Winter's Chill, increasing the target's damage taken from your next Cone of Cold by 20% and it gains an additional 7% of your spell damage, stacking up to 5 times.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135293,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135836.jpg",
+              "spellId": 11180,
+              "spellName": "Winter's Chill",
+              "description": "Gives your Frostbolt and Fingers of Frost empowered Ice Lance spells a 60% chance to apply Winter's Chill, increasing the target's damage taken from your next Cone of Cold by 20% and it gains an additional 7% of your spell damage, stacking up to 5 times.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135293,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135836.jpg",
+              "spellId": 11180,
+              "spellName": "Winter's Chill",
+              "description": "Gives your Frostbolt and Fingers of Frost empowered Ice Lance spells a 80% chance to apply Winter's Chill, increasing the target's damage taken from your next Cone of Cold by 20% and it gains an additional 7% of your spell damage, stacking up to 5 times.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135293,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135836.jpg",
+              "spellId": 11180,
+              "spellName": "Winter's Chill",
+              "description": "Gives your Frostbolt and Fingers of Frost empowered Ice Lance spells a 100% chance to apply Winter's Chill, increasing the target's damage taken from your next Cone of Cold by 20% and it gains an additional 7% of your spell damage, stacking up to 5 times.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105762,
+          "displayRow": 7,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 5730,
+          "unlocks": [],
+          "lockedBy": [
+            105766
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135292,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135988.jpg",
+              "spellId": 11426,
+              "spellName": "Ice Barrier",
+              "description": "Shield yourself, absorbing 480 damage and increasing your Frost damage by 15% for 1 min. While shielded, your Frost damage is increased by an additional 5% and you do not lose casting time when you take damage.",
+              "castTime": "Instant"
+            }
+          ]
+        }
+      ]
+    },
     "26": {
       "treeId": 1117,
       "classId": 1,
@@ -587,6 +1235,669 @@
               "spellId": 12294,
               "spellName": "Mortal Strike",
               "description": "A vicious strike that deals weapon damage plus 85 and wounds the target, reducing the effectiveness of any healing by 50% for 10 sec.",
+              "castTime": "Instant"
+            }
+          ]
+        }
+      ]
+    },
+    "38": {
+      "treeId": 1111,
+      "classId": 4,
+      "className": "Rogue",
+      "specId": 38,
+      "specName": "Combat",
+      "name": "Combat",
+      "nodes": [
+        {
+          "id": 105708,
+          "displayRow": 1,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135238,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132292.jpg",
+              "spellId": 14162,
+              "spellName": "Coup de Grace",
+              "description": "Increases the damage done by your Eviscerate ability by 7%, and the damage and storage rate of your Death Mark ability by 7%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135238,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132292.jpg",
+              "spellId": 14162,
+              "spellName": "Coup de Grace",
+              "description": "Increases the damage done by your Eviscerate ability by 13%, and the damage and storage rate of your Death Mark ability by 13%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135238,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132292.jpg",
+              "spellId": 14162,
+              "spellName": "Coup de Grace",
+              "description": "Increases the damage done by your Eviscerate ability by 20%, and the damage and storage rate of your Death Mark ability by 20%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105741,
+          "displayRow": 1,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135271,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136189.jpg",
+              "spellId": 13732,
+              "spellName": "Efficient Strikes",
+              "description": "Reduces the Energy cost of your Sinister Strike and Hemorrhage abilities by 3.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135271,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136189.jpg",
+              "spellId": 13732,
+              "spellName": "Efficient Strikes",
+              "description": "Reduces the Energy cost of your Sinister Strike and Hemorrhage abilities by 5.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 113398,
+          "displayRow": 1,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 145370,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136047.jpg",
+              "spellId": 13712,
+              "spellName": "Lightning Reflexes",
+              "description": "Increases your Dodge chance by 1%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 145370,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136047.jpg",
+              "spellId": 13712,
+              "spellName": "Lightning Reflexes",
+              "description": "Increases your Dodge chance by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 145370,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136047.jpg",
+              "spellId": 13712,
+              "spellName": "Lightning Reflexes",
+              "description": "Increases your Dodge chance by 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 145370,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136047.jpg",
+              "spellId": 13712,
+              "spellName": "Lightning Reflexes",
+              "description": "Increases your Dodge chance by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 145370,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136047.jpg",
+              "spellId": 13712,
+              "spellName": "Lightning Reflexes",
+              "description": "Increases your Dodge chance by 5%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105719,
+          "displayRow": 2,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135249,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132090.jpg",
+              "spellId": 1224716,
+              "spellName": "Puncturing Wounds",
+              "description": "Increases the critical strike chance of your Backstab by 10% and your Mutilate by 5%, and gives Backstab a 15% chance to add an additional Combo Point.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135249,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132090.jpg",
+              "spellId": 1224716,
+              "spellName": "Puncturing Wounds",
+              "description": "Increases the critical strike chance of your Backstab by 20% and your Mutilate by 10%, and gives Backstab a 30% chance to add an additional Combo Point.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135249,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132090.jpg",
+              "spellId": 1224716,
+              "spellName": "Puncturing Wounds",
+              "description": "Increases the critical strike chance of your Backstab by 30% and your Mutilate by 15%, and gives Backstab a 45% chance to add an additional Combo Point.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105738,
+          "displayRow": 2,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 2730,
+          "unlocks": [
+            105735
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135268,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132269.jpg",
+              "spellId": 13713,
+              "spellName": "Deflection",
+              "description": "Increases your Parry chance by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135268,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132269.jpg",
+              "spellId": 13713,
+              "spellName": "Deflection",
+              "description": "Increases your Parry chance by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135268,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132269.jpg",
+              "spellId": 13713,
+              "spellName": "Deflection",
+              "description": "Increases your Parry chance by 6%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105737,
+          "displayRow": 2,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 2730,
+          "unlocks": [
+            105726
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135267,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132222.jpg",
+              "spellId": 13705,
+              "spellName": "Precision",
+              "description": "Improves your chance to hit by 1%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135267,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132222.jpg",
+              "spellId": 13705,
+              "spellName": "Precision",
+              "description": "Improves your chance to hit by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135267,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132222.jpg",
+              "spellId": 13705,
+              "spellName": "Precision",
+              "description": "Improves your chance to hit by 3%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105732,
+          "displayRow": 2,
+          "displayCol": 10,
+          "rawPositionX": 6820,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135262,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132307.jpg",
+              "spellId": 13743,
+              "spellName": "Improved Sprint",
+              "description": "Gives a 50% chance to remove all movement impairing effects when you activate your Sprint ability.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135262,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132307.jpg",
+              "spellId": 13743,
+              "spellName": "Improved Sprint",
+              "description": "Gives a 100% chance to remove all movement impairing effects when you activate your Sprint ability.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105736,
+          "displayRow": 3,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135266,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136205.jpg",
+              "spellId": 13742,
+              "spellName": "Endurance",
+              "description": "Reduces the cooldown of your Sprint and Evasion abilities by 30%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135266,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136205.jpg",
+              "spellId": 13742,
+              "spellName": "Endurance",
+              "description": "Reduces the cooldown of your Sprint and Evasion abilities by 60%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105735,
+          "displayRow": 3,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [
+            105738
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135265,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132336.jpg",
+              "spellId": 14251,
+              "spellName": "Riposte",
+              "description": "A strike that becomes active after parrying an opponent's attack.  This attack deals 150% weapon damage and disarms the target for 6 sec.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 105759,
+          "displayRow": 3,
+          "displayCol": 10,
+          "rawPositionX": 6820,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135289,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132296.jpg",
+              "spellId": 1329265,
+              "spellName": "Composure",
+              "description": "Increases the Energy cost reduction of your Poised ability by 5.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135289,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132296.jpg",
+              "spellId": 1329265,
+              "spellName": "Composure",
+              "description": "Increases the Energy cost reduction of your Poised ability by 10.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105733,
+          "displayRow": 4,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135263,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132219.jpg",
+              "spellId": 13754,
+              "spellName": "Improved Kick",
+              "description": "Gives your Kick ability a 50% chance to Silence the target for 2 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135263,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132219.jpg",
+              "spellId": 13754,
+              "spellName": "Improved Kick",
+              "description": "Gives your Kick ability a 100% chance to Silence the target for 2 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 108100,
+          "displayRow": 4,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 138268,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135345.jpg",
+              "spellId": 1310711,
+              "spellName": "Flawless Execution",
+              "description": "Reduces the Energy cost of your Eviscerate ability by 15.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105726,
+          "displayRow": 4,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [
+            105737
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135256,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135882.jpg",
+              "spellId": 30919,
+              "spellName": "Weapon Expertise",
+              "description": "Reduces the chance for your attacks to be Dodged or Parried by 1%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135256,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135882.jpg",
+              "spellId": 30919,
+              "spellName": "Weapon Expertise",
+              "description": "Reduces the chance for your attacks to be Dodged or Parried by 2%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105730,
+          "displayRow": 4,
+          "displayCol": 10,
+          "rawPositionX": 6820,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135260,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132275.jpg",
+              "spellId": 18427,
+              "spellName": "Aggression",
+              "description": "Increases the damage of your Sinister Strike and Eviscerate abilities by 5%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135260,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132275.jpg",
+              "spellId": 18427,
+              "spellName": "Aggression",
+              "description": "Increases the damage of your Sinister Strike and Eviscerate abilities by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135260,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132275.jpg",
+              "spellId": 18427,
+              "spellName": "Aggression",
+              "description": "Increases the damage of your Sinister Strike and Eviscerate abilities by 15%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 113635,
+          "displayRow": 5,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 145965,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132147.jpg",
+              "spellId": 13715,
+              "spellName": "Dual Wield Specialization",
+              "description": "Increases the damage done by your off-hand weapon by 25%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 145965,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132147.jpg",
+              "spellId": 13715,
+              "spellName": "Dual Wield Specialization",
+              "description": "Increases the damage done by your off-hand weapon by 50%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105728,
+          "displayRow": 5,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 4530,
+          "unlocks": [
+            105724
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135258,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132350.jpg",
+              "spellId": 13877,
+              "spellName": "Blade Flurry",
+              "description": "Increases your melee attack speed by 20% and your melee attacks strike an additional nearby opponent. Lasts 15 sec.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 105727,
+          "displayRow": 5,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135257,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135328.jpg",
+              "spellId": 13960,
+              "spellName": "Hack and Slash",
+              "description": "Gives your melee weapon attacks a benefit depending on the weapon.\r\n\r\n    Axe/Sword: Your successful\r\n    melee attacks have a 1% chance\r\n    to trigger an extra attack on the \r\n    target.\r\n\r\n    Dagger/Fist: Increases your\r\n    critical strike chance by 1%.\r\n\r\n    Mace: Your attacks ignore 3% of\r\n    your target's armor.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135257,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135328.jpg",
+              "spellId": 13960,
+              "spellName": "Hack and Slash",
+              "description": "Gives your melee weapon attacks a benefit depending on the weapon.\r\n\r\n    Axe/Sword: Your successful\r\n    melee attacks have a 2% chance\r\n    to trigger an extra attack on the \r\n    target.\r\n\r\n    Dagger/Fist: Increases your\r\n    critical strike chance by 2%.\r\n\r\n    Mace: Your attacks ignore 6% of\r\n    your target's armor.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135257,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135328.jpg",
+              "spellId": 13960,
+              "spellName": "Hack and Slash",
+              "description": "Gives your melee weapon attacks a benefit depending on the weapon.\r\n\r\n    Axe/Sword: Your successful\r\n    melee attacks have a 3% chance\r\n    to trigger an extra attack on the \r\n    target.\r\n\r\n    Dagger/Fist: Increases your\r\n    critical strike chance by 3%.\r\n\r\n    Mace: Your attacks ignore 9% of\r\n    your target's armor.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135257,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135328.jpg",
+              "spellId": 13960,
+              "spellName": "Hack and Slash",
+              "description": "Gives your melee weapon attacks a benefit depending on the weapon.\r\n\r\n    Axe/Sword: Your successful\r\n    melee attacks have a 4% chance\r\n    to trigger an extra attack on the \r\n    target.\r\n\r\n    Dagger/Fist: Increases your\r\n    critical strike chance by 4%.\r\n\r\n    Mace: Your attacks ignore 12% of\r\n    your target's armor.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135257,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135328.jpg",
+              "spellId": 13960,
+              "spellName": "Hack and Slash",
+              "description": "Gives your melee weapon attacks a benefit depending on the weapon.\r\n\r\n    Axe/Sword: Your successful\r\n    melee attacks have a 5% chance\r\n    to trigger an extra attack on the \r\n    target.\r\n\r\n    Dagger/Fist: Increases your\r\n    critical strike chance by 5%.\r\n\r\n    Mace: Your attacks ignore 15% of\r\n    your target's armor.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105740,
+          "displayRow": 6,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 5130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135270,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/458731.jpg",
+              "spellId": 1329284,
+              "spellName": "Flash of Steel",
+              "description": "Increases the Energy generated by your Shank ability by 3 and reduces its cooldown by 0.4 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135270,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/458731.jpg",
+              "spellId": 1329284,
+              "spellName": "Flash of Steel",
+              "description": "Increases the Energy generated by your Shank ability by 6 and reduces its cooldown by 0.8 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135270,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/458731.jpg",
+              "spellId": 1329284,
+              "spellName": "Flash of Steel",
+              "description": "Increases the Energy generated by your Shank ability by 9 and reduces its cooldown by 1.2 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135270,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/458731.jpg",
+              "spellId": 1329284,
+              "spellName": "Flash of Steel",
+              "description": "Increases the Energy generated by your Shank ability by 12 and reduces its cooldown by 1.6 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135270,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/458731.jpg",
+              "spellId": 1329284,
+              "spellName": "Flash of Steel",
+              "description": "Increases the Energy generated by your Shank ability by 15 and reduces its cooldown by 2.0 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105724,
+          "displayRow": 7,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 5730,
+          "unlocks": [],
+          "lockedBy": [
+            105728
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135254,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136206.jpg",
+              "spellId": 13750,
+              "spellName": "Adrenaline Rush",
+              "description": "Increases your Energy regeneration rate by 100% for 15 sec.",
               "castTime": "Instant"
             }
           ]
@@ -1185,6 +2496,699 @@
               "spellName": "Bestial Wrath",
               "description": "Send your pet into a rage causing 50% additional damage for 18 sec.  While enraged, the beast does not feel pity or remorse or fear and it cannot be stopped unless killed.",
               "castTime": "Instant"
+            }
+          ]
+        }
+      ]
+    },
+    "56": {
+      "treeId": 1114,
+      "classId": 5,
+      "className": "Priest",
+      "specId": 56,
+      "specName": "Holy",
+      "name": "Holy",
+      "nodes": [
+        {
+          "id": 105867,
+          "displayRow": 1,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135397,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135918.jpg",
+              "spellId": 14913,
+              "spellName": "Twilight Focus",
+              "description": "Gives your spells a 23% chance to not lose casting time when you take damage.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135397,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135918.jpg",
+              "spellId": 14913,
+              "spellName": "Twilight Focus",
+              "description": "Gives your spells a 47% chance to not lose casting time when you take damage.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135397,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135918.jpg",
+              "spellId": 14913,
+              "spellName": "Twilight Focus",
+              "description": "Gives your spells a 70% chance to not lose casting time when you take damage.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105866,
+          "displayRow": 1,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135396,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135953.jpg",
+              "spellId": 14908,
+              "spellName": "Improved Renew",
+              "description": "Increases the amount healed by your Renew spell by 5%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135396,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135953.jpg",
+              "spellId": 14908,
+              "spellName": "Improved Renew",
+              "description": "Increases the amount healed by your Renew spell by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135396,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135953.jpg",
+              "spellId": 14908,
+              "spellName": "Improved Renew",
+              "description": "Increases the amount healed by your Renew spell by 15%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 110855,
+          "displayRow": 1,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 142601,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135967.jpg",
+              "spellId": 14889,
+              "spellName": "Holy Specialization",
+              "description": "Increases the critical effect chance of your Holy spells by 1%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 142601,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135967.jpg",
+              "spellId": 14889,
+              "spellName": "Holy Specialization",
+              "description": "Increases the critical effect chance of your Holy spells by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 142601,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135967.jpg",
+              "spellId": 14889,
+              "spellName": "Holy Specialization",
+              "description": "Increases the critical effect chance of your Holy spells by 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 142601,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135967.jpg",
+              "spellId": 14889,
+              "spellName": "Holy Specialization",
+              "description": "Increases the critical effect chance of your Holy spells by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 142601,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135967.jpg",
+              "spellId": 14889,
+              "spellName": "Holy Specialization",
+              "description": "Increases the critical effect chance of your Holy spells by 5%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105864,
+          "displayRow": 2,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135394,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135976.jpg",
+              "spellId": 27900,
+              "spellName": "Spell Warding",
+              "description": "Reduces all spell damage taken by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135394,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135976.jpg",
+              "spellId": 27900,
+              "spellName": "Spell Warding",
+              "description": "Reduces all spell damage taken by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135394,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135976.jpg",
+              "spellId": 27900,
+              "spellName": "Spell Warding",
+              "description": "Reduces all spell damage taken by 6%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135394,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135976.jpg",
+              "spellId": 27900,
+              "spellName": "Spell Warding",
+              "description": "Reduces all spell damage taken by 8%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135394,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135976.jpg",
+              "spellId": 27900,
+              "spellName": "Spell Warding",
+              "description": "Reduces all spell damage taken by 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105863,
+          "displayRow": 2,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 2730,
+          "unlocks": [
+            105857
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135393,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135971.jpg",
+              "spellId": 18530,
+              "spellName": "Divine Fury",
+              "description": "Reduces the casting time of your Smite, Holy Fire, Heal, and Greater Heal spells by 0.1 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135393,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135971.jpg",
+              "spellId": 18530,
+              "spellName": "Divine Fury",
+              "description": "Reduces the casting time of your Smite, Holy Fire, Heal, and Greater Heal spells by 0.2 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135393,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135971.jpg",
+              "spellId": 18530,
+              "spellName": "Divine Fury",
+              "description": "Reduces the casting time of your Smite, Holy Fire, Heal, and Greater Heal spells by 0.3 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135393,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135971.jpg",
+              "spellId": 18530,
+              "spellName": "Divine Fury",
+              "description": "Reduces the casting time of your Smite, Holy Fire, Heal, and Greater Heal spells by 0.4 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135393,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135971.jpg",
+              "spellId": 18530,
+              "spellName": "Divine Fury",
+              "description": "Reduces the casting time of your Smite, Holy Fire, Heal, and Greater Heal spells by 0.5 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105862,
+          "displayRow": 3,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135392,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135922.jpg",
+              "spellId": 15237,
+              "spellName": "Holy Nova",
+              "description": "Causes an explosion of holy light around the caster, causing 45 to 50 Holy damage to all enemy targets within 10 yards and healing all party members within 10 yards for 101 to 110. These effects cause no threat.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 105861,
+          "displayRow": 3,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135391,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135877.jpg",
+              "spellId": 27811,
+              "spellName": "Blessed Recovery",
+              "description": "After being struck by a melee or ranged critical hit, or suffering more than 30% of your maximum Health from a single attack, heal 8% of the damage taken over 6 sec. Refreshing this effect carries over any remaining healing.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135391,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135877.jpg",
+              "spellId": 27811,
+              "spellName": "Blessed Recovery",
+              "description": "After being struck by a melee or ranged critical hit, or suffering more than 30% of your maximum Health from a single attack, heal 17% of the damage taken over 6 sec. Refreshing this effect carries over any remaining healing.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135391,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135877.jpg",
+              "spellId": 27811,
+              "spellName": "Blessed Recovery",
+              "description": "After being struck by a melee or ranged critical hit, or suffering more than 30% of your maximum Health from a single attack, heal 25% of the damage taken over 6 sec. Refreshing this effect carries over any remaining healing.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105860,
+          "displayRow": 3,
+          "displayCol": 10,
+          "rawPositionX": 6820,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135390,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135928.jpg",
+              "spellId": 14892,
+              "spellName": "Inspiration",
+              "description": "Your non-periodic critical heals increase your target's Armor by 8% for 15 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135390,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135928.jpg",
+              "spellId": 14892,
+              "spellName": "Inspiration",
+              "description": "Your non-periodic critical heals increase your target's Armor by 17% for 15 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135390,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135928.jpg",
+              "spellId": 14892,
+              "spellName": "Inspiration",
+              "description": "Your non-periodic critical heals increase your target's Armor by 25% for 15 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105859,
+          "displayRow": 4,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135389,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135949.jpg",
+              "spellId": 27789,
+              "spellName": "Holy Reach",
+              "description": "Increases the range of your Smite and Holy Fire spells and the radius of your Prayer of Healing and Holy Nova spells by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135389,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135949.jpg",
+              "spellId": 27789,
+              "spellName": "Holy Reach",
+              "description": "Increases the range of your Smite and Holy Fire spells and the radius of your Prayer of Healing and Holy Nova spells by 20%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105858,
+          "displayRow": 4,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135388,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135916.jpg",
+              "spellId": 14912,
+              "spellName": "Improved Healing",
+              "description": "Reduces the Mana cost of your Lesser Heal, Heal, Greater Heal, Penance, and Prayer of Mending spells by 5%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135388,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135916.jpg",
+              "spellId": 14912,
+              "spellName": "Improved Healing",
+              "description": "Reduces the Mana cost of your Lesser Heal, Heal, Greater Heal, Penance, and Prayer of Mending spells by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135388,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135916.jpg",
+              "spellId": 14912,
+              "spellName": "Improved Healing",
+              "description": "Reduces the Mana cost of your Lesser Heal, Heal, Greater Heal, Penance, and Prayer of Mending spells by 15%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105857,
+          "displayRow": 4,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [
+            105863
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135387,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135973.jpg",
+              "spellId": 14909,
+              "spellName": "Searing Light",
+              "description": "Increases your Holy damage done by 2%, and gives a 5% chance each time your Holy Fire spell deals periodic damage for your next Holy Nova to cost no Mana.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135387,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135973.jpg",
+              "spellId": 14909,
+              "spellName": "Searing Light",
+              "description": "Increases your Holy damage done by 5%, and gives a 10% chance each time your Holy Fire spell deals periodic damage for your next Holy Nova to cost no Mana.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105856,
+          "displayRow": 4,
+          "displayCol": 10,
+          "rawPositionX": 6820,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135386,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135883.jpg",
+              "spellId": 1328569,
+              "spellName": "Holy Binding",
+              "description": "Each time you heal a target other than yourself with Flash Heal, you are healed for 50% as much. This healing generates no threat.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105855,
+          "displayRow": 5,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135385,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134943.jpg",
+              "spellId": 1317006,
+              "spellName": "Litany of Light",
+              "description": "When you cast a healing spell, gain Mana equal to 5% of the base cost of the spell if your previous heal was a different spell.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135385,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134943.jpg",
+              "spellId": 1317006,
+              "spellName": "Litany of Light",
+              "description": "When you cast a healing spell, gain Mana equal to 10% of the base cost of the spell if your previous heal was a different spell.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105854,
+          "displayRow": 5,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 4530,
+          "unlocks": [
+            105851
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135384,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132864.jpg",
+              "spellId": 20711,
+              "spellName": "Spirit of Redemption",
+              "description": "Upon death, the priest becomes the Spirit of Redemption for 15 sec.  The Spirit of Redemption cannot move, attack, be attacked or targeted by any spells or effects.  While in this form the priest can cast any healing spell free of cost.  When the effect ends, the priest dies.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105853,
+          "displayRow": 5,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135383,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135977.jpg",
+              "spellId": 14901,
+              "spellName": "Spiritual Guidance",
+              "description": "Increases your spell healing by up to 5% of your total Spirit and your spell damage by up to 1% of your total Spirit.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135383,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135977.jpg",
+              "spellId": 14901,
+              "spellName": "Spiritual Guidance",
+              "description": "Increases your spell healing by up to 10% of your total Spirit and your spell damage by up to 3% of your total Spirit.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135383,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135977.jpg",
+              "spellId": 14901,
+              "spellName": "Spiritual Guidance",
+              "description": "Increases your spell healing by up to 15% of your total Spirit and your spell damage by up to 5% of your total Spirit.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135383,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135977.jpg",
+              "spellId": 14901,
+              "spellName": "Spiritual Guidance",
+              "description": "Increases your spell healing by up to 20% of your total Spirit and your spell damage by up to 6% of your total Spirit.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135383,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135977.jpg",
+              "spellId": 14901,
+              "spellName": "Spiritual Guidance",
+              "description": "Increases your spell healing by up to 25% of your total Spirit and your spell damage by up to 8% of your total Spirit.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105852,
+          "displayRow": 6,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 5130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135382,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 14898,
+              "spellName": "Spiritual Healing",
+              "description": "Increases the amount healed by your spells by 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135382,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 14898,
+              "spellName": "Spiritual Healing",
+              "description": "Increases the amount healed by your spells by 7%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135382,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 14898,
+              "spellName": "Spiritual Healing",
+              "description": "Increases the amount healed by your spells by 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105851,
+          "displayRow": 7,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 5730,
+          "unlocks": [],
+          "lockedBy": [
+            105854
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135381,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135944.jpg",
+              "spellId": 401859,
+              "spellName": "Prayer of Mending",
+              "description": "Places a spell on the target that heals them for 395 the next time they take damage or receive non-periodic healing. When the heal occurs, Prayer of Mending jumps to a party or raid member within 20 yards. Jumps up to 5 times and lasts 30 sec after each jump. This spell can only be placed on one target at a time per caster.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 105865,
+          "displayRow": 33,
+          "displayCol": 14,
+          "rawPositionX": 9280,
+          "rawPositionY": 21300,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135395,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135967.jpg",
+              "spellId": 14889,
+              "spellName": "Holy Specialization",
+              "description": "Increases the critical effect chance of your Holy spells by 1%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135395,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135967.jpg",
+              "spellId": 14889,
+              "spellName": "Holy Specialization",
+              "description": "Increases the critical effect chance of your Holy spells by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135395,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135967.jpg",
+              "spellId": 14889,
+              "spellName": "Holy Specialization",
+              "description": "Increases the critical effect chance of your Holy spells by 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135395,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135967.jpg",
+              "spellId": 14889,
+              "spellName": "Holy Specialization",
+              "description": "Increases the critical effect chance of your Holy spells by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135395,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135967.jpg",
+              "spellId": 14889,
+              "spellName": "Holy Specialization",
+              "description": "Increases the critical effect chance of your Holy spells by 5%.",
+              "castTime": "Passive"
             }
           ]
         }
@@ -3820,6 +5824,1946 @@
               "spellName": "Wrack",
               "description": "Tears the target apart from within, inflicting 177 Shadow damage every 1 sec and increasing the damage they take from your other Shadow damage over time effects by 10% for 6 sec.",
               "castTime": "Channeled"
+            }
+          ]
+        }
+      ]
+    },
+    "373": {
+      "treeId": 1082,
+      "classId": 7,
+      "className": "Shaman",
+      "specId": 373,
+      "specName": "Enhancement",
+      "name": "Enhancement",
+      "nodes": [
+        {
+          "id": 104757,
+          "displayRow": 1,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134218,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136097.jpg",
+              "spellId": 16043,
+              "spellName": "Earth's Grasp",
+              "description": "Increases the health of your Stoneclaw Totem by 25% and the radius of your Earthbind Totem by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134218,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136097.jpg",
+              "spellId": 16043,
+              "spellName": "Earth's Grasp",
+              "description": "Increases the health of your Stoneclaw Totem by 50% and the radius of your Earthbind Totem by 20%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104753,
+          "displayRow": 1,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134214,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132325.jpg",
+              "spellId": 16255,
+              "spellName": "Thundering Strikes",
+              "description": "Improves your chance to get a critical strike with all spells and attacks by 1%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134214,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132325.jpg",
+              "spellId": 16255,
+              "spellName": "Thundering Strikes",
+              "description": "Improves your chance to get a critical strike with all spells and attacks by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134214,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132325.jpg",
+              "spellId": 16255,
+              "spellName": "Thundering Strikes",
+              "description": "Improves your chance to get a critical strike with all spells and attacks by 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134214,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132325.jpg",
+              "spellId": 16255,
+              "spellName": "Thundering Strikes",
+              "description": "Improves your chance to get a critical strike with all spells and attacks by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134214,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132325.jpg",
+              "spellId": 16255,
+              "spellName": "Thundering Strikes",
+              "description": "Improves your chance to get a critical strike with all spells and attacks by 5%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104756,
+          "displayRow": 1,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134217,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136162.jpg",
+              "spellId": 17485,
+              "spellName": "Ancestral Knowledge",
+              "description": "Increases your Intellect by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134217,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136162.jpg",
+              "spellId": 17485,
+              "spellName": "Ancestral Knowledge",
+              "description": "Increases your Intellect by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134217,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136162.jpg",
+              "spellId": 17485,
+              "spellName": "Ancestral Knowledge",
+              "description": "Increases your Intellect by 6%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134217,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136162.jpg",
+              "spellId": 17485,
+              "spellName": "Ancestral Knowledge",
+              "description": "Increases your Intellect by 8%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134217,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136162.jpg",
+              "spellId": 17485,
+              "spellName": "Ancestral Knowledge",
+              "description": "Increases your Intellect by 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104754,
+          "displayRow": 2,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134215,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136098.jpg",
+              "spellId": 16258,
+              "spellName": "Guardian Totems",
+              "description": "Increases the amount of damage reduced by your Stoneskin Totem and Windwall Totem by 10% and reduces the cooldown of your Grounding Totem by 1 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134215,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136098.jpg",
+              "spellId": 16258,
+              "spellName": "Guardian Totems",
+              "description": "Increases the amount of damage reduced by your Stoneskin Totem and Windwall Totem by 20% and reduces the cooldown of your Grounding Totem by 2 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104755,
+          "displayRow": 2,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 2730,
+          "unlocks": [
+            104747
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134216,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136055.jpg",
+              "spellId": 415140,
+              "spellName": "Mental Dexterity",
+              "description": "Increases your Attack Power by an amount equal to 50% of your Intellect.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134216,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136055.jpg",
+              "spellId": 415140,
+              "spellName": "Mental Dexterity",
+              "description": "Increases your Attack Power by an amount equal to 100% of your Intellect.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134216,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136055.jpg",
+              "spellId": 415140,
+              "spellName": "Mental Dexterity",
+              "description": "Increases your Attack Power by an amount equal to 150% of your Intellect.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104751,
+          "displayRow": 2,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134212,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136051.jpg",
+              "spellId": 16261,
+              "spellName": "Improved Lightning Shield",
+              "description": "Increases the damage done by your Lightning Shield orbs by 5%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134212,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136051.jpg",
+              "spellId": 16261,
+              "spellName": "Improved Lightning Shield",
+              "description": "Increases the damage done by your Lightning Shield orbs by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134212,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136051.jpg",
+              "spellId": 16261,
+              "spellName": "Improved Lightning Shield",
+              "description": "Increases the damage done by your Lightning Shield orbs by 15%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104750,
+          "displayRow": 3,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134211,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135814.jpg",
+              "spellId": 16266,
+              "spellName": "Elemental Weapons",
+              "description": "Increases the melee attack power bonus of your Rockbiter Weapon by 7%, your Windfury Weapon effect by 13% and increases the damage caused by your Flametongue Weapon and Frostbrand Weapon by 5%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134211,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135814.jpg",
+              "spellId": 16266,
+              "spellName": "Elemental Weapons",
+              "description": "Increases the melee attack power bonus of your Rockbiter Weapon by 13%, your Windfury Weapon effect by 27% and increases the damage caused by your Flametongue Weapon and Frostbrand Weapon by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134211,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135814.jpg",
+              "spellId": 16266,
+              "spellName": "Elemental Weapons",
+              "description": "Increases the melee attack power bonus of your Rockbiter Weapon by 20%, your Windfury Weapon effect by 40% and increases the damage caused by your Flametongue Weapon and Frostbrand Weapon by 15%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104749,
+          "displayRow": 3,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134210,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136027.jpg",
+              "spellId": 1223030,
+              "spellName": "Shamanistic Focus",
+              "description": "Reduces the mana cost of your Shock and Lightning Shield spells by 45%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104748,
+          "displayRow": 3,
+          "displayCol": 10,
+          "rawPositionX": 6820,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134209,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136056.jpg",
+              "spellId": 16254,
+              "spellName": "Anticipation",
+              "description": "Increases your chance to dodge by an additional 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134209,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136056.jpg",
+              "spellId": 16254,
+              "spellName": "Anticipation",
+              "description": "Increases your chance to dodge by an additional 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134209,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136056.jpg",
+              "spellId": 16254,
+              "spellName": "Anticipation",
+              "description": "Increases your chance to dodge by an additional 6%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104746,
+          "displayRow": 4,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134207,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135892.jpg",
+              "spellId": 16252,
+              "spellName": "Toughness",
+              "description": "Increases your Stamina by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134207,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135892.jpg",
+              "spellId": 16252,
+              "spellName": "Toughness",
+              "description": "Increases your Stamina by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134207,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135892.jpg",
+              "spellId": 16252,
+              "spellName": "Toughness",
+              "description": "Increases your Stamina by 6%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134207,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135892.jpg",
+              "spellId": 16252,
+              "spellName": "Toughness",
+              "description": "Increases your Stamina by 8%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134207,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135892.jpg",
+              "spellId": 16252,
+              "spellName": "Toughness",
+              "description": "Increases your Stamina by 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104747,
+          "displayRow": 4,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [
+            104755
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134208,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132152.jpg",
+              "spellId": 16256,
+              "spellName": "Flurry",
+              "description": "Increases your attack speed by 6% for your next 3 swings after dealing a melee critical strike.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134208,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132152.jpg",
+              "spellId": 16256,
+              "spellName": "Flurry",
+              "description": "Increases your attack speed by 12% for your next 3 swings after dealing a melee critical strike.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134208,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132152.jpg",
+              "spellId": 16256,
+              "spellName": "Flurry",
+              "description": "Increases your attack speed by 18% for your next 3 swings after dealing a melee critical strike.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134208,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132152.jpg",
+              "spellId": 16256,
+              "spellName": "Flurry",
+              "description": "Increases your attack speed by 24% for your next 3 swings after dealing a melee critical strike.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134208,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132152.jpg",
+              "spellId": 16256,
+              "spellName": "Flurry",
+              "description": "Increases your attack speed by 30% for your next 3 swings after dealing a melee critical strike.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104743,
+          "displayRow": 4,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 3930,
+          "unlocks": [
+            104742
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134204,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132314.jpg",
+              "spellId": 17364,
+              "spellName": "Stormstrike",
+              "description": "Instantly strike for 150% weapon damage and increase the damage you deal to the target with your next Lightning Bolt, Chain Lightning, or Earth Shock spell by 20% for 12 sec.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 104752,
+          "displayRow": 4,
+          "displayCol": 10,
+          "rawPositionX": 6820,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134213,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136095.jpg",
+              "spellId": 16262,
+              "spellName": "Improved Ghost Wolf",
+              "description": "Reduces the cast time of your Ghost Wolf spell by 1.0 sec, and Ghost Wolf may be used indoors.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134213,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136095.jpg",
+              "spellId": 16262,
+              "spellName": "Improved Ghost Wolf",
+              "description": "Reduces the cast time of your Ghost Wolf spell by 3.0 sec, and Ghost Wolf may be used indoors.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104745,
+          "displayRow": 5,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134206,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132269.jpg",
+              "spellId": 16268,
+              "spellName": "Spirit Weapons",
+              "description": "Gives a chance to parry enemy melee attacks, reduces all threat generated by your attacks by 30% while Rockbiter Weapon is not active, and increases all threat generated by 30% while Rockbiter Weapon is active.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104744,
+          "displayRow": 5,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 4530,
+          "unlocks": [
+            104740
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134205,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136090.jpg",
+              "spellId": 30812,
+              "spellName": "Mental Quickness",
+              "description": "Increases your spell damage and healing by up to 15% of your Intellect.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134205,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136090.jpg",
+              "spellId": 30812,
+              "spellName": "Mental Quickness",
+              "description": "Increases your spell damage and healing by up to 30% of your Intellect.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104742,
+          "displayRow": 5,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [
+            104743
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134203,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/237581.jpg",
+              "spellId": 1223031,
+              "spellName": "Improved Stormstrike",
+              "description": "When you Stormstrike, you have a 50% chance to gain 50% mana regeneration while casting spells for 15 sec, and Stormstrike's cooldown has a 50% chance to reset each time you Dodge or Parry.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134203,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/237581.jpg",
+              "spellId": 1223031,
+              "spellName": "Improved Stormstrike",
+              "description": "When you Stormstrike, you have a 100% chance to gain 50% mana regeneration while casting spells for 15 sec, and Stormstrike's cooldown has a 100% chance to reset each time you Dodge or Parry.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104741,
+          "displayRow": 6,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 5130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134202,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/237584.jpg",
+              "spellId": 408498,
+              "spellName": "Maelstrom Weapon",
+              "description": "When you deal damage with a melee attack, you have a chance to reduce the cast time and Mana cost of your next Lightning Bolt spell by 4%. Stacks up to 5 times. Lasts 30 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134202,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/237584.jpg",
+              "spellId": 408498,
+              "spellName": "Maelstrom Weapon",
+              "description": "When you deal damage with a melee attack, you have a chance to reduce the cast time and Mana cost of your next Lightning Bolt spell by 8%. Stacks up to 5 times. Lasts 30 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134202,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/237584.jpg",
+              "spellId": 408498,
+              "spellName": "Maelstrom Weapon",
+              "description": "When you deal damage with a melee attack, you have a chance to reduce the cast time and Mana cost of your next Lightning Bolt spell by 12%. Stacks up to 5 times. Lasts 30 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134202,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/237584.jpg",
+              "spellId": 408498,
+              "spellName": "Maelstrom Weapon",
+              "description": "When you deal damage with a melee attack, you have a chance to reduce the cast time and Mana cost of your next Lightning Bolt spell by 16%. Stacks up to 5 times. Lasts 30 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134202,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/237584.jpg",
+              "spellId": 408498,
+              "spellName": "Maelstrom Weapon",
+              "description": "When you deal damage with a melee attack, you have a chance to reduce the cast time and Mana cost of your next Lightning Bolt spell by 20%. Stacks up to 5 times. Lasts 30 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104740,
+          "displayRow": 7,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 5730,
+          "unlocks": [],
+          "lockedBy": [
+            104744
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134201,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136012.jpg",
+              "spellId": 425336,
+              "spellName": "Rage of the Farseer",
+              "description": "Increases your attack speed by 30% for 25 sec.",
+              "castTime": "Instant"
+            }
+          ]
+        }
+      ]
+    },
+    "374": {
+      "treeId": 1082,
+      "classId": 7,
+      "className": "Shaman",
+      "specId": 374,
+      "specName": "Restoration",
+      "name": "Restoration",
+      "nodes": [
+        {
+          "id": 104739,
+          "displayRow": 1,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134200,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136052.jpg",
+              "spellId": 16182,
+              "spellName": "Improved Healing Wave",
+              "description": "Reduces the casting time of your Healing Wave spell by 0.1 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134200,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136052.jpg",
+              "spellId": 16182,
+              "spellName": "Improved Healing Wave",
+              "description": "Reduces the casting time of your Healing Wave spell by 0.2 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134200,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136052.jpg",
+              "spellId": 16182,
+              "spellName": "Improved Healing Wave",
+              "description": "Reduces the casting time of your Healing Wave spell by 0.3 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134200,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136052.jpg",
+              "spellId": 16182,
+              "spellName": "Improved Healing Wave",
+              "description": "Reduces the casting time of your Healing Wave spell by 0.4 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134200,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136052.jpg",
+              "spellId": 16182,
+              "spellName": "Improved Healing Wave",
+              "description": "Reduces the casting time of your Healing Wave spell by 0.5 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104729,
+          "displayRow": 1,
+          "displayCol": 16,
+          "rawPositionX": 10280,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134190,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135859.jpg",
+              "spellId": 16179,
+              "spellName": "Tidal Focus",
+              "description": "Reduces the Mana cost of your healing spells by 1% and improves your chance to hit by 1%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134190,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135859.jpg",
+              "spellId": 16179,
+              "spellName": "Tidal Focus",
+              "description": "Reduces the Mana cost of your healing spells by 2% and improves your chance to hit by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134190,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135859.jpg",
+              "spellId": 16179,
+              "spellName": "Tidal Focus",
+              "description": "Reduces the Mana cost of your healing spells by 3% and improves your chance to hit by 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134190,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135859.jpg",
+              "spellId": 16179,
+              "spellName": "Tidal Focus",
+              "description": "Reduces the Mana cost of your healing spells by 4% and improves your chance to hit by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134190,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135859.jpg",
+              "spellId": 16179,
+              "spellName": "Tidal Focus",
+              "description": "Reduces the Mana cost of your healing spells by 5% and improves your chance to hit by 5%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104734,
+          "displayRow": 2,
+          "displayCol": 14,
+          "rawPositionX": 9080,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134195,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136090.jpg",
+              "spellId": 1223033,
+              "spellName": "Mindfulness",
+              "description": "Allows 17% of your Mana regeneration to continue while casting.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134195,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136090.jpg",
+              "spellId": 1223033,
+              "spellName": "Mindfulness",
+              "description": "Allows 33% of your Mana regeneration to continue while casting.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134195,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136090.jpg",
+              "spellId": 1223033,
+              "spellName": "Mindfulness",
+              "description": "Allows 50% of your Mana regeneration to continue while casting.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104736,
+          "displayRow": 2,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134197,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136041.jpg",
+              "spellId": 29187,
+              "spellName": "Natural Grace",
+              "description": "Reduces the threat generated by your spells by 5%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134197,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136041.jpg",
+              "spellId": 29187,
+              "spellName": "Natural Grace",
+              "description": "Reduces the threat generated by your spells by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134197,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136041.jpg",
+              "spellId": 29187,
+              "spellName": "Natural Grace",
+              "description": "Reduces the threat generated by your spells by 15%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104735,
+          "displayRow": 2,
+          "displayCol": 16,
+          "rawPositionX": 10280,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134196,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 16173,
+              "spellName": "Totemic Focus",
+              "description": "Reduces the Mana cost of your totems and any spells that summon or move them by 5%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134196,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 16173,
+              "spellName": "Totemic Focus",
+              "description": "Reduces the Mana cost of your totems and any spells that summon or move them by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134196,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 16173,
+              "spellName": "Totemic Focus",
+              "description": "Reduces the Mana cost of your totems and any spells that summon or move them by 15%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134196,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 16173,
+              "spellName": "Totemic Focus",
+              "description": "Reduces the Mana cost of your totems and any spells that summon or move them by 20%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134196,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 16173,
+              "spellName": "Totemic Focus",
+              "description": "Reduces the Mana cost of your totems and any spells that summon or move them by 25%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104737,
+          "displayRow": 2,
+          "displayCol": 17,
+          "rawPositionX": 10880,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134198,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136080.jpg",
+              "spellId": 16184,
+              "spellName": "Improved Reincarnation",
+              "description": "Reduces the cooldown of your Reincarnation spell by 10 min, increases your maximum health by 2%, and increases the amount of health and Mana you reincarnate with by an additional 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134198,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136080.jpg",
+              "spellId": 16184,
+              "spellName": "Improved Reincarnation",
+              "description": "Reduces the cooldown of your Reincarnation spell by 20 min, increases your maximum health by 4%, and increases the amount of health and Mana you reincarnate with by an additional 20%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104731,
+          "displayRow": 3,
+          "displayCol": 14,
+          "rawPositionX": 9080,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134192,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136109.jpg",
+              "spellId": 16176,
+              "spellName": "Ancestral Healing",
+              "description": "Increases your target's armor value by 8% for 15 sec after getting a critical effect from one of your healing spells.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134192,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136109.jpg",
+              "spellId": 16176,
+              "spellName": "Ancestral Healing",
+              "description": "Increases your target's armor value by 17% for 15 sec after getting a critical effect from one of your healing spells.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134192,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136109.jpg",
+              "spellId": 16176,
+              "spellName": "Ancestral Healing",
+              "description": "Increases your target's armor value by 25% for 15 sec after getting a critical effect from one of your healing spells.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104733,
+          "displayRow": 3,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134194,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136043.jpg",
+              "spellId": 16181,
+              "spellName": "Healing Focus",
+              "description": "Gives your healing spells a 23% chance to not lose casting time when you take damage.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134194,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136043.jpg",
+              "spellId": 16181,
+              "spellName": "Healing Focus",
+              "description": "Gives your healing spells a 47% chance to not lose casting time when you take damage.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134194,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136043.jpg",
+              "spellId": 16181,
+              "spellName": "Healing Focus",
+              "description": "Gives your healing spells a 70% chance to not lose casting time when you take damage.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104732,
+          "displayRow": 3,
+          "displayCol": 16,
+          "rawPositionX": 10280,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134193,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132315.jpg",
+              "spellId": 408510,
+              "spellName": "Water Shield",
+              "description": "The caster is surrounded by 3 globes of water. When a spell, melee, or ranged attack hits the caster or when one of the caster's spells gets a critical result, 2% of maximum mana is restored to the caster, expending one water globe. Only one globe will activate every few seconds.  Lasts 10 min.\r\n\r\nOnly one Elemental Shield can be active on the Shaman at any one time.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 104738,
+          "displayRow": 4,
+          "displayCol": 14,
+          "rawPositionX": 9080,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134199,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136107.jpg",
+              "spellId": 16194,
+              "spellName": "Tidal Mastery",
+              "description": "Increases the critical effect chance of your healing spells by 1%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134199,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136107.jpg",
+              "spellId": 16194,
+              "spellName": "Tidal Mastery",
+              "description": "Increases the critical effect chance of your healing spells by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134199,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136107.jpg",
+              "spellId": 16194,
+              "spellName": "Tidal Mastery",
+              "description": "Increases the critical effect chance of your healing spells by 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134199,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136107.jpg",
+              "spellId": 16194,
+              "spellName": "Tidal Mastery",
+              "description": "Increases the critical effect chance of your healing spells by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134199,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136107.jpg",
+              "spellId": 16194,
+              "spellName": "Tidal Mastery",
+              "description": "Increases the critical effect chance of your healing spells by 5%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104730,
+          "displayRow": 4,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134191,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136053.jpg",
+              "spellId": 16187,
+              "spellName": "Restorative Totems",
+              "description": "Increases the effect of your Mana Spring Totem by 5% and increases the effect of your Healing Stream Totem by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134191,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136053.jpg",
+              "spellId": 16187,
+              "spellName": "Restorative Totems",
+              "description": "Increases the effect of your Mana Spring Totem by 10% and increases the effect of your Healing Stream Totem by 20%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134191,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136053.jpg",
+              "spellId": 16187,
+              "spellName": "Restorative Totems",
+              "description": "Increases the effect of your Mana Spring Totem by 15% and increases the effect of your Healing Stream Totem by 30%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134191,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136053.jpg",
+              "spellId": 16187,
+              "spellName": "Restorative Totems",
+              "description": "Increases the effect of your Mana Spring Totem by 20% and increases the effect of your Healing Stream Totem by 40%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134191,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136053.jpg",
+              "spellId": 16187,
+              "spellName": "Restorative Totems",
+              "description": "Increases the effect of your Mana Spring Totem by 25% and increases the effect of your Healing Stream Totem by 50%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104728,
+          "displayRow": 4,
+          "displayCol": 16,
+          "rawPositionX": 10280,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134189,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135861.jpg",
+              "spellId": 16190,
+              "spellName": "Mana Tide Totem",
+              "description": "Summons a Mana Tide Totem with 5 health at the feet of the caster for 12 sec that restores 88 mana every 3 seconds to group members within 30 yards.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 104727,
+          "displayRow": 5,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 4530,
+          "unlocks": [
+            104724
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134188,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136044.jpg",
+              "spellId": 29206,
+              "spellName": "Healing Way",
+              "description": "Increases the amount healed by your Healing Wave spell by 8%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134188,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136044.jpg",
+              "spellId": 29206,
+              "spellName": "Healing Way",
+              "description": "Increases the amount healed by your Healing Wave spell by 17%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134188,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136044.jpg",
+              "spellId": 29206,
+              "spellName": "Healing Way",
+              "description": "Increases the amount healed by your Healing Wave spell by 25%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104726,
+          "displayRow": 5,
+          "displayCol": 16,
+          "rawPositionX": 10280,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134187,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136076.jpg",
+              "spellId": 16188,
+              "spellName": "Nature's Swiftness",
+              "description": "When activated, your next Nature spell with a casting time less than 10 sec. becomes an instant cast spell.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 104725,
+          "displayRow": 6,
+          "displayCol": 16,
+          "rawPositionX": 10280,
+          "rawPositionY": 5130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134186,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135865.jpg",
+              "spellId": 16178,
+              "spellName": "Purification",
+              "description": "Increases the effectiveness of your healing spells by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134186,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135865.jpg",
+              "spellId": 16178,
+              "spellName": "Purification",
+              "description": "Increases the effectiveness of your healing spells by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134186,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135865.jpg",
+              "spellId": 16178,
+              "spellName": "Purification",
+              "description": "Increases the effectiveness of your healing spells by 6%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134186,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135865.jpg",
+              "spellId": 16178,
+              "spellName": "Purification",
+              "description": "Increases the effectiveness of your healing spells by 8%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134186,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135865.jpg",
+              "spellId": 16178,
+              "spellName": "Purification",
+              "description": "Increases the effectiveness of your healing spells by 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104724,
+          "displayRow": 7,
+          "displayCol": 15,
+          "rawPositionX": 9680,
+          "rawPositionY": 5730,
+          "unlocks": [],
+          "lockedBy": [
+            104727
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134185,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/252995.jpg",
+              "spellId": 408521,
+              "spellName": "Riptide",
+              "description": "Heals a friendly target for 600 over 15 sec, and increases the effectiveness of your Chain Heal casts directly on that target by 25%.",
+              "castTime": "Instant"
+            }
+          ]
+        }
+      ]
+    },
+    "574": {
+      "treeId": 1089,
+      "classId": 11,
+      "className": "Druid",
+      "specId": 574,
+      "specName": "Balance",
+      "name": "Balance",
+      "nodes": [
+        {
+          "id": 104923,
+          "displayRow": 1,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134384,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136006.jpg",
+              "spellId": 16814,
+              "spellName": "Improved Wrath",
+              "description": "Reduces the cast time of your Wrath spell by 0.1 sec and its Mana cost by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134384,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136006.jpg",
+              "spellId": 16814,
+              "spellName": "Improved Wrath",
+              "description": "Reduces the cast time of your Wrath spell by 0.2 sec and its Mana cost by 20%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134384,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136006.jpg",
+              "spellId": 16814,
+              "spellName": "Improved Wrath",
+              "description": "Reduces the cast time of your Wrath spell by 0.3 sec and its Mana cost by 30%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134384,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136006.jpg",
+              "spellId": 16814,
+              "spellName": "Improved Wrath",
+              "description": "Reduces the cast time of your Wrath spell by 0.4 sec and its Mana cost by 40%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134384,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136006.jpg",
+              "spellId": 16814,
+              "spellName": "Improved Wrath",
+              "description": "Reduces the cast time of your Wrath spell by 0.5 sec and its Mana cost by 50%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104924,
+          "displayRow": 1,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134385,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135730.jpg",
+              "spellId": 1223081,
+              "spellName": "Genesis",
+              "description": "Increases the periodic damage and healing done by your spells and abilities by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134385,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135730.jpg",
+              "spellId": 1223081,
+              "spellName": "Genesis",
+              "description": "Increases the periodic damage and healing done by your spells and abilities by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134385,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135730.jpg",
+              "spellId": 1223081,
+              "spellName": "Genesis",
+              "description": "Increases the periodic damage and healing done by your spells and abilities by 6%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134385,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135730.jpg",
+              "spellId": 1223081,
+              "spellName": "Genesis",
+              "description": "Increases the periodic damage and healing done by your spells and abilities by 8%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134385,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135730.jpg",
+              "spellId": 1223081,
+              "spellName": "Genesis",
+              "description": "Increases the periodic damage and healing done by your spells and abilities by 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104925,
+          "displayRow": 2,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134386,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136087.jpg",
+              "spellId": 16845,
+              "spellName": "Moonglow",
+              "description": "Reduces the Mana cost of your damaging spells by 8%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134386,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136087.jpg",
+              "spellId": 16845,
+              "spellName": "Moonglow",
+              "description": "Reduces the Mana cost of your damaging spells by 17%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134386,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136087.jpg",
+              "spellId": 16845,
+              "spellName": "Moonglow",
+              "description": "Reduces the Mana cost of your damaging spells by 25%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104931,
+          "displayRow": 2,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 2730,
+          "unlocks": [
+            104932
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134392,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136096.jpg",
+              "spellId": 16821,
+              "spellName": "Improved Moonfire",
+              "description": "Increases the damage and critical strike chance of your Moonfire spell by 5%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134392,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136096.jpg",
+              "spellId": 16821,
+              "spellName": "Improved Moonfire",
+              "description": "Increases the damage and critical strike chance of your Moonfire spell by 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104927,
+          "displayRow": 2,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 2730,
+          "unlocks": [
+            104928
+          ],
+          "lockedBy": [
+            104928
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134388,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135138.jpg",
+              "spellId": 1223082,
+              "spellName": "Nature's Majesty",
+              "description": "Increases your critical strike chance with spells and melee attacks by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134388,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135138.jpg",
+              "spellId": 1223082,
+              "spellName": "Nature's Majesty",
+              "description": "Increases your critical strike chance with spells and melee attacks by 4%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104929,
+          "displayRow": 2,
+          "displayCol": 4,
+          "rawPositionX": 2820,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134390,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136065.jpg",
+              "spellId": 16819,
+              "spellName": "Nature's Reach",
+              "description": "Increases the range of your offensive Balance spells by 10% and improves your chance to hit by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134390,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136065.jpg",
+              "spellId": 16819,
+              "spellName": "Nature's Reach",
+              "description": "Increases the range of your offensive Balance spells by 20% and improves your chance to hit by 4%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104926,
+          "displayRow": 3,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134387,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136100.jpg",
+              "spellId": 16918,
+              "spellName": "Improved Entangling Roots",
+              "description": "Increases the damage done by your Entangling Roots spell by 25%, and its victims can take up to 25% more damage without interrupting the effect.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134387,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136100.jpg",
+              "spellId": 16918,
+              "spellName": "Improved Entangling Roots",
+              "description": "Increases the damage done by your Entangling Roots spell by 50%, and its victims can take up to 50% more damage without interrupting the effect.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134387,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136100.jpg",
+              "spellId": 16918,
+              "spellName": "Improved Entangling Roots",
+              "description": "Increases the damage done by your Entangling Roots spell by 75%, and its victims can take up to 75% more damage without interrupting the effect.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104928,
+          "displayRow": 3,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 3330,
+          "unlocks": [
+            104927
+          ],
+          "lockedBy": [
+            104927
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134389,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136061.jpg",
+              "spellId": 1223083,
+              "spellName": "Nature's Splendor",
+              "description": "Increases the duration of your Moonfire and Rejuvenation spells by 3 sec, your Regrowth spell by 6 sec, and your Insect Swarm spell by 2 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104930,
+          "displayRow": 4,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134391,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136045.jpg",
+              "spellId": 5570,
+              "spellName": "Insect Swarm",
+              "description": "The enemy target is swarmed by insects, decreasing their chance to hit with attacks by 2% and causing 48 Nature damage over 12 sec.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 104932,
+          "displayRow": 4,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [
+            104931
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134393,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136075.jpg",
+              "spellId": 16909,
+              "spellName": "Vengeance",
+              "description": "Increases the critical strike damage bonus of your Arcane and Nature spells by 20%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134393,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136075.jpg",
+              "spellId": 16909,
+              "spellName": "Vengeance",
+              "description": "Increases the critical strike damage bonus of your Arcane and Nature spells by 40%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134393,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136075.jpg",
+              "spellId": 16909,
+              "spellName": "Vengeance",
+              "description": "Increases the critical strike damage bonus of your Arcane and Nature spells by 60%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134393,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136075.jpg",
+              "spellId": 16909,
+              "spellName": "Vengeance",
+              "description": "Increases the critical strike damage bonus of your Arcane and Nature spells by 80%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134393,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136075.jpg",
+              "spellId": 16909,
+              "spellName": "Vengeance",
+              "description": "Increases the critical strike damage bonus of your Arcane and Nature spells by 100%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104933,
+          "displayRow": 4,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134394,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135753.jpg",
+              "spellId": 16850,
+              "spellName": "Improved Starfire",
+              "description": "Reduces the cast time of Starfire by 0.1 sec and Starfire has a 3% chance to stun its target for 3 sec.\r\n",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134394,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135753.jpg",
+              "spellId": 16850,
+              "spellName": "Improved Starfire",
+              "description": "Reduces the cast time of Starfire by 0.2 sec and Starfire has a 6% chance to stun its target for 3 sec.\r\n",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134394,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135753.jpg",
+              "spellId": 16850,
+              "spellName": "Improved Starfire",
+              "description": "Reduces the cast time of Starfire by 0.3 sec and Starfire has a 9% chance to stun its target for 3 sec.\r\n",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134394,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135753.jpg",
+              "spellId": 16850,
+              "spellName": "Improved Starfire",
+              "description": "Reduces the cast time of Starfire by 0.4 sec and Starfire has a 12% chance to stun its target for 3 sec.\r\n",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134394,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135753.jpg",
+              "spellId": 16850,
+              "spellName": "Improved Starfire",
+              "description": "Reduces the cast time of Starfire by 0.5 sec and Starfire has a 15% chance to stun its target for 3 sec.\r\n",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 110844,
+          "displayRow": 5,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 142590,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134196.jpg",
+              "spellId": 17245,
+              "spellName": "Overgrowth",
+              "description": "Increases the maximum number of targets you may have affected by Entangling Roots by 1.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 142590,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134196.jpg",
+              "spellId": 17245,
+              "spellName": "Overgrowth",
+              "description": "Increases the maximum number of targets you may have affected by Entangling Roots by 2.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104934,
+          "displayRow": 5,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134395,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136062.jpg",
+              "spellId": 16880,
+              "spellName": "Nature's Grace",
+              "description": "All non-periodic spell criticals grace you with a blessing of nature, increasing your spellcasting speed and reducing your global cooldown by 10% for 3 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104935,
+          "displayRow": 5,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134396,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236151.jpg",
+              "spellId": 408248,
+              "spellName": "Eclipse",
+              "description": "Your Wrath spell reduces the cast time of your next 2 Starfire spells by 0.17 sec. Stores up to 4 charges. Lasts 15 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134396,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236151.jpg",
+              "spellId": 408248,
+              "spellName": "Eclipse",
+              "description": "Your Wrath spell reduces the cast time of your next 2 Starfire spells by 0.33 sec. Stores up to 4 charges. Lasts 15 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134396,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236151.jpg",
+              "spellId": 408248,
+              "spellName": "Eclipse",
+              "description": "Your Wrath spell reduces the cast time of your next 2 Starfire spells by 0.50 sec. Stores up to 4 charges. Lasts 15 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104936,
+          "displayRow": 6,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 5130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134397,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 16896,
+              "spellName": "Moonfury",
+              "description": "Increases the damage done by your Arcane and Nature spells by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134397,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 16896,
+              "spellName": "Moonfury",
+              "description": "Increases the damage done by your Arcane and Nature spells by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134397,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 16896,
+              "spellName": "Moonfury",
+              "description": "Increases the damage done by your Arcane and Nature spells by 6%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134397,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 16896,
+              "spellName": "Moonfury",
+              "description": "Increases the damage done by your Arcane and Nature spells by 8%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134397,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136057.jpg",
+              "spellId": 16896,
+              "spellName": "Moonfury",
+              "description": "Increases the damage done by your Arcane and Nature spells by 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104937,
+          "displayRow": 7,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 5730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134398,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136036.jpg",
+              "spellId": 24858,
+              "spellName": "Moonkin Form",
+              "description": "Shapeshift into Moonkin Form, increasing Omen of Clarity's chance to trigger by 100%, Armor contribution from items by 360%, and all party or raid members within 45 yards have their Critical Strike chance increased by 3%. Also protects the caster from Polymorph effects and prevents the use of healing spells.\r\n\r\nThe act of shapeshifting frees the caster of Polymorph and Movement Impairing effects.",
+              "castTime": "Instant"
             }
           ]
         }

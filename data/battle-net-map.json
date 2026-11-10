@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-09T14:50:15Z",
+  "updatedAt": "2026-11-10T14:06:39Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -252,6 +252,138 @@
       "matchedForm": null,
       "mappedVia": null,
       "note": "404 on all forms — likely not opted in (task 0.4)",
+      "candidates": []
+    },
+    "1794319268032": {
+      "rosterName": "Devious Bloodreign",
+      "status": "ok",
+      "slug": "devious-bloodreign",
+      "href": "https://us.api.blizzard.com/profile/wow/character/devious-bloodreign?namespace=profile-forever-us",
+      "bnetName": "Devious",
+      "surname": "Bloodreign",
+      "matchedForm": "guild_roster",
+      "mappedVia": "guild_roster",
+      "note": null,
+      "candidates": []
+    },
+    "1794319268033": {
+      "rosterName": "Eleventy Five",
+      "status": "ok",
+      "slug": "eleventy-five",
+      "href": "https://us.api.blizzard.com/profile/wow/character/eleventy-five?namespace=profile-forever-us",
+      "bnetName": "Eleventy",
+      "surname": "Five",
+      "matchedForm": "guild_roster",
+      "mappedVia": "guild_roster",
+      "note": null,
+      "candidates": []
+    },
+    "1794319268034": {
+      "rosterName": "Eleventy Fiver",
+      "status": "ok",
+      "slug": "eleventy-fiver",
+      "href": "https://us.api.blizzard.com/profile/wow/character/eleventy-fiver?namespace=profile-forever-us",
+      "bnetName": "Eleventy",
+      "surname": "Fiver",
+      "matchedForm": "guild_roster",
+      "mappedVia": "guild_roster",
+      "note": null,
+      "candidates": []
+    },
+    "1794319268035": {
+      "rosterName": "Heghmorc Zmog",
+      "status": "ok",
+      "slug": "heghmorc-zmog",
+      "href": "https://us.api.blizzard.com/profile/wow/character/heghmorc-zmog?namespace=profile-forever-us",
+      "bnetName": "Heghmorc",
+      "surname": "Zmog",
+      "matchedForm": "guild_roster",
+      "mappedVia": "guild_roster",
+      "note": null,
+      "candidates": []
+    },
+    "1794319268036": {
+      "rosterName": "Hikiri Lightbone",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "candidates": []
+    },
+    "1794319268037": {
+      "rosterName": "Hikiri Moospeed",
+      "status": "ok",
+      "slug": "hikiri-moospeed",
+      "href": "https://us.api.blizzard.com/profile/wow/character/hikiri-moospeed?namespace=profile-forever-us",
+      "bnetName": "Hikiri",
+      "surname": "Moospeed",
+      "matchedForm": "guild_roster",
+      "mappedVia": "guild_roster",
+      "note": null,
+      "candidates": []
+    },
+    "1794319268038": {
+      "rosterName": "Moo Ed",
+      "status": "ok",
+      "slug": "moo-ed",
+      "href": "https://us.api.blizzard.com/profile/wow/character/moo-ed?namespace=profile-forever-us",
+      "bnetName": "Moo",
+      "surname": "Ed",
+      "matchedForm": "guild_roster",
+      "mappedVia": "guild_roster",
+      "note": null,
+      "candidates": []
+    },
+    "1794319268039": {
+      "rosterName": "Myth Zuggug",
+      "status": "ok",
+      "slug": "myth-zuggug",
+      "href": "https://us.api.blizzard.com/profile/wow/character/myth-zuggug?namespace=profile-forever-us",
+      "bnetName": "Myth",
+      "surname": "Zuggug",
+      "matchedForm": "guild_roster",
+      "mappedVia": "guild_roster",
+      "note": null,
+      "candidates": []
+    },
+    "1794319268040": {
+      "rosterName": "Rotribution Deadweight",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "candidates": []
+    },
+    "1794319268041": {
+      "rosterName": "Tannlore Belegeria",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "candidates": []
+    },
+    "1794319268042": {
+      "rosterName": "Trillian Nes",
+      "status": "ok",
+      "slug": "trillian-nes",
+      "href": "https://us.api.blizzard.com/profile/wow/character/trillian-nes?namespace=profile-forever-us",
+      "bnetName": "Trillian",
+      "surname": "Nes",
+      "matchedForm": "guild_roster",
+      "mappedVia": "guild_roster",
+      "note": null,
       "candidates": []
     }
   }
