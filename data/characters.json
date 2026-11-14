@@ -483,12 +483,17 @@
       "track": "alts",
       "role": "None",
       "roleSec": "None",
-      "prof1": "None",
-      "prof2": "None",
+      "prof1": "Mining",
+      "prof2": "Blacksmithing",
       "guild": "Flowmasters",
       "validation": {
-        "state": "pending"
-      }
+        "state": "validated",
+        "confirmedSlug": "war-echo",
+        "reviewedBy": "combatwombat16",
+        "reviewedAt": "2026-11-14T22:06:19Z"
+      },
+      "race": "Tauren",
+      "class": "Warrior"
     }
   ]
 }
