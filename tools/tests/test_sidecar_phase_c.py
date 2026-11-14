@@ -559,6 +559,11 @@ class VerifyGateRosterRowRules(unittest.TestCase):
     it. The copy carries no ``.git``, which is the gate's own documented skip path for the
     additive-vs-HEAD guard (it prints a WARN and is never counted as a pass), so a fixture that
     appends a row does not trip a rule these tests are not about.
+
+    The copy also gets mirror hygiene (``sync_roster_name_mirrors``): the gate cross-checks every
+    map entry's ``rosterName`` against the roster row of the same id, and committed data is stale
+    by design in the window between a curated tracker rename and the next nightly. That window is
+    not a rule these tests are about, so the fixture repairs it before it mutates anything.
     """
 
     REPO = Path(__file__).resolve().parents[2]
@@ -573,7 +578,35 @@ class VerifyGateRosterRowRules(unittest.TestCase):
         self.tmp = Path(tempfile.mkdtemp())
         self.tree = self.tmp / "repo"
         shutil.copytree(self.REPO, self.tree, ignore=self.IGNORE)
+        self.sync_roster_name_mirrors(self.tree)
         self.gate = self.tree / ".pi" / "scripts" / "verify_sync_artifacts.py"
+
+    @staticmethod
+    def sync_roster_name_mirrors(tree):
+        """Repair the copied map's ``rosterName`` mirror to match the copied roster.
+
+        ``verify_sync_artifacts.py`` requires ``map.entries[id].rosterName == characters.json[id]
+        .name`` for every id in both documents. Only the nightly writes that field, and it always
+        writes it from the CURRENT roster row (``bnet.artifacts.map_entry``), so between a tracker
+        rename and the next sync run the committed mirror legitimately disagrees with the committed
+        roster. Left as-is, that staleness fails the gate inside every fixture in this class — the
+        one that asserts exit 0 outright, and the §2 fixture whose whole claim is that its own
+        single, specific failure is the only one — which reds the unit-test step of
+        ``sync-bnet.yml`` and starves the one run that would heal the mirror. Commit ``a1c4a6b``
+        (``dhella`` → ``dellah lillijadii``) is exactly that window, and it silenced the nightly
+        for four days.
+
+        This repairs the mirror field and nothing else: no slug, href, surname, matchedForm,
+        status or candidate is touched, no entry is pruned, no key is reordered.
+        """
+        roster = json.loads((tree / "data" / "characters.json").read_text(encoding="utf-8"))
+        names = {rec["id"]: rec["name"] for rec in roster["characters"]}
+        path = tree / "data" / "battle-net-map.json"
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        for rid, entry in doc["entries"].items():
+            if rid in names and isinstance(entry, dict):
+                entry["rosterName"] = names[rid]
+        path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
@@ -653,6 +686,43 @@ class VerifyGateRosterRowRules(unittest.TestCase):
         self.assertEqual([l for l in output.splitlines() if l.startswith("  FAIL ")],
                          [f"  FAIL reported id {self.REPORTED_ID} is needs_review in the map, "
                           "not ok (the note rule of §2)"], output[-2000:])
+
+    def test_a_stale_roster_name_mirror_never_reaches_the_gate(self):
+        """The hygiene itself, guarded: a curated rename must not turn these tests red.
+
+        Stale the mirror for a real id in the copy, run the hygiene step the way ``setUp`` runs
+        it, and the gate has to pass with the mirror back in sync — otherwise a routine
+        ``characters.json`` edit is free to break the unit-test step again and block the sync.
+        """
+        target = sorted(json.loads((self.tree / "data" / "battle-net-map.json")
+                                   .read_text(encoding="utf-8"))["entries"])[0]
+        names = {rec["id"]: rec["name"] for rec in json.loads(
+            (self.tree / "data" / "characters.json").read_text(encoding="utf-8"))["characters"]}
+        self.assertIn(target, names, "the fixture id has to be a row the gate cross-checks")
+        # The injection is the test: a mirror written with the row's own name would heal nothing.
+        self.assertNotEqual("Stale Mirror", names[target],
+                            "the injected mirror has to disagree with the roster row")
+
+        self.edit_json("battle-net-map.json",
+                       lambda doc: doc["entries"][target].__setitem__("rosterName", "Stale Mirror"))
+        self.sync_roster_name_mirrors(self.tree)
+        healed = json.loads((self.tree / "data" / "battle-net-map.json")
+                            .read_text(encoding="utf-8"))["entries"][target]
+        self.assertEqual(healed["rosterName"], names[target], "hygiene did not repair the mirror")
+
+        proc, output = self.run_gate()
+        self.assertNotIn("Traceback", output)
+        self.assertEqual(proc.returncode, 0, output[-2000:])
+        # The cross-check on the injected id ran and passed rather than being skipped, and the
+        # mirror rule appears nowhere in the failure listing (neither the inline ``FAIL`` line nor
+        # the ``FAILED CHECKS:`` echo the nightly log prints at the end).
+        self.assertIn(f"PASS map entry {target} rosterName matches characters.json", output)
+        self.assertEqual([l for l in output.splitlines()
+                          if l.startswith(("  FAIL ", "  - "))
+                          and "rosterName matches characters.json" in l], [],
+                         "the mirror rule was reported as a failure for a fixture that healed it")
+        self.assertEqual([l for l in output.splitlines() if l.startswith("  FAIL ")], [],
+                         "a stale mirror leaked into a fixture gate run")
 
     def test_the_240_character_note_ceiling_still_applies_to_a_guild_less_row(self):
         """The other rule that went dead: ``validation.note`` is capped for EVERY row, not just
