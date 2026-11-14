@@ -130,6 +130,102 @@ export function byRosterId(id) {
   };
 }
 
+// ---------- per-character detail files ----------
+
+// A manifest row keeps the list-view fields inline and names the heavy half of the row (gear,
+// stats, talents, reputations, professions, media) in a `detail` path relative to the sidecar
+// directory. A v2 row carries no `detail` key and already holds all of it, so ONE accessor answers
+// both layouts: callers never ask which artifact the deployment was built against, and a boot
+// against a manifest costs what a boot against the single file costs — one list read, no detail
+// request until a panel actually opens one.
+//
+// Taken from CHARACTER_DATA_PATH rather than repeated as a literal, so moving the sidecars moves
+// the detail files with them instead of leaving the reader pointed at the old directory.
+const DETAIL_DIR = CHARACTER_DATA_PATH.slice(0, CHARACTER_DATA_PATH.lastIndexOf('/') + 1);
+// The one directory name detail files live in; the writer (bnet.config) uses the same name, and the
+// gate refuses a `detail` line that disagrees with it and with the row's own id.
+const DETAIL_SUBDIR = 'character-data';
+
+// Memoised in module scope and never persisted: a detail file in localStorage would outlive the
+// nightly sync that rewrote it, which is the same reason the sidecars above stay out of storage.
+// Only a genuine merge enters the value memo and the in-flight memo always drops, so a 404 is what
+// the next modal open retries — the ensureTalentTrees() discipline, not a session-long "no gear".
+const characterDetailMerged = new Map();
+const characterDetailLoads = new Map();
+
+// The row's own detail file under the sidecar directory, or '' when the row carries none.
+//
+// Ownership is established twice: an own-data lookup (the manifest is response data, so `row.detail`
+// must not resolve a prototype member), then CONSTRUCTION rather than inspection. A value that
+// survives is rebuilt from the directory name and the roster id this row is keyed by, so the only
+// path this function can ever return is `data/<DETAIL_SUBDIR>/<this id>.json`.
+//
+// Rebuilding is the point. A shape test over the authored string cannot be made airtight: a literal
+// `..` segment is easy to refuse, but `%2e%2e` and `a\..\..\x` are not dot-dot segments to
+// `split('/')` while the URL parser walks them straight out of data/ (same origin — no scheme can
+// be introduced, so no cross-origin escape, but outside the published layout). Neither form can
+// survive an alphabet of [0-9] plus one fixed `.json`, and equality against the id-derived path
+// additionally refuses a row that points at ANOTHER character's file. The shipped gate asserts the
+// same rule; this is the read-time half, because a manifest is data the browser is handed.
+//
+// A refusal costs nothing: it degrades to the base row exactly like a row with no detail file, so a
+// mistyped manifest line shows fewer panels instead of shipping a request per modal open.
+function characterDetailPath(row, id) {
+  const raw = ownValue(row, 'detail');
+  if (typeof raw !== 'string') return '';
+  const match = /^[A-Za-z0-9_-]+\/([A-Za-z0-9_-]{1,64})\.json$/.exec(raw.trim());
+  if (!match || match[1] !== String(id)) return '';
+  return DETAIL_DIR + DETAIL_SUBDIR + '/' + encodeURIComponent(String(id)) + '.json';
+}
+
+// The row a character panel renders from: the joined sidecar row when it names no detail file
+// (today's shape — the same object, and no request leaves the page), or that row with the detail
+// document layered on top of it, so `gear`/`stats`/`talents` are present on the returned object
+// and the list-view fields are still there when the detail file omits one.
+//
+// Never rejects and never throws, because the caller is a render path with nothing below it to
+// catch: a 404, any other non-2xx, a body that is not an object and a dropped connection all come
+// back as the base row, which is the same degrade as a row the sidecar never covered. opts exists
+// for `cacheBust`, the caller's way of saying "a sync run just rewrote this file": neither memo
+// may answer that, or a Refresh would paint the gear the run replaced.
+export async function loadCharacterDetail(id, opts = {}) {
+  const { sidecar: base } = byRosterId(id);
+  // The manifest row is authoritative for the fields the rest of the site joins on: a detail file
+  // that carried its own `status` must not be able to re-lifecycle a row the manifest calls
+  // needs_review, so the merge re-pins it after the detail fields land.
+  if (!base) return null;
+  const detailPath = characterDetailPath(base, id);
+  if (detailPath === '') return base;
+  const key = String(id);
+  if (!opts.cacheBust) {
+    const merged = characterDetailMerged.get(key);
+    if (merged !== undefined) return merged;
+    const pending = characterDetailLoads.get(key);
+    if (pending !== undefined) return pending;
+  }
+  const load = loadSidecar(detailPath, opts)
+    .then(doc => (doc === null ? base : { ...base, ...doc, status: base.status }))
+    .catch(() => base)
+    .then(record => {
+      characterDetailLoads.delete(key);
+      // Identity is the test for "the file actually arrived": every failure path hands back `base`
+      // itself, and only a merge deserves to be remembered.
+      if (record !== base) characterDetailMerged.set(key, record);
+      return record;
+    });
+  characterDetailLoads.set(key, load);
+  return load;
+}
+
+// Drop every memoised detail record. reloadSidecars() replaces the parsed sidecars, and a merged
+// record is a join of an OLD parse with a detail file the run rewrote in the same commit: kept
+// alive, it would out-rank the freshly re-read row for the rest of the session, which the sidecars
+// themselves never do. In-flight loads are dropped too — whoever is watching re-reads.
+export function resetCharacterDetailCache() {
+  characterDetailMerged.clear();
+  characterDetailLoads.clear();
+}
+
 // Age of a sidecar row in hours, or null when fetchedAt is missing/unparseable.
 export function sidecarAgeHours(sidecar, now = Date.now()) {
   const fetchedAt = sidecar && typeof sidecar === 'object' ? sidecar.fetchedAt : null;
@@ -386,6 +482,9 @@ export async function loadSidecars(opts = {}) {
     // Refresh has no new copy of it to show. It changes with a deploy, and a deploy is a new page.
     loadSidecar(GUILD_CONFIG_PATH, {})
   ]);
+  // Any memoised detail record is a join of the parse being replaced with a detail file the same
+  // run rewrote, so it is stale the moment this line executes — see resetCharacterDetailCache().
+  resetCharacterDetailCache();
   characterData = data;
   battleNetMap = map;
   // The committed guild scope — and the one place where "the read failed" must NOT become "the

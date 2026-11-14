@@ -28,7 +28,7 @@
 // sidecar landing, a roster edit — keeps an open modal consistent instead of stale.
 
 import { LIFECYCLE, characters, deriveLifecycleState, isLifecycleEditable, registerRenderHook, renderAll } from './state.js';
-import { byRosterId, ensureTalentTrees, formatSyncedAt, isSidecarFresh, reloadSidecars, talentTreeFor, talentTreesLoading, talentTreesStaticNamespace } from './data.js';
+import { byRosterId, ensureTalentTrees, formatSyncedAt, isSidecarFresh, loadCharacterDetail, reloadSidecars, talentTreeFor, talentTreesLoading, talentTreesStaticNamespace } from './data.js';
 import { commitValidationOnFresh, dispatchAndAwaitSync, ghHasPat, ghUserLogin, openGhModal, updateRosterInMemory } from './github.js';
 import { getAccountChip, getLifecycleBadge } from './roster.js';
 // The two vocabularies the roster is frozen to (pi-warden). Importing them is the whole point of
@@ -375,8 +375,14 @@ function addressableSpecIndex(value, list) {
   return Number.isInteger(position) && position >= 0 && position < list.length ? position : 0;
 }
 
+// The row the modal renders from: the joined sidecar row, or the merged detail record once
+// openDetail has landed for THIS row (a record left over from the row the reviewer closed is not
+// this row's gear). Both the panels and the spec sub-tab maths read through here, so the tab count,
+// the panel count and the selected-index fallback can never disagree about which fields exist.
 function openSidecar() {
-  return openId === null ? null : byRosterId(openId).sidecar;
+  if (openId === null) return null;
+  return openDetail !== null && openDetail.id === openId
+    ? openDetail.record : byRosterId(openId).sidecar;
 }
 
 // The sidecar of the open row, read through the same join the render uses.
@@ -1683,6 +1689,15 @@ let chosenFor = null;
 let lastResult = null;      // {id, tone, message}
 let refresh = null;         // {id, message} while a dispatch/poll is in flight
 let actionRunning = false;
+// The heavy half of the open row once its detail file has arrived, as {id, record}, or null while
+// unresolved. The modal paints immediately from the row the manifest carries and this replaces it
+// when the request lands; it carries the id because a slow response for a row that has been closed
+// (or swapped for the next one) must never render as the row now on screen.
+let openDetail = null;
+// Which loadOpenDetail call is the current one. Two reads for the same row can overlap (a refresh's
+// cache-busted re-read while the open's original read is still in flight), and last-set-wins would
+// let the older response — the gear from before the run — overwrite the newer one in the memo.
+let detailLoad = 0;
 
 function candidatesVisible(interactive) {
   return candidatesToggled === null ? interactive === true : candidatesToggled;
@@ -1700,6 +1715,9 @@ function resetReviewView() {
 // are dropped when the row changes — a tab chosen on one character is not a fact about the next,
 // and a tooltip left open across a row switch would show the previous character's item.
 function resetDetailView() {
+  // The detail read belongs to one open: keeping the previous row's record would show its gear
+  // under the next row's name for as long as that request takes.
+  openDetail = null;
   activeTab = DEFAULT_DETAIL_TAB;
   activeSpecIndex = null;
   // P5.A: the section sub-selections are per-open too — a Combat choice on one character is not
@@ -2319,6 +2337,12 @@ export async function refreshFromBattleNet(id, opts = {}) {
     });
     if (result.ok) {
       await reloadSidecars();
+      // reloadSidecars() repaints, and openDetail still holds the pre-run merge — drop it HERE, so
+      // the paint between this line and the re-read landing shows the reloaded row rather than the
+      // gear the run just replaced. Then re-read past both memos for the row still open; skipped
+      // when the modal has moved on, because no one is looking at it any more.
+      openDetail = null;
+      if (openId === character.id) await loadOpenDetail({ cacheBust: Date.now() });
       renderAll();
       setLastResult(character, 'success', 'Battle.net refresh finished.');
       showToast(`Battle.net refresh finished for ${character.name}.`, 'success');
@@ -2670,6 +2694,40 @@ export function isDetailOpen() {
   return openId !== null;
 }
 
+// Read the open row's heavy half in, then repaint. openCharacterDetail has already painted the
+// modal from the row the manifest carries, so the header, the badges, the tab shell and the
+// always-present fields are on screen before this asks anything — and a row that needs no second
+// file (today's committed shape, which carries every field inline) comes back as the SAME object
+// data.js already holds and repaints nothing. Without the identity test, every modal open would pay
+// two full renders for data that was already in memory, and the second one would dismiss a tooltip
+// the reviewer was already reading.
+//
+// opts is the loadSidecar opts, carried through for the cache-busted re-read after a refresh.
+function loadOpenDetail(opts = {}) {
+  const id = openId;
+  if (id === null) return Promise.resolve(null);
+  const token = ++detailLoad;
+  return loadCharacterDetail(id, opts).then(record => {
+    // A response for a row that is closed, or for an open that a newer read already replaced, is
+    // dropped: it is not this row's data and there is nobody left looking at it.
+    if (record === null || openId !== id || token !== detailLoad) return record;
+    if (record === byRosterId(id).sidecar) {
+      // No detail file arrived (none named, 404, unreadable body). The merged record from an
+      // earlier read of THIS open would otherwise stay in front of the reloaded row for the rest
+      // of the open — which is exactly the stale-gear outcome a refresh is meant to end. Falling
+      // back means the panels render from the manifest row, and repaint only when there was
+      // something in front to fall back from.
+      const had = openDetail !== null && openDetail.id === id;
+      openDetail = null;
+      if (had) renderDetail();
+      return record;
+    }
+    openDetail = { id, record };
+    renderDetail();
+    return record;
+  });
+}
+
 // openSection === 'candidates' opens straight to the read-only candidate list (the roster's
 // "pick candidate" badge path); any other value opens the plain detail view.
 export function openCharacterDetail(id, openSection) {
@@ -2690,6 +2748,9 @@ export function openCharacterDetail(id, openSection) {
     && deriveLifecycleState(character, mapEntry) === LIFECYCLE.NEEDS_RESOLUTION ? true : null;
   renderDetail();
   modal.classList.remove('hidden');
+  // The manifest row is enough for everything above the fold; the gear/stats/talents payload is
+  // fetched behind it and lands through renderDetail when it arrives (see loadOpenDetail).
+  loadOpenDetail();
 }
 
 export function closeDetail() {
@@ -2731,7 +2792,10 @@ export function renderDetail() {
     closeDetail();
     return;
   }
-  const { sidecar, mapEntry } = byRosterId(openId);
+  // The map entry is the join's other half and always comes from byRosterId; the row the panels
+  // render from is openSidecar(), which prefers the merged detail file once it has arrived.
+  const { mapEntry } = byRosterId(openId);
+  const sidecar = openSidecar();
   const lifecycle = deriveLifecycleState(character, mapEntry);
   // Inside the modal the badge is the affordance that toggles the candidate list, so it
   // becomes a button; the card keeps it a plain (clickable) span.
