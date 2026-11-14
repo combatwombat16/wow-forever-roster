@@ -464,12 +464,17 @@
       "track": "alts",
       "role": "None",
       "roleSec": "None",
-      "prof1": "None",
-      "prof2": "None",
+      "prof1": "Skinning",
+      "prof2": "Mining",
       "guild": "Flowmasters",
       "validation": {
-        "state": "pending"
-      }
+        "state": "validated",
+        "confirmedSlug": "bowflex-wolfbane",
+        "reviewedBy": "combatwombat16",
+        "reviewedAt": "2026-11-14T22:06:10Z"
+      },
+      "race": "Orc",
+      "class": "Hunter"
     },
     {
       "id": "1794692685091",
