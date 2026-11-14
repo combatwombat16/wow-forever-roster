@@ -586,7 +586,9 @@ class VerifyGateRosterRowRules(unittest.TestCase):
         """Repair the copied map's ``rosterName`` mirror to match the copied roster.
 
         ``verify_sync_artifacts.py`` requires ``map.entries[id].rosterName == characters.json[id]
-        .name`` for every id in both documents. Only the nightly writes that field, and it always
+        .name`` for every map entry whose id is a roster row (and the coverage rule beside it makes
+        the two id sets equal, so in practice: for every entry). Only the nightly writes that
+        field, and it always
         writes it from the CURRENT roster row (``bnet.artifacts.map_entry``), so between a tracker
         rename and the next sync run the committed mirror legitimately disagrees with the committed
         roster. Left as-is, that staleness fails the gate inside every fixture in this class — the
@@ -699,6 +701,14 @@ class VerifyGateRosterRowRules(unittest.TestCase):
         names = {rec["id"]: rec["name"] for rec in json.loads(
             (self.tree / "data" / "characters.json").read_text(encoding="utf-8"))["characters"]}
         self.assertIn(target, names, "the fixture id has to be a row the gate cross-checks")
+        # Pins the setUp WIRING, not just the helper: a fresh copy has to arrive mirror-clean.
+        # Without this the class only ever notices removed hygiene while the committed mirror
+        # happens to be stale — the exact window this fix exists for.
+        self.assertEqual(
+            [rid for rid, entry in json.loads((self.tree / "data" / "battle-net-map.json")
+                                              .read_text(encoding="utf-8"))["entries"].items()
+             if rid in names and isinstance(entry, dict) and entry.get("rosterName") != names[rid]],
+            [], "setUp copied the tree without repairing the mirror first")
         # The injection is the test: a mirror written with the row's own name would heal nothing.
         self.assertNotEqual("Stale Mirror", names[target],
                             "the injected mirror has to disagree with the roster row")
@@ -723,6 +733,26 @@ class VerifyGateRosterRowRules(unittest.TestCase):
                          "the mirror rule was reported as a failure for a fixture that healed it")
         self.assertEqual([l for l in output.splitlines() if l.startswith("  FAIL ")], [],
                          "a stale mirror leaked into a fixture gate run")
+
+    def test_a_mirrored_roster_name_the_sync_never_wrote_still_fails_the_gate(self):
+        """The tripwire itself, pinned on purpose rather than by accident.
+
+        While the committed mirror was stale this rule was "pinned" only by breaking every other
+        fixture in the class. Hygiene takes the baseline back, so assert directly: a map whose
+        ``rosterName`` disagrees with the roster row of the same id must exit non-zero on that one
+        line and nothing else. A future relaxation of the mirror rule has to pass through here.
+        """
+        target = sorted(json.loads((self.tree / "data" / "battle-net-map.json")
+                                   .read_text(encoding="utf-8"))["entries"])[0]
+        self.edit_json("battle-net-map.json",
+                       lambda doc: doc["entries"][target].__setitem__("rosterName", "Stale Mirror"))
+        proc, output = self.run_gate()
+        self.assertNotIn("Traceback", output)
+        self.assertEqual(proc.returncode, 1,
+                         "a map mirror that stopped matching the roster must not pass the gate")
+        self.assertEqual([l for l in output.splitlines() if l.startswith("  FAIL ")],
+                         [f"  FAIL map entry {target} rosterName matches characters.json"],
+                         output[-2000:])
 
     def test_the_240_character_note_ceiling_still_applies_to_a_guild_less_row(self):
         """The other rule that went dead: ``validation.note`` is capped for EVERY row, not just
