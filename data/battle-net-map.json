@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-10T14:06:39Z",
+  "updatedAt": "2026-11-14T21:49:40Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -159,15 +159,15 @@
       "candidates": []
     },
     "1791929283993": {
-      "rosterName": "dhella",
-      "status": "not_found",
-      "slug": null,
-      "href": null,
-      "bnetName": null,
-      "surname": null,
-      "matchedForm": null,
-      "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "rosterName": "dellah lillijadii",
+      "status": "ok",
+      "slug": "dellah-lillijadii",
+      "href": "https://us.api.blizzard.com/profile/wow/character/dellah-lillijadii?namespace=profile-forever-us",
+      "bnetName": "Dellah",
+      "surname": "Lillijadii",
+      "matchedForm": "lower_hyphen",
+      "mappedVia": "direct",
+      "note": null,
       "candidates": []
     },
     "1791929450071": {
@@ -381,6 +381,42 @@
       "href": "https://us.api.blizzard.com/profile/wow/character/trillian-nes?namespace=profile-forever-us",
       "bnetName": "Trillian",
       "surname": "Nes",
+      "matchedForm": "guild_roster",
+      "mappedVia": "guild_roster",
+      "note": null,
+      "candidates": []
+    },
+    "1794692685089": {
+      "rosterName": "Begh Forghit",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "candidates": []
+    },
+    "1794692685090": {
+      "rosterName": "Bowflex Wolfbane",
+      "status": "ok",
+      "slug": "bowflex-wolfbane",
+      "href": "https://us.api.blizzard.com/profile/wow/character/bowflex-wolfbane?namespace=profile-forever-us",
+      "bnetName": "Bowflex",
+      "surname": "Wolfbane",
+      "matchedForm": "guild_roster",
+      "mappedVia": "guild_roster",
+      "note": null,
+      "candidates": []
+    },
+    "1794692685091": {
+      "rosterName": "War Echo",
+      "status": "ok",
+      "slug": "war-echo",
+      "href": "https://us.api.blizzard.com/profile/wow/character/war-echo?namespace=profile-forever-us",
+      "bnetName": "War",
+      "surname": "Echo",
       "matchedForm": "guild_roster",
       "mappedVia": "guild_roster",
       "note": null,
