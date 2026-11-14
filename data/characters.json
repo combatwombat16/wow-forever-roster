@@ -190,8 +190,14 @@
       "roleSec": "None",
       "race": "Horde Skyborne",
       "class": "Hunter",
-      "prof1": "Alchemy",
-      "prof2": "Herbalism"
+      "prof1": "Skinning",
+      "prof2": "Mining",
+      "validation": {
+        "state": "validated",
+        "confirmedSlug": "dellah-lillijadii",
+        "reviewedBy": "combatwombat16",
+        "reviewedAt": "2026-11-14T22:05:47Z"
+      }
     },
     {
       "id": "1791929450071",
