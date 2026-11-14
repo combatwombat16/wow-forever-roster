@@ -200,7 +200,19 @@ ICON_URL_RE = re.compile(r"^https://render\.worldofwarcraft\.com/")
 ARTIFACT_HOSTS = {"us.api.blizzard.com", "us.battle.net", "render.worldofwarcraft.com"}
 PROFILE_HREF_RE = re.compile(r"^https://us\.api\.blizzard\.com/profile/wow/character/[^/?]+/?(\?.*)?$")
 TOKEN_LITERAL_RE = re.compile(r"(?:Basic|Bearer)\s+(?!\$|\{\{|f\"|f')[A-Za-z0-9+/=_-]{20,}")
-MAX_ARTIFACT_BYTES = 500 * 1024
+# TEMPORARY (2026-11-14) — raise, do not remove: this tripwire stays.
+#
+# The 500 KiB number has no recorded rationale (unlike MAX_ICON_MAP_BYTES, which says
+# "generous by design", and MAX_TREES_BYTES, which carries its observed size). Measured growth is
+# what broke it: one resolved character costs ~31 KB of sidecar, the run of 2026-11-14 produced
+# 529,495 B for 17 resolved characters, and the roster is 35 rows — so the ceiling was crossed at
+# ~16 resolutions by organic growth, not by a poisoned artifact. Transfer is unaffected either way
+# (GitHub Pages serves this file gzipped at ~36 KB).
+#
+# The number goes back DOWN with the sidecar split (per-character files + a small manifest), which
+# replaces "one file that grows with the guild" with a per-file budget. Until then this is the
+# only thing standing between a runaway write and a committed 5 MB sidecar.
+MAX_ARTIFACT_BYTES = 1024 * 1024
 
 
 # --- Phase B: the render-suffix swap, read from bnet.config, not copied ----------
