@@ -31,6 +31,14 @@ every guild-less row and crashed the whole gate on a row carrying ``guild`` with
 mistake, so those tests copy the repository to a temp dir, mutate its ``data/`` documents and
 run ``.pi/scripts/verify_sync_artifacts.py`` the way the nightly's CI step runs it.
 
+That class also carries a fixture invariant of its own: a gate run inside it fails on the
+fixture's own mutation and on nothing else. Some of the gate's rules are cross-file mirrors that
+only the nightly sync writes, and a committed tree is legitimately inconsistent between a curated
+roster edit and the next sync — so ``setUp`` brings its copy into sync consistency by re-running
+the SHIPPED writer over the copied data (``sync_consistent_entry`` /
+``VerifyGateRosterRowRules.bring_tree_into_sync_consistency``) rather than by patching a list of
+field names. A repair that names fields is whack-a-mole: it cost an outage once already.
+
 Stdlib unittest only: no network, no credentials, every write redirected to a temp dir.
 
 Run: python3 -m unittest discover -s tools -p "test_*"
@@ -542,12 +550,109 @@ class VerifyGateVocabulary(unittest.TestCase):
     def test_the_gate_reads_the_auto_add_module_as_part_of_the_shipped_sync_surface(self):
         self.assertIn("autoadd.py", self.gate.SYNC_MODULES)
 
+    def test_the_gate_and_the_writer_agree_on_the_map_entry_key_set(self):
+        """A divergent key set is a silent under-repair, so it has to crash instead.
+
+        ``VerifyGateRosterRowRules`` re-derives the copied map with ``bnet.artifacts.map_entry`` and
+        assigns only over keys the entry already carries, and the gate enforces its OWN literal
+        ``MAP_KEYS``. Add a key on one side only and nothing fails: the fixture stops healing the new
+        mirror (the gate reports it, the repair leaves it) and the outage class this file exists to
+        prevent walks back in. Equality here is what turns that into a red test.
+        """
+        self.assertEqual(self.gate.MAP_KEYS, set(artifacts.MAP_ENTRY_KEYS),
+                         "verify_sync_artifacts.MAP_KEYS and bnet.artifacts.MAP_ENTRY_KEYS diverged")
+
     def test_the_committed_roster_still_satisfies_the_widened_gate(self):
         document = json.loads(config.ROSTER_FILE.read_text(encoding="utf-8"))
         for rec in document["characters"]:
             self.assertTrue(set(rec) <= self.gate.ROSTER_KEYS, rec.get("id"))
             self.assertTrue(self.gate.validation_state_ok((rec.get("validation") or {})
                                                           .get("state")), rec.get("id"))
+
+
+def sync_consistent_entry(rec, prev_entry):
+    """What ``bnet`` itself would write in ``battle-net-map.json`` for one roster row, offline.
+
+    The gate cross-checks mirrors between ``data/characters.json`` and ``data/battle-net-map.json``
+    that only the nightly sync writes. A hand or site edit to the roster is legitimately ahead of
+    the map until the next run, and a unit test that dies on that window reds the unit-test step of
+    ``sync-bnet.yml`` — the step BEFORE the sync — so the outage cannot heal itself. The fixture
+    therefore re-derives the map the way the sync would, by calling the shipped writers
+    (``artifacts.map_entry`` / ``artifacts.ok_entry`` / ``resolve.reported_note_entry`` and the
+    ``roster`` trust helpers) with the two inputs those writers have when no request is in flight:
+    the roster row, and the committed entry standing in for ``prev_entries``. A mirror field the
+    writers add later is re-derived here for free, which is the whole point of reusing them.
+
+    WRITTEN from the row (what the writers derive from a roster row plus the previous entry):
+
+    * ``rosterName`` — ``map_entry`` takes it off ``rec["name"]`` on every single write;
+    * ``status`` / ``note`` where the row's own trust state forces them without a response:
+      ``validated`` with neither a ``confirmedSlug`` nor a previously mapped slug is
+      ``needs_review`` + the refusal note (``resolve.Resolver.resolve``), and an open reviewer
+      note is ``needs_review`` + that note (``resolve.reported_note_entry``, applied last, exactly
+      as ``apply_reported_notes`` runs last, so a report outranks the trust path);
+    * ``mappedVia`` / ``note`` for a trusted row that is ``ok`` — ``"confirmed"`` /
+      ``"user-confirmed"`` (``resolve.Resolver.resolve_trusted``);
+    * ``slug`` for that same row — ``roster.trusted_slug(rec, prev)``, i.e. the ``confirmedSlug``,
+      falling back to the slug already in the map (which makes it a no-op when nobody changed it);
+    * ``matchedForm`` for that same row — ``prev.matchedForm or "confirmed_slug"``, verbatim out of
+      ``resolve_trusted``.
+
+    CARRIED FORWARD from the committed entry, because the writer takes it off a profile payload
+    this fixture will never hold (inventing a value here is precisely what the writers refuse to
+    do — ``ok_entry`` reads name and surname off the payload, "never the roster guess", task 2.3):
+
+    * ``status`` whenever it is a verdict the resolver reaches by GETting something: the candidate
+      ladder, the guild lever, a 404 on a confirmed slug, a transport error, the H4 floor. A row
+      the last run could not resolve stays exactly as unresolved as it was — the repair neither
+      promotes a ``not_found`` to ``ok`` nor demotes an ``ok``;
+    * ``bnetName`` / ``surname`` — payload identity;
+    * ``href`` — ``fetch.canonical_href(payload) or character_url(slug)``. The committed href is
+      kept while it still names the slug the trust rule wants, and the writer's own fallback
+      (``resolve.character_url``, used when a payload carries no self link) replaces it when it no
+      longer does, so a repaired row never publishes an identity pointing somewhere else;
+    * ``candidates`` — ``reported_note_entry`` carries them and ``ok_entry`` would write ``[]``;
+      the committed list is kept, because there is no freshly resolved hit list to put in its
+      place and dropping identity data the sync has not actually re-decided is a destructive edit
+      no fixture asks for.
+
+    Deliberately NOT re-run: ``resolve.Resolver.dedupe_slugs``. Two roster ids that resolved to one
+    slug is a verdict about one run's whole work list, not a mirror of a single row, and applying it
+    here would change the status of rows no fixture touched. The gate has its own independent
+    name-normalization policy check for that case (``duplicate-normalization id … is not
+    auto-mapped``).
+    """
+    prev = prev_entry if isinstance(prev_entry, dict) else {}
+    if roster.is_trusted(rec) and roster.trusted_slug(rec, prev) is None:
+        # A validated row with nothing trustworthy to fetch: the resolver refuses to guess, and
+        # that refusal needs no network, so the writer's own call is reproduced exactly.
+        healed = artifacts.map_entry(
+            rec, "needs_review",
+            note="validated without confirmedSlug and no previously mapped slug; "
+                 "refusing to re-resolve")
+    elif roster.is_trusted(rec) and prev.get("status") == "ok":
+        slug = roster.trusted_slug(rec, prev)
+        href = prev.get("href")
+        if resolve.slug_from_href(href) != slug:
+            href = resolve.character_url(slug)
+        healed = artifacts.ok_entry(
+            rec, slug=slug, href=href,
+            payload={"name": prev.get("bnetName"), "surname": prev.get("surname")},
+            matched_form=prev.get("matchedForm") or "confirmed_slug",
+            mapped_via="confirmed", note="user-confirmed")
+        healed["candidates"] = prev.get("candidates") or []
+    else:
+        # Everything the last run decided by asking Blizzard stands: re-derive the row's mirror
+        # through the same writer (which is also the H2 href choke point) and hand back the
+        # payload-derived fields untouched.
+        healed = artifacts.map_entry(rec, prev.get("status"), slug=prev.get("slug"),
+                                     href=prev.get("href"), bnet_name=prev.get("bnetName"),
+                                     surname=prev.get("surname"),
+                                     matched_form=prev.get("matchedForm"),
+                                     mapped_via=prev.get("mappedVia"), note=prev.get("note"),
+                                     candidates=prev.get("candidates"))
+    # The §2 report pass is last in ``run_sync`` too, so an open note outranks the trust path.
+    return resolve.reported_note_entry(rec, healed)
 
 
 class VerifyGateRosterRowRules(unittest.TestCase):
@@ -560,10 +665,36 @@ class VerifyGateRosterRowRules(unittest.TestCase):
     additive-vs-HEAD guard (it prints a WARN and is never counted as a pass), so a fixture that
     appends a row does not trip a rule these tests are not about.
 
-    The copy also gets mirror hygiene (``sync_roster_name_mirrors``): the gate cross-checks every
-    map entry's ``rosterName`` against the roster row of the same id, and committed data is stale
-    by design in the window between a curated tracker rename and the next nightly. That window is
-    not a rule these tests are about, so the fixture repairs it before it mutates anything.
+    THE INVARIANT THIS CLASS MAINTAINS: a fixture's gate run fails on that fixture's own mutation
+    and on nothing else. Three of its tests hold that honest in both directions — each stales a
+    mirror, and each has a twin that leaves it stale and asserts the gate fails on exactly its one
+    line. Without the repair, any curated roster edit reds this class; without the stale-side
+    assertions, the repair could quietly become "the gate no longer checks mirrors" and nobody would
+    notice for four days.
+
+    WHY THE REPAIR REUSES THE WRITER (``bring_tree_into_sync_consistency`` and
+    ``sync_consistent_entry``, not a list of field names): the gate enforces cross-file mirrors
+    that only the nightly sync writes, and committed data is stale by design in the window between
+    a curated edit and the next run. That window reds the unit-test step of ``sync-bnet.yml`` — the
+    step that runs BEFORE the sync — which starves the only run that could heal it. Two outages in
+    24 hours were the same class of bug under different field names: ``a1c4a6b`` renamed a roster
+    row while the map kept the old ``rosterName`` (the gate's ``map entry … rosterName matches
+    characters.json``), and ``30cccac`` / ``a8469e5`` / ``d4bd366`` set ``validation.state =
+    validated`` plus a ``confirmedSlug`` on three rows while their map entries kept the
+    pre-validation ``mappedVia`` and ``note`` (the gate's ``trusted id … ok row is marked confirmed
+    / user-confirmed``). The fix for the first instance repaired that one field by name, and the
+    second instance walked straight past it. Re-deriving every entry with ``bnet.artifacts`` and
+    ``bnet.resolve`` — the code the sync itself runs — means the next ROSTER-DERIVED mirror the
+    writer grows is repaired here for free: anything ``map_entry`` / ``ok_entry`` computes from the
+    roster row follows the writer automatically.
+
+    WHAT THIS CANNOT FIX, so do not count on it: a verdict only a live request can produce
+    (``status``, ``bnetName``, ``surname``, ``candidates`` are carried, never invented), the
+    slug-collision pre-pass (``sync.run_sync`` decides across a whole run's work list, not per row),
+    and map COVERAGE — an id in the roster with no entry at all. Those still red this class and
+    still starve the run that would heal them, because the rule being violated needs information a
+    fixture cannot have. The structural answer lives in ``sync-bnet.yml``, not here: a pre-sync step
+    must not enforce rules whose subject is the cross-artifact state the sync has not produced yet.
     """
 
     REPO = Path(__file__).resolve().parents[2]
@@ -578,37 +709,74 @@ class VerifyGateRosterRowRules(unittest.TestCase):
         self.tmp = Path(tempfile.mkdtemp())
         self.tree = self.tmp / "repo"
         shutil.copytree(self.REPO, self.tree, ignore=self.IGNORE)
-        self.sync_roster_name_mirrors(self.tree)
+        self.bring_tree_into_sync_consistency(self.tree)
         self.gate = self.tree / ".pi" / "scripts" / "verify_sync_artifacts.py"
 
     @staticmethod
-    def sync_roster_name_mirrors(tree):
-        """Repair the copied map's ``rosterName`` mirror to match the copied roster.
+    def bring_tree_into_sync_consistency(tree):
+        """Bring the copied map's roster-derived mirrors in line with the copied roster.
 
-        ``verify_sync_artifacts.py`` requires ``map.entries[id].rosterName == characters.json[id]
-        .name`` for every map entry whose id is a roster row (and the coverage rule beside it makes
-        the two id sets equal, so in practice: for every entry). Only the nightly writes that
-        field, and it always
-        writes it from the CURRENT roster row (``bnet.artifacts.map_entry``), so between a tracker
-        rename and the next sync run the committed mirror legitimately disagrees with the committed
-        roster. Left as-is, that staleness fails the gate inside every fixture in this class — the
-        one that asserts exit 0 outright, and the §2 fixture whose whole claim is that its own
-        single, specific failure is the only one — which reds the unit-test step of
-        ``sync-bnet.yml`` and starves the one run that would heal the mirror. Commit ``a1c4a6b``
-        (``dhella`` → ``dellah lillijadii``) is exactly that window, and it silenced the nightly
-        for four days.
+        For every id present in BOTH documents, hand the roster row and the committed entry to
+        ``sync_consistent_entry`` — the shipped writers' own verdict for those two inputs — and keep
+        whatever it says. See it for the written-vs-carried field list, and this class' docstring
+        for why this is the writer's logic rather than a list of field names.
 
-        This repairs the mirror field and nothing else: no slug, href, surname, matchedForm,
-        status or candidate is touched, no entry is pruned, no key is reordered.
+        Bounded on purpose, because a fixture's baseline must be boring:
+
+        * total over ids in both documents, and it never invents an entry for a roster row the map
+          does not list nor prunes an entry the roster no longer has — the coverage rule
+          (``set(map ids) == set(roster ids)``) is a gate rule a fixture may be testing;
+        * it never adds or removes a key on an entry and never reorders one: a value is only
+          assigned over a key that is already there, so an entry that has lost a key stays as
+          visibly broken as the gate's own ``map entry … has exactly the v2 key set`` check reports
+          it (the same reasoning keeps ``schemaVersion``, ``updatedAt`` and
+          ``data/character-data.json`` — including its id coverage and its status mirror — alone);
+        * an entry that already agrees with the writers is not rewritten, and a tree that is
+          consistent end to end leaves the copied file byte-for-byte untouched;
+        * no network. Everything it needs is in the two documents; the fields that are not are
+          carried forward rather than guessed.
         """
-        roster = json.loads((tree / "data" / "characters.json").read_text(encoding="utf-8"))
-        names = {rec["id"]: rec["name"] for rec in roster["characters"]}
+        records = roster.roster_records(json.loads(
+            (tree / "data" / "characters.json").read_text(encoding="utf-8")))
+        by_id = {rec["id"]: rec for rec in records if isinstance(rec, dict)}
         path = tree / "data" / "battle-net-map.json"
         doc = json.loads(path.read_text(encoding="utf-8"))
-        for rid, entry in doc["entries"].items():
-            if rid in names and isinstance(entry, dict):
-                entry["rosterName"] = names[rid]
-        path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        entries = doc.get("entries")
+        if not isinstance(entries, dict):
+            return doc
+        changed = False
+        for rid, entry in entries.items():
+            rec = by_id.get(rid)
+            if rec is None or not isinstance(entry, dict):
+                continue
+            for key, value in sync_consistent_entry(rec, entry).items():
+                if key in entry and entry[key] != value:
+                    entry[key] = value
+                    changed = True
+        if changed:
+            path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return doc
+
+    def inconsistent_entries(self):
+        """Every copied map entry the writers would still change, as ``{id: {field: [have, want]}}``.
+
+        The fixture's consistency test: ``sync_consistent_entry`` is a function of the roster row
+        and the entry itself, so an entry equal to its own re-derivation is a fixed point — the map
+        says everything the roster currently entitles it to say."""
+        records = roster.roster_records(json.loads(
+            (self.tree / "data" / "characters.json").read_text(encoding="utf-8")))
+        by_id = {rec["id"]: rec for rec in records if isinstance(rec, dict)}
+        entries = json.loads((self.tree / "data" / "battle-net-map.json")
+                             .read_text(encoding="utf-8"))["entries"]
+        out = {}
+        for rid, entry in entries.items():
+            rec = by_id.get(rid)
+            if rec is None or not isinstance(entry, dict):
+                continue
+            for key, value in sync_consistent_entry(rec, entry).items():
+                if key in entry and entry[key] != value:
+                    out.setdefault(rid, {})[key] = [entry[key], value]
+        return out
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
@@ -690,9 +858,9 @@ class VerifyGateRosterRowRules(unittest.TestCase):
                           "not ok (the note rule of §2)"], output[-2000:])
 
     def test_a_stale_roster_name_mirror_never_reaches_the_gate(self):
-        """The hygiene itself, guarded: a curated rename must not turn these tests red.
+        """The repair itself, guarded: a curated rename must not turn these tests red.
 
-        Stale the mirror for a real id in the copy, run the hygiene step the way ``setUp`` runs
+        Stale the mirror for a real id in the copy, run the repair the way ``setUp`` runs
         it, and the gate has to pass with the mirror back in sync — otherwise a routine
         ``characters.json`` edit is free to break the unit-test step again and block the sync.
         """
@@ -701,24 +869,25 @@ class VerifyGateRosterRowRules(unittest.TestCase):
         names = {rec["id"]: rec["name"] for rec in json.loads(
             (self.tree / "data" / "characters.json").read_text(encoding="utf-8"))["characters"]}
         self.assertIn(target, names, "the fixture id has to be a row the gate cross-checks")
-        # Pins the setUp WIRING, not just the helper: a fresh copy has to arrive mirror-clean.
-        # Without this the class only ever notices removed hygiene while the committed mirror
-        # happens to be stale — the exact window this fix exists for.
-        self.assertEqual(
-            [rid for rid, entry in json.loads((self.tree / "data" / "battle-net-map.json")
-                                              .read_text(encoding="utf-8"))["entries"].items()
-             if rid in names and isinstance(entry, dict) and entry.get("rosterName") != names[rid]],
-            [], "setUp copied the tree without repairing the mirror first")
+        # A fresh copy has to arrive consistent with everything the writers derive for it, not
+        # merely with the one mirror field the first fix knew about. Be honest about the strength:
+        # this bites when the committed tree is stale (the window this fix exists for) and passes
+        # silently when it is already consistent, so it is a floor on the copy, not a proof that
+        # setUp calls the repair. The stale-side twins are what prove the repair runs at all.
+        self.assertEqual(self.inconsistent_entries(), {},
+                         "setUp copied the tree without bringing it into sync consistency first")
         # The injection is the test: a mirror written with the row's own name would heal nothing.
         self.assertNotEqual("Stale Mirror", names[target],
                             "the injected mirror has to disagree with the roster row")
 
         self.edit_json("battle-net-map.json",
                        lambda doc: doc["entries"][target].__setitem__("rosterName", "Stale Mirror"))
-        self.sync_roster_name_mirrors(self.tree)
+        self.assertEqual(sorted(self.inconsistent_entries()), [target],
+                         "the injected staleness is not visible to the repair")
+        self.bring_tree_into_sync_consistency(self.tree)
         healed = json.loads((self.tree / "data" / "battle-net-map.json")
                             .read_text(encoding="utf-8"))["entries"][target]
-        self.assertEqual(healed["rosterName"], names[target], "hygiene did not repair the mirror")
+        self.assertEqual(healed["rosterName"], names[target], "the repair did not repair the mirror")
 
         proc, output = self.run_gate()
         self.assertNotIn("Traceback", output)
@@ -738,9 +907,12 @@ class VerifyGateRosterRowRules(unittest.TestCase):
         """The tripwire itself, pinned on purpose rather than by accident.
 
         While the committed mirror was stale this rule was "pinned" only by breaking every other
-        fixture in the class. Hygiene takes the baseline back, so assert directly: a map whose
+        fixture in the class. The repair takes the baseline back, so assert directly: a map whose
         ``rosterName`` disagrees with the roster row of the same id must exit non-zero on that one
         line and nothing else. A future relaxation of the mirror rule has to pass through here.
+
+        It is also ``setUp``'s own control: the repair runs there and this test still goes red, so
+        the repair is a repair and not the mirror rule going soft.
         """
         target = sorted(json.loads((self.tree / "data" / "battle-net-map.json")
                                    .read_text(encoding="utf-8"))["entries"])[0]
@@ -752,6 +924,84 @@ class VerifyGateRosterRowRules(unittest.TestCase):
                          "a map mirror that stopped matching the roster must not pass the gate")
         self.assertEqual([l for l in output.splitlines() if l.startswith("  FAIL ")],
                          [f"  FAIL map entry {target} rosterName matches characters.json"],
+                         output[-2000:])
+
+    def test_a_validation_commit_the_sync_has_not_replayed_is_the_second_mirror_outage(self):
+        """``30cccac`` / ``a8469e5`` / ``d4bd366``, pinned as a rule rather than as an outage.
+
+        The site wrote ``{state: "validated", confirmedSlug: <its own slug>}`` on three rows in
+        commits that never touched the map, and the gate's design §3 mirror (``trusted id … ok row
+        is marked confirmed / user-confirmed``) then failed the unit-test step of the very workflow
+        whose next run was the only thing able to rewrite those two fields. The first fix of that
+        class repaired ``rosterName`` by name, so this walked straight past it.
+
+        Pinned in both directions, like the ``rosterName`` pair: the same copy, the same mutation,
+        with the repair and without it. ``resolve_trusted`` is the only writer of
+        ``mappedVia: "confirmed"`` / ``note: "user-confirmed"``, so this asserts against it, not
+        against a hand-copied pair of literals.
+        """
+        target = "1794319268038"        # an ok row the nightly mapped through the guild lever
+        committed = json.loads((self.tree / "data" / "battle-net-map.json")
+                               .read_text(encoding="utf-8"))["entries"]
+        entry, row_before = committed[target], doc_row(
+            json.loads((self.tree / "data" / "characters.json").read_text(encoding="utf-8")), target)
+        own_slug = entry["slug"]
+        # The fixture's own preconditions: a settled identity, a via the reviewer has not signed
+        # off yet, and a row the trust rule does not yet cover.
+        self.assertEqual(entry["status"], "ok", entry)
+        self.assertNotEqual(entry["mappedVia"], "confirmed", entry)
+        self.assertNotEqual(entry["note"], "user-confirmed", entry)
+        self.assertNotEqual((row_before.get("validation") or {}).get("state"), "validated",
+                            row_before)
+
+        sidecar_before = (self.tree / "data" / "character-data.json").read_bytes()
+        untouched_before = {rid: value for rid, value in committed.items() if rid != target}
+
+        def validate_the_row(doc):
+            rec = doc_row(doc, target)
+            rec["validation"] = {"state": "validated", "confirmedSlug": own_slug}
+
+        self.edit_json("characters.json", validate_the_row)
+
+        # (a) No repair, no sync, no healing: the gate has to fail on exactly the §3 confirmation
+        # line. The mutation only touches the roster row, so anything else failing here is the
+        # fixture's fault rather than the gate's.
+        proc, output = self.run_gate()
+        self.assertNotIn("Traceback", output)
+        self.assertEqual(proc.returncode, 1,
+                         "a validated row whose map entry still predates the validation "
+                         "must not pass")
+        self.assertEqual([l for l in output.splitlines() if l.startswith("  FAIL ")],
+                         [f"  FAIL trusted id {target} ok row is marked confirmed / user-confirmed"],
+                         output[-2000:])
+        self.assertEqual(sorted(self.inconsistent_entries()), [target],
+                         "the repair does not even see this mirror outage")
+
+        # (b) With the repair: the writer's own verdict, and nothing else in either artifact moved.
+        self.bring_tree_into_sync_consistency(self.tree)
+        healed = json.loads((self.tree / "data" / "battle-net-map.json")
+                            .read_text(encoding="utf-8"))["entries"]
+        self.assertEqual(healed[target]["mappedVia"], "confirmed", healed[target])
+        self.assertEqual(healed[target]["note"], "user-confirmed", healed[target])
+        self.assertEqual(healed[target]["matchedForm"], entry["matchedForm"],
+                         "resolve_trusted carries the previous matchedForm")
+        for key in ("status", "slug", "href", "bnetName", "surname", "candidates"):
+            self.assertEqual(healed[target][key], entry[key],
+                             f"the repair moved {key}, which only a profile payload may decide")
+        self.assertEqual(healed[target]["slug"], own_slug, "a confirmedSlug is authoritative")
+        self.assertEqual({rid: value for rid, value in healed.items() if rid != target},
+                         untouched_before, "the repair touched an entry nobody asked it about")
+        self.assertEqual((self.tree / "data" / "character-data.json").read_bytes(), sidecar_before,
+                         "the repair reached outside battle-net-map.json")
+        self.assertEqual(self.inconsistent_entries(), {},
+                         "after the repair no entry is left for the writers to change")
+
+        proc, output = self.run_gate()
+        self.assertNotIn("Traceback", output)
+        self.assertEqual(proc.returncode, 0, output[-2000:])
+        self.assertIn(f"PASS trusted id {target} ok row is marked confirmed / user-confirmed",
+                      output)
+        self.assertEqual([l for l in output.splitlines() if l.startswith("  FAIL ")], [],
                          output[-2000:])
 
     def test_the_240_character_note_ceiling_still_applies_to_a_guild_less_row(self):
