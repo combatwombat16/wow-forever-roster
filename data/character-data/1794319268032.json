@@ -806,7 +806,7 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 1605,
+    "health": 1651,
     "power": 100,
     "powerType": {
       "id": 1,
@@ -818,23 +818,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 76,
-      "effective": 164
+      "base": 78,
+      "effective": 166
     },
     "agility": {
-      "base": 48,
-      "effective": 58
+      "base": 49,
+      "effective": 59
     },
     "intellect": {
       "base": 22,
       "effective": 25
     },
     "stamina": {
-      "base": 70,
-      "effective": 124
+      "base": 71,
+      "effective": 125
     },
     "meleeCrit": {
-      "value": 4.596,
+      "value": 4.4846,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -863,11 +863,11 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 426,
-    "mainHandDamageMin": 115.46972,
-    "mainHandDamageMax": 150.82971,
+    "attackPower": 433,
+    "mainHandDamageMin": 116.71771,
+    "mainHandDamageMax": 152.07771,
     "mainHandSpeed": 2.4,
-    "mainHandDps": 55.479046,
+    "mainHandDps": 55.999043,
     "offHandDamageMin": 0.0,
     "offHandDamageMax": 0.0,
     "offHandSpeed": 2.0,
@@ -883,10 +883,10 @@
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 300,
-      "effective": 2467
+      "effective": 2469
     },
     "dodge": {
-      "value": 4.916,
+      "value": 4.8446,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -901,7 +901,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 3.1560004,
+      "value": 3.2846,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -920,8 +920,8 @@
       "effective": 60
     },
     "defense": {
-      "base": 180,
-      "effective": 189
+      "base": 185,
+      "effective": 194
     },
     "fireResistance": {
       "base": 0,
@@ -944,9 +944,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 140,
-    "rangedDamageMin": 46.8,
-    "rangedDamageMax": 71.759995,
+    "rangedAttackPower": 143,
+    "rangedDamageMin": 47.20114,
+    "rangedDamageMax": 72.16114,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -1506,7 +1506,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
         "tiers": [
           {
-            "skillPoints": 223,
+            "skillPoints": 225,
             "maxSkillPoints": 225,
             "tierId": 2942,
             "tierName": "First Aid",
@@ -1574,8 +1574,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 2237,
-        "value": 2237,
+        "raw": 2437,
+        "value": 2437,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1596,8 +1596,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 12396,
-        "value": 3396,
+        "raw": 12546,
+        "value": 3546,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1615,11 +1615,22 @@
       }
     },
     {
+      "factionId": 87,
+      "factionName": "Bloodsail Buccaneers",
+      "standing": {
+        "raw": -8375,
+        "value": 33625,
+        "max": 36000,
+        "tier": 0,
+        "name": "Hated"
+      }
+    },
+    {
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 4342,
-        "value": 1342,
+        "raw": 4555,
+        "value": 1555,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1629,8 +1640,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 17112,
-        "value": 8112,
+        "raw": 17412,
+        "value": 8412,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1640,8 +1651,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 12748,
-        "value": 3748,
+        "raw": 13198,
+        "value": 4198,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1651,8 +1662,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 2270,
-        "value": 2270,
+        "raw": 2657,
+        "value": 2657,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1673,8 +1684,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 2237,
-        "value": 2237,
+        "raw": 2437,
+        "value": 2437,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1695,8 +1706,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 9352,
-        "value": 352,
+        "raw": 9502,
+        "value": 502,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1717,8 +1728,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 2237,
-        "value": 2237,
+        "raw": 2437,
+        "value": 2437,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

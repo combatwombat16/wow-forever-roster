@@ -254,24 +254,24 @@
     },
     {
       "slot": "Legs",
-      "name": "Worgpelt Leggings",
-      "ilvl": 26,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134592.jpg",
-      "itemId": 273647,
-      "quality": "RARE",
+      "name": "Gnoll Crusher Leggings",
+      "ilvl": 40,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134583.jpg",
+      "itemId": 274943,
+      "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
       },
       "itemSubclass": {
-        "id": 2,
-        "name": "Leather"
+        "id": 3,
+        "name": "Mail"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 10,
-          "displayString": "+10 Agility",
+          "value": 11,
+          "displayString": "+11 Intellect",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -281,24 +281,13 @@
           }
         },
         {
-          "value": 5,
-          "displayString": "+5 Strength",
+          "value": 11,
+          "displayString": "+11 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 7,
-          "displayString": "+7 Fire Resistance",
-          "isEquipBonus": false,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
             "a": 1.0
           }
         }
@@ -554,7 +543,9 @@
         "id": 10,
         "name": "Staff"
       },
-      "enchants": [],
+      "enchants": [
+        "Windfury 2"
+      ],
       "stats": [
         {
           "value": 14,
@@ -612,8 +603,8 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 1281,
-    "power": 2675,
+    "health": 1325,
+    "power": 2904,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -624,23 +615,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 64,
-      "effective": 159
+      "base": 66,
+      "effective": 167
     },
     "agility": {
-      "base": 33,
-      "effective": 43
+      "base": 34,
+      "effective": 34
     },
     "intellect": {
-      "base": 54,
-      "effective": 132
+      "base": 55,
+      "effective": 145
     },
     "stamina": {
-      "base": 65,
-      "effective": 83
+      "base": 67,
+      "effective": 85
     },
     "meleeCrit": {
-      "value": 9.663099,
+      "value": 9.0068,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -669,30 +660,30 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 510,
-    "mainHandDamageMin": 189.92859,
-    "mainHandDamageMax": 229.92859,
+    "attackPower": 541,
+    "mainHandDamageMin": 196.79288,
+    "mainHandDamageMax": 236.79288,
     "mainHandSpeed": 3.1,
-    "mainHandDps": 67.7189,
-    "offHandDamageMin": 36.928574,
-    "offHandDamageMax": 36.928574,
+    "mainHandDps": 69.93319,
+    "offHandDamageMin": 39.14286,
+    "offHandDamageMax": 39.14286,
     "offHandSpeed": 2.0,
-    "offHandDps": 18.464287,
+    "offHandDps": 19.57143,
     "spellPower": 7,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 10.7584,
+      "value": 11.0265,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 84.0,
+    "manaRegen": 85.0,
     "manaRegenCombat": 42.0,
     "armor": {
       "base": 0,
-      "effective": 1029
+      "effective": 1129
     },
     "dodge": {
-      "value": 4.5031,
+      "value": 3.9267998,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -702,7 +693,7 @@
       "ratingNormalized": 0
     },
     "block": {
-      "value": 4.7200003,
+      "value": 4.84,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -722,16 +713,16 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 69,
-      "effective": 85
+      "base": 70,
+      "effective": 86
     },
     "defense": {
-      "base": 193,
-      "effective": 193
+      "base": 201,
+      "effective": 201
     },
     "fireResistance": {
-      "base": 7,
-      "effective": 7
+      "base": 0,
+      "effective": 0
     },
     "shadowResistance": {
       "base": 0,
@@ -782,7 +773,7 @@
     {
       "specId": 373,
       "specName": "Enhancement",
-      "spentPoints": 20,
+      "spentPoints": 21,
       "talents": [
         {
           "rank": 5,
@@ -845,6 +836,15 @@
           "spellId": 16262,
           "spellName": "Improved Ghost Wolf",
           "description": "Reduces the cast time of your Ghost Wolf spell by 3.0 sec, and Ghost Wolf may be used indoors.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 134203,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/237581.jpg",
+          "spellId": 1223031,
+          "spellName": "Improved Stormstrike",
+          "description": "When you Stormstrike, you have a 50% chance to gain 50% mana regeneration while casting spells for 15 sec, and Stormstrike's cooldown has a 50% chance to reset each time you Dodge or Parry.",
           "castTime": "Passive"
         }
       ]
@@ -1171,6 +1171,17 @@
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
+      }
+    },
+    {
+      "factionId": 2782,
+      "factionName": "Bolder'ok Clan",
+      "standing": {
+        "raw": 401,
+        "value": 401,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
       }
     },
     {

@@ -318,7 +318,7 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 419,
+    "health": 442,
     "power": 100,
     "powerType": {
       "id": 1,
@@ -330,23 +330,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 45,
-      "effective": 54
+      "base": 46,
+      "effective": 55
     },
     "agility": {
-      "base": 25,
-      "effective": 26
+      "base": 26,
+      "effective": 27
     },
     "intellect": {
       "base": 17,
       "effective": 18
     },
     "stamina": {
-      "base": 39,
-      "effective": 44
+      "base": 40,
+      "effective": 45
     },
     "meleeCrit": {
-      "value": 3.8238,
+      "value": 3.8504999,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -375,11 +375,11 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 133,
-    "mainHandDamageMin": 52.550003,
-    "mainHandDamageMax": 74.55,
+    "attackPower": 138,
+    "mainHandDamageMin": 53.585716,
+    "mainHandDamageMax": 75.58572,
     "mainHandSpeed": 2.9,
-    "mainHandDps": 21.913794,
+    "mainHandDps": 22.270935,
     "offHandDamageMin": 0.0,
     "offHandDamageMax": 0.0,
     "offHandSpeed": 2.0,
@@ -395,10 +395,10 @@
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 0,
-      "effective": 719
+      "effective": 721
     },
     "dodge": {
-      "value": 3.8238003,
+      "value": 3.8505006,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -408,12 +408,12 @@
       "ratingNormalized": 0
     },
     "block": {
-      "value": 4.76,
+      "value": 9.76,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 1.1038,
+      "value": 0.9304999,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -428,12 +428,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 26,
-      "effective": 32
+      "base": 27,
+      "effective": 33
     },
     "defense": {
-      "base": 69,
-      "effective": 69
+      "base": 74,
+      "effective": 74
     },
     "fireResistance": {
       "base": 0,
@@ -456,9 +456,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 47,
-    "rangedDamageMin": 10.735715,
-    "rangedDamageMax": 10.735715,
+    "rangedAttackPower": 50,
+    "rangedDamageMin": 11.357143,
+    "rangedDamageMax": 11.357143,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -484,6 +484,33 @@
       "ratingNormalized": 0
     }
   },
+  "talents": [
+    {
+      "specId": 257,
+      "specName": "Protection",
+      "spentPoints": 6,
+      "talents": [
+        {
+          "rank": 5,
+          "talentId": 135507,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134952.jpg",
+          "spellId": 12298,
+          "spellName": "Shield Specialization",
+          "description": "Increases your chance to Block attacks with your shield by 5% and grants you a 100% chance to generate 5 Rage when you Block.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 135500,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132353.jpg",
+          "spellId": 12797,
+          "spellName": "Improved Revenge",
+          "description": "Increases damage dealt by your Revenge ability by 20%.",
+          "castTime": "Passive"
+        }
+      ]
+    }
+  ],
   "professions": {
     "primaries": [
       {
@@ -492,7 +519,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 52,
+            "skillPoints": 54,
             "maxSkillPoints": 150,
             "tierId": 2946,
             "tierName": "Mining",
@@ -634,8 +661,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 8231,
-        "value": 5231,
+        "raw": 8431,
+        "value": 5431,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -656,8 +683,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 4146,
-        "value": 1146,
+        "raw": 4665,
+        "value": 1665,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -667,8 +694,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 3583,
-        "value": 583,
+        "raw": 3727,
+        "value": 727,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -700,8 +727,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 965,
-        "value": 965,
+        "raw": 1108,
+        "value": 1108,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

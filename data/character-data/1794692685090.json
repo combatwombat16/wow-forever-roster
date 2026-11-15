@@ -360,10 +360,10 @@
     },
     {
       "slot": "Ranged",
-      "name": "Fine Longbow",
-      "ilvl": 19,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135490.jpg",
-      "itemId": 11304,
+      "name": "Short Ash Bow",
+      "ilvl": 23,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135491.jpg",
+      "itemId": 3039,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 2,
@@ -376,8 +376,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Attack Power",
+          "value": 2,
+          "displayString": "+2 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -466,15 +466,15 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 110,
-    "mainHandDamageMin": 23.928574,
-    "mainHandDamageMax": 32.928574,
+    "attackPower": 106,
+    "mainHandDamageMin": 23.385715,
+    "mainHandDamageMax": 32.385715,
     "mainHandSpeed": 1.9,
-    "mainHandDps": 14.962407,
-    "offHandDamageMin": 8.357143,
-    "offHandDamageMax": 8.357143,
+    "mainHandDps": 14.676693,
+    "offHandDamageMin": 8.071429,
+    "offHandDamageMax": 8.071429,
     "offHandSpeed": 2.0,
-    "offHandDps": 4.1785717,
+    "offHandDps": 4.0357146,
     "spellPower": 0,
     "spellPenetration": 0,
     "spellCrit": {
@@ -482,7 +482,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 47.0,
+    "manaRegen": 50.0,
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 1,
@@ -520,7 +520,7 @@
     },
     "spirit": {
       "base": 35,
-      "effective": 38
+      "effective": 40
     },
     "defense": {
       "base": 80,
@@ -547,9 +547,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 132,
-    "rangedDamageMin": 48.457146,
-    "rangedDamageMax": 61.457146,
+    "rangedAttackPower": 128,
+    "rangedDamageMin": 35.37143,
+    "rangedDamageMax": 47.37143,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -653,12 +653,12 @@
             "tierName": "Mining",
             "knownRecipes": [
               {
-                "id": 3324,
-                "name": "Smelt Copper"
-              },
-              {
                 "id": 1569,
                 "name": "Mining"
+              },
+              {
+                "id": 3324,
+                "name": "Smelt Copper"
               }
             ]
           }
@@ -678,20 +678,20 @@
             "tierName": "Cooking",
             "knownRecipes": [
               {
-                "id": 4786,
-                "name": "Herb Baked Egg"
-              },
-              {
-                "id": 52640,
-                "name": "Basic Campfire"
+                "id": 1535,
+                "name": "Charred Wolf Meat"
               },
               {
                 "id": 1537,
                 "name": "Roasted Boar Meat"
               },
               {
-                "id": 1535,
-                "name": "Charred Wolf Meat"
+                "id": 4786,
+                "name": "Herb Baked Egg"
+              },
+              {
+                "id": 52640,
+                "name": "Basic Campfire"
               }
             ]
           }
@@ -761,17 +761,6 @@
       "standing": {
         "raw": 1575,
         "value": 1575,
-        "max": 3000,
-        "tier": 3,
-        "name": "Neutral"
-      }
-    },
-    {
-      "factionId": 2587,
-      "factionName": "Durotar Supply and Logistics",
-      "standing": {
-        "raw": 0,
-        "value": 0,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

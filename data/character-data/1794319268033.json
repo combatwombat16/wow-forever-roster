@@ -428,9 +428,7 @@
         "id": 10,
         "name": "Staff"
       },
-      "enchants": [
-        "Baleflame"
-      ],
+      "enchants": [],
       "stats": [
         {
           "value": 13,
@@ -458,10 +456,10 @@
     },
     {
       "slot": "Ranged",
-      "name": "Flaring Baton",
-      "ilvl": 18,
+      "name": "Sizzle Stick",
+      "ilvl": 23,
       "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135139.jpg",
-      "itemId": 5326,
+      "itemId": 8071,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 2,
@@ -475,12 +473,12 @@
       "stats": [
         {
           "value": 2,
-          "displayString": "+2 Intellect",
-          "isEquipBonus": false,
+          "displayString": "+2 Spell Power",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -489,8 +487,8 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 658,
-    "power": 1338,
+    "health": 675,
+    "power": 1341,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -509,15 +507,15 @@
       "effective": 29
     },
     "intellect": {
-      "base": 50,
-      "effective": 77
+      "base": 51,
+      "effective": 76
     },
     "stamina": {
       "base": 29,
       "effective": 54
     },
     "meleeCrit": {
-      "value": 2.528,
+      "value": 2.408,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -555,10 +553,10 @@
     "offHandDamageMax": 1.5,
     "offHandSpeed": 2.0,
     "offHandDps": 0.75,
-    "spellPower": 3,
-    "spellPenetration": 2,
+    "spellPower": 5,
+    "spellPenetration": 0,
     "spellCrit": {
-      "value": 4.0115,
+      "value": 3.81,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -569,7 +567,7 @@
       "effective": 260
     },
     "dodge": {
-      "value": 5.0080004,
+      "value": 4.928,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -584,7 +582,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 4.928,
+      "value": 4.888,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -599,12 +597,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 53,
-      "effective": 70
+      "base": 54,
+      "effective": 71
     },
     "defense": {
-      "base": 113,
-      "effective": 113
+      "base": 116,
+      "effective": 116
     },
     "fireResistance": {
       "base": 0,
@@ -628,12 +626,12 @@
     },
     "movementSpeed": 100.0,
     "rangedAttackPower": 0,
-    "rangedDamageMin": 22.5,
-    "rangedDamageMax": 42.5,
+    "rangedDamageMin": 26.25,
+    "rangedDamageMax": 48.75,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
-    "spellHealing": 3,
+    "spellHealing": 5,
     "meleeHit": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -650,7 +648,7 @@
       "ratingNormalized": 0
     },
     "spellHit": {
-      "value": 2.0,
+      "value": 4.0,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     }
@@ -675,7 +673,7 @@
     {
       "specId": 6,
       "specName": "Frost",
-      "spentPoints": 13,
+      "spentPoints": 14,
       "talents": [
         {
           "rank": 5,
@@ -687,12 +685,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 1,
+          "rank": 2,
           "talentId": 135308,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135989.jpg",
           "spellId": 29438,
           "spellName": "Precision",
-          "description": "Improves your chance to hit with all spells by 2%.",
+          "description": "Improves your chance to hit with all spells by 4%.",
           "castTime": "Passive"
         },
         {
@@ -964,8 +962,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 1702,
-        "value": 1702,
+        "raw": 1802,
+        "value": 1802,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -986,8 +984,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 3305,
-        "value": 305,
+        "raw": 3505,
+        "value": 505,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1019,8 +1017,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 1702,
-        "value": 1702,
+        "raw": 1802,
+        "value": 1802,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1041,8 +1039,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 1702,
-        "value": 1702,
+        "raw": 1802,
+        "value": 1802,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1063,8 +1061,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 1702,
-        "value": 1702,
+        "raw": 1802,
+        "value": 1802,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
