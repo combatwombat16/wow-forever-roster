@@ -251,6 +251,46 @@ class SidecarWriter(unittest.TestCase):
             artifacts.write_json = real_write
         self.assertEqual(events, ["battle-net-map.json", "1.json", "character-data.json"])
 
+    def test_a_record_key_outside_both_halves_refuses_before_the_map_moves(self):
+        """The split is validated BEFORE either artifact is written, not during.
+
+        ``split_characters`` is the only place that refuses a record key belonging to neither half.
+        It used to run inside ``write_data``, which ``write_pair`` calls AFTER ``write_map`` — so the
+        first thing a future enrich field wired before ``MANIFEST_ROW_KEYS`` would produce is an
+        updated map next to an unmodified manifest and a traceback: "both artifacts or neither" with
+        an asterisk. The ordering is the assertion here, not the refusal, which the split's own test
+        already covers.
+        """
+        entries = {"1": artifacts.ok_entry({"name": "Beef Pho"}, slug="beef-pho", href=PROFILE_HREF,
+                                            payload={"name": "Beef", "surname": "Pho"},
+                                            matched_form="lower_hyphen", mapped_via="direct")}
+        broken = dict(full_record("1"))
+        broken["raceIconUrl"] = {"id": 1, "name": "Windshaper"}   # §10: a key with no half to live in
+
+        with self.assertRaises(ValueError) as raised:
+            artifacts.write_pair(entries, {"1": broken}, ordered_ids=["1"], prev_entries={},
+                                 triggered_by_value="manual", dry_run=False)
+        self.assertIn("raceIconUrl", str(raised.exception))
+        self.assertFalse(config.MAP_FILE.exists(), "a refused pair wrote the map")
+        self.assertFalse(config.DATA_FILE.exists(), "a refused pair wrote the manifest")
+        self.assertFalse(config.DETAIL_DIR.exists(), "a refused pair wrote detail files")
+
+    def test_detail_ref_refuses_an_id_that_is_not_one_safe_path_segment(self):
+        """The id is a FILESYSTEM path component, so it is validated, not trusted.
+
+        ``roster.py`` accepts any non-empty string id and the auto-adder's ids are 13 digits by
+        habit; ``detail_ref`` builds a URL AND the path a document is written to, so a hand-typoed
+        ``../../x`` would have escaped ``data/character-data/`` at write time. The gate pins this
+        charset equal to the one ``js/data.js`` accepts, so the two halves cannot drift.
+        """
+        for hostile in ("../x", "a/b", "..", "", "a\\b", "a b", "%2e%2e", "x.json/y", "."):
+            with self.assertRaises(ValueError, msg=f"detail_ref accepted {hostile!r}"):
+                artifacts.detail_ref(hostile)
+        self.assertEqual(artifacts.detail_ref("1791919748959"),
+                         "character-data/1791919748959.json")
+        self.assertEqual(artifacts.detail_ref(1791919748959),
+                         "character-data/1791919748959.json", "a numeric id is still one row's id")
+
     def test_a_refused_pair_writes_no_detail_directory_at_all(self):
         prev = {rid: {"status": "ok"} for rid in ("1", "2", "3", "4")}
         entries = {rid: artifacts.map_entry({"name": rid}, "not_found", note="404") for rid in prev}
@@ -499,13 +539,21 @@ class NoDataLossAgainstTheCommittedRows(unittest.TestCase):
     layout change cannot be allowed to lose: the same bytes, in two places, produced by the sync's
     own writer."""
 
+    # The input is a PINNED snapshot, not a moving reference. This class used to read
+    # ``git show HEAD:data/character-data.json``, which was a fine way to prove "the migration lost
+    # nothing" right up until the migration landed on main and HEAD became v3 — at which point the
+    # proof's own input grew a `detail` key and the test reported the split for dropping it. Same
+    # family as the UI contracts that used to rent their expectations from nightly data (bfa9e8b):
+    # a check is only worth anything when the thing it compares against cannot move underneath it.
+    V2_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "character-data-v2.json"
+
     @classmethod
     def setUpClass(cls):
-        proc = subprocess.run(["git", "-C", str(REPO), "show", "HEAD:data/character-data.json"],
-                              capture_output=True, text=True, timeout=30)
-        if proc.returncode != 0 or not proc.stdout.strip():
-            raise unittest.SkipTest("git HEAD:data/character-data.json is unavailable")
-        cls.v2 = json.loads(proc.stdout)
+        cls.v2 = json.loads(cls.V2_FIXTURE.read_text(encoding="utf-8"))
+        if cls.v2.get("schemaVersion") != 2:
+            raise AssertionError(f"{cls.V2_FIXTURE.name} is schemaVersion "
+                                 f"{cls.v2.get('schemaVersion')!r}; this class proves the v2 -> v3 "
+                                 "split loses nothing, so its input has to stay a v2 document")
         cls.rows = cls.v2.get("characters") or {}
 
     def test_every_v2_key_reaches_the_manifest_or_its_detail_file(self):
