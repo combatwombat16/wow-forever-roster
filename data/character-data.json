@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-11-14T21:49:40Z",
-  "triggeredBy": "combatwombat16",
+  "syncedAt": "2026-11-15T02:31:28Z",
+  "triggeredBy": "manual",
   "characters": {
     "1791919748959": {
       "status": "ok",
@@ -1362,15 +1362,15 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/69/249157-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:45:05Z"
+      "fetchedAt": "2026-11-15T02:28:13Z"
     },
     "1791919870010": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:45:05Z"
+      "fetchedAt": "2026-11-15T02:28:13Z"
     },
     "1791919950805": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:45:05Z"
+      "fetchedAt": "2026-11-15T02:28:13Z"
     },
     "1791922047617": {
       "status": "ok",
@@ -2601,7 +2601,7 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/36/1382436-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:45:22Z"
+      "fetchedAt": "2026-11-15T02:28:28Z"
     },
     "1791928493125": {
       "status": "ok",
@@ -4195,23 +4195,23 @@
           "pvpRank": 0
         }
       },
-      "fetchedAt": "2026-11-14T21:45:40Z"
+      "fetchedAt": "2026-11-15T02:28:44Z"
     },
     "1791928548067": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:45:40Z"
+      "fetchedAt": "2026-11-15T02:28:44Z"
     },
     "1791928613248": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:45:40Z"
+      "fetchedAt": "2026-11-15T02:28:44Z"
     },
     "1791928676823": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:45:40Z"
+      "fetchedAt": "2026-11-15T02:28:44Z"
     },
     "1791928813281": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:45:40Z"
+      "fetchedAt": "2026-11-15T02:28:44Z"
     },
     "1791928886528": {
       "status": "ok",
@@ -5463,15 +5463,15 @@
           "pvpRank": 0
         }
       },
-      "fetchedAt": "2026-11-14T21:45:54Z"
+      "fetchedAt": "2026-11-15T02:28:58Z"
     },
     "1791928967366": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:45:54Z"
+      "fetchedAt": "2026-11-15T02:28:58Z"
     },
     "1791929013125": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:45:54Z"
+      "fetchedAt": "2026-11-15T02:28:58Z"
     },
     "1791929106142": {
       "status": "ok",
@@ -5489,7 +5489,7 @@
         "name": "Priest"
       },
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626004.jpg",
-      "level": 27,
+      "level": 28,
       "guild": "Flowmasters",
       "activeSpec": "Discipline",
       "itemLevel": 20,
@@ -6220,8 +6220,8 @@
         }
       ],
       "stats": {
-        "health": 813,
-        "power": 1469,
+        "health": 555,
+        "power": 1279,
         "powerType": {
           "id": 0,
           "name": "Mana"
@@ -6233,22 +6233,22 @@
         },
         "strength": {
           "base": 24,
-          "effective": 28
+          "effective": 25
         },
         "agility": {
           "base": 25,
           "effective": 26
         },
         "intellect": {
-          "base": 54,
-          "effective": 80
-        },
-        "stamina": {
-          "base": 31,
+          "base": 56,
           "effective": 65
         },
+        "stamina": {
+          "base": 32,
+          "effective": 38
+        },
         "meleeCrit": {
-          "value": 1.7265999,
+          "value": 0.0,
           "ratingBonus": 0.0,
           "ratingNormalized": 0
         },
@@ -6277,27 +6277,27 @@
           "ratingBonus": 0.0,
           "ratingNormalized": 0
         },
-        "attackPower": 18,
-        "mainHandDamageMin": 28.985714,
-        "mainHandDamageMax": 41.985714,
-        "mainHandSpeed": 3.1,
-        "mainHandDps": 11.447005,
-        "offHandDamageMin": 1.7857144,
-        "offHandDamageMax": 1.7857144,
+        "attackPower": 15,
+        "mainHandDamageMin": 3.1428573,
+        "mainHandDamageMax": 3.1428573,
+        "mainHandSpeed": 2.0,
+        "mainHandDps": 1.5714287,
+        "offHandDamageMin": 1.5714287,
+        "offHandDamageMax": 1.5714287,
         "offHandSpeed": 2.0,
-        "offHandDps": 0.8928572,
-        "spellPower": 40,
+        "offHandDps": 0.7857143,
+        "spellPower": 0,
         "spellPenetration": 0,
         "spellCrit": {
-          "value": 4.16,
+          "value": 3.426,
           "ratingBonus": 0.0,
           "ratingNormalized": 0
         },
-        "manaRegen": 88.0,
+        "manaRegen": 77.0,
         "manaRegenCombat": 0.0,
         "armor": {
           "base": 0,
-          "effective": 289
+          "effective": 72
         },
         "dodge": {
           "value": 4.8066,
@@ -6315,7 +6315,7 @@
           "ratingNormalized": 0
         },
         "rangedCrit": {
-          "value": 4.9266,
+          "value": 0.0,
           "ratingBonus": 0.0,
           "ratingNormalized": 0
         },
@@ -6330,12 +6330,12 @@
           "ratingNormalized": 0
         },
         "spirit": {
-          "base": 64,
-          "effective": 91
+          "base": 65,
+          "effective": 74
         },
         "defense": {
-          "base": 132,
-          "effective": 132
+          "base": 137,
+          "effective": 137
         },
         "fireResistance": {
           "base": 1,
@@ -6359,12 +6359,12 @@
         },
         "movementSpeed": 100.0,
         "rangedAttackPower": 0,
-        "rangedDamageMin": 45.0,
-        "rangedDamageMax": 83.75,
+        "rangedDamageMin": 1.0,
+        "rangedDamageMax": 1.0,
         "expertise": 0.0,
         "offHandExpertise": 0.0,
         "armorPenetration": 0.0,
-        "spellHealing": 46,
+        "spellHealing": 0,
         "meleeHit": {
           "value": 0.0,
           "ratingBonus": 0.0,
@@ -6470,52 +6470,76 @@
                 "tierName": "Tailoring",
                 "knownRecipes": [
                   {
-                    "id": 2359,
-                    "name": "Bolt of Linen Cloth"
-                  },
-                  {
-                    "id": 2408,
-                    "name": "Brown Linen Pants"
-                  },
-                  {
-                    "id": 2376,
-                    "name": "Bolt of Silk Cloth"
-                  },
-                  {
-                    "id": 4848,
-                    "name": "Linen Belt"
+                    "id": 4409,
+                    "name": "Stylish Green Shirt"
                   },
                   {
                     "id": 55423,
                     "name": "Novice Arcanist's Sash"
                   },
                   {
+                    "id": 6576,
+                    "name": "Simple Linen Pants"
+                  },
+                  {
+                    "id": 2408,
+                    "name": "Brown Linen Pants"
+                  },
+                  {
                     "id": 2409,
                     "name": "Brown Linen Shirt"
                   },
                   {
-                    "id": 2367,
-                    "name": "Reinforced Linen Cape"
+                    "id": 6579,
+                    "name": "Colorful Kilt"
                   },
                   {
-                    "id": 2360,
-                    "name": "Linen Cloak"
-                  },
-                  {
-                    "id": 2370,
-                    "name": "Bolt of Woolen Cloth"
-                  },
-                  {
-                    "id": 4001,
-                    "name": "Linen Bag"
+                    "id": 4848,
+                    "name": "Linen Belt"
                   },
                   {
                     "id": 4850,
                     "name": "Azure Silk Hood"
                   },
                   {
-                    "id": 55367,
-                    "name": "Woolen Reagent Bag"
+                    "id": 2359,
+                    "name": "Bolt of Linen Cloth"
+                  },
+                  {
+                    "id": 2360,
+                    "name": "Linen Cloak"
+                  },
+                  {
+                    "id": 2367,
+                    "name": "Reinforced Linen Cape"
+                  },
+                  {
+                    "id": 2370,
+                    "name": "Bolt of Woolen Cloth"
+                  },
+                  {
+                    "id": 2371,
+                    "name": "Woolen Cape"
+                  },
+                  {
+                    "id": 2376,
+                    "name": "Bolt of Silk Cloth"
+                  },
+                  {
+                    "id": 2378,
+                    "name": "Heavy Linen Gloves"
+                  },
+                  {
+                    "id": 2385,
+                    "name": "Double-stitched Woolen Shoulders"
+                  },
+                  {
+                    "id": 4001,
+                    "name": "Linen Bag"
+                  },
+                  {
+                    "id": 4002,
+                    "name": "Woolen Bag"
                   },
                   {
                     "id": 4003,
@@ -6526,44 +6550,20 @@
                     "name": "Red Linen Vest"
                   },
                   {
-                    "id": 2385,
-                    "name": "Double-stitched Woolen Shoulders"
+                    "id": 52648,
+                    "name": "Faction Banner"
                   },
                   {
                     "id": 55436,
                     "name": "Filigreed Shining Gown"
                   },
                   {
-                    "id": 4409,
-                    "name": "Stylish Green Shirt"
-                  },
-                  {
-                    "id": 2378,
-                    "name": "Heavy Linen Gloves"
-                  },
-                  {
-                    "id": 2371,
-                    "name": "Woolen Cape"
-                  },
-                  {
-                    "id": 6579,
-                    "name": "Colorful Kilt"
-                  },
-                  {
-                    "id": 4002,
-                    "name": "Woolen Bag"
-                  },
-                  {
-                    "id": 6576,
-                    "name": "Simple Linen Pants"
-                  },
-                  {
                     "id": 55366,
                     "name": "Linen Reagent Bag"
                   },
                   {
-                    "id": 52648,
-                    "name": "Faction Banner"
+                    "id": 55367,
+                    "name": "Woolen Reagent Bag"
                   }
                 ]
               }
@@ -6581,8 +6581,8 @@
                 "tierName": "Enchanting",
                 "knownRecipes": [
                   {
-                    "id": 4290,
-                    "name": "Enchant Chest - Inferior Stamina"
+                    "id": 7999,
+                    "name": "Lesser Magic Wand"
                   },
                   {
                     "id": 7316,
@@ -6593,6 +6593,10 @@
                     "name": "Enchant Bracer - Inferior Stamina"
                   },
                   {
+                    "id": 4290,
+                    "name": "Enchant Chest - Inferior Stamina"
+                  },
+                  {
                     "id": 4291,
                     "name": "Runed Copper Rod"
                   },
@@ -6601,24 +6605,20 @@
                     "name": "Enchant Chest - Minor Absorption"
                   },
                   {
-                    "id": 7999,
-                    "name": "Lesser Magic Wand"
-                  },
-                  {
-                    "id": 54214,
-                    "name": "Novice's Practice Wand"
-                  },
-                  {
-                    "id": 54213,
-                    "name": "Dust to Motes"
-                  },
-                  {
                     "id": 4293,
                     "name": "Enchant Bracer - Minor Deflect"
                   },
                   {
                     "id": 52649,
                     "name": "Enchanted Lute"
+                  },
+                  {
+                    "id": 54213,
+                    "name": "Dust to Motes"
+                  },
+                  {
+                    "id": 54214,
+                    "name": "Novice's Practice Wand"
                   }
                 ]
               }
@@ -6638,12 +6638,8 @@
                 "tierName": "Cooking",
                 "knownRecipes": [
                   {
-                    "id": 4786,
-                    "name": "Herb Baked Egg"
-                  },
-                  {
-                    "id": 52640,
-                    "name": "Basic Campfire"
+                    "id": 1535,
+                    "name": "Charred Wolf Meat"
                   },
                   {
                     "id": 1536,
@@ -6654,8 +6650,12 @@
                     "name": "Roasted Boar Meat"
                   },
                   {
-                    "id": 1535,
-                    "name": "Charred Wolf Meat"
+                    "id": 4786,
+                    "name": "Herb Baked Egg"
+                  },
+                  {
+                    "id": 52640,
+                    "name": "Basic Campfire"
                   }
                 ]
               }
@@ -6692,24 +6692,24 @@
                 "tierName": "First Aid",
                 "knownRecipes": [
                   {
+                    "id": 1838,
+                    "name": "Linen Bandage"
+                  },
+                  {
                     "id": 1839,
                     "name": "Heavy Linen Bandage"
                   },
                   {
-                    "id": 54192,
-                    "name": "Lesser Healing Potion"
+                    "id": 52641,
+                    "name": "First Aid Kit"
                   },
                   {
                     "id": 54191,
                     "name": "Minor Healing Potion"
                   },
                   {
-                    "id": 1838,
-                    "name": "Linen Bandage"
-                  },
-                  {
-                    "id": 52641,
-                    "name": "First Aid Kit"
+                    "id": 54192,
+                    "name": "Lesser Healing Potion"
                   }
                 ]
               }
@@ -6846,7 +6846,7 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/1/10740225-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:46:10Z"
+      "fetchedAt": "2026-11-15T02:29:12Z"
     },
     "1791929283993": {
       "status": "ok",
@@ -7957,27 +7957,27 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/200/14830792-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:46:47Z"
+      "fetchedAt": "2026-11-15T02:29:25Z"
     },
     "1791929450071": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:46:47Z"
+      "fetchedAt": "2026-11-15T02:29:25Z"
     },
     "1791929660455": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:46:47Z"
+      "fetchedAt": "2026-11-15T02:29:25Z"
     },
     "1791945705052": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:46:47Z"
+      "fetchedAt": "2026-11-15T02:29:25Z"
     },
     "1791945790634": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:46:47Z"
+      "fetchedAt": "2026-11-15T02:29:25Z"
     },
     "1793073514718": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:46:47Z"
+      "fetchedAt": "2026-11-15T02:29:25Z"
     },
     "1794163010636": {
       "status": "ok",
@@ -8647,11 +8647,11 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/232/15288296-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:46:58Z"
+      "fetchedAt": "2026-11-15T02:29:35Z"
     },
     "1794166751512": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:46:58Z"
+      "fetchedAt": "2026-11-15T02:29:35Z"
     },
     "1794319268032": {
       "status": "ok",
@@ -8669,7 +8669,7 @@
         "name": "Warrior"
       },
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626008.jpg",
-      "level": 36,
+      "level": 37,
       "guild": "Heghmoh",
       "activeSpec": "Protection",
       "itemLevel": 30,
@@ -9466,7 +9466,7 @@
         }
       ],
       "stats": {
-        "health": 1561,
+        "health": 1605,
         "power": 100,
         "powerType": {
           "id": 1,
@@ -9478,23 +9478,23 @@
           "ratingNormalized": 0
         },
         "strength": {
-          "base": 75,
-          "effective": 163
+          "base": 76,
+          "effective": 164
         },
         "agility": {
-          "base": 47,
-          "effective": 57
+          "base": 48,
+          "effective": 58
         },
         "intellect": {
           "base": 22,
           "effective": 25
         },
         "stamina": {
-          "base": 68,
-          "effective": 122
+          "base": 70,
+          "effective": 124
         },
         "meleeCrit": {
-          "value": 4.6681004,
+          "value": 4.596,
           "ratingBonus": 0.0,
           "ratingNormalized": 0
         },
@@ -9523,11 +9523,11 @@
           "ratingBonus": 0.0,
           "ratingNormalized": 0
         },
-        "attackPower": 421,
-        "mainHandDamageMin": 114.578285,
-        "mainHandDamageMax": 149.93828,
+        "attackPower": 426,
+        "mainHandDamageMin": 115.46972,
+        "mainHandDamageMax": 150.82971,
         "mainHandSpeed": 2.4,
-        "mainHandDps": 55.107616,
+        "mainHandDps": 55.479046,
         "offHandDamageMin": 0.0,
         "offHandDamageMax": 0.0,
         "offHandSpeed": 2.0,
@@ -9543,25 +9543,25 @@
         "manaRegenCombat": 0.0,
         "armor": {
           "base": 300,
-          "effective": 2465
+          "effective": 2467
         },
         "dodge": {
-          "value": 4.9881,
+          "value": 4.916,
           "ratingBonus": 0.0,
           "ratingNormalized": 0
         },
         "parry": {
-          "value": 5.2400002,
+          "value": 5.1600003,
           "ratingBonus": 0.0,
           "ratingNormalized": 0
         },
         "block": {
-          "value": 10.24,
+          "value": 10.16,
           "ratingBonus": 0.0,
           "ratingNormalized": 0
         },
         "rangedCrit": {
-          "value": 3.2281,
+          "value": 3.1560004,
           "ratingBonus": 0.0,
           "ratingNormalized": 0
         },
@@ -9580,8 +9580,8 @@
           "effective": 60
         },
         "defense": {
-          "base": 177,
-          "effective": 186
+          "base": 180,
+          "effective": 189
         },
         "fireResistance": {
           "base": 0,
@@ -9604,9 +9604,9 @@
           "effective": 0
         },
         "movementSpeed": 100.0,
-        "rangedAttackPower": 137,
-        "rangedDamageMin": 46.398857,
-        "rangedDamageMax": 71.35886,
+        "rangedAttackPower": 140,
+        "rangedDamageMin": 46.8,
+        "rangedDamageMax": 71.759995,
         "expertise": 0.0,
         "offHandExpertise": 0.0,
         "armorPenetration": 0.0,
@@ -9748,7 +9748,7 @@
             "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
             "tiers": [
               {
-                "skillPoints": 164,
+                "skillPoints": 165,
                 "maxSkillPoints": 225,
                 "tierId": 2946,
                 "tierName": "Mining",
@@ -10234,8 +10234,8 @@
           "factionId": 577,
           "factionName": "Everlook",
           "standing": {
-            "raw": 2205,
-            "value": 2205,
+            "raw": 2237,
+            "value": 2237,
             "max": 3000,
             "tier": 3,
             "name": "Neutral"
@@ -10278,8 +10278,8 @@
           "factionId": 470,
           "factionName": "Ratchet",
           "standing": {
-            "raw": 4310,
-            "value": 1310,
+            "raw": 4342,
+            "value": 1342,
             "max": 6000,
             "tier": 4,
             "name": "Friendly"
@@ -10311,8 +10311,8 @@
           "factionId": 21,
           "factionName": "Booty Bay",
           "standing": {
-            "raw": 2205,
-            "value": 2205,
+            "raw": 2270,
+            "value": 2270,
             "max": 3000,
             "tier": 3,
             "name": "Neutral"
@@ -10333,8 +10333,8 @@
           "factionId": 369,
           "factionName": "Gadgetzan",
           "standing": {
-            "raw": 2205,
-            "value": 2205,
+            "raw": 2237,
+            "value": 2237,
             "max": 3000,
             "tier": 3,
             "name": "Neutral"
@@ -10377,8 +10377,8 @@
           "factionId": 2827,
           "factionName": "Powderfuse",
           "standing": {
-            "raw": 2205,
-            "value": 2205,
+            "raw": 2237,
+            "value": 2237,
             "max": 3000,
             "tier": 3,
             "name": "Neutral"
@@ -10397,7 +10397,7 @@
           "pvpRank": 0
         }
       },
-      "fetchedAt": "2026-11-14T21:47:11Z"
+      "fetchedAt": "2026-11-15T02:29:48Z"
     },
     "1794319268033": {
       "status": "ok",
@@ -11489,7 +11489,7 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/139/1438603-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:47:36Z"
+      "fetchedAt": "2026-11-15T02:30:03Z"
     },
     "1794319268034": {
       "status": "ok",
@@ -12425,7 +12425,7 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/252/1438972-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:47:46Z"
+      "fetchedAt": "2026-11-15T02:30:12Z"
     },
     "1794319268035": {
       "status": "ok",
@@ -14001,11 +14001,11 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/51/4959027-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:48:03Z"
+      "fetchedAt": "2026-11-15T02:30:28Z"
     },
     "1794319268036": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:48:03Z"
+      "fetchedAt": "2026-11-15T02:30:28Z"
     },
     "1794319268037": {
       "status": "ok",
@@ -15222,7 +15222,7 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/13/7018253-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:48:22Z"
+      "fetchedAt": "2026-11-15T02:30:45Z"
     },
     "1794319268038": {
       "status": "ok",
@@ -15802,7 +15802,7 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/209/20469457-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:48:31Z"
+      "fetchedAt": "2026-11-15T02:30:53Z"
     },
     "1794319268039": {
       "status": "ok",
@@ -16521,6 +16521,14 @@
                     "name": "Lesser Mana Potion"
                   },
                   {
+                    "id": 1819,
+                    "name": "Lesser Troll's Blood Elixir"
+                  },
+                  {
+                    "id": 1820,
+                    "name": "Elixir of Lesser Defense"
+                  },
+                  {
                     "id": 1832,
                     "name": "Minor Troll's Blood Elixir"
                   },
@@ -16547,6 +16555,10 @@
                   {
                     "id": 4393,
                     "name": "Blackmouth Oil"
+                  },
+                  {
+                    "id": 4394,
+                    "name": "Fire Oil"
                   },
                   {
                     "id": 4395,
@@ -16594,7 +16606,7 @@
             "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136246.jpg",
             "tiers": [
               {
-                "skillPoints": 117,
+                "skillPoints": 118,
                 "maxSkillPoints": 150,
                 "tierId": 2944,
                 "tierName": "Herbalism",
@@ -16712,8 +16724,8 @@
           "factionId": 81,
           "factionName": "Thunder Bluff",
           "standing": {
-            "raw": 5295,
-            "value": 2295,
+            "raw": 5355,
+            "value": 2355,
             "max": 6000,
             "tier": 4,
             "name": "Friendly"
@@ -16734,8 +16746,8 @@
           "factionId": 76,
           "factionName": "Orgrimmar",
           "standing": {
-            "raw": 9608,
-            "value": 608,
+            "raw": 9623,
+            "value": 623,
             "max": 12000,
             "tier": 5,
             "name": "Honored"
@@ -16745,8 +16757,8 @@
           "factionId": 530,
           "factionName": "Darkspear Trolls",
           "standing": {
-            "raw": 8365,
-            "value": 5365,
+            "raw": 8380,
+            "value": 5380,
             "max": 6000,
             "tier": 4,
             "name": "Friendly"
@@ -16778,8 +16790,19 @@
           "factionId": 68,
           "factionName": "Undercity",
           "standing": {
-            "raw": 1836,
-            "value": 1836,
+            "raw": 1851,
+            "value": 1851,
+            "max": 3000,
+            "tier": 3,
+            "name": "Neutral"
+          }
+        },
+        {
+          "factionId": 2798,
+          "factionName": "Darkspear Raiders",
+          "standing": {
+            "raw": 0,
+            "value": 0,
             "max": 3000,
             "tier": 3,
             "name": "Neutral"
@@ -16809,15 +16832,15 @@
           "pvpRank": 0
         }
       },
-      "fetchedAt": "2026-11-14T21:48:41Z"
+      "fetchedAt": "2026-11-15T02:31:02Z"
     },
     "1794319268040": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:48:41Z"
+      "fetchedAt": "2026-11-15T02:31:02Z"
     },
     "1794319268041": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:48:41Z"
+      "fetchedAt": "2026-11-15T02:31:02Z"
     },
     "1794319268042": {
       "status": "ok",
@@ -17836,11 +17859,11 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/6/15779846-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:48:50Z"
+      "fetchedAt": "2026-11-15T02:31:11Z"
     },
     "1794692685089": {
       "status": "not_found",
-      "fetchedAt": "2026-11-14T21:48:50Z"
+      "fetchedAt": "2026-11-15T02:31:11Z"
     },
     "1794692685090": {
       "status": "ok",
@@ -18672,7 +18695,7 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/1/11836417-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:49:30Z"
+      "fetchedAt": "2026-11-15T02:31:20Z"
     },
     "1794692685091": {
       "status": "ok",
@@ -19411,7 +19434,7 @@
         "fullRender": "https://render.worldofwarcraft.com/forever-us/character/39/35164199-main-raw.png"
       },
       "achievementPoints": 0,
-      "fetchedAt": "2026-11-14T21:49:40Z"
+      "fetchedAt": "2026-11-15T02:31:28Z"
     }
   }
 }

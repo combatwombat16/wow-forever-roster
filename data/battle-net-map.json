@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-14T21:49:40Z",
+  "updatedAt": "2026-11-15T02:31:28Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -166,8 +166,8 @@
       "bnetName": "Dellah",
       "surname": "Lillijadii",
       "matchedForm": "lower_hyphen",
-      "mappedVia": "direct",
-      "note": null,
+      "mappedVia": "confirmed",
+      "note": "user-confirmed",
       "candidates": []
     },
     "1791929450071": {
@@ -406,8 +406,8 @@
       "bnetName": "Bowflex",
       "surname": "Wolfbane",
       "matchedForm": "guild_roster",
-      "mappedVia": "guild_roster",
-      "note": null,
+      "mappedVia": "confirmed",
+      "note": "user-confirmed",
       "candidates": []
     },
     "1794692685091": {
@@ -418,8 +418,8 @@
       "bnetName": "War",
       "surname": "Echo",
       "matchedForm": "guild_roster",
-      "mappedVia": "guild_roster",
-      "note": null,
+      "mappedVia": "confirmed",
+      "note": "user-confirmed",
       "candidates": []
     }
   }
