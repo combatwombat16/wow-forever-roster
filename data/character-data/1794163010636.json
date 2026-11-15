@@ -1,0 +1,658 @@
+{
+  "schemaVersion": 3,
+  "id": "1794163010636",
+  "bnet": {
+    "name": "Shmorlock",
+    "surname": "Gorelocke",
+    "href": "https://us.api.blizzard.com/profile/wow/character/shmorlock-gorelocke?namespace=profile-forever-us"
+  },
+  "gear": [
+    {
+      "slot": "Chest",
+      "name": "Soft Wool Vest",
+      "ilvl": 5,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135018.jpg",
+      "itemId": 4916,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 1,
+        "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Waist",
+      "name": "Soft Wool Belt",
+      "ilvl": 5,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132492.jpg",
+      "itemId": 4919,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 1,
+        "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Legs",
+      "name": "Ripped Pants",
+      "ilvl": 5,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134587.jpg",
+      "itemId": 6713,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 1,
+        "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Feet",
+      "name": "Patchwork Shoes",
+      "ilvl": 10,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132543.jpg",
+      "itemId": 1427,
+      "quality": "POOR",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 1,
+        "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Wrist",
+      "name": "Mogra's Friendship Bracelet",
+      "ilvl": 10,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132603.jpg",
+      "itemId": 281269,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 1,
+        "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 1,
+          "displayString": "+1 Spirit",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Hands",
+      "name": "Geolord's Mitts",
+      "ilvl": 11,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132950.jpg",
+      "itemId": 284323,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 1,
+        "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 1,
+          "displayString": "+1 Intellect",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Ring 1",
+      "name": "Depleted Ritual Band",
+      "ilvl": 9,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133348.jpg",
+      "itemId": 281268,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 1,
+          "displayString": "+1 Bonus Armor",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Back",
+      "name": "Handsewn Cloak",
+      "ilvl": 12,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133763.jpg",
+      "itemId": 4944,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 1,
+        "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Main Hand",
+      "name": "Arclight Spanner",
+      "ilvl": 10,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134520.jpg",
+      "itemId": 6219,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 2,
+        "name": "Weapon"
+      },
+      "itemSubclass": {
+        "id": 14,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": []
+    }
+  ],
+  "achievementPoints": 0,
+  "stats": {
+    "health": 238,
+    "power": 418,
+    "powerType": {
+      "id": 0,
+      "name": "Mana"
+    },
+    "speed": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "strength": {
+      "base": 26,
+      "effective": 26
+    },
+    "agility": {
+      "base": 21,
+      "effective": 21
+    },
+    "intellect": {
+      "base": 31,
+      "effective": 32
+    },
+    "stamina": {
+      "base": 29,
+      "effective": 29
+    },
+    "meleeCrit": {
+      "value": 4.625,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "meleeHaste": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "mastery": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "bonusArmor": 1,
+    "lifesteal": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "versatility": 0.0,
+    "versatilityDamageDoneBonus": 0.0,
+    "versatilityHealingDoneBonus": 0.0,
+    "versatilityDamageTakenBonus": 0.0,
+    "avoidance": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "attackPower": 16,
+    "mainHandDamageMin": 9.742857,
+    "mainHandDamageMax": 16.742857,
+    "mainHandSpeed": 2.4,
+    "mainHandDps": 5.517857,
+    "offHandDamageMin": 1.6428572,
+    "offHandDamageMax": 1.6428572,
+    "offHandSpeed": 2.0,
+    "offHandDps": 0.8214286,
+    "spellPower": 0,
+    "spellPenetration": 0,
+    "spellCrit": {
+      "value": 4.5544,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "manaRegen": 47.0,
+    "manaRegenCombat": 0.0,
+    "armor": {
+      "base": 1,
+      "effective": 112
+    },
+    "dodge": {
+      "value": 4.505,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "parry": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "block": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "rangedCrit": {
+      "value": 2.265,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "rangedHaste": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "spellHaste": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "spirit": {
+      "base": 37,
+      "effective": 38
+    },
+    "defense": {
+      "base": 57,
+      "effective": 57
+    },
+    "fireResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "shadowResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "natureResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "arcaneResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "frostResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "movementSpeed": 100.0,
+    "rangedAttackPower": 0,
+    "rangedDamageMin": 1.0,
+    "rangedDamageMax": 1.0,
+    "expertise": 0.0,
+    "offHandExpertise": 0.0,
+    "armorPenetration": 0.0,
+    "spellHealing": 0,
+    "meleeHit": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "offHandHit": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "rangedHit": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "spellHit": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    }
+  },
+  "talents": [
+    {
+      "specId": 355,
+      "specName": "Affliction",
+      "spentPoints": 3,
+      "talents": [
+        {
+          "rank": 3,
+          "talentId": 135455,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136118.jpg",
+          "spellId": 17810,
+          "spellName": "Improved Corruption",
+          "description": "Reduces the casting time of your Corruption spell by 1.2 sec and increases the damage it deals by 6%.",
+          "castTime": "Passive"
+        }
+      ]
+    }
+  ],
+  "professions": {
+    "primaries": [
+      {
+        "id": 186,
+        "name": "Mining",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
+        "tiers": [
+          {
+            "skillPoints": 75,
+            "maxSkillPoints": 150,
+            "tierId": 2946,
+            "tierName": "Mining",
+            "knownRecipes": [
+              {
+                "id": 1848,
+                "name": "Smelt Tin"
+              },
+              {
+                "id": 1570,
+                "name": "Mining"
+              },
+              {
+                "id": 1600,
+                "name": "Smelt Bronze"
+              },
+              {
+                "id": 3324,
+                "name": "Smelt Copper"
+              },
+              {
+                "id": 52643,
+                "name": "Lodestone"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 202,
+        "name": "Engineering",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136243.jpg",
+        "tiers": [
+          {
+            "skillPoints": 74,
+            "maxSkillPoints": 75,
+            "tierId": 2941,
+            "tierName": "Engineering",
+            "knownRecipes": [
+              {
+                "id": 2413,
+                "name": "Rough Blasting Powder"
+              },
+              {
+                "id": 2414,
+                "name": "Rough Dynamite"
+              },
+              {
+                "id": 2415,
+                "name": "Crafted Light Shot"
+              },
+              {
+                "id": 2417,
+                "name": "Handful of Copper Bolts"
+              },
+              {
+                "id": 2418,
+                "name": "Rough Copper Bomb"
+              },
+              {
+                "id": 2419,
+                "name": "Copper Tube"
+              },
+              {
+                "id": 2420,
+                "name": "Rough Boomstick"
+              },
+              {
+                "id": 2421,
+                "name": "Crude Scope"
+              },
+              {
+                "id": 2423,
+                "name": "Copper Modulator"
+              },
+              {
+                "id": 4294,
+                "name": "Arclight Spanner"
+              },
+              {
+                "id": 52650,
+                "name": "Reagent Bot"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "secondaries": [
+      {
+        "id": 185,
+        "name": "Cooking",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133971.jpg",
+        "tiers": [
+          {
+            "skillPoints": 63,
+            "maxSkillPoints": 150,
+            "tierId": 2939,
+            "tierName": "Cooking",
+            "knownRecipes": [
+              {
+                "id": 1535,
+                "name": "Charred Wolf Meat"
+              },
+              {
+                "id": 1536,
+                "name": "Spiced Wolf Meat"
+              },
+              {
+                "id": 1537,
+                "name": "Roasted Boar Meat"
+              },
+              {
+                "id": 1538,
+                "name": "Coyote Steak"
+              },
+              {
+                "id": 3927,
+                "name": "Scorpid Surprise"
+              },
+              {
+                "id": 4354,
+                "name": "Slitherskin Mackerel"
+              },
+              {
+                "id": 3964,
+                "name": "Boiled Clams"
+              },
+              {
+                "id": 4786,
+                "name": "Herb Baked Egg"
+              },
+              {
+                "id": 52640,
+                "name": "Basic Campfire"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 356,
+        "name": "Fishing",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136245.jpg",
+        "tiers": [
+          {
+            "skillPoints": 41,
+            "maxSkillPoints": 75,
+            "tierId": 2943,
+            "tierName": "Fishing",
+            "knownRecipes": [
+              {
+                "id": 4344,
+                "name": "Fishing"
+              },
+              {
+                "id": 52639,
+                "name": "Fish Bowl"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 129,
+        "name": "First Aid",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
+        "tiers": [
+          {
+            "skillPoints": 38,
+            "maxSkillPoints": 75,
+            "tierId": 2942,
+            "tierName": "First Aid",
+            "knownRecipes": [
+              {
+                "id": 1838,
+                "name": "Linen Bandage"
+              },
+              {
+                "id": 52641,
+                "name": "First Aid Kit"
+              },
+              {
+                "id": 54191,
+                "name": "Minor Healing Potion"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "reputations": [
+    {
+      "factionId": 81,
+      "factionName": "Thunder Bluff",
+      "standing": {
+        "raw": 3162,
+        "value": 162,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
+      }
+    },
+    {
+      "factionId": 470,
+      "factionName": "Ratchet",
+      "standing": {
+        "raw": 600,
+        "value": 600,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 76,
+      "factionName": "Orgrimmar",
+      "standing": {
+        "raw": 7620,
+        "value": 4620,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
+      }
+    },
+    {
+      "factionId": 530,
+      "factionName": "Darkspear Trolls",
+      "standing": {
+        "raw": 6332,
+        "value": 3332,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
+      }
+    },
+    {
+      "factionId": 68,
+      "factionName": "Undercity",
+      "standing": {
+        "raw": 562,
+        "value": 562,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    }
+  ],
+  "media": {
+    "avatar": "https://render.worldofwarcraft.com/forever-us/character/232/15288296-avatar.jpg",
+    "avatarSd": "https://render.worldofwarcraft.com/forever-us/character/232/15288296-avatar-sd.jpg",
+    "fullRender": "https://render.worldofwarcraft.com/forever-us/character/232/15288296-main-raw.png"
+  }
+}

@@ -55,6 +55,16 @@ Rework the character detail modal (`js/detail.js`, opened by clicking a roster c
 - Modal today: `js/detail.js` (~1045 lines), single scrollable layout rendered from one HTML string (`detailHtml()`, ~L740–816). **No tab component exists anywhere in the codebase** — build one fresh.
 - Modal open/close: `hidden` class toggle on `#detail-modal` (`index.html` ~L238–244); `openCharacterDetail(id)` / `closeDetail()` on `window`; state in `js/state.js` with `registerRenderHook(fn)`.
 - Sidecar `data/character-data.json` (21 characters): gear entries carry only `slot`, `name`, `ilvl`, `iconUrl`. Item id, quality, class/subclass, enchants exist in the API response but are **discarded** by `tools/bnet/fetch.py` (~L273–295).
+  **Where these fields live now (schema v3, 2026-11-15).** That baseline predates Phase 0, which stopped
+  discarding item id / quality / class-subclass / enchants, and predates the layout split: the sidecar is
+  now a **manifest** plus one detail file per resolved character. `level`, `itemLevel`, `guild`,
+  `activeSpec`, `race`, `class`, `classIconUrl`, `status`, `fetchedAt` (+ the `detail` pointer) stay in
+  `data/character-data.json`; `gear`, `talents`, `professions`, `reputations`, `stats`, `progress`,
+  `achievementPoints`, `media` and `bnet` move to `data/character-data/<id>.json`, fetched when this modal
+  opens (memoised per id for the session, never persisted) and degrading to the manifest row on any failure,
+  so a missing detail file costs the heavy tabs and nothing else. Field **semantics** are unchanged:
+  every path named in this document still resolves to the same value — the detail document simply carries
+  no `status` and none of the nine manifest fields. Layout contract: `docs/bnet-api-notes.md` §12.
 - `/statistics` (combat stats) is **already GET by the sync but thrown away** as a schema tripwire (`fetch.py` ~L300; contract documented in `docs/bnet-api-notes.md` §3.5 — full classic stat list incl. rating triples).
 - Talents confirmed available: `/specializations` → `specialization_groups[].specializations[].talents[].{talent_rank, talent, spell_tooltip}` (`docs/bnet-api-notes.md` §3.4). **No tree structure/prerequisites in any API.**
 - `reputations.href` and `professions.href` are linked from profiles but **never probed** — response shapes unverified (`docs/bnet-api-notes.md` §3, "not probed" list).

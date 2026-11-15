@@ -16,8 +16,8 @@ GitHub Pages serves the repository's static files.
 | `index.html` | The whole page: markup shell plus one `<script type="module" src="js/main.js">`. No inline app code. |
 | `js/` | The app as ES modules. `main.js` bootstraps; `state.js` holds the single source of truth (characters + track filter + search query) and the `renderAll()` dispatcher; `data.js` loads the JSON files and joins them by roster id; `github.js` owns the PAT settings, the Contents API pull/commit and the refresh dispatch; `roster.js` paints the grid (status dot, Lv/iLvl/guild chips, lifecycle badge); `detail.js` is the character modal plus the review actions; `guildfilter.js` owns the guild chip row, the include-a-guild input and their handlers (it holds no state — the buckets and the scope live in `state.js`); `search.js`, `editchar.js`, `party.js`, `professions.js`, `stats.js` are the remaining panels; `util.js` holds the single HTML escaper and the class-colour maps. |
 | `css/` | `app.css` is hand-written (borders, fonts, gradients). `tailwind.css` is **generated** by the deploy workflow from `tailwind.config.js`; a compiled copy is committed so local preview needs no build. Do not hand-edit it. |
-| `data/` | `guild-config.json` (the one hand-maintained setting: which guild this roster tracks), `characters.json` (the roster, schema v2), `character-data.json` (Battle.net display data incl. gear tooltip fields, combat stats, talents, professions, reputations, avatar/class icons), `battle-net-map.json` (roster id → Battle.net resolution), `talent-trees.json` (spec talent-tree geometry, pinned to the static namespace). `guild-config.json` is the one file a human owns and the sync never writes. All sidecars are optional: any missing or unreadable file just means less decoration, never a broken page. `class-icons.json` and `profession-icons.json` (static Blizzard icon maps, pinned to the static namespace). |
-| `tools/` | The Python side: `bnet/` is the sync + probe package (stdlib only, run as `python3 -m bnet sync`), `tests/` its offline unit tests, `migrate_v2.py` the one-shot roster migration. |
+| `data/` | `guild-config.json` (the one hand-maintained setting: which guild this roster tracks), `characters.json` (the roster, schema v2), `character-data.json` (the Battle.net **manifest**, schema v3: one row per roster id with the list-view fields — level, item level, guild, active spec, race, class, icon, status — plus a `detail` pointer for every resolved character), `character-data/<id>.json` (one **detail** file per resolved character: gear tooltip fields, combat stats, talents, professions, reputations, progress, avatar render), `battle-net-map.json` (roster id → Battle.net resolution, schema v2), `talent-trees.json` (spec talent-tree geometry, pinned to the static namespace). `guild-config.json` is the one file a human owns and the sync never writes. All sidecars are optional: any missing or unreadable file just means less decoration, never a broken page. `class-icons.json` and `profession-icons.json` (static Blizzard icon maps, pinned to the static namespace). |
+| `tools/` | The Python side: `bnet/` is the sync + probe package (stdlib only, run as `python3 -m bnet sync`), `tests/` its offline unit tests, `migrate_v2.py` the one-shot roster migration and `migrate_v3.py` the one-shot sidecar split (`--dry-run` / `--check`). |
 | `.github/workflows/` | `sync-bnet.yml` (nightly + manual Battle.net sync — the only workflow holding credentials) and `pages.yml` (Tailwind build + Pages deploy — zero secrets). |
 | `.pi/scripts/` | Deterministic verification scripts (see below). Machine-owned `data/` files are inputs to them, never fixtures: a gate that needs a shape (two spec groups, a sidecar with no render) builds it, because `data/` is rewritten nightly by a job nobody reviews. |
 | `docs/` | `bnet-api-notes.md` (the probed Battle.net contract), `refactor-design.md` (the design as built, with implementation deltas), `bnet-probe-raw.json` (captured probe payloads). |
@@ -41,8 +41,11 @@ locally, run the same command the deploy runs:
 npx --yes tailwindcss@3.4.19 -c tailwind.config.js -o css/tailwind.css --minify
 ```
 
-Without a `data/character-data.json` or `battle-net-map.json`, the roster renders exactly
-as it did before the Battle.net integration.
+Degradation has two levels, and both are the same shape: without a `data/character-data.json` or
+`data/battle-net-map.json`, the roster renders exactly as it did before the Battle.net integration;
+without one character's `data/character-data/<id>.json` (404, unreadable, or the request never
+finished), that character's modal renders its header from the manifest row and shows the empty state
+in the heavy tabs. A missing detail file is never a blank page and never a stuck spinner.
 
 ## How the data flows
 
@@ -111,14 +114,21 @@ as it did before the Battle.net integration.
      because "0 rows added" has more than one cause.
    * A missing, unreadable or blank file means **unscoped**, which is the pre-change behaviour: a
      setting nobody configured must not hide rows.
-2. **Battle.net sidecars (`data/character-data.json`, `data/battle-net-map.json`).** Written
-   only by the sync pipeline, never by the browser: a scheduled run each night, plus
-   on-demand refreshes a maintainer dispatches from the character modal. The sync mints a
-   Battle.net token inside the Actions job from repository secrets, resolves each roster id,
-   normalizes what it finds (no raw Blizzard payloads are committed), runs the artifact
-   verification gate, and only then commits both files. Deploy follows the commit.
-3. **The browser reads all three files as plain same-origin `fetch()`es** and joins them by
-   roster id. Battle.net data is display-only in every state; user-authored fields are
+2. **Battle.net sidecars (`data/character-data.json` + `data/character-data/<id>.json`,
+   `data/battle-net-map.json`).** Written only by the sync pipeline, never by the browser: a
+   scheduled run each night, plus on-demand refreshes a maintainer dispatches from the character
+   modal. The sync mints a Battle.net token inside the Actions job from repository secrets, resolves
+   each roster id, normalizes what it finds (no raw Blizzard payloads are committed), runs the
+   artifact verification gate, and only then commits the map, one detail file per resolved character
+   and the manifest last — so a run that dies mid-publish leaves the previous manifest
+   authoritative over files that all still exist. Schema v3 split the old single 531 KB sidecar into
+   a 10 KB manifest plus a per-character file (`docs/bnet-api-notes.md` §12); the roster and the map
+   are still schema v2.
+3. **The browser reads the manifest, the map and the roster as plain same-origin `fetch()`es** and
+   joins them by roster id; a character's **detail** file is fetched only when that character's modal
+   opens, is memoised for the session, and is never persisted to localStorage. The `detail` pointer
+   is treated as untrusted input: the reader accepts it only when it matches its own shape and names
+   the same id as the row, and it builds the request path from the id itself. Battle.net data is display-only in every state; user-authored fields are
    editable only while a row is a draft, and validating a row locks it until it is explicitly
    re-opened. The site never calls the Blizzard API and never holds a Blizzard credential.
 
@@ -156,5 +166,14 @@ node    .pi/scripts/verify_search_detail.mjs     # search + detail modal behavio
 python3 .pi/scripts/verify_bnet_probe.py         # the probed API contract still matches the notes
 python3 -m unittest discover -s tools -p "test_*" # sync package unit tests
 ```
+
+`verify_sync_artifacts.py` is the gate the nightly runs before it commits. It re-derives the schema v3
+sidecar layout rather than trusting the writer: exact manifest-row and detail-document key sets, one
+detail file per `ok` row and none for any other status, each `detail` pointer compared to the path
+built from its own row's id (so a traversal shape or a row pointing at another character's file fails
+by inequality, not by blocklist), no `status` and no manifest field inside a detail document, and
+per-surface byte budgets — 128 KiB map, 128 KiB manifest, 96 KiB per detail file, 4 MiB for the whole
+directory. It also refuses a workflow file that stages the detail directory without `-A` (deletions
+would not be committed) or deploys it without a recursive copy.
 
 Task-by-task status, phases and open items live in `armory-tasks.md`.

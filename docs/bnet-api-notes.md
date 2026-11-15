@@ -1188,3 +1188,93 @@ next under a different marker.
    entry behind another), the 64 KiB size ceiling, the foreign-URL and secret scans over both
    files, and a soft WARNING when the maps stop covering a class or profession the roster renders
    (a patch that renames a class is a finding, not an outage — §10.4.3 reasoning).
+
+---
+
+## 12. Schema v3 addendum — the sidecar **layout** (2026-11-15)
+
+Nothing in this section is an API discovery. No endpoint, namespace, schema revision or field
+semantic changed; what changed is **how many files the normalized payload is committed as**, and
+that belongs here because it is the file contract every consumer of this document's field paths
+now reads them from.
+
+### 12.1 The measurement that forced it
+
+`data/character-data.json` grew with the guild, and the browser paid for all of it on every page
+load: one fetch, parsed before the roster could be joined.
+
+| | 2026-11-15, schema v2 | after the split |
+|---|---|---|
+| `data/character-data.json` | **531,170 B**, 35 rows (17 `ok`), everything inline | **9,966 B** — the manifest |
+| `data/character-data/<id>.json` | — | 17 files, **12,780 – 41,138 B**, 446,659 B total |
+| `data/battle-net-map.json` | 12,879 B | unchanged (stays schema v2) |
+| Boot bytes fetched for the roster list | 531,170 B | **9,966 B** (detail is fetched per modal open) |
+
+The 17 enriched characters are 84 % of the old file's bytes (446,659 of 531,170), and the roster
+list — the thing every visitor actually loads — needs 1.9 % of it (9,966 B).
+
+### 12.2 The two documents
+
+`data/character-data.json` — the **manifest**, `schemaVersion: 3`. Envelope keys unchanged
+(`schemaVersion`, `syncedAt`, `triggeredBy`, `characters`); `characters[<roster id>]` is exactly
+
+```
+status, fetchedAt, level, itemLevel, guild, activeSpec, classIconUrl, race, class, detail
+```
+
+where `detail` is the string `character-data/<same id>.json` **only** for `status == "ok"` and is
+**absent** (not `null`, not `""`) for `not_found`, `ambiguous`, `needs_review`, `fetch_error`.
+
+`data/character-data/<id>.json` — the **detail document**, keys exactly
+
+```
+schemaVersion, id, bnet, gear, progress, achievementPoints, stats, talents, professions, reputations, media
+```
+
+It carries **no `status`** — that is lookup metadata and lives in the manifest, so a detail file can
+never disagree with the row that points at it — and none of the nine manifest fields. `id` equals the
+roster id and the filename stem. Every value inside is produced by the same `fetch.py`/`sync.py`
+functions as before; §3, §9 and §10 field paths are unchanged, they are just resolved one file later.
+
+`raceIconUrl` appears in neither: §10.3 evidenced nine ways that no race media route exists, so
+nothing writes it. The writer **refuses** an enriched record carrying a key that belongs to neither
+half rather than dropping it, so if that ever changes the run fails loudly instead of losing data.
+
+Rules the readers and the writer share, all three of them stating the same contract:
+
+1. The `detail` string is derived from the roster id, never from the record, and never written by hand.
+2. A consumer treats `detail` as data: `js/data.js` accepts a value only if it matches its own
+   shape **and** its stem equals the row's id, then fetches a path it builds itself from
+   `DETAIL_SUBDIR` + `encodeURIComponent(id)`; the verify gate compares the string to the id-derived
+   path. `../character-data.json`, `%2e%2e`, backslashes and absolute URLs are therefore refused by
+   comparison, not by blocklist.
+3. `data/character-data/` holds exactly one file per `ok` row: no missing file, no orphan. A row
+   leaving `ok` has its detail file deleted by the same write, and the writer prunes only files it
+   can prove it wrote (parseable, `id` matching its filename).
+4. Write order is detail files → prunings → manifest last, so a run that dies mid-publish leaves the
+   previous manifest authoritative over files that all still exist.
+
+### 12.3 Consequences (implemented with this layout)
+
+- `tools/bnet/config.py`: `DETAIL_DIR = DATA_DIR / DETAIL_DIR_NAME`, one constant for the directory
+  and the manifest's path string. `DATA_FILE` stays the manifest path.
+- `tools/bnet/artifacts.py`: `MANIFEST_ROW_KEYS`, `DETAIL_DOC_KEYS`, `DATA_SCHEMA_VERSION = 3`
+  (`SCHEMA_VERSION` stays `2` for the map and the roster), `manifest_row`, `detail_document`,
+  `split_characters`, `write_detail_documents`, `pruned_detail_files`. `write_data` still returns the
+  envelope it wrote, so `sync.py`'s dry-run preview needs no change.
+- `load_previous_data()` folds both halves back into one record. This is not a convenience: a
+  single-character lookup republishes **every other** character from what is on disk, so a reader
+  that returned manifest rows alone would hand `write_data` rows with no gear and prune the detail
+  files it had just failed to read.
+- `tools/migrate_v3.py` is the offline, idempotent one-shot re-layout (`--dry-run`, `--check`). It
+  calls `split_characters`/`manifest_document`/`dumps`/`pruned_detail_files` rather than carrying a
+  second copy of these key sets, prints per-file byte counts, refuses a roster/manifest id mismatch,
+  and leaves a non-JSON file in the detail directory in place (reported, not deleted).
+- Budgets in `.pi/scripts/verify_sync_artifacts.py` are per surface — 128 KiB map, **128 KiB
+  manifest**, **96 KiB per detail file**, **4 MiB for the directory** — because the old single 128 KiB
+  ceiling over both files was already outgrown by the *split* total (446,659 B), while every
+  individual file stayed an order of magnitude inside its own limit.
+- Both workflows changed: `sync-bnet.yml` stages `git add -A data/character-data` plus the manifest
+  (a plain `git add <dir>` does not stage deletions, which would publish a manifest with a row whose
+  detail file was removed); `pages.yml` copies the directory recursively, which needs no `mkdir`
+  because `cp -r src dst/` creates `dst/<name>/`.

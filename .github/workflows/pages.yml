@@ -111,6 +111,16 @@ jobs:
           cp css/*.css _site/css/
           cp js/*.js _site/js/
           cp data/*.json _site/data/
+          # Schema v3: the per-character detail files live in a SUBDIRECTORY (data/character-data/
+          # <id>.json) and the glob above is DEPTH-1 — it copies the manifest and walks past the
+          # directory, because a directory is not a *.json. Copy it explicitly or the deploy ships a
+          # manifest whose every `detail` pointer 404s and every character modal loses its gear,
+          # stats, talents, professions, reputations and renders — a degradation the reader is
+          # designed to swallow silently, so nothing but this line would notice. Guarded the way the
+          # silhouettes copy is: a tree with no resolved characters yet has no directory to copy.
+          if compgen -G "data/character-data/*.json" > /dev/null; then
+            cp -r data/character-data _site/data/
+          fi
           if compgen -G "assets/silhouettes/*.svg" > /dev/null; then
             cp assets/silhouettes/*.svg _site/assets/silhouettes/
           fi

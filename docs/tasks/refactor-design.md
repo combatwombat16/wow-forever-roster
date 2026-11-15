@@ -119,6 +119,40 @@ Rules:
 
 UI joins the three files by roster `id` at load; each file independently optional with graceful degradation (sidecar missing → site renders exactly as the pre-refactor behavior for that panel).
 
+### 3.1 `data/character-data.json` becomes a manifest (schema v3, 2026-11-15 — as built)
+
+Section 3's "shape unchanged" held for one release. The sidecar grew to **531,170 B** for 17 resolved
+characters and the browser fetched and parsed all of it before it could paint the roster list, of
+which it uses 9,966 B. v3 is a **layout** change with no field-semantics change: the same values, from
+the same producer functions, in two places.
+
+| Surface | Keys | Notes |
+|---|---|---|
+| `data/character-data.json` (manifest, `schemaVersion` **3**) | envelope unchanged: `schemaVersion, syncedAt, triggeredBy, characters` | one file, always fetched at boot |
+| `characters[<id>]` (manifest row) | `status, fetchedAt, level, itemLevel, guild, activeSpec, classIconUrl, race, class, detail` | the list-view fields a roster card renders; `detail` is `character-data/<same id>.json` **only** when `status == "ok"`, absent otherwise (never `null`, never `""`) |
+| `data/character-data/<id>.json` (detail doc) | `schemaVersion, id, bnet, gear, progress, achievementPoints, stats, talents, professions, reputations, media` | **no `status`** (lookup metadata lives once, in the manifest) and none of the nine manifest fields; `id` == roster id == filename stem |
+
+The map and the roster stay **schema v2** — `SCHEMA_VERSION` is untouched, `DATA_SCHEMA_VERSION = 3`
+is a separate constant, because the sidecar is the artifact that changed shape.
+
+The three invariants that make the split safe rather than a second source of truth:
+
+1. **The pointer is derived, never authored.** `detail` is built from the roster id, and both readers
+   treat it as hostile data: `js/data.js` accepts it only when it matches its own shape *and* its stem
+   equals the row's id, then fetches a path it builds itself; the verify gate compares the string to
+   the id-derived path. Traversal shapes fail by comparison, not by blocklist.
+2. **One file per `ok` row, exactly.** The writer prunes the detail file of a row that leaves `ok` (and
+   of a removed row), but only files it can prove it wrote; anything else is left and reported.
+3. **Publish order is detail → prune → manifest last.** A run that dies mid-write leaves the previous
+   manifest over files that all still exist.
+
+The browser reads it in two levels, which is the point: the manifest at boot, one detail document per
+modal open, never persisted to localStorage. Missing detail degrades to the list-view row (the modal
+renders its header and empty tabs); a row that names no `detail` is served the manifest row, so the
+pre-split code path stays live. Writer, migration (`tools/migrate_v3.py`), gate
+(`.pi/scripts/verify_sync_artifacts.py`) and both workflows are documented in
+`docs/bnet-api-notes.md` §12.
+
 ## 4. Workflows
 
 ```
@@ -136,6 +170,15 @@ pages.yml  (new)            on: push(main) + workflow_run(sync-bnet: completed, 
   which is also why `css/tailwind.css` is committed (§10). `pages.yml` declares `workflow_dispatch` precisely so
   a manual redeploy is one click after the flip.
 - `workflow_run` chain guarantees nightly data is redeployed (the artifact-snapshot staleness trap).
+- **Amended 2026-11-15 (schema v3, §3.1) — staging and deploying the detail directory.**
+  `sync-bnet.yml` stages `git add -A data/character-data data/character-data.json`. The `-A` is scoped
+  to that one path and exists for the **deletions**: a row demoted out of `ok` loses its detail file, and
+  a plain `git add <dir>` does not stage removals, which would publish a manifest that no longer names a
+  file still sitting in the commit. The blanket `git add -A data/` remains banned (`data/guild-config.json`
+  is hand-owned). `pages.yml` adds `cp -r data/character-data _site/data/` beside the `cp data/*.json` it
+  already ran — that glob never matched the directory — and needs no `mkdir`, because
+  `cp -r src dst/` creates `dst/<name>/`. `verify_sync_artifacts.py` fails the tree if either line
+  regresses, and the deploy manifest's `find _site -type f | sort` now lists the detail files.
 - Security posture of sync-bnet.yml unchanged: zero PR triggers, `contents: write`, bot identity, redaction, host allowlist, no-redirect, mass-flip floor.
 
 **On-demand refresh (browser):** `POST /repos/{owner}/{repo}/actions/workflows/sync-bnet.yml/dispatches` with the user's PAT and `inputs.lookup_name = <character>`, ~~`client_payload.actor = <login>`~~; UI then polls `…/actions/runs?created=>` until completion and refetches `data/` (cache-busted). PAT scope additions documented: `actions: write` (existing flows keep `contents: write`).

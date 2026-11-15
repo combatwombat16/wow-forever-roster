@@ -25,7 +25,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))          # tools/
 
-from bnet import artifacts, config, fetch, http, resolve, roster, sync  # noqa: E402
+from bnet import artifacts, config, fetch, http, resolve, roster, sync
+from tests import redirect_artifacts, restore_artifacts  # noqa: E402
 
 
 class FakeResp:
@@ -365,12 +366,14 @@ class MassFlipFloorVersusReportedNotes(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
         self.map_file, self.data_file = self.tmp / "battle-net-map.json", self.tmp / "character-data.json"
-        self._files = (config.MAP_FILE, config.DATA_FILE)
-        config.MAP_FILE, config.DATA_FILE = self.map_file, self.data_file
+        # All THREE sidecar surfaces, not just the two files: with config.DETAIL_DIR still
+        # pointing at the checkout, an ok row in a fake run prunes the repository's real
+        # data/character-data/ directory (tests/__init__.py).
+        self._files = redirect_artifacts(self.tmp)
         self._step_summary = os.environ.pop("GITHUB_STEP_SUMMARY", None)
 
     def tearDown(self):
-        config.MAP_FILE, config.DATA_FILE = self._files
+        restore_artifacts(self._files)
         if self._step_summary is not None:
             os.environ["GITHUB_STEP_SUMMARY"] = self._step_summary
 
@@ -492,9 +495,11 @@ class MassFlipFloorVersusReportedNotes(unittest.TestCase):
             entries = {rid: artifacts.map_entry({"name": rid}, "needs_review", note="reported")
                        for rid in prev}
             snapshot = {rid: {"status": "ok"} for rid in prev}
-            original = (config.MAP_FILE, config.DATA_FILE)
+            # The detail directory comes from the helper; the two files keep this test's own
+            # deliberately non-canonical names, so they are pointed back at them afterwards.
+            original = redirect_artifacts(tmp)
+            config.MAP_FILE, config.DATA_FILE = map_file, data_file
             try:
-                config.MAP_FILE, config.DATA_FILE = map_file, data_file
                 self.assertIsNotNone(artifacts.write_pair(entries, {rid: {"status": "needs_review"} for rid in prev},
                                                           ordered_ids=list(prev), prev_entries=prev,
                                                           triggered_by_value="manual", dry_run=False))
@@ -505,7 +510,7 @@ class MassFlipFloorVersusReportedNotes(unittest.TestCase):
                                                        floor_entries=snapshot))
                 self.assertEqual(json.loads(map_file.read_text())["entries"]["1"]["status"], "needs_review")
             finally:
-                config.MAP_FILE, config.DATA_FILE = original
+                restore_artifacts(original)
 
 
 class LookupVerdicts(unittest.TestCase):
@@ -527,12 +532,14 @@ class LookupVerdicts(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
         self.map_file, self.data_file = self.tmp / "battle-net-map.json", self.tmp / "character-data.json"
-        self._files = (config.MAP_FILE, config.DATA_FILE)
-        config.MAP_FILE, config.DATA_FILE = self.map_file, self.data_file
+        # All THREE sidecar surfaces, not just the two files: with config.DETAIL_DIR still
+        # pointing at the checkout, an ok row in a fake run prunes the repository's real
+        # data/character-data/ directory (tests/__init__.py).
+        self._files = redirect_artifacts(self.tmp)
         self._step_summary = os.environ.pop("GITHUB_STEP_SUMMARY", None)
 
     def tearDown(self):
-        config.MAP_FILE, config.DATA_FILE = self._files
+        restore_artifacts(self._files)
         if self._step_summary is not None:
             os.environ["GITHUB_STEP_SUMMARY"] = self._step_summary
 
@@ -862,7 +869,13 @@ class ArtifactsSchema(unittest.TestCase):
         self.assertIsNone(artifacts.mass_flip_error(2, 0))      # below ok_prev >= 3: nothing to protect
         self.assertIn("amendment 8", artifacts.mass_flip_error(4, 1))
 
-    def test_write_pair_blocks_below_the_floor_and_writes_schema_v2(self):
+    def test_write_pair_blocks_below_the_floor_and_writes_each_artifact_at_its_own_schema(self):
+        """Schema v3 is the SIDECAR'S version bump and nothing else's.
+
+        The map (and the roster, written by ``write_roster``) stay at ``SCHEMA_VERSION`` 2; the
+        manifest goes to ``DATA_SCHEMA_VERSION`` 3 with the same four envelope keys, its rows shrink
+        to ``MANIFEST_ROW_KEYS``, and the heavy half lands in ``DETAIL_DIR``. Asserted at the single
+        writer, because a version number copied into two places is two numbers."""
         with tempfile.TemporaryDirectory() as tmp:
             map_file = Path(tmp) / "battle-net-map.json"
             data_file = Path(tmp) / "character-data.json"
@@ -870,9 +883,8 @@ class ArtifactsSchema(unittest.TestCase):
                     "3": {"status": "ok"}, "4": {"status": "ok"}}
             entries = {rid: artifacts.map_entry({"name": rid}, "not_found", note="404") for rid in prev}
             chars = {rid: {"status": "not_found", "fetchedAt": http.iso_now()} for rid in prev}
-            original = (config.MAP_FILE, config.DATA_FILE)
+            original = redirect_artifacts(tmp)
             try:
-                config.MAP_FILE, config.DATA_FILE = map_file, data_file
                 refusal = artifacts.write_pair(entries, chars, ordered_ids=list(prev), prev_entries=prev,
                                                triggered_by_value="manual", dry_run=False)
                 self.assertIsNotNone(refusal)
@@ -884,19 +896,40 @@ class ArtifactsSchema(unittest.TestCase):
                                                         f"?namespace=profile-forever-us",
                                                    payload={"name": rid}, matched_form="lower",
                                                    mapped_via="direct") for rid in prev}
-                chars = {rid: {"status": "ok", "fetchedAt": http.iso_now()} for rid in prev}
+                chars = {rid: {"status": "ok", "fetchedAt": http.iso_now(), "level": 60,
+                               "gear": [], "bnet": {"name": rid, "surname": None,
+                                                    "href": f"https://us.api.blizzard.com/profile/wow/character/{rid}"
+                                                            f"?namespace=profile-forever-us"}}
+                         for rid in prev}
                 self.assertIsNone(artifacts.write_pair(entries, chars, ordered_ids=list(prev),
                                                        prev_entries=ok_prev, triggered_by_value="schedule",
                                                        dry_run=False))
                 written_map = json.loads(map_file.read_text())
                 written_data = json.loads(data_file.read_text())
-                self.assertEqual(written_map["schemaVersion"], 2)
+                self.assertEqual(written_map["schemaVersion"], artifacts.SCHEMA_VERSION)
+                self.assertEqual(artifacts.SCHEMA_VERSION, 2, "the map's schema is not the sidecar's")
                 self.assertEqual(set(written_map), {"schemaVersion", "updatedAt", "entries"})
                 self.assertEqual(set(written_map["entries"]["1"]), set(artifacts.MAP_ENTRY_KEYS))
+
+                # …and the sidecar: the envelope is unchanged, the version and the rows are not.
                 self.assertEqual(set(written_data), {"schemaVersion", "syncedAt", "triggeredBy", "characters"})
+                self.assertEqual(written_data["schemaVersion"], artifacts.DATA_SCHEMA_VERSION)
+                self.assertEqual(artifacts.DATA_SCHEMA_VERSION, 3)
                 self.assertEqual(written_data["triggeredBy"], "schedule")
+                self.assertEqual(set(written_data["characters"]["1"]), set(artifacts.MANIFEST_ROW_KEYS)
+                                 - {"guild", "activeSpec", "itemLevel", "classIconUrl", "race", "class"})
+                self.assertEqual(written_data["characters"]["1"]["detail"], "character-data/1.json")
+                self.assertEqual(written_data["characters"]["1"]["level"], 60)
+
+                detail_path = Path(config.DETAIL_DIR) / "1.json"
+                self.assertTrue(detail_path.is_file(), "the ok row's detail document was not published")
+                detail = json.loads(detail_path.read_text())
+                self.assertEqual(set(detail), {"schemaVersion", "id", "bnet", "gear"})
+                self.assertEqual(detail["id"], "1")
+                self.assertNotIn("status", detail)
+                self.assertNotIn("level", detail)
             finally:
-                config.MAP_FILE, config.DATA_FILE = original
+                restore_artifacts(original)
 
     def test_lookup_seeds_and_reports_ambiguity(self):
         f, r = make_sync()

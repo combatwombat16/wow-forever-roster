@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""Deterministic checks for the Phase 2 sync artifacts (schema v2, data/ layout).
+"""Deterministic checks for the sync artifacts (schema v3 sidecar, data/ layout).
+
+The character sidecar is TWO committed surfaces since schema v3: ``data/character-data.json`` is a
+MANIFEST (one row per roster id: the nine list-view fields plus a ``detail`` pointer) and
+``data/character-data/<id>.json`` is one character's DETAIL document. Everything that used to read
+one document reads both here — coverage, the pointer-equality rule, the orphan rule, the per-character
+content checks, the foreign-URL scan, the secret scan and four per-file budgets instead of one
+ceiling over a file that grew with the guild. See ``docs/tasks/refactor-design.md`` §3 and
+``bnet.artifacts``' split (``manifest_row`` / ``detail_document``), whose key constants
+``MANIFEST_KEYS`` / ``DETAIL_KEYS`` mirror.
 
 Exit 0 = every clause holds; exit 1 = each failing clause was printed. The
 load-bearing assertions: the map covers exactly the CURRENT roster ids, ok rows
@@ -41,6 +50,15 @@ PKG = ROOT / "tools" / "bnet"
 ROSTER = ROOT / "data" / "characters.json"
 MAP = ROOT / "data" / "battle-net-map.json"
 DATA = ROOT / "data" / "character-data.json"
+# Schema v3: the manifest's sibling directory. One ``<id>.json`` per ok row, each named by exactly
+# one manifest row. It is a DIRECTORY here, not a file, so every scan below (foreign URL, secret,
+# budget, orphan) has to walk it rather than read one path.
+# Named literally like the four paths above (a gate that resolved every path through the package
+# could not report a package that failed to import), and pinned to ``bnet.config.DETAIL_DIR_NAME``
+# by an explicit check in main() — the manifest's `detail` strings, this directory and js/data.js's
+# reader are ONE rule, and a rename that reaches two of the three is exactly what that check is for.
+DETAIL_DIR = DATA.parent / DATA.stem          # data/character-data/
+DETAIL_DIR_NAME = DETAIL_DIR.name
 TREES = ROOT / "data" / "talent-trees.json"
 # Phase 5b (P5.B, notes §11): the two site-wide static icon maps.
 CLASS_ICONS = ROOT / "data" / "class-icons.json"
@@ -118,12 +136,31 @@ def head_roster_text(path):
 # meaning are untouched, the five new keys are optional whole blocks. The
 # sub-object key sets below mirror bnet.fetch's extractors exactly, so the
 # sidecar the UI consumes is schema-checked at every level, not just the top.
-CHAR_KEYS = {"status", "bnet", "level", "guild", "activeSpec", "itemLevel",
-             "gear", "progress", "achievementPoints", "fetchedAt",
-             "stats", "talents", "professions", "reputations", "media",
-             # Phase 4a (notes §10): race/class identity off the profile payload, plus
-             # the class icon. ADDITIVE again — nothing above changed its meaning.
-             "race", "class", "classIconUrl", "raceIconUrl"}
+# Schema v3 splits the sidecar record across TWO documents, so the one key set becomes two. Both
+# mirror ``bnet.artifacts.MANIFEST_ROW_KEYS`` / ``DETAIL_DOC_KEYS`` — and
+# tools/tests/test_sidecar_v3.py asserts they agree, for the same reason the map-entry mirror is
+# asserted: a copy free to drift is a check that quietly stops meaning anything.
+#
+#   MANIFEST_KEYS  — ``data/character-data.json``'s ``characters[id]``: what every roster card reads
+#     without a second request. ``detail`` is the pointer, present for an ok row and absent for
+#     every other status.
+#   DETAIL_KEYS    — ``data/character-data/<id>.json``. NO ``status`` (the manifest owns the
+#     lifecycle, and ``js/data.js`` re-pins it after the merge), and none of the manifest fields:
+#     a detail document that carried its own ``level`` would be a second copy free to disagree.
+#
+# ``raceIconUrl`` belongs to neither set on purpose (notes §10: no race media route exists on any
+# namespace, so the sync writes no such key). It is still checked where it would land — a manifest
+# field beside ``classIconUrl`` — and the warning below is what tells a human to widen both files at
+# once if Blizzard ever ships one.
+MANIFEST_KEYS = {"status", "fetchedAt", "level", "itemLevel", "guild", "activeSpec",
+                 "classIconUrl", "race", "class", "detail"}
+DETAIL_KEYS = {"schemaVersion", "id", "bnet", "gear", "progress", "achievementPoints",
+               "stats", "talents", "professions", "reputations", "media"}
+# The keys the manifest owns and a detail document must therefore never carry. Spelled out rather
+# than computed as ``MANIFEST_KEYS - {detail}`` because this is the list that makes a torn or
+# hand-merged document visible: a detail file that grew a ``status`` re-lifecycles a row the
+# reviewer marked needs_review in every browser that opens it.
+DETAIL_FORBIDDEN_KEYS = MANIFEST_KEYS | {"raceIconUrl"}
 BNET_KEYS = {"name", "surname", "href"}
 GEAR_KEYS = {"slot", "name", "ilvl", "iconUrl",
              "itemId", "quality", "itemClass", "itemSubclass", "enchants", "stats"}
@@ -200,19 +237,28 @@ ICON_URL_RE = re.compile(r"^https://render\.worldofwarcraft\.com/")
 ARTIFACT_HOSTS = {"us.api.blizzard.com", "us.battle.net", "render.worldofwarcraft.com"}
 PROFILE_HREF_RE = re.compile(r"^https://us\.api\.blizzard\.com/profile/wow/character/[^/?]+/?(\?.*)?$")
 TOKEN_LITERAL_RE = re.compile(r"(?:Basic|Bearer)\s+(?!\$|\{\{|f\"|f')[A-Za-z0-9+/=_-]{20,}")
-# TEMPORARY (2026-11-14) — raise, do not remove: this tripwire stays.
+# --- artifact budgets (schema v3: per file, not one ceiling over a growing document) ---------
+# The single 1 MiB ceiling this replaces was raised twice from a 500 KiB number with no recorded
+# rationale, and organic growth is what outgrew it: one resolved character costs ~26 KB of sidecar,
+# the run of 2026-11-14 produced 529,495 B for 17 resolved characters, and the roster is 35 rows —
+# so a whole-guild budget is crossed by the guild getting bigger, which is a capacity question, not
+# a poisoning one. The split turns it back into a per-file question, and every number below is
+# quoted against the tree this gate ships with (35 roster rows, 17 ok rows, 2026-11-15):
 #
-# The 500 KiB number has no recorded rationale (unlike MAX_ICON_MAP_BYTES, which says
-# "generous by design", and MAX_TREES_BYTES, which carries its observed size). Measured growth is
-# what broke it: one resolved character costs ~31 KB of sidecar, the run of 2026-11-14 produced
-# 529,495 B for 17 resolved characters, and the roster is 35 rows — so the ceiling was crossed at
-# ~16 resolutions by organic growth, not by a poisoned artifact. Transfer is unaffected either way
-# (GitHub Pages serves this file gzipped at ~36 KB).
+#   manifest           9,966 B measured  → budget 128 KiB  (~13× headroom; gzips to 1,178 B)
+#   largest detail    41,138 B measured  → budget  96 KiB  (~2.3×; gear+reputations is the fat one)
+#   detail directory 446,659 B / 17 files → budget   4 MiB  (~9× at today's ok-row count)
+#   map               12,879 B measured  → budget 128 KiB  (~10×; it is one row per roster id)
 #
-# The number goes back DOWN with the sidecar split (per-character files + a small manifest), which
-# replaces "one file that grows with the guild" with a per-file budget. Until then this is the
-# only thing standing between a runaway write and a committed 5 MB sidecar.
-MAX_ARTIFACT_BYTES = 1024 * 1024
+# Each budget is therefore ~2× or more above what the roster can produce today and 1–2 orders below
+# what a runaway write would (a per-character blob of the raw payload is ~200 KB BEFORE the
+# RAW_BLOB_KEYS check below catches it, and 35 of them blow the directory budget as well). A number
+# an ok row crosses on its own is a finding about one character; a directory budget crossed is a
+# finding about the run. Both fail the gate.
+MAX_MANIFEST_BYTES = 128 * 1024
+MAX_DETAIL_BYTES = 96 * 1024
+MAX_DETAIL_DIR_BYTES = 4 * 1024 * 1024
+MAX_MAP_BYTES = 128 * 1024
 
 
 # --- Phase B: the render-suffix swap, read from bnet.config, not copied ----------
@@ -543,6 +589,172 @@ CLASS_VOCAB = js_object_keys(read(ROOT / "js" / "util.js"), "CLASS_COLORS")
 RACE_VOCAB = js_object_keys(read(ROOT / "js" / "editchar.js"), "FOREVER_RACE_CLASSES")
 
 
+def detail_ref_for(rid):
+    """The one detail-pointer rule, read as data: ``character-data/<this row's id>.json``.
+
+    Built from the directory name and the row's own id and from nothing else, so it cannot be
+    written as ``..``, ``%2e%2e``, a backslash path, an absolute URL or somebody else's filename —
+    the comparison is against a value this script constructed, never against the authored string.
+    It is the read-side mirror of ``bnet.artifacts.detail_ref`` and of js/data.js's
+    ``characterDetailPath``; ``DETAIL_DIR_NAME`` is pinned to ``bnet/config.py`` below so the three
+    cannot drift apart.
+    """
+    return f"{DETAIL_DIR_NAME}/{rid}.json"
+
+
+
+def check_detail_document(rid, doc):
+    """Every per-character content rule, run against ONE schema-v3 detail document.
+
+    This is the block that used to sit inside the ``characters`` loop over the single v2 sidecar,
+    moved whole: gear item keys, the T1.1 tooltip fields, the stats blocks, talent groups,
+    professions with their tiers and recipes, reputations with their standings, the media block and
+    its derived full render — same rules, same host checks, same omissions. Relocation, not
+    relaxation: what changed is WHERE it reads (``data/character-data/<id>.json`` instead of a key
+    of one growing document) and the label each finding carries (``detail <id>`` instead of
+    ``data entry <id>``), so a failing character names the file a reviewer has to open.
+
+    The nine manifest-owned fields (``status``, ``fetchedAt``, ``level``, ``itemLevel``, ``guild``,
+    ``activeSpec``, ``classIconUrl``, ``race``, ``class``) are NOT checked here: they are gated on
+    the manifest row, and a detail document that grew one is refused by ``DETAIL_FORBIDDEN_KEYS``
+    rather than by a second copy that is free to disagree with the first.
+    """
+    bnet = doc.get("bnet")
+    check(isinstance(bnet, dict) and set(bnet) <= BNET_KEYS and bool(bnet.get("href")),
+          f"detail {rid} (ok) has a normalized bnet identity")
+    gear = doc.get("gear")
+    check(isinstance(gear, list), f"detail {rid} (ok) gear is a list")
+    for item in gear or []:
+        if not isinstance(item, dict) or not set(item) <= GEAR_KEYS:
+            check(False, f"detail {rid} gear item carries only the v2 keys "
+                         f"plus the T1.1 tooltip fields")
+            continue
+        icon = item.get("iconUrl")
+        # null is the documented outcome when an item-media doc 404s
+        # (notes §8: single reference-doc failures are non-fatal). A value
+        # off the render host is H2: a persisted attacker URL would be
+        # loaded by every visitor's browser and re-fetched nightly.
+        check(icon is None or (isinstance(icon, str) and ICON_URL_RE.match(icon)),
+              f"detail {rid} gear iconUrl matches ^https://render\\.worldofwarcraft\\.com/ or null")
+        # T1.1 tooltip fields (notes §9.4): id/quality stay scalar, class
+        # references are {id, name}, enchants are strings, stats carry the
+        # RGBA display colour verbatim. No gem/socket keys exist anywhere
+        # (amendment 2), so none may appear.
+        check(item.get("itemId") is None or (isinstance(item.get("itemId"), int)
+              and not isinstance(item.get("itemId"), bool)),
+              f"detail {rid} gear itemId is null or an int")
+        check(item.get("quality") is None or isinstance(item.get("quality"), str),
+              f"detail {rid} gear quality is null or a string enum")
+        for ref_key in ("itemClass", "itemSubclass"):
+            ref = item.get(ref_key)
+            check(ref is None or (isinstance(ref, dict) and set(ref) <= ID_NAME_KEYS),
+                  f"detail {rid} gear {ref_key} is null or {{id, name}}")
+        enchants = item.get("enchants")
+        check(isinstance(enchants, list) and all(isinstance(x, str) for x in enchants),
+              f"detail {rid} gear enchants is a list of strings")
+        gear_stats = item.get("stats") or []
+        check(all(isinstance(s, dict) and set(s) <= GEAR_STAT_KEYS for s in gear_stats),
+              f"detail {rid} gear stats carry only value/displayString/isEquipBonus/color")
+        check(all(s.get("color") is None or (isinstance(s.get("color"), dict) and set(s["color"]) <= RGBA_KEYS)
+                  for s in gear_stats if isinstance(s, dict)),
+              f"detail {rid} gear stat colors are null or RGBA")
+    progress = doc.get("progress")
+    if progress is not None:
+        check(isinstance(progress, dict) and set(progress) <= PROGRESS_KEYS and bool(progress),
+              f"detail {rid} progress only has data-bearing keys (omit-when-empty)")
+    # --- Phase 1 additive blocks (T1.2–T1.5) ------------------------- #
+    stats_block = doc.get("stats")
+    if stats_block is not None:
+        check(isinstance(stats_block, dict) and bool(stats_block),
+              f"detail {rid} stats is a non-empty object when present")
+        bad_stats = sorted(
+            key for key, value in (stats_block or {}).items()
+            if not ((isinstance(value, (int, float)) and not isinstance(value, bool))
+                    or (isinstance(value, dict) and bool(value) and set(value) <= STAT_VALUE_KEYS)))
+        check(not bad_stats,
+              f"detail {rid} stats values are numbers or normalized groups (bad: {bad_stats[:5]})")
+    talents_block = doc.get("talents")
+    if talents_block is not None:
+        check(isinstance(talents_block, list) and bool(talents_block),
+              f"detail {rid} talents is a non-empty list when present")
+        for spec_group in talents_block or []:
+            check(isinstance(spec_group, dict) and set(spec_group) <= TALENT_SPEC_KEYS,
+                  f"detail {rid} talent group carries only specId/specName/spentPoints/talents")
+            selected = (spec_group.get("talents") or []) if isinstance(spec_group, dict) else []
+            check(all(isinstance(t, dict) and set(t) <= TALENT_RANK_KEYS for t in selected),
+                  f"detail {rid} selected talents carry only the T1.3 fields")
+            check(all(t.get("iconUrl") is None
+                      or (isinstance(t.get("iconUrl"), str) and ICON_URL_RE.match(t["iconUrl"]))
+                      for t in selected if isinstance(t, dict)),
+                  f"detail {rid} selected-talent iconUrls are null or on the render host")
+    professions = doc.get("professions")
+    if professions is not None:
+        check(isinstance(professions, dict) and set(professions) <= PROFESSIONS_KEYS
+              and bool(professions.get("primaries") or professions.get("secondaries")),
+              f"detail {rid} professions has only primaries/secondaries and carries data")
+        for side in ((professions or {}).get("primaries") or []) + ((professions or {}).get("secondaries") or []):
+            check(isinstance(side, dict) and set(side) <= PROFESSION_KEYS,
+                  f"detail {rid} profession carries only id/name/tiers/iconUrl")
+            # Phase 4a (notes §10): the icon is a response-derived URL like
+            # every other one in this artifact, so null (doc 404) or the
+            # render host, never the attacker's string (H2).
+            if isinstance(side, dict):
+                prof_icon = side.get("iconUrl")
+                check(prof_icon is None or (isinstance(prof_icon, str) and ICON_URL_RE.match(prof_icon)),
+                      f"detail {rid} profession iconUrl is null or matches "
+                      f"^https://render\\.worldofwarcraft\\.com/")
+            for tier in (side.get("tiers") or []) if isinstance(side, dict) else []:
+                check(isinstance(tier, dict) and set(tier) <= PROFESSION_TIER_KEYS,
+                      f"detail {rid} profession tier carries only the T1.4 fields")
+                for recipe in (tier.get("knownRecipes") or []) if isinstance(tier, dict) else []:
+                    check(isinstance(recipe, dict) and set(recipe) <= RECIPE_KEYS,
+                          f"detail {rid} known recipe carries only id/name")
+    reputations = doc.get("reputations")
+    if reputations is not None:
+        check(isinstance(reputations, list) and bool(reputations),
+              f"detail {rid} reputations is a non-empty list when present")
+        for rep in reputations or []:
+            check(isinstance(rep, dict) and set(rep) <= REPUTATION_KEYS,
+                  f"detail {rid} reputation carries only factionId/factionName/standing")
+            standing = rep.get("standing") if isinstance(rep, dict) else None
+            check(isinstance(standing, dict) and set(standing) == STANDING_KEYS,
+                  f"detail {rid} reputation standing keeps raw/value/max/tier/name")
+    media = doc.get("media")
+    if media is not None:
+        check(isinstance(media, dict) and set(media) <= MEDIA_KEYS,
+              f"detail {rid} media carries only avatar/avatarSd/fullRender "
+              f"(no inset/headshot exist)")
+        for media_key in (MEDIA_KEYS & set(media or {})):
+            media_url = media[media_key]
+            check(media_url is None or (isinstance(media_url, str) and ICON_URL_RE.match(media_url)),
+                  f"detail {rid} media.{media_key} is null or on the render host")
+        # Phase B, read as the convention above says: absent is legal (the row
+        # predates the probe), null is a probed refusal, a URL must be the
+        # render host AND the exact suffix swap of THIS row's avatar. A
+        # fullRender that is not its own avatar's sibling is either a hand-edit
+        # or a sync bug pointing every doll at one character's render.
+        if "fullRender" in media and media["fullRender"] is not None:
+            render_url = media["fullRender"]
+            if not FULL_RENDER_SUFFIX:
+                # ``check`` records and keeps going, so an unguarded
+                # ``render_url.endswith(FULL_RENDER_SUFFIX)`` here would raise TypeError
+                # the moment config.py stops declaring the suffix and take the whole
+                # gate (and with it the Actions step) down instead of reporting the one
+                # thing that broke. The missing constant is its own FAIL below.
+                check(False,
+                      f"detail {rid} media.fullRender could not be suffix-checked: "
+                      "FULL_RENDER_ASSET_SUFFIX is missing from tools/bnet/config.py")
+            else:
+                check(isinstance(render_url, str)
+                      and render_url.endswith(FULL_RENDER_SUFFIX),
+                      f"detail {rid} media.fullRender ends in {FULL_RENDER_SUFFIX!r}")
+                check(isinstance(render_url, str)
+                      and isinstance(media.get("avatar"), str)
+                      and render_url == render_sibling(media["avatar"]),
+                      f"detail {rid} media.fullRender is the suffix swap of its own "
+                      "avatar")
+
+
 def main():
     # --- module sources ------------------------------------------------------ #
     sources = {name: read(PKG / name) for name in PKG_MODULES}
@@ -780,8 +992,14 @@ def main():
             check(entry.get("mappedVia") == "confirmed" and entry.get("note") == "user-confirmed",
                   f"trusted id {rid} ok row is marked confirmed / user-confirmed")
 
-    # --- character-data schema ------------------------------------------------- #
-    check(data_doc.get("schemaVersion") == 2, "data schemaVersion == 2")
+    # --- character-data: the schema v3 MANIFEST -------------------------------- #
+    # The envelope is unchanged from v2 — same four keys, same ``characters`` map keyed by roster id
+    # — and only ``schemaVersion`` moves, because v3 is a layout change: each row keeps the fields it
+    # had and the heavy ones move next door. The map (data/battle-net-map.json) and the roster
+    # (data/characters.json) stay at v2 and are gated at v2 above: bumping them by association would
+    # tell every reader the identity contract changed when it did not.
+    check(data_doc.get("schemaVersion") == 3,
+          "data schemaVersion == 3 (the manifest + data/character-data/ detail split)")
     check(isinstance(data_doc.get("syncedAt"), str) and ISO_RE.match(data_doc["syncedAt"]),
           "data syncedAt is ISO8601 UTC")
     check(set(data_doc) == {"schemaVersion", "syncedAt", "triggeredBy", "characters"},
@@ -795,149 +1013,36 @@ def main():
         return bail()
     for rid, char in characters.items():
         if not isinstance(char, dict):
-            check(False, f"data entry {rid} is an object")
+            check(False, f"manifest row {rid} is an object")
             continue
-        check(set(char) <= CHAR_KEYS, f"data entry {rid} has no unknown keys")
+        check(set(char) <= MANIFEST_KEYS,
+              f"manifest row {rid} carries only the list-view keys "
+              f"(found {sorted(set(char) - MANIFEST_KEYS) or 'none unknown'})")
         status = char.get("status")
-        check(status in STATUS_VOCAB, f"data entry {rid} status '{status}' in vocabulary")
+        check(status in STATUS_VOCAB, f"manifest row {rid} status '{status}' in vocabulary")
         check(isinstance(char.get("fetchedAt"), str) and ISO_RE.match(char["fetchedAt"]),
-              f"data entry {rid} fetchedAt is ISO8601")
+              f"manifest row {rid} fetchedAt is ISO8601")
+        # THE detail-equality rule, and deliberately not a pattern match.
+        #
+        # An ok row's pointer must equal the path derived from THIS row's own id, and a row of any
+        # other status must carry no pointer at all (not null, not ""). Comparing instead of matching
+        # is the whole safety property, and it is one rule with three readers: bnet.artifacts.detail_ref
+        # writes it, js/data.js characterDetailPath rebuilds it and refuses a row whose authored value
+        # disagrees, and this line refuses a committed manifest that does. A shape/regex test cannot be
+        # made airtight (``..`` is trivial to refuse, ``%2e%2e`` and ``a\\..\\x`` are not dot-dot
+        # segments to a naive split while the URL parser walks them out of data/), and no shape test
+        # at all notices a row that points at ANOTHER character's file — which is the interesting
+        # poisoning, because every field in that document is a Blizzard-derived string that renders.
         if status == "ok":
-            bnet = char.get("bnet")
-            check(isinstance(bnet, dict) and set(bnet) <= BNET_KEYS and bool(bnet.get("href")),
-                  f"ok data entry {rid} has a normalized bnet identity")
-            gear = char.get("gear")
-            check(isinstance(gear, list), f"ok data entry {rid} gear is a list")
-            for item in gear or []:
-                if not isinstance(item, dict) or not set(item) <= GEAR_KEYS:
-                    check(False, f"data entry {rid} gear item carries only the v2 keys "
-                                 f"plus the T1.1 tooltip fields")
-                    continue
-                icon = item.get("iconUrl")
-                # null is the documented outcome when an item-media doc 404s
-                # (notes §8: single reference-doc failures are non-fatal). A value
-                # off the render host is H2: a persisted attacker URL would be
-                # loaded by every visitor's browser and re-fetched nightly.
-                check(icon is None or (isinstance(icon, str) and ICON_URL_RE.match(icon)),
-                      f"data entry {rid} gear iconUrl matches ^https://render\\.worldofwarcraft\\.com/ or null")
-                # T1.1 tooltip fields (notes §9.4): id/quality stay scalar, class
-                # references are {id, name}, enchants are strings, stats carry the
-                # RGBA display colour verbatim. No gem/socket keys exist anywhere
-                # (amendment 2), so none may appear.
-                check(item.get("itemId") is None or (isinstance(item.get("itemId"), int)
-                      and not isinstance(item.get("itemId"), bool)),
-                      f"data entry {rid} gear itemId is null or an int")
-                check(item.get("quality") is None or isinstance(item.get("quality"), str),
-                      f"data entry {rid} gear quality is null or a string enum")
-                for ref_key in ("itemClass", "itemSubclass"):
-                    ref = item.get(ref_key)
-                    check(ref is None or (isinstance(ref, dict) and set(ref) <= ID_NAME_KEYS),
-                          f"data entry {rid} gear {ref_key} is null or {{id, name}}")
-                enchants = item.get("enchants")
-                check(isinstance(enchants, list) and all(isinstance(x, str) for x in enchants),
-                      f"data entry {rid} gear enchants is a list of strings")
-                gear_stats = item.get("stats") or []
-                check(all(isinstance(s, dict) and set(s) <= GEAR_STAT_KEYS for s in gear_stats),
-                      f"data entry {rid} gear stats carry only value/displayString/isEquipBonus/color")
-                check(all(s.get("color") is None or (isinstance(s.get("color"), dict) and set(s["color"]) <= RGBA_KEYS)
-                          for s in gear_stats if isinstance(s, dict)),
-                      f"data entry {rid} gear stat colors are null or RGBA")
-            progress = char.get("progress")
-            if progress is not None:
-                check(isinstance(progress, dict) and set(progress) <= PROGRESS_KEYS and bool(progress),
-                      f"data entry {rid} progress only has data-bearing keys (omit-when-empty)")
-            # --- Phase 1 additive blocks (T1.2–T1.5) ------------------------- #
-            stats_block = char.get("stats")
-            if stats_block is not None:
-                check(isinstance(stats_block, dict) and bool(stats_block),
-                      f"data entry {rid} stats is a non-empty object when present")
-                bad_stats = sorted(
-                    key for key, value in (stats_block or {}).items()
-                    if not ((isinstance(value, (int, float)) and not isinstance(value, bool))
-                            or (isinstance(value, dict) and bool(value) and set(value) <= STAT_VALUE_KEYS)))
-                check(not bad_stats,
-                      f"data entry {rid} stats values are numbers or normalized groups (bad: {bad_stats[:5]})")
-            talents_block = char.get("talents")
-            if talents_block is not None:
-                check(isinstance(talents_block, list) and bool(talents_block),
-                      f"data entry {rid} talents is a non-empty list when present")
-                for spec_group in talents_block or []:
-                    check(isinstance(spec_group, dict) and set(spec_group) <= TALENT_SPEC_KEYS,
-                          f"data entry {rid} talent group carries only specId/specName/spentPoints/talents")
-                    selected = (spec_group.get("talents") or []) if isinstance(spec_group, dict) else []
-                    check(all(isinstance(t, dict) and set(t) <= TALENT_RANK_KEYS for t in selected),
-                          f"data entry {rid} selected talents carry only the T1.3 fields")
-                    check(all(t.get("iconUrl") is None
-                              or (isinstance(t.get("iconUrl"), str) and ICON_URL_RE.match(t["iconUrl"]))
-                              for t in selected if isinstance(t, dict)),
-                          f"data entry {rid} selected-talent iconUrls are null or on the render host")
-            professions = char.get("professions")
-            if professions is not None:
-                check(isinstance(professions, dict) and set(professions) <= PROFESSIONS_KEYS
-                      and bool(professions.get("primaries") or professions.get("secondaries")),
-                      f"data entry {rid} professions has only primaries/secondaries and carries data")
-                for side in ((professions or {}).get("primaries") or []) + ((professions or {}).get("secondaries") or []):
-                    check(isinstance(side, dict) and set(side) <= PROFESSION_KEYS,
-                          f"data entry {rid} profession carries only id/name/tiers/iconUrl")
-                    # Phase 4a (notes §10): the icon is a response-derived URL like
-                    # every other one in this artifact, so null (doc 404) or the
-                    # render host, never the attacker's string (H2).
-                    if isinstance(side, dict):
-                        prof_icon = side.get("iconUrl")
-                        check(prof_icon is None or (isinstance(prof_icon, str) and ICON_URL_RE.match(prof_icon)),
-                              f"data entry {rid} profession iconUrl is null or matches "
-                              f"^https://render\\.worldofwarcraft\\.com/")
-                    for tier in (side.get("tiers") or []) if isinstance(side, dict) else []:
-                        check(isinstance(tier, dict) and set(tier) <= PROFESSION_TIER_KEYS,
-                              f"data entry {rid} profession tier carries only the T1.4 fields")
-                        for recipe in (tier.get("knownRecipes") or []) if isinstance(tier, dict) else []:
-                            check(isinstance(recipe, dict) and set(recipe) <= RECIPE_KEYS,
-                                  f"data entry {rid} known recipe carries only id/name")
-            reputations = char.get("reputations")
-            if reputations is not None:
-                check(isinstance(reputations, list) and bool(reputations),
-                      f"data entry {rid} reputations is a non-empty list when present")
-                for rep in reputations or []:
-                    check(isinstance(rep, dict) and set(rep) <= REPUTATION_KEYS,
-                          f"data entry {rid} reputation carries only factionId/factionName/standing")
-                    standing = rep.get("standing") if isinstance(rep, dict) else None
-                    check(isinstance(standing, dict) and set(standing) == STANDING_KEYS,
-                          f"data entry {rid} reputation standing keeps raw/value/max/tier/name")
-            media = char.get("media")
-            if media is not None:
-                check(isinstance(media, dict) and set(media) <= MEDIA_KEYS,
-                      f"data entry {rid} media carries only avatar/avatarSd/fullRender "
-                      f"(no inset/headshot exist)")
-                for media_key in (MEDIA_KEYS & set(media or {})):
-                    media_url = media[media_key]
-                    check(media_url is None or (isinstance(media_url, str) and ICON_URL_RE.match(media_url)),
-                          f"data entry {rid} media.{media_key} is null or on the render host")
-                # Phase B, read as the convention above says: absent is legal (the row
-                # predates the probe), null is a probed refusal, a URL must be the
-                # render host AND the exact suffix swap of THIS row's avatar. A
-                # fullRender that is not its own avatar's sibling is either a hand-edit
-                # or a sync bug pointing every doll at one character's render.
-                if "fullRender" in media and media["fullRender"] is not None:
-                    render_url = media["fullRender"]
-                    if not FULL_RENDER_SUFFIX:
-                        # ``check`` records and keeps going, so an unguarded
-                        # ``render_url.endswith(FULL_RENDER_SUFFIX)`` here would raise TypeError
-                        # the moment config.py stops declaring the suffix and take the whole
-                        # gate (and with it the Actions step) down instead of reporting the one
-                        # thing that broke. The missing constant is its own FAIL below.
-                        check(False,
-                              f"data entry {rid} media.fullRender could not be suffix-checked: "
-                              "FULL_RENDER_ASSET_SUFFIX is missing from tools/bnet/config.py")
-                    else:
-                        check(isinstance(render_url, str)
-                              and render_url.endswith(FULL_RENDER_SUFFIX),
-                              f"data entry {rid} media.fullRender ends in {FULL_RENDER_SUFFIX!r}")
-                        check(isinstance(render_url, str)
-                              and isinstance(media.get("avatar"), str)
-                              and render_url == render_sibling(media["avatar"]),
-                              f"data entry {rid} media.fullRender is the suffix swap of its own "
-                              "avatar")
-
+            check(char.get("detail") == detail_ref_for(rid),
+                  f"manifest row {rid} (ok) points at exactly its own detail file "
+                  f"({char.get('detail')!r} != {detail_ref_for(rid)!r})")
+        else:
+            check("detail" not in char,
+                  f"manifest row {rid} ({status}) carries no detail pointer — a row that was never "
+                  f"enriched has no detail document to name, and a null or empty string is a value a "
+                  f"reader would still try to fetch (found {char.get('detail')!r})")
+        if status == "ok":
             # --- Phase 4a additive keys (notes §10) -------------------------- #
             # race/class are read off the already-fetched profile (§3.1), so a row
             # that carries one must carry the complete reference: a half-populated
@@ -953,14 +1058,14 @@ def main():
                 check(isinstance(ref, dict) and set(ref) == ID_NAME_KEYS
                       and isinstance(ref.get("id"), int) and not isinstance(ref.get("id"), bool)
                       and isinstance(ref.get("name"), str) and bool(ref["name"].strip()),
-                      f"data entry {rid} {id_key} is {{id: int, name: non-empty str}} when present")
+                      f"manifest row {rid} {id_key} is {{id: int, name: non-empty str}} when present")
                 name = ref.get("name") if isinstance(ref, dict) else None
                 if isinstance(name, str) and name.strip():
                     check_soft(
                         name in vocab,
-                        f"data entry {rid} {id_key} name {name!r} is inside the frozen "
+                        f"manifest row {rid} {id_key} name {name!r} is inside the frozen "
                         f"{vocab_name} vocabulary (pi-warden)",
-                        warn_msg=f"data entry {rid} {id_key} name {name!r} is OUTSIDE the frozen "
+                        warn_msg=f"manifest row {rid} {id_key} name {name!r} is OUTSIDE the frozen "
                                  f"{vocab_name} vocabulary (pi-warden): the UI loses its colour and "
                                  f"filter for it, so this needs a deliberate roster change, not a "
                                  f"silent sync edit")
@@ -973,24 +1078,112 @@ def main():
                 if icon_key in char:
                     icon_value = char[icon_key]
                     check(icon_value is None or (isinstance(icon_value, str) and ICON_URL_RE.match(icon_value)),
-                          f"data entry {rid} {icon_key} is null or on the render host")
+                          f"manifest row {rid} {icon_key} is null or on the render host")
             check_soft("raceIconUrl" not in char,
-                       f"data entry {rid} carries no raceIconUrl, as §10 requires",
-                       warn_msg=f"data entry {rid} carries a raceIconUrl although §10 found no race "
+                       f"manifest row {rid} carries no raceIconUrl, as §10 requires",
+                       warn_msg=f"manifest row {rid} carries a raceIconUrl although §10 found no race "
                                 f"media route on any namespace: re-run the §10 sweep, and only then "
                                 f"teach bnet.fetch to write it")
-    blob_keys = (set(walk_keys(characters, set()) or set()) if characters else set())
+    # --- the detail directory: coverage, orphans, envelopes --------------------- #
+    # A manifest row is a PROMISE that a file exists and is about that character, so the directory is
+    # gated as part of the artifact rather than as a filesystem accident. Three failure shapes, all of
+    # them writes that can genuinely end up committed:
+    #
+    #   * a pointer with no file (a run that died between the manifest and its detail files, or a
+    #     deploy that copied data/*.json and missed the subdirectory — the exact depth-1 glob
+    #     .github/workflows/pages.yml used before this split);
+    #   * an orphan: a file no manifest row names. That is a torn write by definition — the nightly
+    #     prunes the detail file of an id it removed or demoted in the same commit that rewrites the
+    #     manifest — and it is also the shape of a hand-dropped file. Either way somebody's gear list
+    #     is being served to anyone who guesses the URL, under a manifest that says nothing about it;
+    #   * a document whose own ``id`` disagrees with its filename, i.e. the file the row points at is
+    #     not about that character.
+    detail_docs, detail_texts = {}, {}
+    named = {rid for rid, row in characters.items()
+             if isinstance(row, dict) and isinstance(row.get("detail"), str)}
+    on_disk = sorted(DETAIL_DIR.glob("*.json")) if DETAIL_DIR.is_dir() else []
+    check(DETAIL_DIR.is_dir() or not named,
+          f"{DETAIL_DIR.relative_to(ROOT)} exists (every manifest row that names a detail file needs it)")
+    orphans = [path.name for path in on_disk if path.stem not in named]
+    check(not orphans,
+          f"data/character-data/ holds no file that is not named by exactly one manifest row "
+          f"(orphan = torn write: {orphans[:5]}); the nightly prunes these in the same commit")
+    check(sorted(p.stem for p in on_disk) == sorted(named),
+          f"every manifest detail pointer has a file and every file has a pointer "
+          f"(pointers={len(named)} files={len(on_disk)}; "
+          f"missing={sorted(named - {p.stem for p in on_disk})[:5]} "
+          f"extra={sorted({p.stem for p in on_disk} - named)[:5]})")
+    for rid in sorted(named):
+        path = DETAIL_DIR / f"{rid}.json"
+        text = read(path)
+        rel = path.relative_to(ROOT)
+        check(text is not None, f"detail {rid}: the file its manifest row names ({rel}) exists")
+        if text is None:
+            continue
+        try:
+            doc = json.loads(text)
+        except ValueError as exc:
+            check(False, f"detail {rid}: parses as JSON: {exc}")
+            continue
+        check(isinstance(doc, dict), f"detail {rid}: is a JSON object")
+        if not isinstance(doc, dict):
+            continue
+        detail_texts[rid] = text
+        detail_docs[rid] = doc
+        check(doc.get("schemaVersion") == 3,
+              f"detail {rid}: schemaVersion == 3 ({doc.get('schemaVersion')!r})")
+        check(str(doc.get("id")) == str(rid),
+              f"detail {rid}: its own id equals the roster id and the filename stem "
+              f"(found {doc.get('id')!r})")
+        check(set(doc) <= DETAIL_KEYS,
+              f"detail {rid}: keys are exactly the detail halves of the sidecar record "
+              f"(found {sorted(set(doc) - DETAIL_KEYS) or 'none unknown'})")
+        # A detail document that carries lifecycle or list-view fields is a SECOND copy of a value the
+        # manifest owns — and the browser merges detail over the row, so the copy is what would show.
+        bleed = sorted(set(doc) & DETAIL_FORBIDDEN_KEYS)
+        check("status" not in doc,
+              f"detail {rid}: carries NO status — the manifest row is what decides a row's lifecycle, "
+              f"and js/data.js re-pins it after the merge for exactly this reason")
+        check(not bleed,
+              f"detail {rid}: carries none of the manifest-owned fields {sorted(DETAIL_FORBIDDEN_KEYS)} "
+              f"(found {bleed})")
+    for rid, doc in detail_docs.items():
+        check_detail_document(rid, doc)
+
+    # Raw-blob rejection now spans BOTH halves: the manifest and every detail document. Walking the
+    # parsed documents rather than the manifest alone is what keeps the rule honest — every key that
+    # used to be scanned lives in a detail file today.
+    blob_keys = set()
+    walk_keys(characters, blob_keys)
+    for doc in detail_docs.values():
+        walk_keys(doc, blob_keys)
     offenders = blob_keys & RAW_BLOB_KEYS
     check(not offenders, f"no raw Blizzard payload keys leaked into the sidecar (found: {sorted(offenders)})")
     # H2: no URL of any kind may reach an artifact unless its host is ours. This
-    # scans the raw text, so it also catches a foreign URL smuggled into a note.
-    for label, text in (("data/battle-net-map.json", map_text), ("data/character-data.json", data_text)):
+    # scans the raw text, so it also catches a foreign URL smuggled into a note —
+    # over the map, the manifest and EVERY detail file: the split multiplied the
+    # committed surfaces, and a scan that only read the manifest would wave through
+    # a beacon parked in one character's reputation name.
+    for label, text in [("data/battle-net-map.json", map_text),
+                        ("data/character-data.json", data_text)] + [
+                           (f"data/character-data/{rid}.json", detail_texts[rid])
+                           for rid in sorted(detail_texts)]:
         foreign = sorted({u for u in re.findall(r"https?://[^\s\"'<>\\]+", text)
                           if urlparse(u).netloc not in ARTIFACT_HOSTS})
         check(not foreign, f"{label} contains no non-Blizzard URL (found: {foreign[:3]})")
-    check(len(map_text) < MAX_ARTIFACT_BYTES and len(data_text) < MAX_ARTIFACT_BYTES,
-          f"artifacts are under {MAX_ARTIFACT_BYTES} bytes "
-          f"(map={len(map_text)}B data={len(data_text)}B)")
+    # Per-file budgets (see MAX_MANIFEST_BYTES for the measured numbers behind each).
+    check(len(map_text) < MAX_MAP_BYTES,
+          f"data/battle-net-map.json is under {MAX_MAP_BYTES} bytes (found {len(map_text)}B)")
+    check(len(data_text) < MAX_MANIFEST_BYTES,
+          f"data/character-data.json (manifest) is under {MAX_MANIFEST_BYTES} bytes "
+          f"(found {len(data_text)}B)")
+    for rid in sorted(detail_texts):
+        check(len(detail_texts[rid]) < MAX_DETAIL_BYTES,
+              f"detail {rid} is under {MAX_DETAIL_BYTES} bytes (found {len(detail_texts[rid])}B)")
+    detail_dir_bytes = sum(len(t) for t in detail_texts.values())
+    check(detail_dir_bytes < MAX_DETAIL_DIR_BYTES,
+          f"data/character-data/ totals under {MAX_DETAIL_DIR_BYTES} bytes across "
+          f"{len(detail_texts)} file(s) (found {detail_dir_bytes}B)")
 
     # --- data/talent-trees.json (T1.3) -------------------------------------- #
     # Shared spec-tree geometry, version-pinned to the static namespace it was
@@ -1178,6 +1371,9 @@ def main():
     scanned.update({".github/workflows/sync-bnet.yml": read(WORKFLOW),
                     ".github/workflows/pages.yml": read(PAGES_WORKFLOW),
                     "tools/migrate_v2.py": read(ROOT / "tools" / "migrate_v2.py"),
+                    # The v3 migration is committed tooling that touches the same artifacts, so it
+                    # is scanned like the writer it reuses (the package itself is above).
+                    "tools/migrate_v3.py": read(ROOT / "tools" / "migrate_v3.py"),
                     "data/guild-config.json": guild_config_text,
                     "data/characters.json": roster_text,
                     "data/battle-net-map.json": map_text,
@@ -1186,7 +1382,13 @@ def main():
                     # Phase 5b: both icon maps are committed, publicly served, and
                     # written from response data, so they join every scan below.
                     "data/class-icons.json": class_icons_text,
-                    "data/profession-icons.json": profession_icons_text})
+                    "data/profession-icons.json": profession_icons_text,
+                    # Schema v3: every detail document is its own committed, publicly served file,
+                    # written from the same response data as the manifest row it belongs to. One
+                    # entry per file (not one blob), so a hit names the character rather than a
+                    # directory — and a file that vanished between the coverage rules above and here
+                    # reads as a missing-text failure below rather than silently skipping.
+                    **{f"data/character-data/{rid}.json": detail_texts[rid] for rid in sorted(detail_texts)}})
     for label, text in scanned.items():
         check(text is not None, f"{label} exists for the secret scan")
         if text is None:
@@ -1261,15 +1463,49 @@ def main():
               f"the sync never commits the guild scope ({add_lines})")
         # …and an allowlist is only an allowlist if it stages nothing broader: `git add -A` or
         # `git add data/` satisfies the line above and commits the human's setting from a nightly run.
+        # Schema v3 turns one sidecar file into a manifest PLUS a directory, and a DELETION is now
+        # part of publishing it: when an id is demoted out of ``ok`` (or leaves the roster),
+        # bnet.artifacts prunes its detail file in the same write, and the commit has to carry that
+        # removal. A plain ``git add <dir>`` stages new and modified files but NOT deletions, so main
+        # would keep serving the old gear list under a manifest that no longer names it — the orphan
+        # the directory rule above fails the tree for. So exactly one path is staged with ``-A``, and
+        # it is staged with its OWN targets, so the flag can only ever reach that directory.
+        detail_adds = [ln for ln in add_lines
+                       if "-A" in ln.split() and "data/character-data" in ln]
+        check(bool(detail_adds),
+              f"the commit step stages the detail directory with -A, so a pruned detail file is "
+              f"part of the publication ({add_lines})")
+        if detail_adds:
+            # …and the WHY sits next to the flag, because ``-A`` in a workflow that holds a secret is
+            # exactly the line a later reviewer would otherwise widen to ``git add -A .``.
+            lines = wf.splitlines()
+            index = lines.index(detail_adds[0])
+            comment_block = []
+            for previous in reversed(lines[:index]):
+                if previous.lstrip().startswith("#"):
+                    comment_block.append(previous.strip())
+                elif previous.strip():
+                    break
+            reason = " ".join(reversed(comment_block)).lower()
+            check("prun" in reason or "delet" in reason,
+                  "the -A on the detail directory carries a comment saying why (a pruned detail "
+                  f"file is part of the publication); nearest comment: {reason[:160]!r}")
         broad = []
         for ln in add_lines:
             args = ln.split("git add", 1)[1].split("#")[0].split()
             flags = [tok for tok in args if tok.startswith("-")]
             targets = [tok for tok in args if not tok.startswith('-')]
-            if any(f in ('-A', '--all') for f in flags) or any(
-                    t in (".", "data") or t.endswith("/") for t in targets):
+            # A directory-wide flag is allowed for precisely the detail directory and its manifest,
+            # and for nothing else: no bare ``-A``, no ``-A .``, no ``-A data/``, and no target that
+            # could reach the human-owned guild-config.json or a UI file.
+            permitted_all_scope = bool(targets) and all(
+                t in ("data/character-data", "data/character-data.json") for t in targets)
+            if any(t in (".", "data") or t.endswith("/") for t in targets):
                 broad.append(ln.strip())
-        check(not broad, f"the commit step stages explicit files only, no directory-wide add ({broad})")
+            elif any(f in ("-A", "--all") for f in flags) and not permitted_all_scope:
+                broad.append(ln.strip())
+        check(not broad, f"the commit step stages explicit files only (the detail directory's -A "
+                         f"excepted), no directory-wide add ({broad})")
     # Who may touch the path at all. A substring test for ".write" on the same line would pass
     # json.dump(doc, open(config.GUILD_CONFIG_FILE, "w")) and would pass p = config.GUILD_CONFIG_FILE
     # on one line followed by p.write_text(...) on the next — i.e. it would pass the two things it
@@ -1493,8 +1729,43 @@ def main():
 
     # --- single writer of both artifacts --------------------------------------------- #
     writers = [n for n in PKG_MODULES if n != "artifacts.py"
-               and ("config.MAP_FILE" in sources[n] or "config.DATA_FILE" in sources[n])]
-    check(not writers, f"artifacts.py is the only module that writes the data artifacts (writers: {writers})")
+               and ("config.MAP_FILE" in sources[n] or "config.DATA_FILE" in sources[n]
+                    or "config.DETAIL_DIR" in sources[n])]
+    check(not writers,
+          f"artifacts.py is the only module that writes the data artifacts, the manifest included "
+          f"(writers: {writers})")
+    # One rule, three readers, ONE name: bnet.config owns the detail directory, the manifest's
+    # ``detail`` strings and js/data.js's rebuild all come from it, and a rename that reaches two of
+    # the three is a manifest of 404s. The gate therefore pins the constant, the path built from it,
+    # the string the writer emits, and the reader's copy of the directory name.
+    check(re.search(r'DETAIL_DIR_NAME\s*=\s*"character-data"', CFG) is not None
+          and re.search(r"DETAIL_DIR\s*=\s*DATA_DIR\s*/\s*DETAIL_DIR_NAME", CFG) is not None
+          and re.search(r'DATA_FILE\s*=\s*DATA_DIR\s*/\s*f"\{DETAIL_DIR_NAME\}\.json"', CFG) is not None,
+          "config.py declares DETAIL_DIR, DETAIL_DIR_NAME and DATA_FILE from ONE constant "
+          "(the manifest path and the directory it names cannot be moved separately)")
+    check(DETAIL_DIR_NAME == "character-data" and DETAIL_DIR.name == DETAIL_DIR_NAME,
+          f"this gate reads the detail directory the package writes ({DETAIL_DIR_NAME!r})")
+    # The id is used as a FILESYSTEM path component as well as a URL, and roster.py only requires a
+    # non-empty string, so the writer checks the charset instead of trusting the auto-adder's habit of
+    # 13 digits. Pinned here, and pinned equal to the reader's charset below: a guard on one side only
+    # is a manifest the writer emits and the browser refuses (or the reverse).
+    check('def detail_ref(rid):' in ARTIFACTS
+          and 'DETAIL_ID_RE = re.compile(r"[A-Za-z0-9_-]{1,64}")' in ARTIFACTS
+          and 'if not DETAIL_ID_RE.fullmatch(text)' in ARTIFACTS
+          and 'f"{config.DETAIL_DIR_NAME}/{text}.json"' in ARTIFACTS,
+          "bnet.artifacts owns the detail-pointer string: built from config's directory name and a "
+          "roster id that must match a single safe path segment (never caller-supplied text, never an "
+          "unvalidated id as a path component)")
+    js_detail = read(ROOT / "js" / "data.js") or ""
+    check("const DETAIL_SUBDIR = 'character-data';" in js_detail
+          and "DETAIL_DIR + DETAIL_SUBDIR + '/' + encodeURIComponent(String(id)) + '.json'" in js_detail,
+          "js/data.js rebuilds the same detail path from the same directory name the writer uses, "
+          "and refuses a manifest value that disagrees with the id-derived path")
+    js_id_class = re.search(r"\[A-Za-z0-9_-\]\{(\d+),(\d+)\}", js_detail)
+    check(js_id_class is not None
+          and js_id_class.group(0) == re.search(r"\[A-Za-z0-9_-\]\{(\d+),(\d+)\}", ARTIFACTS).group(0),
+          "the writer's id charset and js/data.js's accepted detail basename are the SAME class "
+          "(a guard on one side only is a manifest the writer emits and the browser refuses)")
     check("def write_json(path, payload):" in ARTIFACTS and "http.redact(payload)" in ARTIFACTS,
           "the artifact writer passes every value through redact() before it hits disk")
 
@@ -1618,9 +1889,25 @@ def main():
         copied = [ln.strip() for ln in pages.splitlines() if re.match(r"^\s*cp ", ln)]
         check(bool(copied)
               and all(re.search(r"(index\.html|css/\*\.css|js/\*\.js|data/\*\.json"
-                                r"|assets/silhouettes/\*\.svg) _site/", ln) for ln in copied),
-              f"the bundle copies only index.html, css/, js/, data/ and "
+                                r"|assets/silhouettes/\*\.svg"
+                                r"|-r data/character-data _site/data)", ln) for ln in copied),
+              f"the bundle copies only index.html, css/, js/, data/, data/character-data/ and "
               f"assets/silhouettes/*.svg ({copied})")
+        # Schema v3, and the one failure mode the allow-list above cannot catch on its own:
+        # ``cp data/*.json _site/data/`` is a DEPTH-1 glob. It copies the manifest and stops — a
+        # directory called ``character-data`` is not a ``*.json`` — so without the explicit recursive
+        # copy the site would deploy a manifest whose every ``detail`` pointer 404s, and every modal
+        # would silently lose its gear, stats, talents, professions, reputations and renders. No gate
+        # but this one notices: the manifest alone is valid, the site alone is servable, and the
+        # degradation is designed to be quiet.
+        check(any(re.search(r"cp\s+-r\s+data/character-data\s+_site/data", ln) for ln in copied),
+              f"pages.yml copies the per-character detail directory (the depth-1 data/*.json glob "
+              f"cannot reach it) ({copied})")
+        # The listing that publishes the bundle has to stay meaningful under the split: it is the only
+        # place a reader of the deploy log can see WHICH detail files shipped, which is what an
+        # orphan-or-missing report is argued from.
+        check(re.search(r"find\s+_site\s+-type\s+f\s*\|\s*sort", pages) is not None,
+              "pages.yml still lists the assembled bundle's files (find _site -type f | sort)")
         for forbidden in ("docs", "tools", ".pi", "armory-tasks.md", "pi-warden.md"):
             check(not re.search(rf"cp[^\n]*{re.escape(forbidden)}", pages),
                   f"the bundle never publishes the maintainer-facing {forbidden}/")

@@ -5,23 +5,34 @@ Provenance: ``write_json``, the fixed map-entry field set (``map_entry`` /
 ``candidates`` list, the ``ambiguous`` verdict and the ``triggeredBy`` provenance
 key are the Phase 2 lifecycle additions of docs/refactor-design.md §3.
 
-This module is the ONLY writer of ``data/battle-net-map.json`` and
-``data/character-data.json``, of the roster it appends pending rows to
+This module is the ONLY writer of ``data/battle-net-map.json``, of the schema-v3 character
+sidecar (``data/character-data.json`` — the manifest — and every ``data/character-data/<id>.json``
+detail document beside it), of the roster it appends pending rows to
 (``write_roster``, Phase C: additive only, and only when a row was actually added),
 and of the reference artifacts beside them
 (``data/talent-trees.json`` since T1.3, ``data/class-icons.json`` and
 ``data/profession-icons.json`` since Phase 5b). Every key either module emits is
-listed in ``MAP_ENTRY_KEYS`` / ``CANDIDATE_KEYS`` / ``CHARACTER_KEYS`` /
-``TALENT_TREES_DOC_KEYS`` / ``ICON_MAP_DOC_KEYS`` so a reviewer can diff two runs
-line by line and the verify script can assert exact key sets.
+listed in ``MAP_ENTRY_KEYS`` / ``CANDIDATE_KEYS`` / ``CHARACTER_KEYS`` (the whole record a
+``Fetcher.enrich`` builds, which is what every caller hands this module) /
+``MANIFEST_ROW_KEYS`` + ``DETAIL_DOC_KEYS`` (the two files that record is SPLIT across) /
+``TALENT_TREES_DOC_KEYS`` / ``ICON_MAP_DOC_KEYS`` so a reviewer can diff two runs line by line and
+the verify script can assert exact key sets.
 """
 
 import json
+import re
 import os
 
 from . import config, fetch, http
 
 SCHEMA_VERSION = 2
+
+# The character sidecar's own schema version, deliberately its OWN constant rather than
+# ``SCHEMA_VERSION``: schema v3 (docs/refactor-design.md §3) is a change to the LAYOUT of
+# ``data/character-data.json`` and its new ``data/character-data/`` directory, and nothing else.
+# The map and the roster keep ``SCHEMA_VERSION`` (2) — bumping them by association would tell
+# every reader "the identity contract changed" when it did not.
+DATA_SCHEMA_VERSION = 3
 
 # ``data/characters.json`` envelope keys. The roster keeps its own schemaVersion rather than
 # inheriting the artifact constant by name because a hand-edit writes this shape too; the two
@@ -53,6 +64,38 @@ CHARACTER_KEYS = ("status", "bnet", "level", "guild", "activeSpec", "itemLevel",
                   # namespace, so the sidecar omits it instead of publishing a
                   # permanent null, and the verify gate warns if a row ever grows one.
                   "race", "class", "classIconUrl", "raceIconUrl")
+# --------------------------------------------------------------------------- #
+# Schema v3: the manifest row and the per-character detail document
+# --------------------------------------------------------------------------- #
+# WHY A SPLIT (design §3): the single sidecar grew with the guild — 529 KB for 17 resolved
+# characters on 2026-11-14, ~31 KB of it per character — while every roster CARD reads four
+# scalars out of it (level, itemLevel, guild, fetchedAt) on every repaint. So the row was cut on
+# the line the UI already draws: the four scalars plus the identity the modal header shows stay
+# inline, and the heavy per-character payload moves to a file the modal asks for when it opens.
+# NO field changes meaning and no value is produced here: both halves are slices of the same
+# ``Fetcher.enrich`` record, keyed by the same constants, written by the same ``write_json``.
+#
+#   MANIFEST_ROW_KEYS — ``data/character-data.json``'s ``characters[id]``. ``detail`` is present
+#     for an ``ok`` row and ABSENT (never null, never "") for every other status: a row that was
+#     never enriched has no detail file to name, and a null would be a path the browser fetches.
+#   DETAIL_DOC_KEYS — ``data/character-data/<id>.json``. It carries NO ``status`` and none of the
+#     manifest's own fields; ``js/data.js`` re-pins ``status`` from the manifest after the merge,
+#     so a detail file cannot re-lifecycle a row the manifest calls needs_review.
+MANIFEST_ROW_KEYS = ("status", "fetchedAt", "level", "itemLevel", "guild", "activeSpec",
+                     "classIconUrl", "race", "class", "detail")
+# The manifest fields, in the order they are written, minus the derived ``detail`` pointer.
+MANIFEST_INLINE_KEYS = tuple(k for k in MANIFEST_ROW_KEYS if k != "detail")
+DETAIL_DOC_KEYS = ("schemaVersion", "id", "bnet", "gear", "progress", "achievementPoints",
+                   "stats", "talents", "professions", "reputations", "media")
+# The detail document's body: DETAIL_DOC_KEYS without its own envelope pair. This is also the
+# filter ``load_previous_data`` uses when it folds a detail file back into the record the
+# enrichment loop works on — ``schemaVersion``/``id`` are file metadata, never row fields.
+DETAIL_BODY_KEYS = tuple(k for k in DETAIL_DOC_KEYS if k not in ("schemaVersion", "id"))
+# Every key of the pre-v3 record must land in exactly one of the two halves. Nothing here can
+# invent or drop a value: the assertion is in ``split_characters``, and
+# tools/tests/test_sidecar_v3.py pins it against the committed v2 rows.
+SIDECAR_PARTITION = (MANIFEST_INLINE_KEYS, DETAIL_BODY_KEYS)
+
 BNET_KEYS = ("name", "surname", "href")
 # media (T1.5 + Phase B): the two avatar renders character-media serves, plus the
 # full-body render the gear paper doll is drawn around. CONVENTION, stated once here,
@@ -95,9 +138,17 @@ ICON_ENTRY_KEYS = ("id", "iconUrl")
 
 
 
+def dumps(payload):
+    """THE artifact serialisation: redacted, indented, key order preserved, newline-terminated.
+
+    Split out of ``write_json`` so a reader (``tools/migrate_v3.py``, the tests) can ask "what
+    bytes would this document produce?" without writing them — the one way to compare a planned
+    artifact with a committed one without a second copy of the formatting rules that could drift."""
+    return json.dumps(http.redact(payload), ensure_ascii=False, indent=2, sort_keys=False) + "\n"
+
+
 def write_json(path, payload):
-    path.write_text(json.dumps(http.redact(payload), ensure_ascii=False, indent=2, sort_keys=False) + "\n",
-                    encoding="utf-8")
+    path.write_text(dumps(payload), encoding="utf-8")
 
 
 # --------------------------------------------------------------------------- #
@@ -285,12 +336,145 @@ def write_icon_map(path, static_namespace, icons, *, dry_run):
     return payload
 
 
-def load_previous_data(path=None):
-    """Previous sidecar rows, keyed by roster id.
+# The id charset detail_ref accepts, and the shape js/data.js characterDetailPath accepts for a
+# detail basename. Kept next to the rule so the two cannot drift apart silently.
+DETAIL_ID_RE = re.compile(r"[A-Za-z0-9_-]{1,64}")
+
+
+def detail_ref(rid):
+    """The ``detail`` string for one roster id: ``character-data/<id>.json``, and nothing else.
+
+    THE rule, in one place. It is built from ``config.DETAIL_DIR_NAME`` and the id — never from
+    caller-supplied text — and the id is refused unless it is a single safe path segment, so the
+    result cannot be ``..``, ``%2e%2e``, a backslash path, an absolute URL or another character's
+    file. ``roster.py`` only requires a non-empty string id, and the auto-adder's ids happen to be
+    13 digits; "happens to be" is not a guard, and this value is used to build a FILESYSTEM PATH as
+    well as a URL, so the charset is checked here rather than trusted upstream. ``js/data.js``
+    ``characterDetailPath`` rebuilds the same string from the same two parts and refuses a row whose
+    authored value disagrees; the gate compares the committed value against this same shape.
+    Three readers, one rule.
+    """
+    text = str(rid)
+    if not DETAIL_ID_RE.fullmatch(text):
+        raise ValueError(f"roster id {text!r} is not a single safe path segment "
+                         f"([A-Za-z0-9_-]{{1,64}}); refusing to build a detail path from it")
+    return f"{config.DETAIL_DIR_NAME}/{text}.json"
+
+
+def detail_file(rid, detail_dir=None):
+    """The filesystem path a detail document is written to (and read from)."""
+    return (detail_dir or config.DETAIL_DIR) / f"{rid}.json"
+
+
+def manifest_row(rec, rid=None):
+    """One manifest row out of a full sidecar record: the list-view fields, and a pointer.
+
+    Values are copied, never recomputed, and a key the record does not carry is OMITTED rather
+    than written as null — that is the pre-v3 rule for the optional blocks (guild/progress) and it
+    keeps a non-ok row minimal, exactly as ``sync.run_sync`` builds it today. The key order is the
+    constant's, so two runs that agree on values agree on bytes.
+
+    ``rid`` is the roster id this row is keyed by, because that is what the ``detail`` pointer is
+    built from; a bare ``manifest_row(rec)`` reads it off the record (``rec["id"]``), which is the
+    shape the migration and the tests hand over. It is NEVER read off the record when the caller
+    knows better: the key the row is stored under is the identity, and a record that claimed a
+    different one would otherwise publish a pointer to another character's file.
+
+    ``detail`` is written for a row the run actually enriched (``status == "ok"``) and left off
+    otherwise: a not_found/ambiguous/fetch_error row has no detail document, and an absent key is
+    what ``js/data.js`` reads as "nothing to fetch" (a null would be fetched as the literal string
+    "null" by a browser joining it onto the sidecar directory).
+    """
+    rec = rec if isinstance(rec, dict) else {}
+    row = {key: rec[key] for key in MANIFEST_INLINE_KEYS if key in rec}
+    if rec.get("status") == "ok":
+        ident = rid if rid is not None else rec.get("id")
+        if ident is None:
+            raise ValueError("manifest_row: an ok record needs an id to point its detail file at "
+                             "(pass the roster id, or carry one on the record)")
+        row["detail"] = detail_ref(ident)
+    return row
+
+
+def detail_document(rid, rec):
+    """One ``data/character-data/<id>.json`` document out of a full sidecar record.
+
+    ``id`` is the roster id and equals the filename stem, which is what lets the gate (and the
+    browser, which rebuilds the path from the id it already has) prove a document is the one its
+    manifest row pointed at rather than somebody else's. ``status`` and every manifest-owned field
+    are excluded by construction: the manifest is authoritative for them, and
+    ``js/data.js`` re-pins ``status`` over whatever a detail file claims."""
+    rec = rec if isinstance(rec, dict) else {}
+    doc = {"schemaVersion": DATA_SCHEMA_VERSION, "id": str(rid)}
+    for key in DETAIL_BODY_KEYS:
+        if key in rec:
+            doc[key] = rec[key]
+    return doc
+
+
+def split_characters(characters):
+    """``{id: full record}`` -> ``({id: manifest row}, {id: detail document})``.
+
+    The partition is asserted, not assumed: a record key that belongs to neither half is a value
+    this writer would silently drop, so it is refused here — at the single write site, on the way
+    to disk — rather than discovered in a diff after a nightly. (``raceIconUrl`` is the one
+    historical key outside both halves; §10 proved no race-media route exists, so nothing has ever
+    written it, and the gate keeps warning if a row ever grows one.)
+    """
+    rows, details, orphaned = {}, {}, set()
+    covered = set(MANIFEST_INLINE_KEYS) | set(DETAIL_BODY_KEYS)
+    for rid, rec in (characters or {}).items():
+        if not isinstance(rec, dict):
+            rows[rid] = {"status": None, "fetchedAt": None}
+            continue
+        orphaned |= {k for k in rec if k not in covered}
+        rows[rid] = manifest_row(rec, rid)
+        if rec.get("status") == "ok":
+            details[rid] = detail_document(rid, rec)
+    if orphaned:
+        raise ValueError(f"sidecar record key(s) {sorted(orphaned)} belong to neither the manifest "
+                         "nor the detail document: bnet.artifacts would drop them on write, so the "
+                         "write is refused (add the key to MANIFEST_ROW_KEYS or DETAIL_DOC_KEYS)")
+    return rows, details
+
+
+def manifest_document(rows, *, triggered_by_value, synced_at=None):
+    """The manifest envelope: the four v2 keys, with ``schemaVersion`` at v3."""
+    return {"schemaVersion": DATA_SCHEMA_VERSION, "syncedAt": synced_at or http.iso_now(),
+            "triggeredBy": triggered_by_value, "characters": rows}
+
+
+def read_detail_document(rid, detail_dir=None):
+    """One committed detail document, or None when it is absent/unreadable/not an object.
+
+    Read-side mirror of the writer, and deliberately id-derived rather than pointer-derived: the
+    caller hands an id, so a manifest row poisoned into pointing elsewhere cannot make this read a
+    different character's file."""
+    path = detail_file(rid, detail_dir)
+    if not path.exists():
+        return None
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        print(f"  ! previous detail file {path.name} unreadable ({type(exc).__name__}); "
+              "treating this character as having no detail")
+        return None
+    return doc if isinstance(doc, dict) else None
+
+
+def load_previous_data(path=None, detail_dir=None):
+    """Previous sidecar records, keyed by roster id, in the FULL pre-v3 shape.
 
     Lookup mode republishes one character at a time, but the sidecar is written as
     a whole document (and the UI joins it to the map by id), so a lookup has to
-    carry every other row forward. A missing/unreadable file means an empty dict:
+    carry every other row forward. Under v3 "every other row" is a manifest row PLUS its detail
+    file: reading the manifest alone would hand ``write_data`` a record with no gear/stats/talents,
+    and the next lookup would publish a manifest whose detail files it had just pruned. So each
+    row is folded back together here, which makes the read the exact inverse of
+    :func:`split_characters` and a lookup a no-op for every character it did not touch.
+
+    A row with no ``detail`` key (a non-ok row, or a pre-v3 document being read before the
+    migration) is returned as it stands. A missing/unreadable file means an empty dict:
     the same "rebuild it whole" behaviour ``load_previous_map`` documents."""
     path = path or config.DATA_FILE
     if not path.exists():
@@ -301,7 +485,21 @@ def load_previous_data(path=None):
         print(f"  ! previous character-data.json unreadable ({type(exc).__name__}); rebuilding it whole")
         return {}
     characters = raw.get("characters") if isinstance(raw, dict) else None
-    return {k: v for k, v in characters.items() if isinstance(v, dict)} if isinstance(characters, dict) else {}
+    if not isinstance(characters, dict):
+        return {}
+    records = {}
+    for rid, row in characters.items():
+        if not isinstance(row, dict):
+            continue
+        merged = {k: v for k, v in row.items() if k != "detail"}
+        if isinstance(row.get("detail"), str) and row["detail"] == detail_ref(rid):
+            doc = read_detail_document(rid, detail_dir)
+            if doc:
+                for key in DETAIL_BODY_KEYS:
+                    if key in doc:
+                        merged[key] = doc[key]
+        records[rid] = merged
+    return records
 
 
 # --------------------------------------------------------------------------- #
@@ -412,10 +610,95 @@ def write_roster(records, *, dry_run):
     return payload
 
 
-def write_data(characters, *, triggered_by_value, dry_run):
-    payload = {"schemaVersion": SCHEMA_VERSION, "syncedAt": http.iso_now(),
-               "triggeredBy": triggered_by_value, "characters": characters}
+def write_detail_documents(details, *, dry_run):
+    """Write every detail document for this run, then report how many bytes landed.
+
+    The directory is created on first use and never removed: an empty ``data/character-data/`` is
+    a guild with nobody resolved yet, not a missing artifact, and the gate treats it as such."""
+    written = 0
+    if dry_run:
+        return written
+    if details:
+        config.DETAIL_DIR.mkdir(parents=True, exist_ok=True)
+    for rid, doc in details.items():
+        write_json(detail_file(rid), doc)
+        written += 1
+    return written
+
+
+def pruned_detail_files(keep_ids, detail_dir=None):
+    """Every ``*.json`` in the detail directory that no current ok row names.
+
+    The name rule is the writer's own: a file is a candidate for pruning only when its stem is a
+    plausible roster id and its bytes parse as a JSON object with that same ``id``. Anything else —
+    a stray ``README``, a truncated write, a document whose ``id`` says another character — is left
+    exactly where it is and reported, because deleting a file this module did not write is not part
+    of publishing, and an unparseable leftover is precisely what the gate exists to make loud."""
+    directory = detail_dir or config.DETAIL_DIR
+    if not directory.is_dir():
+        return [], []
+    wanted = {str(rid) for rid in (keep_ids or ())}
+    stale, foreign = [], []
+    for path in sorted(directory.glob("*.json")):
+        if path.stem in wanted:
+            continue
+        try:
+            doc = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            foreign.append(path)
+            continue
+        if isinstance(doc, dict) and str(doc.get("id")) == path.stem:
+            stale.append(path)
+        else:
+            foreign.append(path)
+    return stale, foreign
+
+
+def prune_detail_files(keep_ids, *, dry_run):
+    """Delete the detail files no current row names, and report what could not be reconciled.
+
+    Pruning is part of the publication rather than housekeeping: a row demoted from ``ok`` to
+    ``not_found`` must not leave its gear on the server under a manifest that now says the identity
+    is unresolved (the site would still render it for anyone who guessed the URL, and the gate would
+    fail the tree as a torn write). It runs BEFORE the manifest is written, so the manifest stays
+    the last thing to change — see :func:`write_data`."""
+    stale, foreign = pruned_detail_files(keep_ids)
+    for path in stale:
+        if not dry_run:
+            path.unlink()
+    for path in foreign:
+        print(f"  ! left {path.name} in place: it is not a detail document this run wrote "
+              "(unparseable, or its id does not match its filename); the verify gate reports it "
+              "as an orphan")
+    return [path.name for path in stale]
+
+
+def write_data(characters, *, triggered_by_value, dry_run, synced_at=None):
+    """Publish the schema-v3 sidecar: every detail file first, the manifest LAST.
+
+    The order is the whole point and is shared with ``write_pair``'s H4 floor: the manifest is the
+    single document the site reads at boot and the only one that names the others, so a run that
+    dies partway leaves the PREVIOUS manifest authoritative.
+
+    Be exact about what that buys, because the sentence "the previous manifest is authoritative" is
+    NOT the same claim as "the tree is intact". The prune keeps only this run's ok ids, so a row that
+    just lost ``ok`` has its file deleted here while the manifest still on disk calls itself ``ok``
+    and points at it. A crash in that window therefore leaves a TORN tree, not a merely orphaned one:
+    the old manifest naming a file that is gone. That is accepted deliberately — it never reaches a
+    publication, because the commit runs only after ``.pi/scripts/verify_sync_artifacts.py`` exits 0
+    and its directory rule refuses exactly this state, so CI pushes nothing and a local run is left
+    loudly failing. The alternative ordering (prune after the manifest) is worse in the case that
+    matters: it would PUBLISH a tree with an orphan, and it would keep a demoted character's gear on
+    the server until the following night, which is the outcome prune_detail_files exists to prevent.
+
+    ``synced_at`` exists for the migration (``tools/migrate_v3.py``): a layout change must not
+    restate a sync timestamp it did not earn, or "did the data change?" stops being answerable from
+    a diff. A sync run leaves it out and gets ``http.iso_now()``, as always."""
+    rows, details = split_characters(characters)
+    payload = manifest_document(rows, triggered_by_value=triggered_by_value, synced_at=synced_at)
     if not dry_run:
+        write_detail_documents(details, dry_run=False)
+        prune_detail_files(details.keys(), dry_run=False)
         write_json(config.DATA_FILE, payload)
     return payload
 
@@ -432,6 +715,14 @@ def write_pair(entries, characters, *, ordered_ids, prev_entries, triggered_by_v
     joins them by roster id: a half-written pair is a broken site. Both the nightly
     sync and the single-row lookup write through here for that reason.
 
+    Since schema v3 "the pair" is three things on disk (the map, ``data/character-data/``, the
+    manifest) and the ORDER is what keeps a half-run survivable: the map, then every detail file,
+    then the prunings, then the manifest LAST. Nothing a crashed run leaves behind can make the
+    browser ask for a file that is not there, because the manifest is the last write; the damage it
+    CAN leave is an orphan detail file, or a detail file the previous manifest still names that a
+    prune already removed, and both are directory-rule failures in
+    ``.pi/scripts/verify_sync_artifacts.py`` rather than something that reaches production.
+
     ``floor_entries`` is what the floor evaluates when given: the caller's ``resolver_verdict``
     snapshot. It exists because ``entries`` is the map as published — after the reviewer-note pass
     — and a human demotion must not be able to trip the outage floor (see ``resolver_verdict``).
@@ -441,6 +732,12 @@ def write_pair(entries, characters, *, ordered_ids, prev_entries, triggered_by_v
                                 ordered_ids, prev_entries)
     if refusal:
         return refusal
+    # Validate the sidecar BEFORE touching either artifact. split_characters is the only place that
+    # refuses a record key belonging to neither half, and it used to run inside write_data — after
+    # write_map had already landed, which turned "both artifacts or neither" into "the map moved and
+    # the manifest did not, plus a traceback". A future enrich field wired before the key constants
+    # now fails with nothing published instead.
+    split_characters(characters)
     write_map(entries, dry_run=dry_run)
     write_data(characters, triggered_by_value=triggered_by_value, dry_run=dry_run)
     return None

@@ -1609,5 +1609,138 @@ for (const bad of ['//evil.com/steal', 'https://evil.tld/x', '/etc/passwd', 'dat
 const stillReadable = await globalThis.fetch('data/characters.json');
 ok(stillReadable.ok === true, 'the real same-origin fixture path still reads fine');
 
+// ---------------------- 14. schema v3: the CONFIRM tie is fed by the DETAIL file
+// applySidecarTie writes race, class and prof1/prof2 off the sidecar. Under a manifest two of those
+// three are inline and `professions` lives in data/character-data/<id>.json, so the confirm path has
+// to take the row through loadCharacterDetail (js/detail.js) or the tie finds no primaries and
+// commits an unchanged row while the toast still announces a confirmation — a silently empty patch
+// is worse than the pre-split behaviour, because it looks like the sidecar had nothing to offer.
+// Both halves are pinned here: the professions arrive FROM the detail file, and a row whose detail
+// file is gone still confirms, with the reviewer's own professions kept and the message byte-for-byte
+// what it was before the split (no toast change, no throw — the degrade js/data.js promises).
+console.log('\n[14] schema v3: CONFIRM ties from the detail file, and degrades without it');
+const DETAIL_FILE = path.join(FIXTURES, 'data', 'character-data', `${ROWS.ok}.json`);
+function v3Sidecar(withDetail) {
+  const manifest = {
+    schemaVersion: 3, syncedAt: stamp, triggeredBy: 'schedule',
+    characters: {
+      [ROWS.ok]: {
+        status: 'ok', fetchedAt: stamp, level: 60, itemLevel: 142, guild: 'Flowmasters',
+        activeSpec: 'Fury',
+        classIconUrl: 'https://render.worldofwarcraft.com/forever-us/icons/1/1.jpg',
+        race: { id: 7, name: 'Orc' }, class: { id: 1, name: 'Warrior' },
+        // Absent, not null: a row that names no detail file is the reader's "nothing to fetch".
+        ...(withDetail ? { detail: `character-data/${ROWS.ok}.json` } : {}),
+      },
+      [ROWS.missing]: { status: 'not_found', fetchedAt: stamp },
+    },
+  };
+  fs.writeFileSync(path.join(FIXTURES, 'data', 'character-data.json'), JSON.stringify(manifest, null, 2));
+  if (withDetail) {
+    fs.mkdirSync(path.dirname(DETAIL_FILE), { recursive: true });
+    fs.writeFileSync(DETAIL_FILE, JSON.stringify({
+      schemaVersion: 3, id: ROWS.ok,
+      bnet: { name: 'Gear', surname: 'Man', href: profileHref('gear-man') },
+      gear: [], achievementPoints: 42,
+      professions: {
+        primaries: [{ id: 164, name: 'Blacksmithing' }, { id: 186, name: 'Mining' }],
+        secondaries: [{ id: 182, name: 'Cooking' }],
+      },
+    }, null, 2));
+  } else if (fs.existsSync(DETAIL_FILE)) {
+    fs.unlinkSync(DETAIL_FILE);
+  }
+}
+const fixtureProf = fixtureRoster.characters.find(c => c.id === ROWS.ok);
+const profsAsCommitted = [fixtureProf.prof1, fixtureProf.prof2];
+
+const tieConfirm = async () => {
+  resetRoster();
+  await dataMod.loadSidecars();
+  usePat(true);
+  happyCommitRoutes();
+  net.length = 0;
+  const done = await globalThis.confirmMatch(ROWS.ok);
+  await settled();
+  const put = lastCall('PUT', CONTENTS);
+  return { done, put, row: put === null ? null : rowIn(decodedRoster(put.body), ROWS.ok),
+           detailReads: net.filter(c => c.host === 'fixture'
+             && String(c.path).split('?')[0] === `data/character-data/${ROWS.ok}.json`).length,
+           message: toast().textContent };
+};
+
+// (a) manifest + detail file: the primaries only the detail document carries reach the commit.
+v3Sidecar(true);
+fixtureProf.prof1 = 'None';
+fixtureProf.prof2 = 'None';
+const tied = await tieConfirm();
+ok(tied.done === true && tied.put !== null, 'CONFIRM MATCH commits exactly once against a v3 manifest');
+ok(tied.detailReads === 1,
+  `the confirm read the row's detail file once (${tied.detailReads} read(s) of data/character-data/${ROWS.ok}.json)`);
+ok(tied.row !== null && tied.row.prof1 === 'Blacksmithing' && tied.row.prof2 === 'Mining',
+  `prof1/prof2 come from the DETAIL file, which is the only place professions live now `
+  + `(committed ${tied.row ? `${tied.row.prof1} / ${tied.row.prof2}` : 'nothing'})`);
+ok(tied.row !== null && tied.row.race === 'Orc' && tied.row.class === 'Warrior',
+  'race/class are unchanged: they were already in the manifest row, so the tie writes nothing for them');
+ok(/Roster tied to Battle.net: prof1 Blacksmithing, prof2 Mining\./.test(tied.message),
+  `and the toast reports what it wrote, so an empty tie is distinguishable ("${tied.message}")`);
+
+// (b) the detail file gone: same commit, same message, reviewer's own professions kept.
+v3Sidecar(false);
+const degraded = await tieConfirm();
+ok(degraded.done === true && degraded.put !== null,
+  'a missing detail file does not block the confirmation (no throw, no refusal)');
+ok(degraded.detailReads === 0, 'and it costs no request for a file the manifest does not name');
+ok(degraded.row !== null && degraded.row.prof1 === 'None' && degraded.row.prof2 === 'None',
+  `the professions slots keep exactly what the reviewer typed (${degraded.row ? `${degraded.row.prof1} / ${degraded.row.prof2}` : 'nothing'})`);
+ok(degraded.message === 'Confirmed Gearman as gear-man.',
+  `the success message is byte-identical to the pre-split one, with no tie note appended ("${degraded.message}")`);
+
+// CONFIRM SELECTED CANDIDATE is the other path that records a validation, and it ties the same way.
+v3Sidecar(true);
+const selectedRow = fixtureRoster.characters.find(c => c.id === ROWS.ambiguous);
+const selectedProfBackup = [selectedRow.prof1, selectedRow.prof2];
+selectedRow.prof1 = 'None'; selectedRow.prof2 = 'None';
+{
+  const mapDoc = JSON.parse(fs.readFileSync(path.join(FIXTURES, 'data', 'battle-net-map.json'), 'utf8'));
+  mapDoc.entries[ROWS.ambiguous] = { ...mapDoc.entries[ROWS.ambiguous], status: 'ok',
+    slug: 'tir-rheebeard', href: profileHref('tir-rheebeard') };
+  fs.writeFileSync(path.join(FIXTURES, 'data', 'battle-net-map.json'), JSON.stringify(mapDoc, null, 2));
+  fs.writeFileSync(DETAIL_FILE.replace(`${ROWS.ok}.json`, `${ROWS.ambiguous}.json`), JSON.stringify({
+    schemaVersion: 3, id: ROWS.ambiguous,
+    professions: { primaries: [{ id: 185, name: 'Herbalism' }, { id: 186, name: 'Skinning' }] },
+  }, null, 2));
+  const dataDoc = JSON.parse(fs.readFileSync(path.join(FIXTURES, 'data', 'character-data.json'), 'utf8'));
+  dataDoc.characters[ROWS.ambiguous] = { status: 'ok', fetchedAt: stamp,
+    race: { id: 7, name: 'Orc' }, class: { id: 1, name: 'Warrior' },
+    detail: `character-data/${ROWS.ambiguous}.json` };
+  fs.writeFileSync(path.join(FIXTURES, 'data', 'character-data.json'), JSON.stringify(dataDoc, null, 2));
+  resetRoster();
+  await dataMod.loadSidecars();
+  usePat(true);
+  happyCommitRoutes();
+  net.length = 0;
+  detail.openCharacterDetail(ROWS.ambiguous);
+  await settled();
+  ok(detail.selectCandidate(ROWS.ambiguous, 0) === true, 'a candidate is selected for the resolve path');
+  const resolved = await globalThis.confirmSelectedCandidate(ROWS.ambiguous);
+  await settled();
+  const putSel = lastCall('PUT', CONTENTS);
+  const committedSel = putSel === null ? null : rowIn(decodedRoster(putSel.body), ROWS.ambiguous);
+  ok(resolved === true && committedSel !== null
+     && committedSel.prof1 === 'Herbalism' && committedSel.prof2 === 'Skinning',
+  `CONFIRM SELECTED CANDIDATE ties from its detail file too (${committedSel ? `${committedSel.prof1} / ${committedSel.prof2}` : 'nothing'})`);
+  detail.closeDetail();
+  selectedRow.prof1 = selectedProfBackup[0]; selectedRow.prof2 = selectedProfBackup[1];
+  const mapBack = JSON.parse(fs.readFileSync(path.join(FIXTURES, 'data', 'battle-net-map.json'), 'utf8'));
+  mapBack.entries[ROWS.ambiguous] = fixtureMap.entries[ROWS.ambiguous];
+  fs.writeFileSync(path.join(FIXTURES, 'data', 'battle-net-map.json'), JSON.stringify(mapBack, null, 2));
+  fs.unlinkSync(DETAIL_FILE.replace(`${ROWS.ok}.json`, `${ROWS.ambiguous}.json`));
+}
+fixtureProf.prof1 = profsAsCommitted[0];
+fixtureProf.prof2 = profsAsCommitted[1];
+writeFixtures();
+await dataMod.loadSidecars();
+
 console.log(`\n${fails === 0 ? 'ALL CHECKS PASSED' : 'FAILURES PRESENT'}: ${passes} passed, ${fails} failed`);
 process.exit(fails === 0 ? 0 : 1);

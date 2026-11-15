@@ -202,6 +202,20 @@ Acceptance: a successful manual run commits both JSON files; second run is cheap
       `null` independently per file, `byRosterId(id)` is the null-safe join, and
       `SIDECAR_FRESH_HOURS = 36` is the freshness rule. Sidecars stay in module scope and are never written
       to localStorage (`verify_search_detail.mjs` §6 pins "no localStorage growth").
+      **AMENDED 2026-11-15 — schema v3 makes this task two fetches with two lifetimes**
+      (`docs/bnet-api-notes.md` §12). Startup loads `data/character-data.json` as a **manifest** (9,966 B
+      against the 531,170 B it replaced): every list-view field is there, so the grid, dots and chips need
+      no second request. `js/detail.js` awaits `loadCharacterDetail(id)` (`js/data.js`) when a modal opens —
+      a row whose `detail` is absent resolves to the manifest row, a row that names one fetches
+      `data/character-data/<id>.json` and layers it over the row, re-pinning `status` from the manifest. It
+      **never rejects**: a 404, any non-2xx, a non-object body and a dropped connection all hand back the
+      manifest row, which is the same degrade as a row the sidecar never covered (header renders, tabs show
+      their empty states). Like the sidecars it stays in module scope — value- and in-flight-memoised per id
+      for the session, never written to localStorage (the §6 no-growth pin now covers both surfaces), and
+      both memos are bypassed when the caller passes `cacheBust` after a sync run. The pointer is untrusted
+      input: a `detail` value that does not match the reader's own shape **and** whose stem is not the row's
+      id is dropped, and the request path is rebuilt from the id either way. The no-`AbortController`
+      delta in (c) still holds for the detail fetch — a hung request holds its panel, it does not block the page.
       DELTAS vs the original tasking: (a) a sidecar is now a plain **same-origin relative `fetch`** of the
       committed `data/*.json` — not a GitHub API call; the Contents API is used only for the roster pull and
       the PAT write paths; (b) `DEFAULT_CHARACTERS` (`js/state.js`) survived the refactor but is demoted to an

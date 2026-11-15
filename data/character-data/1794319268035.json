@@ -1,0 +1,1563 @@
+{
+  "schemaVersion": 3,
+  "id": "1794319268035",
+  "bnet": {
+    "name": "Heghmorc",
+    "surname": "Zmog",
+    "href": "https://us.api.blizzard.com/profile/wow/character/heghmorc-zmog?namespace=profile-forever-us"
+  },
+  "gear": [
+    {
+      "slot": "Head",
+      "name": "Defender's Leather Hood",
+      "ilvl": 25,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133150.jpg",
+      "itemId": 252447,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 8,
+          "displayString": "+8 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 10,
+          "displayString": "+10 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Shoulders",
+      "name": "Barbaric Shoulders",
+      "ilvl": 35,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135039.jpg",
+      "itemId": 5964,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 5,
+          "displayString": "+5 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 6,
+          "displayString": "+6 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Shirt",
+      "name": "Thug Shirt",
+      "ilvl": 1,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135018.jpg",
+      "itemId": 2105,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Chest",
+      "name": "Dusky Leather Armor",
+      "ilvl": 35,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132718.jpg",
+      "itemId": 7374,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [
+        "Enchanted: Attack Power +6 and Armor +24"
+      ],
+      "stats": [
+        {
+          "value": 14,
+          "displayString": "+14 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Waist",
+      "name": "Larcenist's Belt",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132493.jpg",
+      "itemId": 279846,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 6,
+          "displayString": "+6 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 8,
+          "displayString": "+8 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Legs",
+      "name": "Triprunner Dungarees",
+      "ilvl": 37,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134588.jpg",
+      "itemId": 9624,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [
+        "Enchanted: Attack Power +6 and Armor +24"
+      ],
+      "stats": [
+        {
+          "value": 18,
+          "displayString": "+18 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 3,
+          "displayString": "+3 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 6,
+          "displayString": "+6 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Feet",
+      "name": "Gravewalker Boots",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132542.jpg",
+      "itemId": 251963,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [
+        "Enchanted: Attack Power +6 and Armor +24"
+      ],
+      "stats": [
+        {
+          "value": 5,
+          "displayString": "+5 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 7,
+          "displayString": "+7 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Spirit",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Wrist",
+      "name": "Cultist's Armguards",
+      "ilvl": 29,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132611.jpg",
+      "itemId": 270032,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 7,
+          "displayString": "+7 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 10,
+          "displayString": "+10 Attack Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Hands",
+      "name": "Toughened Leather Gloves",
+      "ilvl": 27,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132958.jpg",
+      "itemId": 4253,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [
+        "Enchanted: Attack Power +4 and Armor +16"
+      ],
+      "stats": [
+        {
+          "value": 6,
+          "displayString": "+6 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 6,
+          "displayString": "+6 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 3,
+          "displayString": "+3 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Ring 1",
+      "name": "Pyrewood Signet Ring",
+      "ilvl": 25,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133344.jpg",
+      "itemId": 277210,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 4,
+          "displayString": "+4 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 4,
+          "displayString": "+4 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 4,
+          "displayString": "+4 Hit",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Ring 2",
+      "name": "Nogg's Gold Ring",
+      "ilvl": 37,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133345.jpg",
+      "itemId": 9588,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 10,
+          "displayString": "+10 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 3,
+          "displayString": "+3 Defense",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Trinket 1",
+      "name": "Transformative Cocoon",
+      "ilvl": 30,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/237431.jpg",
+      "itemId": 276895,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Back",
+      "name": "Grimsteel Cape",
+      "ilvl": 35,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133754.jpg",
+      "itemId": 4643,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 1,
+        "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 2,
+          "displayString": "+2 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 7,
+          "displayString": "+7 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Main Hand",
+      "name": "Ruby-Adorned Blade",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135277.jpg",
+      "itemId": 277246,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 2,
+        "name": "Weapon"
+      },
+      "itemSubclass": {
+        "id": 7,
+        "name": "Sword"
+      },
+      "enchants": [
+        "Instant Poison II (32 |4Charge:Charges;)"
+      ],
+      "stats": [
+        {
+          "value": 3,
+          "displayString": "+3 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 8,
+          "displayString": "+8 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Off Hand",
+      "name": "Outlaw Sabre",
+      "ilvl": 32,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135343.jpg",
+      "itemId": 16886,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 2,
+        "name": "Weapon"
+      },
+      "itemSubclass": {
+        "id": 7,
+        "name": "Sword"
+      },
+      "enchants": [
+        "Deadly Poison (83 |4Charge:Charges;)"
+      ],
+      "stats": [
+        {
+          "value": 16,
+          "displayString": "+16 Attack Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Ranged",
+      "name": "Gravespike Repeater",
+      "ilvl": 31,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135535.jpg",
+      "itemId": 273033,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 2,
+        "name": "Weapon"
+      },
+      "itemSubclass": {
+        "id": 18,
+        "name": "Crossbow"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 8,
+          "displayString": "+8 Attack Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 9,
+          "displayString": "+9 Attack Power Vs Humanoids",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    }
+  ],
+  "achievementPoints": 0,
+  "stats": {
+    "health": 1623,
+    "power": 100,
+    "powerType": {
+      "id": 3,
+      "name": "Energy"
+    },
+    "speed": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "strength": {
+      "base": 52,
+      "effective": 74
+    },
+    "agility": {
+      "base": 72,
+      "effective": 135
+    },
+    "intellect": {
+      "base": 24,
+      "effective": 24
+    },
+    "stamina": {
+      "base": 49,
+      "effective": 125
+    },
+    "meleeCrit": {
+      "value": 8.6675005,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "meleeHaste": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "mastery": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "bonusArmor": 88,
+    "lifesteal": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "versatility": 0.0,
+    "versatilityDamageDoneBonus": 0.0,
+    "versatilityHealingDoneBonus": 0.0,
+    "versatilityDamageTakenBonus": 0.0,
+    "avoidance": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "attackPower": 315,
+    "mainHandDamageMin": 89.75001,
+    "mainHandDamageMax": 123.75001,
+    "mainHandSpeed": 2.3,
+    "mainHandDps": 46.413048,
+    "offHandDamageMin": 49.375004,
+    "offHandDamageMax": 66.375,
+    "offHandSpeed": 2.7,
+    "offHandDps": 21.435184,
+    "spellPower": 0,
+    "spellPenetration": 0,
+    "spellCrit": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "manaRegen": 0.0,
+    "manaRegenCombat": 0.0,
+    "armor": {
+      "base": 88,
+      "effective": 970
+    },
+    "dodge": {
+      "value": 17.375,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "parry": {
+      "value": 10.96,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "block": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "rangedCrit": {
+      "value": 1.7475003,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "rangedHaste": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "spellHaste": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "spirit": {
+      "base": 37,
+      "effective": 42
+    },
+    "defense": {
+      "base": 171,
+      "effective": 174
+    },
+    "fireResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "shadowResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "natureResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "arcaneResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "frostResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "movementSpeed": 100.0,
+    "rangedAttackPower": 341,
+    "rangedDamageMin": 84.02144,
+    "rangedDamageMax": 99.02144,
+    "expertise": 1.0,
+    "offHandExpertise": 1.0,
+    "armorPenetration": 0.0,
+    "spellHealing": 0,
+    "meleeHit": {
+      "value": 3.4,
+      "ratingBonus": 0.4,
+      "ratingNormalized": 4
+    },
+    "offHandHit": {
+      "value": 3.4,
+      "ratingBonus": 0.4,
+      "ratingNormalized": 4
+    },
+    "rangedHit": {
+      "value": 0.4,
+      "ratingBonus": 0.4,
+      "ratingNormalized": 4
+    },
+    "spellHit": {
+      "value": 3.4,
+      "ratingBonus": 0.4,
+      "ratingNormalized": 4
+    }
+  },
+  "talents": [
+    {
+      "specId": 38,
+      "specName": "Combat",
+      "spentPoints": 26,
+      "talents": [
+        {
+          "rank": 3,
+          "talentId": 135238,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132292.jpg",
+          "spellId": 14162,
+          "spellName": "Coup de Grace",
+          "description": "Increases the damage done by your Eviscerate ability by 20%, and the damage and storage rate of your Death Mark ability by 20%.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 2,
+          "talentId": 135271,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136189.jpg",
+          "spellId": 13732,
+          "spellName": "Efficient Strikes",
+          "description": "Reduces the Energy cost of your Sinister Strike and Hemorrhage abilities by 5.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 3,
+          "talentId": 135268,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132269.jpg",
+          "spellId": 13713,
+          "spellName": "Deflection",
+          "description": "Increases your Parry chance by 6%.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 3,
+          "talentId": 135267,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132222.jpg",
+          "spellId": 13705,
+          "spellName": "Precision",
+          "description": "Improves your chance to hit by 3%.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 2,
+          "talentId": 135266,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136205.jpg",
+          "spellId": 13742,
+          "spellName": "Endurance",
+          "description": "Reduces the cooldown of your Sprint and Evasion abilities by 60%.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 135265,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132336.jpg",
+          "spellId": 14251,
+          "spellName": "Riposte",
+          "description": "A strike that becomes active after parrying an opponent's attack.  This attack deals 150% weapon damage and disarms the target for 6 sec.",
+          "castTime": "Instant"
+        },
+        {
+          "rank": 1,
+          "talentId": 135289,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132296.jpg",
+          "spellId": 1329265,
+          "spellName": "Composure",
+          "description": "Increases the Energy cost reduction of your Poised ability by 5.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 138268,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135345.jpg",
+          "spellId": 1310711,
+          "spellName": "Flawless Execution",
+          "description": "Reduces the Energy cost of your Eviscerate ability by 15.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 135256,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135882.jpg",
+          "spellId": 30919,
+          "spellName": "Weapon Expertise",
+          "description": "Reduces the chance for your attacks to be Dodged or Parried by 1%.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 3,
+          "talentId": 135260,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132275.jpg",
+          "spellId": 18427,
+          "spellName": "Aggression",
+          "description": "Increases the damage of your Sinister Strike and Eviscerate abilities by 15%.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 135258,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132350.jpg",
+          "spellId": 13877,
+          "spellName": "Blade Flurry",
+          "description": "Increases your melee attack speed by 20% and your melee attacks strike an additional nearby opponent. Lasts 15 sec.",
+          "castTime": "Instant"
+        },
+        {
+          "rank": 5,
+          "talentId": 135257,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135328.jpg",
+          "spellId": 13960,
+          "spellName": "Hack and Slash",
+          "description": "Gives your melee weapon attacks a benefit depending on the weapon.\r\n\r\n    Axe/Sword: Your successful\r\n    melee attacks have a 5% chance\r\n    to trigger an extra attack on the \r\n    target.\r\n\r\n    Dagger/Fist: Increases your\r\n    critical strike chance by 5%.\r\n\r\n    Mace: Your attacks ignore 15% of\r\n    your target's armor.",
+          "castTime": "Passive"
+        }
+      ]
+    }
+  ],
+  "professions": {
+    "primaries": [
+      {
+        "id": 165,
+        "name": "Leatherworking",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136247.jpg",
+        "tiers": [
+          {
+            "skillPoints": 158,
+            "maxSkillPoints": 225,
+            "tierId": 2945,
+            "tierName": "Leatherworking",
+            "knownRecipes": [
+              {
+                "id": 55136,
+                "name": "Mender's Leather Belt"
+              },
+              {
+                "id": 55184,
+                "name": "Forceful Medium Armor Kit"
+              },
+              {
+                "id": 1356,
+                "name": "Light Armor Kit"
+              },
+              {
+                "id": 4989,
+                "name": "Light Leather Quiver"
+              },
+              {
+                "id": 2162,
+                "name": "Handstitched Leather Belt"
+              },
+              {
+                "id": 11756,
+                "name": "Medium Leather"
+              },
+              {
+                "id": 1370,
+                "name": "Dark Leather Cloak"
+              },
+              {
+                "id": 2174,
+                "name": "Dark Leather Gloves"
+              },
+              {
+                "id": 55156,
+                "name": "Forceful Heavy Armor Kit"
+              },
+              {
+                "id": 55138,
+                "name": "Skirmisher's Leather Belt"
+              },
+              {
+                "id": 55147,
+                "name": "Trapper's Leather Legguards"
+              },
+              {
+                "id": 55139,
+                "name": "Warden's Leather Belt"
+              },
+              {
+                "id": 55207,
+                "name": "Black Whelp Slippers"
+              },
+              {
+                "id": 4163,
+                "name": "Barbaric Shoulders"
+              },
+              {
+                "id": 2172,
+                "name": "Fine Leather Belt"
+              },
+              {
+                "id": 5050,
+                "name": "Dusky Leather Armor"
+              },
+              {
+                "id": 2197,
+                "name": "Cured Heavy Hide"
+              },
+              {
+                "id": 5052,
+                "name": "Frost Leather Cloak"
+              },
+              {
+                "id": 5030,
+                "name": "Heavy Earthen Gloves"
+              },
+              {
+                "id": 2179,
+                "name": "Toughened Leather Gloves"
+              },
+              {
+                "id": 1362,
+                "name": "Embossed Leather Vest"
+              },
+              {
+                "id": 2195,
+                "name": "Cured Light Hide"
+              },
+              {
+                "id": 5048,
+                "name": "Heavy Leather Ammo Pouch"
+              },
+              {
+                "id": 55205,
+                "name": "Murloc Scale Shoes"
+              },
+              {
+                "id": 2170,
+                "name": "Fine Leather Tunic"
+              },
+              {
+                "id": 4987,
+                "name": "Handstitched Leather Cloak"
+              },
+              {
+                "id": 55152,
+                "name": "Defender's Leather Helm"
+              },
+              {
+                "id": 2177,
+                "name": "Hillman's Shoulders"
+              },
+              {
+                "id": 55182,
+                "name": "Brawler's Leather Boots"
+              },
+              {
+                "id": 1363,
+                "name": "Embossed Leather Boots"
+              },
+              {
+                "id": 4419,
+                "name": "Deviate Scale Belt"
+              },
+              {
+                "id": 2196,
+                "name": "Cured Medium Hide"
+              },
+              {
+                "id": 1368,
+                "name": "Toughened Leather Armor"
+              },
+              {
+                "id": 2180,
+                "name": "Barbaric Gloves"
+              },
+              {
+                "id": 2168,
+                "name": "Hillman's Cloak"
+              },
+              {
+                "id": 1708,
+                "name": "Light Leather"
+              },
+              {
+                "id": 2167,
+                "name": "Embossed Leather Pants"
+              },
+              {
+                "id": 4993,
+                "name": "Light Leather Pants"
+              },
+              {
+                "id": 2171,
+                "name": "Hillman's Leather Vest"
+              },
+              {
+                "id": 4992,
+                "name": "Light Leather Bracers"
+              },
+              {
+                "id": 4156,
+                "name": "Handstitched Leather Vest"
+              },
+              {
+                "id": 2173,
+                "name": "Hillman's Leather Gloves"
+              },
+              {
+                "id": 2175,
+                "name": "Dark Leather Belt"
+              },
+              {
+                "id": 5047,
+                "name": "Heavy Quiver"
+              },
+              {
+                "id": 55204,
+                "name": "Moonglow Boots"
+              },
+              {
+                "id": 55137,
+                "name": "Skycaller's Leather Belt"
+              },
+              {
+                "id": 55191,
+                "name": "Brawler's Leather Gloves"
+              },
+              {
+                "id": 1369,
+                "name": "Gray Leather Boots"
+              },
+              {
+                "id": 58812,
+                "name": "Light Leather Reagent Bag"
+              },
+              {
+                "id": 4159,
+                "name": "Dark Leather Pants"
+              },
+              {
+                "id": 1360,
+                "name": "Fine Leather Cloak"
+              },
+              {
+                "id": 55142,
+                "name": "Prowler's Leather Belt"
+              },
+              {
+                "id": 11757,
+                "name": "Heavy Leather"
+              },
+              {
+                "id": 5028,
+                "name": "Earthen Leather Shoulders"
+              },
+              {
+                "id": 4990,
+                "name": "Small Leather Ammo Pouch"
+              },
+              {
+                "id": 55168,
+                "name": "Defender's Leather Hood"
+              },
+              {
+                "id": 1353,
+                "name": "Handstitched Leather Boots"
+              },
+              {
+                "id": 4996,
+                "name": "Nimble Leather Gloves"
+              },
+              {
+                "id": 1364,
+                "name": "Embossed Leather Cloak"
+              },
+              {
+                "id": 1355,
+                "name": "Handstitched Leather Pants"
+              },
+              {
+                "id": 2199,
+                "name": "Heavy Armor Kit"
+              },
+              {
+                "id": 55140,
+                "name": "Stalker's Leather Belt"
+              },
+              {
+                "id": 55141,
+                "name": "Skulker's Leather Belt"
+              },
+              {
+                "id": 1367,
+                "name": "Medium Armor Kit"
+              },
+              {
+                "id": 4988,
+                "name": "Handstitched Leather Bracers"
+              },
+              {
+                "id": 55206,
+                "name": "Dark Leather Boots"
+              },
+              {
+                "id": 5026,
+                "name": "Fletcher's Gloves"
+              },
+              {
+                "id": 2164,
+                "name": "Embossed Leather Gloves"
+              },
+              {
+                "id": 52647,
+                "name": "Camp Tent"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 393,
+        "name": "Skinning",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
+        "tiers": [
+          {
+            "skillPoints": 223,
+            "maxSkillPoints": 225,
+            "tierId": 2947,
+            "tierName": "Skinning",
+            "knownRecipes": [
+              {
+                "id": 4768,
+                "name": "Skinning"
+              },
+              {
+                "id": 52644,
+                "name": "Camp Chair"
+              },
+              {
+                "id": 57017,
+                "name": "Field Guide"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "secondaries": [
+      {
+        "id": 185,
+        "name": "Cooking",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133971.jpg",
+        "tiers": [
+          {
+            "skillPoints": 135,
+            "maxSkillPoints": 150,
+            "tierId": 2939,
+            "tierName": "Cooking",
+            "knownRecipes": [
+              {
+                "id": 3964,
+                "name": "Boiled Clams"
+              },
+              {
+                "id": 4786,
+                "name": "Herb Baked Egg"
+              },
+              {
+                "id": 54502,
+                "name": "Twice-Spiced Raptor Slice"
+              },
+              {
+                "id": 3963,
+                "name": "Goblin Deviled Clams"
+              },
+              {
+                "id": 1543,
+                "name": "Crab Cake"
+              },
+              {
+                "id": 5149,
+                "name": "Thistle Tea"
+              },
+              {
+                "id": 52640,
+                "name": "Basic Campfire"
+              },
+              {
+                "id": 4359,
+                "name": "Bristle Whisker Catfish"
+              },
+              {
+                "id": 4355,
+                "name": "Longjaw Mud Snapper"
+              },
+              {
+                "id": 1538,
+                "name": "Coyote Steak"
+              },
+              {
+                "id": 1545,
+                "name": "Dry Pork Ribs"
+              },
+              {
+                "id": 1902,
+                "name": "Hot Lion Chops"
+              },
+              {
+                "id": 1536,
+                "name": "Spiced Wolf Meat"
+              },
+              {
+                "id": 4569,
+                "name": "Savory Deviate Delight"
+              },
+              {
+                "id": 3930,
+                "name": "Strider Stew"
+              },
+              {
+                "id": 1901,
+                "name": "Big Bear Steak"
+              },
+              {
+                "id": 1537,
+                "name": "Roasted Boar Meat"
+              },
+              {
+                "id": 1535,
+                "name": "Charred Wolf Meat"
+              },
+              {
+                "id": 54475,
+                "name": "Root Tea"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 129,
+        "name": "First Aid",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
+        "tiers": [
+          {
+            "skillPoints": 191,
+            "maxSkillPoints": 225,
+            "tierId": 2942,
+            "tierName": "First Aid",
+            "knownRecipes": [
+              {
+                "id": 4417,
+                "name": "Anti-Venom"
+              },
+              {
+                "id": 1839,
+                "name": "Heavy Linen Bandage"
+              },
+              {
+                "id": 1840,
+                "name": "Wool Bandage"
+              },
+              {
+                "id": 4414,
+                "name": "Silk Bandage"
+              },
+              {
+                "id": 1838,
+                "name": "Linen Bandage"
+              },
+              {
+                "id": 55743,
+                "name": "Woolen Tourniquet"
+              },
+              {
+                "id": 1841,
+                "name": "Heavy Wool Bandage"
+              },
+              {
+                "id": 52641,
+                "name": "First Aid Kit"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "reputations": [
+    {
+      "factionId": 577,
+      "factionName": "Everlook",
+      "standing": {
+        "raw": 2425,
+        "value": 2425,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 81,
+      "factionName": "Thunder Bluff",
+      "standing": {
+        "raw": 8671,
+        "value": 5671,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
+      }
+    },
+    {
+      "factionId": 87,
+      "factionName": "Bloodsail Buccaneers",
+      "standing": {
+        "raw": -7250,
+        "value": 34750,
+        "max": 36000,
+        "tier": 0,
+        "name": "Hated"
+      }
+    },
+    {
+      "factionId": 470,
+      "factionName": "Ratchet",
+      "standing": {
+        "raw": 4675,
+        "value": 1675,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
+      }
+    },
+    {
+      "factionId": 76,
+      "factionName": "Orgrimmar",
+      "standing": {
+        "raw": 14381,
+        "value": 5381,
+        "max": 12000,
+        "tier": 5,
+        "name": "Honored"
+      }
+    },
+    {
+      "factionId": 530,
+      "factionName": "Darkspear Trolls",
+      "standing": {
+        "raw": 11256,
+        "value": 2256,
+        "max": 12000,
+        "tier": 5,
+        "name": "Honored"
+      }
+    },
+    {
+      "factionId": 21,
+      "factionName": "Booty Bay",
+      "standing": {
+        "raw": 2500,
+        "value": 2500,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 2587,
+      "factionName": "Durotar Supply and Logistics",
+      "standing": {
+        "raw": 2000,
+        "value": 2000,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 529,
+      "factionName": "Argent Dawn",
+      "standing": {
+        "raw": 400,
+        "value": 400,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 369,
+      "factionName": "Gadgetzan",
+      "standing": {
+        "raw": 2425,
+        "value": 2425,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 68,
+      "factionName": "Undercity",
+      "standing": {
+        "raw": 6605,
+        "value": 3605,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
+      }
+    },
+    {
+      "factionId": 2787,
+      "factionName": "Earthen Ring",
+      "standing": {
+        "raw": 700,
+        "value": 700,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 2827,
+      "factionName": "Powderfuse",
+      "standing": {
+        "raw": 2425,
+        "value": 2425,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    }
+  ],
+  "media": {
+    "avatar": "https://render.worldofwarcraft.com/forever-us/character/51/4959027-avatar.jpg",
+    "avatarSd": "https://render.worldofwarcraft.com/forever-us/character/51/4959027-avatar-sd.jpg",
+    "fullRender": "https://render.worldofwarcraft.com/forever-us/character/51/4959027-main-raw.png"
+  }
+}

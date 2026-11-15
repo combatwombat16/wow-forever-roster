@@ -2154,7 +2154,12 @@ export function sidecarTieNote(tie) {
 export async function confirmMatch(id) {
   const character = rowById(id);
   if (guardCommit(character) !== null) return false;
-  const { mapEntry, sidecar } = byRosterId(character.id);
+  // Only the map half is read here. The SIDECAR half of the join is fetched below, through
+  // loadCharacterDetail, because the tie reads `professions` and under a manifest that field lives
+  // in the detail file: handed the manifest row, applySidecarTie would find no profession and write
+  // no prof1/prof2 — a silently empty patch that still toasts "Confirmed", which is worse than the
+  // pre-split behaviour because it looks like the sidecar had nothing to offer.
+  const { mapEntry } = byRosterId(character.id);
   const slug = scalarText(mapEntry && mapEntry.slug);
   if (!SLUG_RE.test(slug)) {
     showToast('There is no Battle.net slug to confirm for this row.', 'error');
@@ -2164,6 +2169,11 @@ export async function confirmMatch(id) {
   return runAction(character, async () => {
     const reviewedBy = await reviewerLogin();
     if (reviewedBy === null) return false;
+    // After the login check, so a reviewer without a usable PAT never costs a request. It never
+    // rejects and never throws: no manifest row, a 404 and an unreadable body all hand back what the
+    // row itself carries (the manifest row, or null for a row the sidecar never covered), which is
+    // the same input the tie has always degraded on — no toast changes, no new failure mode.
+    const sidecar = await loadCharacterDetail(character.id);
     return commitValidation(character, copy => {
       // The tie runs on the FRESH row: the vocabulary guards then apply to the row that is actually
       // being committed, whatever this browser's cache happened to hold when the modal was opened.
@@ -2221,12 +2231,13 @@ export async function confirmSelectedCandidate(id) {
     return false;
   }
   // Same tie as CONFIRM MATCH: both paths record a validation, so both are the moment the reviewer
-  // has vouched for the identity (see confirmMatch for the guards).
-  const { sidecar } = byRosterId(character.id);
+  // has vouched for the identity (see confirmMatch for the guards, and for why the row is loaded
+  // through loadCharacterDetail rather than read off the manifest by byRosterId).
   const tie = { written: [], skipped: [] };
   return runAction(character, async () => {
     const reviewedBy = await reviewerLogin();
     if (reviewedBy === null) return false;
+    const sidecar = await loadCharacterDetail(character.id);
     const ok = await commitValidation(character, copy => {
       const applied = applySidecarTie(copy, sidecar);
       applied.written.forEach(item => tie.written.push(item));

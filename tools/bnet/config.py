@@ -22,7 +22,17 @@ REPO = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO / "data"
 ROSTER_FILE = DATA_DIR / "characters.json"
 MAP_FILE = DATA_DIR / "battle-net-map.json"
-DATA_FILE = DATA_DIR / "character-data.json"
+# Schema v3 (docs/refactor-design.md §3): the character sidecar is TWO artefacts published
+# together — ``data/character-data.json`` is the MANIFEST (one small row per roster id, the
+# fields every card needs) and ``data/character-data/<id>.json`` is that character's DETAIL
+# document (gear, stats, talents, professions, reputations, media), fetched by the modal that
+# opens it. Both names come out of ONE constant, because the manifest's own `detail` field is
+# the string ``<DETAIL_DIR_NAME>/<id>.json`` and js/data.js rebuilds the same string from the
+# same name: two literals would be two things a patch can move separately, and a manifest line
+# that disagrees with the directory is a manifest of 404s.
+DETAIL_DIR_NAME = "character-data"
+DETAIL_DIR = DATA_DIR / DETAIL_DIR_NAME
+DATA_FILE = DATA_DIR / f"{DETAIL_DIR_NAME}.json"
 # Phase 1 modal rework (character-tasks.md T1.3): spec talent-tree definitions are
 # version-pinned static reference data shared by every character, so they are
 # stored once here instead of duplicated per character in the sidecar.

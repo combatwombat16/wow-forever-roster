@@ -230,6 +230,28 @@ const partyMod = await import(moduleUrl('party.js'));
 const rosterDoc = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'characters.json'), 'utf8'));
 const rosterChars = Array.isArray(rosterDoc) ? rosterDoc : rosterDoc.characters;
 const charDataDoc = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'character-data.json'), 'utf8'));
+// Schema v3 (manifest + data/character-data/<id>.json). The manifest row is the nine list-view
+// fields; the gear/stats/talents/professions/reputations/media half is its own file, named by the
+// row's `detail` pointer. Rebuilt here INDEPENDENTLY of the app — pointer compared to the id-derived
+// path, then layered over the row with `status` re-pinned from the manifest — so a regression in
+// either half of the layout, or in the pointer rule, fails this harness as well as the UI, and the
+// harness never borrows the code under test to describe what it expects.
+const detailDocFor = id => {
+  const row = charDataDoc.characters[String(id)];
+  const pointer = row && typeof row === 'object' ? row.detail : undefined;
+  if (typeof pointer !== 'string') return null;
+  if (pointer !== `character-data/${id}.json`) return null;
+  const file = path.join(ROOT, 'data', 'character-data', `${id}.json`);
+  if (!fs.existsSync(file)) return null;
+  const doc = JSON.parse(fs.readFileSync(file, 'utf8'));
+  return doc && typeof doc === 'object' ? doc : null;
+};
+const sidecarRow = id => {
+  const row = charDataDoc.characters[String(id)];
+  if (!row || typeof row !== 'object') return row === undefined ? undefined : row;
+  const detail = detailDocFor(id);
+  return detail ? { ...row, ...detail, status: row.status } : row;
+};
 const mapDoc = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'battle-net-map.json'), 'utf8'));
 
 console.log(`\n[0] boot against ${path.relative(process.cwd(), ROOT) || ROOT}`);
@@ -752,8 +774,11 @@ const TAB_IDS = ['gear', 'talents', 'professions', 'reputation', 'stats', 'progr
 const TAB_LABELS = ['Gear', 'Talents', 'Professions', 'Reputation', 'Stats', 'Progress'];
 const RICH_ID = '1791928493125';    // Warrior: gear with stats, two specs, professions, reputations
 const SPARSE_ID = '1791919870010';  // status-only sidecar row: all six tabs are empty states
-const richSidecar = charDataDoc.characters[RICH_ID];
-const sparseSidecar = charDataDoc.characters[SPARSE_ID];
+// The live rows this section renders are MANIFEST rows plus their detail file (see sidecarRow
+// above): the gear, talents, professions, reputations, stats and media a panel draws moved to
+// data/character-data/<id>.json, while level/guild/race/class stayed inline.
+const richSidecar = sidecarRow(RICH_ID);
+const sparseSidecar = sidecarRow(SPARSE_ID);
 const richRow = rosterChars.find(c => c.id === RICH_ID);
 const treesDoc = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'talent-trees.json'), 'utf8'));
 const writesBeforePhase2 = storageWrites.length;
@@ -774,7 +799,12 @@ ok(sparseSidecar && !sparseSidecar.gear && !sparseSidecar.reputations && !sparse
 // ---------- markup readers (the panels are born inside one innerHTML string) ----------
 
 const contentHtml = () => byId('detail-content').innerHTML;
-const openRow = id => { detail.openCharacterDetail(id); return contentHtml(); };
+// Opening a row whose manifest names a detail file paints the manifest row first and the
+// MERGED record one task later — the split reader's own order (js/data.js loadOpenDetail).
+// Every assertion below reads what the panels end up rendering, so openRow awaits that
+// task; a row with no pointer (any v2-shaped fixture) resolves on the spot and costs one
+// already-empty macrotask.
+const openRow = async id => { detail.openCharacterDetail(id); await sleep(0); return contentHtml(); };
 function attrOf(name, source) {
   const m = new RegExp(`(?:^|[\\s"])${name}="([^"]*)"`).exec(source);
   return m ? m[1] : '';
@@ -871,7 +901,7 @@ ok(detail.DETAIL_TABS.map(t => t.label).join('·') === TAB_LABELS.join('·'),
   `DETAIL_TABS labels are Gear·Talents·Professions·Reputation·Stats·Progress`);
 ok(detail.DEFAULT_DETAIL_TAB === 'gear', `DEFAULT_DETAIL_TAB is "${detail.DEFAULT_DETAIL_TAB}"`);
 
-const richHtml = openRow(RICH_ID);
+const richHtml = await openRow(RICH_ID);
 const richButtons = tabButtons(richHtml);
 const richPanels = tabPanels(richHtml);
 // Phase 4b: scoped to the bar slice, because the Talents panel now nests a second tablist of its own
@@ -922,7 +952,7 @@ detail.closeDetail();
 ok(dataMod.talentTreesDoc() === null && dataMod.talentTreesLoading() === false,
   'talent-tree geometry is not fetched on page load: no doc, no request in flight (lazy, ~200 KB, T1.3)');
 ok(!contentHtml().includes('Loading talent tree data'), 'no loading notice before the Talents tab is ever opened');
-openRow(RICH_ID);
+await openRow(RICH_ID);
 detail.setDetailTab('talents');
 ok(dataMod.talentTreesLoading() === true
   && panelSlice(contentHtml(), 'talents').includes('Loading talent tree data'),
@@ -935,7 +965,7 @@ ok(dataMod.talentTreesDoc() !== null && dataMod.talentTreesLoading() === false,
 // ---------- b. setDetailTab switches the visible panel ----------
 
 detail.closeDetail();
-openRow(RICH_ID);
+await openRow(RICH_ID);
 ok(detail.detailActiveTab() === 'gear', 'a freshly opened row starts on the Gear tab');
 ok(detail.setDetailTab('stats') === true && detail.detailActiveTab() === 'stats',
   'setDetailTab("stats") reports success and becomes the active tab');
@@ -960,13 +990,13 @@ ok([null, undefined, '', 42, {}].every(id => detail.setDetailTab(id) === false)
 
 // Per-open state: a tab chosen on one character is not a fact about the next one.
 detail.setDetailTab('progress');
-openRow(SPARSE_ID);
+await openRow(SPARSE_ID);
 ok(detail.detailActiveTab() === 'gear'
   && tabPanels(contentHtml()).filter(p => !p.classes.includes('hidden')).map(p => p.id).join() === 'detail-panel-gear',
   'switching characters resets the tab to Gear (per-open state, T2.1)');
 detail.closeDetail();
 detail.setDetailTab('reputation');
-openRow(RICH_ID);
+await openRow(RICH_ID);
 ok(detail.detailActiveTab() === 'gear', 'closeDetail() then reopening also resets the tab');
 ok(detail.isDetailOpen() === true, 'the modal is open for the checks below');
 
@@ -1039,7 +1069,7 @@ const triggerOf = rect => ({
 });
 
 detail.closeDetail();
-const gearHtmlRich = openRow(RICH_ID);
+const gearHtmlRich = await openRow(RICH_ID);
 const hoverWiring = [...gearHtmlRich.matchAll(/data-wow-slot="([^"]*)"[^>]*onmouseenter="showDetailTooltip\(event, (\d+)\)"[^>]*onmouseleave="hideDetailTooltip\(\)"[^>]*onfocus="showDetailTooltip\(event, (\d+)\)"[^>]*onblur="hideDetailTooltip\(\)"/g)];
 ok(hoverWiring.length === richSidecar.gear.length,
   `every one of the ${richSidecar.gear.length} synced items is hoverable AND focusable (${hoverWiring.length} slots wired)`);
@@ -1087,6 +1117,9 @@ ok(tip.style.left === '8px', `a trigger scrolled off the left edge still leaves 
 // Invalid registry reads never open a tooltip.
 detail.closeDetail();
 detail.openCharacterDetail(RICH_ID);
+// Schema v3: the manifest paints first and the detail record one task later (the same
+// order a browser sees). sleep(0) is a macrotask, so it drains the whole detail load.
+await sleep(0);
 ok([-1, 9999, 1.5, 'abc', undefined, NaN, {}].every(index => detail.showDetailTooltip({ currentTarget: triggerOf({ left: 0, right: 1, top: 0, bottom: 1 }) }, index) === false)
   && tip.classList.contains('hidden'),
   'out-of-range / non-integer / non-numeric tooltip indices return false and leave it hidden');
@@ -1094,6 +1127,9 @@ ok([-1, 9999, 1.5, 'abc', undefined, NaN, {}].every(index => detail.showDetailTo
 // The registry belongs to the current paint: an index from one row must not describe another.
 detail.closeDetail();
 detail.openCharacterDetail(SPARSE_ID);
+// Schema v3: the manifest paints first and the detail record one task later (the same
+// order a browser sees). sleep(0) is a macrotask, so it drains the whole detail load.
+await sleep(0);
 const staleIndex = hoverIndices.length - 1;
 ok(detail.showDetailTooltip({ currentTarget: triggerOf({ left: 0, right: 1, top: 0, bottom: 1 }) }, staleIndex) === false
   && tip.innerHTML === '' && tip.classList.contains('hidden'),
@@ -1103,6 +1139,9 @@ ok(detail.showDetailTooltip({ currentTarget: triggerOf({ left: 0, right: 1, top:
 const firstTrigger = triggerOf({ left: 50, right: 100, top: 20, bottom: 72 });
 detail.closeDetail();
 detail.openCharacterDetail(RICH_ID);
+// Schema v3: the manifest paints first and the detail record one task later (the same
+// order a browser sees). sleep(0) is a macrotask, so it drains the whole detail load.
+await sleep(0);
 const headIdx2 = Number((hoverWiring.find(m => m[1] === 'Head') || [])[2]);
 detail.showDetailTooltip({ currentTarget: firstTrigger }, headIdx2);
 ok(firstTrigger.getAttribute('aria-describedby') === 'detail-tooltip',
@@ -1117,6 +1156,9 @@ ok(firstTrigger.getAttribute('aria-describedby') === null && secondTrigger.getAt
   && tip.classList.contains('hidden') && tip.innerHTML === '',
   'closeDetail() clears aria-describedby off the last trigger along with the tooltip content');
 detail.openCharacterDetail(RICH_ID);
+// Schema v3: the manifest paints first and the detail record one task later (the same
+// order a browser sees). sleep(0) is a macrotask, so it drains the whole detail load.
+await sleep(0);
 const repaintTrigger = triggerOf({ left: 50, right: 100, top: 20, bottom: 72 });
 detail.showDetailTooltip({ currentTarget: repaintTrigger }, headIdx2);
 state.renderAll();
@@ -1214,7 +1256,7 @@ ok(cards().map(c => c.attrs['data-character-id']).join() === TREE_ID
 // ---------- e. the visual talent tree vs data/talent-trees.json ----------
 
 detail.closeDetail();
-openRow(TREE_ID);
+await openRow(TREE_ID);
 detail.setDetailTab('talents');
 const talentsHtml = panelSlice(contentHtml(), 'talents');
 ok(talentsHtml.includes(`Tree geometry: ${esc(treesDoc.staticNamespace)}`),
@@ -1338,7 +1380,7 @@ detail.closeDetail();
 // follows the repaint, and a top-level bar that does not move one byte.
 const activeSpecPosition = richSpecs.findIndex(g => g.specName === treeSidecar.activeSpec);
 detail.closeDetail();
-openRow(TREE_ID);
+await openRow(TREE_ID);
 detail.setDetailTab('talents');
 const subHtml = panelSlice(contentHtml(), 'talents');
 ok(countOf('role="tablist"', subHtml) === 1 && countOf('role="tablist"', contentHtml()) === 2,
@@ -1502,6 +1544,9 @@ state.setQuery('');
 state.renderAll();
 // [f] continues in the modal [e2] left open, so put it back on the live rich row before it does.
 detail.openCharacterDetail(RICH_ID);
+// Schema v3: the manifest paints first and the detail record one task later (the same
+// order a browser sees). sleep(0) is a macrotask, so it drains the whole detail load.
+await sleep(0);
 
 // ---------- f. professions / stats / progress tab content ----------
 
@@ -1535,9 +1580,22 @@ ok(!statsPanelLive.includes('[object Object]'), 'no stat value is ever stringifi
 
 detail.setDetailTab('progress');
 const progressPanelLive = panelSlice(contentHtml(), 'progress');
-ok(!richSidecar.progress && progressPanelLive.includes(esc('No raid, Mythic+ or PvP progress synced yet.')),
-  'the rich row carries no progress block, and its Progress tab says so instead of disappearing');
+// The premise "the rich row carries no progress block" used to be asserted against the LIVE row, and
+// the nightly deleted it: this character now reports PvP kills, and `data/character-data*.json` is
+// machine-owned (bfa9e8b, "stop renting UI contracts from nightly-owned data"). The page was never
+// wrong — the check was borrowing a fact from a file nobody curates. What is pinned instead is the
+// behaviour, in both directions, derived from whatever the row holds: a row WITH progress renders it
+// (not a blank panel, not an object dump), and a row WITHOUT it keeps the tab and says so — the second
+// half asserted on a fixture below, so neither direction depends on tonight's sync.
+ok(richSidecar.progress
+  ? progressPanelLive.includes('>PvP<') && progressPanelLive.includes('Honorable kills')
+    && !progressPanelLive.includes('[object Object]')
+  : progressPanelLive.includes(esc('No raid, Mythic+ or PvP progress synced yet.')),
+  `the live Progress tab renders the block the live row actually has `
+  + `(${richSidecar.progress ? 'pvp present' : 'absent → empty state'})`);
 const progressPanelFor = sidecar => panelSlice(detail.detailHtml(richRow, sidecar, null, 'ok', '<span></span>', ''), 'progress');
+ok(progressPanelFor({ ...sparseSidecar }).includes(esc('No raid, Mythic+ or PvP progress synced yet.')),
+  'a row with no progress block keeps its Progress tab and says so instead of disappearing');
 const progressPanel = progressPanelFor({ ...sparseSidecar, progress: {
   raid: { raidProgress: [{ name: 'Molten Core', progress: { completedCount: 10, possibleCount: 10 } }] },
   mythicPlus: { currentRatings: [{ season: 12, keystoneLevel: 15 }] },
@@ -1610,7 +1668,7 @@ ok(!/NaN|undefined|Infinity/.test(repEdge), 'no NaN/undefined/Infinity in the re
 // ---------- h. empty states: the bar cannot change, the panels all speak ----------
 
 detail.closeDetail();
-const sparseHtml = openRow(SPARSE_ID);
+const sparseHtml = await openRow(SPARSE_ID);
 const EMPTY_STATES = {
   gear: 'No gear data synced yet.',
   talents: 'No talents data synced yet.',
@@ -1742,7 +1800,7 @@ ok(headerFor({}).includes('wow-avatar-none') && headerFor(null).includes('wow-av
   'a row with no media block at all still renders a placeholder avatar');
 ok(headerFor({ media: 'not-an-object' }).includes('wow-avatar-none'),
   'a non-object media block degrades to the placeholder instead of throwing');
-const allModalImgs = [...openRow(RICH_ID).matchAll(/<img src="([^"]+)"/g)].map(m => m[1]);
+const allModalImgs = [...(await openRow(RICH_ID)).matchAll(/<img src="([^"]+)"/g)].map(m => m[1]);
 ok(allModalImgs.length > 0 && allModalImgs.every(src => detail.isSafeIconUrl(src)),
   `every <img> anywhere in the modal is on the Blizzard allowlist (${allModalImgs.length} images)`);
 
@@ -2524,7 +2582,7 @@ function panelSubSlice(html, section, index) {
 
 // ---------- the whole-tab-empty rule: no section data, no bar, the legacy message ----------
 detail.closeDetail();
-openRow('X5');
+await openRow('X5');
 detail.setDetailTab('stats');
 ok(panelSlice(contentHtml(), 'stats').includes(esc('No combat statistics synced yet.'))
   && countOf('role="tablist"', panelSlice(contentHtml(), 'stats')) === 0,
@@ -2546,7 +2604,7 @@ ok(countOf('role="tablist"', hiddenStats) === 0, 'a hidden section panel renders
 
 // ---------- the rich row: full bars, defaults, switching ----------
 detail.closeDetail();
-openRow('X1');
+await openRow('X1');
 detail.setDetailTab('gear');
 const hiddenStatsRich = panelSlice(contentHtml(), 'stats');
 ok(countOf('role="tablist"', hiddenStatsRich) === 0
@@ -2639,12 +2697,12 @@ ok(SUB_INERT.every(v => detail.detailSectionSubTabKeydown(keyEvent('ArrowRight')
 
 // Per-open reset: a sub-tab chosen on one character is not a fact about the next.
 detail.setDetailSectionSubTab('stats', 1);
-openRow('X2');
+await openRow('X2');
 detail.setDetailTab('stats');
 ok(panelSlice(contentHtml(), 'stats').includes(esc('No combat statistics synced yet.')),
   'the X2 row (stats-less) shows the legacy empty state');
 detail.closeDetail();
-openRow('X1');
+await openRow('X1');
 detail.setDetailTab('stats');
 ok(detail.detailActiveSectionSubTab('stats') === 2,
   'reopening the rich row re-derives the default (first group with data): the per-open reset cleared the choice');
@@ -2761,7 +2819,7 @@ const panelsScroll = panels => panels.length === 6 && panels.every(p => p.classe
   && p.classes.includes('flex-1') && p.classes.includes('min-h-0'));
 
 detail.closeDetail();
-const phaseARich = openRow('X1');
+const phaseARich = await openRow('X1');
 const boxClassSnapshot = byId('detail-modal').className;
 const contentClassSnapshot = byId('detail-content').className;
 ok(panelsScroll(tabPanels(phaseARich)),
@@ -3560,12 +3618,12 @@ ok(chipsPerCard.size === rosterG.characters.length
 ok(countOf('wow-account-chip', byId('character-grid').innerHTML) === gGrouped.size
   && gGrouped.size === 7,
   `the folded groups are the ones flagged: dupone across four spellings plus otherseven (${gGrouped.size} of ${rosterG.characters.length} rows)`);
-openRow('P1');
+await openRow('P1');
 ok(countOf('wow-account-chip', contentHtml()) === 1, 'the modal header carries the same chip for a grouped row');
-openRow('P5');
+await openRow('P5');
 ok(countOf('wow-account-chip', contentHtml()) === 0,
   'and no chip (and no empty box) for a player who owns one character');
-openRow('P7');
+await openRow('P7');
 const headerHtml = contentHtml();
 const headerChip = (/<span class="wow-account-chip"[^>]*>([\s\S]*?)<\/span>/.exec(headerHtml) || ['', '']);
 const headerTitle = (/title="([^"]*)"[^>]*>dupone</.exec(headerHtml) || ['', ''])[1];
@@ -3622,7 +3680,7 @@ ok(countOf('>\u2022<', p11Html) === 0,
 const p1Card = cards().find(c => String(c.attrs['data-character-id']) === 'P1');
 ok(countOf('>\u2022<', p1Card.innerHTML) >= 2,
   `a full row keeps its bullets (${countOf('>\u2022<', p1Card.innerHTML)}) — the guard hides segments, it does not blank the line`);
-openRow('P11');
+await openRow('P11');
 const p11Modal = contentHtml();
 ok(!p11Modal.includes('>Horde<') && p11Modal.includes('>Unknown<'),
   'the modal header takes the same neutral faction tag (one getFaction, one answer)');

@@ -60,6 +60,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))          # tools/
 
 from bnet import artifacts, autoadd, config, fetch, http, resolve, roster, sync  # noqa: E402
+from tests import redirect_artifacts, restore_artifacts  # noqa: E402
 
 API = config.API_BASE
 GUILD_SLUG = "flowmasters"
@@ -359,13 +360,14 @@ class SyncRunAppendsAndResolves(unittest.TestCase):
         self.roster_file = self.tmp / "characters.json"
         self.map_file = self.tmp / "battle-net-map.json"
         self.data_file = self.tmp / "character-data.json"
-        self._files = (config.ROSTER_FILE, config.MAP_FILE, config.DATA_FILE)
-        config.ROSTER_FILE, config.MAP_FILE, config.DATA_FILE = (
-            self.roster_file, self.map_file, self.data_file)
+        # Three files AND the detail directory: the schema-v3 writer prunes data/character-data/,
+        # so a run that redirected only the files would delete the checkout's real detail files
+        # (see tools/tests/__init__.py).
+        self._files = redirect_artifacts(self.tmp)
         self._step_summary = __import__("os").environ.pop("GITHUB_STEP_SUMMARY", None)
 
     def tearDown(self):
-        config.ROSTER_FILE, config.MAP_FILE, config.DATA_FILE = self._files
+        restore_artifacts(self._files)
         if self._step_summary is not None:
             __import__("os").environ["GITHUB_STEP_SUMMARY"] = self._step_summary
 
@@ -427,6 +429,23 @@ class SyncRunAppendsAndResolves(unittest.TestCase):
         self.assertEqual(entries[new["id"]]["rosterName"], new["name"])
         self.assertEqual(entries[new["id"]]["status"], "ok", entries[new["id"]])
         self.assertEqual(entries[new["id"]]["slug"], "newbie-newface")
+        # Schema v3, asserted at the run's own write site: the ok sidecar row is a MANIFEST row that
+        # points at its own detail file, and the file is there with the heavy half inside it. A run
+        # that published the pointer without the file would pass every pre-split assertion in this
+        # class and fail the gate's directory rule on the commit it just made.
+        published_row = sidecar[new["id"]]
+        self.assertEqual(set(published_row) - set(artifacts.MANIFEST_INLINE_KEYS), {"detail"})
+        self.assertEqual(published_row["detail"], f"character-data/{new['id']}.json")
+        detail_path = self.tmp / "character-data" / f"{new['id']}.json"
+        self.assertTrue(detail_path.is_file(), "the appended ok row has no detail document")
+        detail = json.loads(detail_path.read_text(encoding="utf-8"))
+        self.assertEqual(detail["id"], new["id"])
+        self.assertEqual(detail["schemaVersion"], artifacts.DATA_SCHEMA_VERSION)
+        self.assertNotIn("status", detail)
+        for rid, published in sidecar.items():
+            if published.get("status") != "ok":
+                self.assertNotIn("detail", published,
+                                 f"a non-ok row {rid} points at a file that cannot exist")
         self.assertEqual(entries[new["id"]]["mappedVia"], "guild_roster")
         self.assertTrue(entries[new["id"]]["bnetName"])
         self.assertTrue(entries[new["id"]]["href"].startswith(f"{API}/profile/wow/character/"))

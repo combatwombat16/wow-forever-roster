@@ -88,6 +88,16 @@ jobs:
           # verify step above is what proves the write appended only: same rows, same order,
           # no mutation, compared against git HEAD.
           git add data/characters.json data/battle-net-map.json data/character-data.json data/talent-trees.json data/class-icons.json data/profession-icons.json
+          # Schema v3 splits the character sidecar: data/character-data.json is the MANIFEST and
+          # data/character-data/<id>.json is one file per resolved character. This directory is staged
+          # with `-A` on purpose, and with its OWN two paths so the flag reaches nothing else: a
+          # pruned detail file is part of the publication. When an id is demoted out of ok (or leaves
+          # the roster) the sync deletes its detail file in the same write, and `git add <dir>`
+          # without -A stages new and modified files but NOT deletions — main would keep serving the
+          # old gear list under a manifest that no longer names it, the exact orphan the verify step
+          # above fails the run for. Broad `-A` (no paths, `data/`, `.`) stays forbidden: the gate
+          # pins this line's scope and this comment.
+          git add -A data/character-data data/character-data.json
           if git diff --cached --quiet; then
             echo "No artifact changes; skipping commit."
             exit 0
