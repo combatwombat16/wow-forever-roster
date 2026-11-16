@@ -413,7 +413,9 @@
         "id": 1,
         "name": "Axe"
       },
-      "enchants": [],
+      "enchants": [
+        "Flametongue 2"
+      ],
       "stats": [
         {
           "value": 8,
@@ -494,7 +496,7 @@
       "effective": 52
     },
     "meleeCrit": {
-      "value": 11.0133,
+      "value": 11.0533,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -546,7 +548,7 @@
       "effective": 528
     },
     "dodge": {
-      "value": 5.9733005,
+      "value": 6.0533004,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -556,7 +558,7 @@
       "ratingNormalized": 0
     },
     "block": {
-      "value": 4.84,
+      "value": 4.92,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -580,8 +582,8 @@
       "effective": 49
     },
     "defense": {
-      "base": 106,
-      "effective": 106
+      "base": 108,
+      "effective": 108
     },
     "fireResistance": {
       "base": 0,
@@ -695,7 +697,7 @@
         "tiers": [
           {
             "skillPoints": 150,
-            "maxSkillPoints": 150,
+            "maxSkillPoints": 225,
             "tierId": 2937,
             "tierName": "Alchemy",
             "knownRecipes": [
@@ -797,7 +799,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136246.jpg",
         "tiers": [
           {
-            "skillPoints": 123,
+            "skillPoints": 136,
             "maxSkillPoints": 150,
             "tierId": 2944,
             "tierName": "Herbalism",
@@ -904,8 +906,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 1384,
-        "value": 1384,
+        "raw": 1409,
+        "value": 1409,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -915,8 +917,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 5355,
-        "value": 2355,
+        "raw": 5542,
+        "value": 2542,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -926,8 +928,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 2268,
-        "value": 2268,
+        "raw": 2318,
+        "value": 2318,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -937,8 +939,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 9623,
-        "value": 623,
+        "raw": 9811,
+        "value": 811,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -948,8 +950,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 8380,
-        "value": 5380,
+        "raw": 8567,
+        "value": 5567,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -959,19 +961,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 1384,
-        "value": 1384,
-        "max": 3000,
-        "tier": 3,
-        "name": "Neutral"
-      }
-    },
-    {
-      "factionId": 2587,
-      "factionName": "Durotar Supply and Logistics",
-      "standing": {
-        "raw": 0,
-        "value": 0,
+        "raw": 1409,
+        "value": 1409,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -981,8 +972,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 1384,
-        "value": 1384,
+        "raw": 1409,
+        "value": 1409,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -992,8 +983,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 1851,
-        "value": 1851,
+        "raw": 2076,
+        "value": 2076,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1003,8 +994,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 1384,
-        "value": 1384,
+        "raw": 1409,
+        "value": 1409,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

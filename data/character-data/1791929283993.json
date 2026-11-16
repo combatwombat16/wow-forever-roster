@@ -302,10 +302,10 @@
     },
     {
       "slot": "Hands",
-      "name": "Wrangler's Gloves of Power",
-      "ilvl": 27,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132961.jpg",
-      "itemId": 15334,
+      "name": "Cutthroat's Mitts of the Bandit",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132956.jpg",
+      "itemId": 15137,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -320,8 +320,30 @@
       ],
       "stats": [
         {
-          "value": 14,
-          "displayString": "+14 Attack Power",
+          "value": 3,
+          "displayString": "+3 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 7,
+          "displayString": "+7 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 7,
+          "displayString": "+7 Attack Power",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -413,6 +435,42 @@
           }
         }
       ]
+    },
+    {
+      "slot": "Trinket 1",
+      "name": "Satchel of Potions",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133633.jpg",
+      "itemId": 280766,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Trinket 2",
+      "name": "Transformative Cocoon",
+      "ilvl": 30,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/237431.jpg",
+      "itemId": 276895,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": []
     },
     {
       "slot": "Back",
@@ -517,31 +575,31 @@
     },
     {
       "slot": "Ranged",
-      "name": "Archer's Longbow",
-      "ilvl": 32,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135491.jpg",
-      "itemId": 15285,
-      "quality": "UNCOMMON",
+      "name": "Golemsight Long Gun",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134536.jpg",
+      "itemId": 273029,
+      "quality": "RARE",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 2,
-        "name": "Bow"
+        "id": 3,
+        "name": "Gun"
       },
       "enchants": [
-        "Enchanted: Scope (+2 Damage)"
+        "Enchanted: Scope (+3 Damage)"
       ],
       "stats": [
         {
-          "value": 9,
-          "displayString": "+9 Ranged Attack Power",
-          "isEquipBonus": true,
+          "value": 6,
+          "displayString": "+6 Agility",
+          "isEquipBonus": false,
           "color": {
-            "r": 0,
+            "r": 255,
             "g": 255,
-            "b": 0,
+            "b": 255,
             "a": 1.0
           }
         }
@@ -549,27 +607,33 @@
     },
     {
       "slot": "Ammo",
-      "name": "Razor Arrow",
+      "name": "Solid Shot",
       "ilvl": 30,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132382.jpg",
-      "itemId": 3030,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132384.jpg",
+      "itemId": 3033,
       "quality": "COMMON",
       "itemClass": {
         "id": 6,
         "name": "Projectile"
       },
       "itemSubclass": {
-        "id": 2,
-        "name": "Arrow"
+        "id": 3,
+        "name": "Bullet"
       },
       "enchants": [],
       "stats": []
     }
   ],
+  "progress": {
+    "pvp": {
+      "honorableKills": 82,
+      "pvpRank": 0
+    }
+  },
   "achievementPoints": 0,
   "stats": {
-    "health": 965,
-    "power": 1125,
+    "health": 1068,
+    "power": 1170,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -584,19 +648,19 @@
       "effective": 33
     },
     "agility": {
-      "base": 62,
-      "effective": 91
+      "base": 64,
+      "effective": 102
     },
     "intellect": {
-      "base": 34,
-      "effective": 46
+      "base": 35,
+      "effective": 47
     },
     "stamina": {
-      "base": 47,
-      "effective": 79
+      "base": 48,
+      "effective": 87
     },
     "meleeCrit": {
-      "value": 8.8605,
+      "value": 9.356999,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -625,35 +689,35 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 301,
-    "mainHandDamageMin": 94.32,
-    "mainHandDamageMax": 123.12,
+    "attackPower": 308,
+    "mainHandDamageMin": 95.759995,
+    "mainHandDamageMax": 124.56,
     "mainHandSpeed": 2.353,
-    "mainHandDps": 46.204845,
-    "offHandDamageMin": 36.420002,
-    "offHandDamageMax": 48.42,
+    "mainHandDps": 46.81683,
+    "offHandDamageMin": 36.96,
+    "offHandDamageMax": 48.96,
     "offHandSpeed": 1.765,
-    "offHandDps": 24.033993,
+    "offHandDps": 24.339943,
     "spellPower": 0,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 10.0996,
+      "value": 10.0946,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 57.0,
+    "manaRegen": 58.0,
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 64,
-      "effective": 804
+      "effective": 832
     },
     "dodge": {
-      "value": 7.951899,
+      "value": 8.714,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 9.68,
+      "value": 9.84,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -663,7 +727,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 8.9405,
+      "value": 9.356999,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -678,12 +742,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 42,
-      "effective": 46
+      "base": 43,
+      "effective": 47
     },
     "defense": {
-      "base": 132,
-      "effective": 132
+      "base": 141,
+      "effective": 141
     },
     "fireResistance": {
       "base": 3,
@@ -706,9 +770,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 368,
-    "rangedDamageMin": 131.01143,
-    "rangedDamageMax": 157.21143,
+    "rangedAttackPower": 377,
+    "rangedDamageMin": 138.18571,
+    "rangedDamageMax": 168.18571,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -772,7 +836,7 @@
     {
       "specId": 51,
       "specName": "Survival",
-      "spentPoints": 7,
+      "spentPoints": 9,
       "talents": [
         {
           "rank": 5,
@@ -781,6 +845,15 @@
           "spellId": 19295,
           "spellName": "Deflection",
           "description": "Increases your Parry chance by 5%.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 2,
+          "talentId": 134459,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136100.jpg",
+          "spellId": 19184,
+          "spellName": "Entrapment",
+          "description": "When your traps are triggered, all affected targets are Entrapped, preventing them from moving for 2 sec.",
           "castTime": "Passive"
         },
         {
@@ -803,7 +876,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
         "tiers": [
           {
-            "skillPoints": 187,
+            "skillPoints": 191,
             "maxSkillPoints": 225,
             "tierId": 2947,
             "tierName": "Skinning",
@@ -826,11 +899,15 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 126,
+            "skillPoints": 134,
             "maxSkillPoints": 225,
             "tierId": 2946,
             "tierName": "Mining",
             "knownRecipes": [
+              {
+                "id": 1847,
+                "name": "Smelt Iron"
+              },
               {
                 "id": 1848,
                 "name": "Smelt Tin"
@@ -887,6 +964,14 @@
               {
                 "id": 1537,
                 "name": "Roasted Boar Meat"
+              },
+              {
+                "id": 1538,
+                "name": "Coyote Steak"
+              },
+              {
+                "id": 3964,
+                "name": "Boiled Clams"
               },
               {
                 "id": 4786,
@@ -961,8 +1046,19 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 1832,
-        "value": 1832,
+        "raw": 1882,
+        "value": 1882,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 510,
+      "factionName": "The Defilers",
+      "standing": {
+        "raw": 100,
+        "value": 100,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -972,8 +1068,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 6280,
-        "value": 3280,
+        "raw": 6805,
+        "value": 3805,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -983,8 +1079,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 3164,
-        "value": 164,
+        "raw": 3264,
+        "value": 264,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -994,8 +1090,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 6338,
-        "value": 3338,
+        "raw": 6620,
+        "value": 3620,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1005,8 +1101,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 4287,
-        "value": 1287,
+        "raw": 4550,
+        "value": 1550,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1016,8 +1112,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 1832,
-        "value": 1832,
+        "raw": 1882,
+        "value": 1882,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1027,8 +1123,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 1832,
-        "value": 1832,
+        "raw": 1882,
+        "value": 1882,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1038,8 +1134,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 3650,
-        "value": 650,
+        "raw": 3893,
+        "value": 893,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1049,8 +1145,8 @@
       "factionId": 2787,
       "factionName": "Earthen Ring",
       "standing": {
-        "raw": 600,
-        "value": 600,
+        "raw": 950,
+        "value": 950,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1071,8 +1167,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 1832,
-        "value": 1832,
+        "raw": 1882,
+        "value": 1882,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

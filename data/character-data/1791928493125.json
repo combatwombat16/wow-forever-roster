@@ -766,7 +766,7 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 618,
+    "health": 1095,
     "power": 100,
     "powerType": {
       "id": 1,
@@ -778,23 +778,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 62,
-      "effective": 70
+      "base": 63,
+      "effective": 118
     },
     "agility": {
-      "base": 36,
-      "effective": 37
+      "base": 37,
+      "effective": 65
     },
     "intellect": {
-      "base": 18,
-      "effective": 8
+      "base": 19,
+      "effective": 23
     },
     "stamina": {
-      "base": 55,
-      "effective": 46
+      "base": 56,
+      "effective": 89
     },
     "meleeCrit": {
-      "value": 3.8968,
+      "value": 6.5899997,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -823,11 +823,11 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 201,
-    "mainHandDamageMin": 13.896429,
-    "mainHandDamageMax": 19.14643,
+    "attackPower": 300,
+    "mainHandDamageMin": 71.14287,
+    "mainHandDamageMax": 92.14287,
     "mainHandSpeed": 2.2,
-    "mainHandDps": 7.5097404,
+    "mainHandDps": 37.110394,
     "offHandDamageMin": 0.0,
     "offHandDamageMax": 0.0,
     "offHandSpeed": 2.0,
@@ -842,26 +842,26 @@
     "manaRegen": 0.0,
     "manaRegenCombat": 0.0,
     "armor": {
-      "base": 4294967240,
-      "effective": 435
+      "base": 0,
+      "effective": 1798
     },
     "dodge": {
-      "value": 4.0968,
+      "value": 6.7099996,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 5.1600003,
+      "value": 5.08,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "block": {
-      "value": 10.16,
+      "value": 10.079999,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 3.0967999,
+      "value": 5.5899997,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -877,36 +877,36 @@
     },
     "spirit": {
       "base": 31,
-      "effective": 17
+      "effective": 41
     },
     "defense": {
-      "base": 134,
-      "effective": 139
+      "base": 137,
+      "effective": 142
     },
     "fireResistance": {
-      "base": 0,
-      "effective": 0
-    },
-    "shadowResistance": {
-      "base": 0,
-      "effective": 0
-    },
-    "natureResistance": {
       "base": 1,
       "effective": 1
     },
+    "shadowResistance": {
+      "base": 1,
+      "effective": 1
+    },
+    "natureResistance": {
+      "base": 3,
+      "effective": 3
+    },
     "arcaneResistance": {
-      "base": 0,
-      "effective": 0
+      "base": 1,
+      "effective": 1
     },
     "frostResistance": {
-      "base": 0,
-      "effective": 0
+      "base": 1,
+      "effective": 1
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 81,
-    "rangedDamageMin": 7.1428576,
-    "rangedDamageMax": 11.142858,
+    "rangedAttackPower": 138,
+    "rangedDamageMin": 36.714287,
+    "rangedDamageMax": 52.714287,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -936,7 +936,7 @@
     {
       "specId": 257,
       "specName": "Protection",
-      "spentPoints": 18,
+      "spentPoints": 19,
       "talents": [
         {
           "rank": 5,
@@ -993,12 +993,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 2,
+          "rank": 3,
           "talentId": 135499,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132363.jpg",
           "spellId": 12308,
           "spellName": "Improved Sunder Armor",
-          "description": "Reduces the Rage cost of your Sunder Armor ability by 2.",
+          "description": "Reduces the Rage cost of your Sunder Armor ability by 3.",
           "castTime": "Passive"
         },
         {
@@ -1021,7 +1021,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 145,
+            "skillPoints": 148,
             "maxSkillPoints": 225,
             "tierId": 2946,
             "tierName": "Mining",
@@ -1466,8 +1466,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 12786,
-        "value": 3786,
+        "raw": 12823,
+        "value": 3823,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1488,8 +1488,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 8083,
-        "value": 5083,
+        "raw": 8121,
+        "value": 5121,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1499,8 +1499,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 5563,
-        "value": 2563,
+        "raw": 5601,
+        "value": 2601,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1554,8 +1554,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 4257,
-        "value": 1257,
+        "raw": 4407,
+        "value": 1407,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"

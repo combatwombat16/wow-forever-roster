@@ -80,40 +80,40 @@
     },
     {
       "slot": "Shoulders",
-      "name": "Rough Bronze Shoulders",
-      "ilvl": 22,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135036.jpg",
-      "itemId": 3480,
+      "name": "Superior Shoulders of Healing",
+      "ilvl": 27,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135039.jpg",
+      "itemId": 9807,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
       },
       "itemSubclass": {
-        "id": 3,
-        "name": "Mail"
+        "id": 2,
+        "name": "Leather"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Strength",
-          "isEquipBonus": false,
+          "value": 5,
+          "displayString": "+5 Spell Damage",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         },
         {
-          "value": 4,
-          "displayString": "+4 Stamina",
-          "isEquipBonus": false,
+          "value": 15,
+          "displayString": "+15 Spell Healing",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -180,24 +180,24 @@
     },
     {
       "slot": "Waist",
-      "name": "Atrophic Girdle",
-      "ilvl": 20,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132510.jpg",
-      "itemId": 271201,
+      "name": "Rotmender's Sash",
+      "ilvl": 22,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132500.jpg",
+      "itemId": 286980,
       "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
       },
       "itemSubclass": {
-        "id": 3,
-        "name": "Mail"
+        "id": 1,
+        "name": "Cloth"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Strength",
+          "value": 6,
+          "displayString": "+6 Intellect",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -207,8 +207,8 @@
           }
         },
         {
-          "value": 7,
-          "displayString": "+7 Stamina",
+          "value": 6,
+          "displayString": "+6 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -507,11 +507,29 @@
       ]
     },
     {
+      "slot": "Trinket 2",
+      "name": "Satchel of Potions",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133633.jpg",
+      "itemId": 280766,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
       "slot": "Back",
-      "name": "Bright Cloak",
-      "ilvl": 23,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133762.jpg",
-      "itemId": 6381,
+      "name": "Dervish Cape of the Channeler",
+      "ilvl": 26,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133759.jpg",
+      "itemId": 6604,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -524,8 +542,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 2,
-          "displayString": "+2 Stamina",
+          "value": 4,
+          "displayString": "+4 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -535,8 +553,19 @@
           }
         },
         {
-          "value": 3,
-          "displayString": "+3 Spirit",
+          "value": 2,
+          "displayString": "+2 Spell Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 2,
+          "displayString": "+2 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -549,24 +578,54 @@
     },
     {
       "slot": "Main Hand",
-      "name": "Monstrous Cleaver",
-      "ilvl": 23,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135324.jpg",
-      "itemId": 279864,
+      "name": "The Stitcher",
+      "ilvl": 24,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133483.jpg",
+      "itemId": 279874,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 8,
-        "name": "Sword"
+        "id": 4,
+        "name": "Mace"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 6,
-          "displayString": "+6 Stamina",
+          "value": 3,
+          "displayString": "+3 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Off Hand",
+      "name": "Sentry Buckler",
+      "ilvl": 28,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134955.jpg",
+      "itemId": 3743,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 6,
+        "name": "Shield"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 1,
+          "displayString": "+1 Intellect",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -576,19 +635,8 @@
           }
         },
         {
-          "value": 4,
-          "displayString": "+4 Attack Power",
-          "isEquipBonus": true,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 6,
-          "displayString": "+6 Attack Power Vs Undead",
+          "value": 5,
+          "displayString": "+5 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -602,14 +650,14 @@
   ],
   "progress": {
     "pvp": {
-      "honorableKills": 424,
-      "pvpRank": 0
+      "honorableKills": 518,
+      "pvpRank": 1
     }
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 1007,
-    "power": 815,
+    "health": 976,
+    "power": 962,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -620,23 +668,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 46,
-      "effective": 73
+      "base": 47,
+      "effective": 68
     },
     "agility": {
       "base": 32,
       "effective": 34
     },
     "intellect": {
-      "base": 33,
-      "effective": 38
+      "base": 34,
+      "effective": 46
     },
     "stamina": {
-      "base": 47,
-      "effective": 94
+      "base": 48,
+      "effective": 89
     },
     "meleeCrit": {
-      "value": 4.4102,
+      "value": 4.0350003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -665,45 +713,45 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 208,
-    "mainHandDamageMin": 89.02858,
-    "mainHandDamageMax": 109.02858,
-    "mainHandSpeed": 3.3,
-    "mainHandDps": 30.008661,
-    "offHandDamageMin": 15.357144,
-    "offHandDamageMax": 15.357144,
+    "attackPower": 197,
+    "mainHandDamageMin": 46.77143,
+    "mainHandDamageMax": 59.77143,
+    "mainHandSpeed": 2.4,
+    "mainHandDps": 22.196428,
+    "offHandDamageMin": 0.0,
+    "offHandDamageMax": 0.0,
     "offHandSpeed": 2.0,
-    "offHandDps": 7.678572,
-    "spellPower": 0,
+    "offHandDps": 0.0,
+    "spellPower": 17,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 4.9249997,
+      "value": 5.1422,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 72.0,
-    "manaRegenCombat": 23.0,
+    "manaRegen": 75.0,
+    "manaRegenCombat": 24.0,
     "armor": {
       "base": 4294967196,
-      "effective": 913
+      "effective": 1315
     },
     "dodge": {
-      "value": 4.3702,
+      "value": 4.115,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 4.92,
+      "value": 4.76,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "block": {
-      "value": 4.92,
+      "value": 4.76,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 0.49020025,
+      "value": 0.19500007,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -718,12 +766,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 42,
-      "effective": 63
+      "base": 43,
+      "effective": 68
     },
     "defense": {
-      "base": 118,
-      "effective": 118
+      "base": 119,
+      "effective": 119
     },
     "fireResistance": {
       "base": 0,
@@ -746,13 +794,13 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 10,
-    "rangedDamageMin": 3.357143,
-    "rangedDamageMax": 3.357143,
+    "rangedAttackPower": 6,
+    "rangedDamageMin": 2.0285716,
+    "rangedDamageMax": 2.0285716,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
-    "spellHealing": 0,
+    "spellHealing": 47,
     "meleeHit": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -778,7 +826,7 @@
     {
       "specId": 594,
       "specName": "Holy",
-      "spentPoints": 15,
+      "spentPoints": 16,
       "talents": [
         {
           "rank": 5,
@@ -824,6 +872,15 @@
           "spellName": "Illumination",
           "description": "After getting a critical effect from your Flash of Light, Holy Light, Light's Vigil, or Holy Shock heal spell you have a 80% chance to gain Mana equal to 50% of the base cost of the spell.",
           "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 134825,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135909.jpg",
+          "spellId": 1328548,
+          "spellName": "Oath of Light",
+          "description": "Swear an Oath to protect target ally for 5 min, increasing the healing of your Holy Light on them by up to 166, your Flash of Light by up to 47, and your Holy Shock by up to 95. Only one Oath of Light may be sworn by the Paladin at any one time.",
+          "castTime": "Instant"
         }
       ]
     }
@@ -836,7 +893,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 127,
+            "skillPoints": 138,
             "maxSkillPoints": 225,
             "tierId": 2946,
             "tierName": "Mining",
@@ -883,7 +940,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136243.jpg",
         "tiers": [
           {
-            "skillPoints": 155,
+            "skillPoints": 158,
             "maxSkillPoints": 225,
             "tierId": 2941,
             "tierName": "Engineering",
@@ -1146,8 +1203,8 @@
       "factionId": 510,
       "factionName": "The Defilers",
       "standing": {
-        "raw": 60,
-        "value": 60,
+        "raw": 160,
+        "value": 160,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

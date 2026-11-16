@@ -409,8 +409,8 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 430,
-    "power": 546,
+    "health": 453,
+    "power": 598,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -425,19 +425,19 @@
       "effective": 34
     },
     "agility": {
-      "base": 41,
-      "effective": 56
+      "base": 43,
+      "effective": 58
     },
     "intellect": {
-      "base": 26,
-      "effective": 29
+      "base": 27,
+      "effective": 30
     },
     "stamina": {
-      "base": 38,
-      "effective": 43
+      "base": 39,
+      "effective": 44
     },
     "meleeCrit": {
-      "value": 3.9775996,
+      "value": 3.7232,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -466,19 +466,19 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 106,
-    "mainHandDamageMin": 23.385715,
-    "mainHandDamageMax": 32.385715,
+    "attackPower": 110,
+    "mainHandDamageMin": 23.928574,
+    "mainHandDamageMax": 32.928574,
     "mainHandSpeed": 1.9,
-    "mainHandDps": 14.676693,
-    "offHandDamageMin": 8.071429,
-    "offHandDamageMax": 8.071429,
+    "mainHandDps": 14.962407,
+    "offHandDamageMin": 8.357143,
+    "offHandDamageMax": 8.357143,
     "offHandSpeed": 2.0,
-    "offHandDps": 4.0357146,
+    "offHandDps": 4.1785717,
     "spellPower": 0,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 4.8296,
+      "value": 4.8719997,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -486,15 +486,15 @@
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 1,
-      "effective": 355
+      "effective": 359
     },
     "dodge": {
-      "value": 7.9608,
+      "value": 7.7264004,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 0.0,
+      "value": 4.56,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -504,7 +504,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 4.0976,
+      "value": 3.8432002,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -523,8 +523,8 @@
       "effective": 40
     },
     "defense": {
-      "base": 80,
-      "effective": 80
+      "base": 84,
+      "effective": 84
     },
     "fireResistance": {
       "base": 0,
@@ -546,10 +546,10 @@
       "base": 0,
       "effective": 0
     },
-    "movementSpeed": 100.0,
-    "rangedAttackPower": 128,
-    "rangedDamageMin": 35.37143,
-    "rangedDamageMax": 47.37143,
+    "movementSpeed": 125.0,
+    "rangedAttackPower": 134,
+    "rangedDamageMin": 36.185715,
+    "rangedDamageMax": 48.185715,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -715,8 +715,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 4081,
-        "value": 1081,
+        "raw": 4087,
+        "value": 1087,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -737,8 +737,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 11376,
-        "value": 2376,
+        "raw": 11401,
+        "value": 2401,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -748,8 +748,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 8262,
-        "value": 5262,
+        "raw": 8268,
+        "value": 5268,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -781,8 +781,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 1342,
-        "value": 1342,
+        "raw": 1348,
+        "value": 1348,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

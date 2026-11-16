@@ -239,7 +239,9 @@
         "id": 2,
         "name": "Leather"
       },
-      "enchants": [],
+      "enchants": [
+        "Enchanted: Stamina +2 and Armor +16"
+      ],
       "stats": [
         {
           "value": 7,
@@ -530,6 +532,24 @@
       ]
     },
     {
+      "slot": "Trinket 1",
+      "name": "Satchel of Potions",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133633.jpg",
+      "itemId": 280766,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
       "slot": "Back",
       "name": "Glowing Lizardscale Cloak",
       "ilvl": 23,
@@ -572,81 +592,40 @@
     },
     {
       "slot": "Main Hand",
-      "name": "Baron's Scepter",
-      "ilvl": 26,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133477.jpg",
-      "itemId": 6323,
+      "name": "Heavehammer",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133046.jpg",
+      "itemId": 271766,
       "quality": "RARE",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 4,
+        "id": 5,
         "name": "Mace"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 2,
-          "displayString": "+2 Strength",
-          "isEquipBonus": false,
+          "value": 32,
+          "displayString": "+32 Attack Power",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         },
         {
-          "value": 3,
-          "displayString": "+3 Stamina",
-          "isEquipBonus": false,
+          "value": 60,
+          "displayString": "+60 Bonus Armor",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "slot": "Off Hand",
-      "name": "Ivy Orb of the Falcon",
-      "ilvl": 29,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134333.jpg",
-      "itemId": 9800,
-      "quality": "UNCOMMON",
-      "itemClass": {
-        "id": 4,
-        "name": "Armor"
-      },
-      "itemSubclass": {
-        "id": 0,
-        "name": "Miscellaneous"
-      },
-      "enchants": [],
-      "stats": [
-        {
-          "value": 4,
-          "displayString": "+4 Intellect",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 4,
-          "displayString": "+4 Agility",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -671,10 +650,16 @@
       "stats": []
     }
   ],
+  "progress": {
+    "pvp": {
+      "honorableKills": 83,
+      "pvpRank": 0
+    }
+  },
   "achievementPoints": 0,
   "stats": {
-    "health": 1219,
-    "power": 1159,
+    "health": 1238,
+    "power": 1144,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -685,23 +670,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 41,
-      "effective": 59
+      "base": 42,
+      "effective": 58
     },
     "agility": {
-      "base": 29,
-      "effective": 74
+      "base": 30,
+      "effective": 71
     },
     "intellect": {
-      "base": 44,
-      "effective": 61
+      "base": 45,
+      "effective": 58
     },
     "stamina": {
-      "base": 39,
+      "base": 40,
       "effective": 98
     },
     "meleeCrit": {
-      "value": 4.9000006,
+      "value": 5.1096,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -715,7 +700,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 48,
+    "bonusArmor": 124,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -730,30 +715,30 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 104,
-    "mainHandDamageMin": 45.828575,
-    "mainHandDamageMax": 69.828575,
-    "mainHandSpeed": 2.4,
-    "mainHandDps": 24.095238,
-    "offHandDamageMin": 0.0,
-    "offHandDamageMax": 0.0,
+    "attackPower": 134,
+    "mainHandDamageMin": 104.58572,
+    "mainHandDamageMax": 141.58572,
+    "mainHandSpeed": 3.3,
+    "mainHandDps": 37.298706,
+    "offHandDamageMin": 10.071429,
+    "offHandDamageMax": 10.071429,
     "offHandSpeed": 2.0,
-    "offHandDps": 0.0,
+    "offHandDps": 5.0357146,
     "spellPower": 7,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 4.24,
+      "value": 4.062,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 72.0,
+    "manaRegen": 73.0,
     "manaRegenCombat": 0.0,
     "armor": {
-      "base": 48,
-      "effective": 735
+      "base": 124,
+      "effective": 805
     },
     "dodge": {
-      "value": 12.22,
+      "value": 11.6296,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -768,7 +753,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 3.4200006,
+      "value": 2.7496,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -783,12 +768,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 55,
-      "effective": 66
+      "base": 56,
+      "effective": 67
     },
     "defense": {
-      "base": 133,
-      "effective": 133
+      "base": 135,
+      "effective": 135
     },
     "fireResistance": {
       "base": 0,
@@ -811,9 +796,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 6,
-    "rangedDamageMin": 2.0285716,
-    "rangedDamageMax": 2.0285716,
+    "rangedAttackPower": 38,
+    "rangedDamageMin": 9.957144,
+    "rangedDamageMax": 9.957144,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -843,15 +828,15 @@
     {
       "specId": 134,
       "specName": "Feral Combat",
-      "spentPoints": 18,
+      "spentPoints": 19,
       "talents": [
         {
-          "rank": 3,
+          "rank": 4,
           "talentId": 134399,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132190.jpg",
           "spellId": 16934,
           "spellName": "Ferocity",
-          "description": "Reduces the cost of your Maul, Primal Bite, Swipe, Claw, and Rake abilities by 3 Rage or Energy.",
+          "description": "Reduces the cost of your Maul, Primal Bite, Swipe, Claw, and Rake abilities by 4 Rage or Energy.",
           "castTime": "Passive"
         },
         {
@@ -1119,7 +1104,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
         "tiers": [
           {
-            "skillPoints": 191,
+            "skillPoints": 198,
             "maxSkillPoints": 225,
             "tierId": 2947,
             "tierName": "Skinning",
@@ -1230,6 +1215,17 @@
       }
     },
     {
+      "factionId": 510,
+      "factionName": "The Defilers",
+      "standing": {
+        "raw": 250,
+        "value": 250,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
@@ -1296,6 +1292,17 @@
       }
     },
     {
+      "factionId": 729,
+      "factionName": "Frostwolf Clan",
+      "standing": {
+        "raw": 0,
+        "value": 0,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
       "factionId": 2587,
       "factionName": "Durotar Supply and Logistics",
       "standing": {
@@ -1326,6 +1333,17 @@
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
+      }
+    },
+    {
+      "factionId": 2787,
+      "factionName": "Earthen Ring",
+      "standing": {
+        "raw": 0,
+        "value": 0,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
       }
     },
     {

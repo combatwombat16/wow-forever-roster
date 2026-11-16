@@ -364,10 +364,10 @@
     },
     {
       "slot": "Legs",
-      "name": "Willow Pants of the Sorcerer",
-      "ilvl": 18,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134590.jpg",
-      "itemId": 6540,
+      "name": "Durable Pants of the Channeler",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134589.jpg",
+      "itemId": 9825,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -380,8 +380,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Intellect",
+          "value": 9,
+          "displayString": "+9 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -391,19 +391,19 @@
           }
         },
         {
-          "value": 2,
-          "displayString": "+2 Stamina",
-          "isEquipBonus": false,
+          "value": 5,
+          "displayString": "+5 Spell Power",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         },
         {
-          "value": 2,
-          "displayString": "+2 Spell Power",
+          "value": 5,
+          "displayString": "+5 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -468,10 +468,10 @@
     },
     {
       "slot": "Wrist",
-      "name": "Elder's Bracers of the Owl",
-      "ilvl": 31,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132612.jpg",
-      "itemId": 7355,
+      "name": "Knife-Polishing Rag",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132609.jpg",
+      "itemId": 271740,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -484,13 +484,13 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Intellect",
-          "isEquipBonus": false,
+          "value": 6,
+          "displayString": "+6 Spell Power",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         },
@@ -509,10 +509,10 @@
     },
     {
       "slot": "Hands",
-      "name": "Apothecary Gloves",
-      "ilvl": 20,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132940.jpg",
-      "itemId": 10919,
+      "name": "Shredder Operating Gloves",
+      "ilvl": 31,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132952.jpg",
+      "itemId": 16740,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -525,24 +525,35 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Spell Power",
-          "isEquipBonus": true,
+          "value": 6,
+          "displayString": "+6 Intellect",
+          "isEquipBonus": false,
           "color": {
-            "r": 0,
+            "r": 255,
             "g": 255,
-            "b": 0,
+            "b": 255,
             "a": 1.0
           }
         },
         {
           "value": 2,
-          "displayString": "+2 Herbalism Skill",
-          "isEquipBonus": true,
+          "displayString": "+2 Agility",
+          "isEquipBonus": false,
           "color": {
-            "r": 0,
+            "r": 255,
             "g": 255,
-            "b": 0,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
             "a": 1.0
           }
         }
@@ -620,12 +631,30 @@
       ]
     },
     {
-      "slot": "Back",
-      "name": "Engineer's Cloak",
-      "ilvl": 27,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133765.jpg",
-      "itemId": 6667,
+      "slot": "Trinket 1",
+      "name": "Satchel of Potions",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133633.jpg",
+      "itemId": 280766,
       "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Back",
+      "name": "Furs of the Earthen Ring",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133756.jpg",
+      "itemId": 271719,
+      "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -633,47 +662,6 @@
       "itemSubclass": {
         "id": 1,
         "name": "Cloth"
-      },
-      "enchants": [],
-      "stats": [
-        {
-          "value": 2,
-          "displayString": "+2 Intellect",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 5,
-          "displayString": "+5 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "slot": "Main Hand",
-      "name": "Clear Crystal Rod",
-      "ilvl": 21,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135469.jpg",
-      "itemId": 16894,
-      "quality": "UNCOMMON",
-      "itemClass": {
-        "id": 2,
-        "name": "Weapon"
-      },
-      "itemSubclass": {
-        "id": 10,
-        "name": "Staff"
       },
       "enchants": [],
       "stats": [
@@ -689,13 +677,65 @@
           }
         },
         {
-          "value": 4,
-          "displayString": "+4 Stamina",
+          "value": 5,
+          "displayString": "+5 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Spirit",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Main Hand",
+      "name": "Magician Staff of Magic",
+      "ilvl": 29,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135468.jpg",
+      "itemId": 2077,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 2,
+        "name": "Weapon"
+      },
+      "itemSubclass": {
+        "id": 10,
+        "name": "Staff"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 11,
+          "displayString": "+11 Intellect",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 22,
+          "displayString": "+22 Spell Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -732,10 +772,16 @@
       ]
     }
   ],
+  "progress": {
+    "pvp": {
+      "honorableKills": 65,
+      "pvpRank": 0
+    }
+  },
   "achievementPoints": 0,
   "stats": {
-    "health": 555,
-    "power": 1279,
+    "health": 888,
+    "power": 1690,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -746,23 +792,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 24,
-      "effective": 25
+      "base": 25,
+      "effective": 34
     },
     "agility": {
-      "base": 25,
-      "effective": 26
+      "base": 26,
+      "effective": 29
     },
     "intellect": {
-      "base": 56,
-      "effective": 65
+      "base": 57,
+      "effective": 91
     },
     "stamina": {
       "base": 32,
-      "effective": 38
+      "effective": 69
     },
     "meleeCrit": {
-      "value": 0.0,
+      "value": 1.6705999,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -791,30 +837,30 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 15,
-    "mainHandDamageMin": 3.1428573,
-    "mainHandDamageMax": 3.1428573,
-    "mainHandSpeed": 2.0,
-    "mainHandDps": 1.5714287,
-    "offHandDamageMin": 1.5714287,
-    "offHandDamageMax": 1.5714287,
+    "attackPower": 24,
+    "mainHandDamageMin": 40.142857,
+    "mainHandDamageMax": 58.142857,
+    "mainHandSpeed": 3.0,
+    "mainHandDps": 16.380953,
+    "offHandDamageMin": 2.2142859,
+    "offHandDamageMax": 2.2142859,
     "offHandSpeed": 2.0,
-    "offHandDps": 0.7857143,
-    "spellPower": 0,
+    "offHandDps": 1.1071429,
+    "spellPower": 53,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 3.426,
+      "value": 4.3399,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 77.0,
+    "manaRegen": 96.0,
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 0,
-      "effective": 72
+      "effective": 318
     },
     "dodge": {
-      "value": 4.8066,
+      "value": 4.7906,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -829,7 +875,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 0.0,
+      "value": 4.8705997,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -844,12 +890,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 65,
-      "effective": 74
+      "base": 67,
+      "effective": 104
     },
     "defense": {
-      "base": 137,
-      "effective": 137
+      "base": 138,
+      "effective": 138
     },
     "fireResistance": {
       "base": 1,
@@ -873,12 +919,12 @@
     },
     "movementSpeed": 100.0,
     "rangedAttackPower": 0,
-    "rangedDamageMin": 1.0,
-    "rangedDamageMax": 1.0,
+    "rangedDamageMin": 45.0,
+    "rangedDamageMax": 83.75,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
-    "spellHealing": 0,
+    "spellHealing": 59,
     "meleeHit": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -978,7 +1024,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136249.jpg",
         "tiers": [
           {
-            "skillPoints": 129,
+            "skillPoints": 135,
             "maxSkillPoints": 150,
             "tierId": 2948,
             "tierName": "Tailoring",
@@ -1244,11 +1290,22 @@
       }
     },
     {
+      "factionId": 510,
+      "factionName": "The Defilers",
+      "standing": {
+        "raw": 100,
+        "value": 100,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 5192,
-        "value": 2192,
+        "raw": 5273,
+        "value": 2273,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1269,8 +1326,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 7127,
-        "value": 4127,
+        "raw": 7283,
+        "value": 4283,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1280,8 +1337,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 5113,
-        "value": 2113,
+        "raw": 5195,
+        "value": 2195,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1324,8 +1381,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 12766,
-        "value": 3766,
+        "raw": 13016,
+        "value": 4016,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
