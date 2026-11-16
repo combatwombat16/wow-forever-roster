@@ -50,11 +50,11 @@
     },
     {
       "slot": "Neck",
-      "name": "Thallium Choker of the Bandit",
-      "ilvl": 36,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133296.jpg",
-      "itemId": 12020,
-      "quality": "UNCOMMON",
+      "name": "Amberglow Talisman",
+      "ilvl": 44,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133294.jpg",
+      "itemId": 10824,
+      "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -66,19 +66,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Agility",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 6,
-          "displayString": "+6 Stamina",
+          "value": 1,
+          "displayString": "+1 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -89,7 +78,18 @@
         },
         {
           "value": 7,
-          "displayString": "+7 Attack Power",
+          "displayString": "+7 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 10,
+          "displayString": "+10 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -102,11 +102,11 @@
     },
     {
       "slot": "Shoulders",
-      "name": "Wrangling Spaulders",
-      "ilvl": 38,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135045.jpg",
-      "itemId": 15698,
-      "quality": "UNCOMMON",
+      "name": "Herod's Shoulder",
+      "ilvl": 42,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135032.jpg",
+      "itemId": 7718,
+      "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -118,8 +118,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 2,
-          "displayString": "+2 Agility",
+          "value": 15,
+          "displayString": "+15 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -129,24 +129,13 @@
           }
         },
         {
-          "value": 8,
-          "displayString": "+8 Strength",
-          "isEquipBonus": false,
+          "value": 12,
+          "displayString": "+12 Attack Power",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 6,
-          "displayString": "+6 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -432,10 +421,10 @@
     },
     {
       "slot": "Hands",
-      "name": "Silvered Bronze Gauntlets",
-      "ilvl": 27,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132939.jpg",
-      "itemId": 3483,
+      "name": "Ravager's Handwraps",
+      "ilvl": 40,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132938.jpg",
+      "itemId": 14772,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -448,8 +437,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Strength",
+          "value": 9,
+          "displayString": "+9 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -459,24 +448,13 @@
           }
         },
         {
-          "value": 4,
-          "displayString": "+4 Stamina",
+          "value": 6,
+          "displayString": "+6 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 3,
-          "displayString": "+3 Spirit",
-          "isEquipBonus": true,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
             "a": 1.0
           }
         }
@@ -595,11 +573,11 @@
     },
     {
       "slot": "Back",
-      "name": "Ivycloth Cloak of the Bear",
-      "ilvl": 25,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133767.jpg",
-      "itemId": 9794,
-      "quality": "UNCOMMON",
+      "name": "Silky Spider Cape",
+      "ilvl": 42,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133769.jpg",
+      "itemId": 10776,
+      "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -611,19 +589,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Strength",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 3,
-          "displayString": "+3 Stamina",
+          "value": 10,
+          "displayString": "+10 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -636,35 +603,24 @@
     },
     {
       "slot": "Main Hand",
-      "name": "Pronged Reaver",
-      "ilvl": 35,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132409.jpg",
-      "itemId": 6692,
+      "name": "Vanquisher's Sword",
+      "ilvl": 44,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135345.jpg",
+      "itemId": 10823,
       "quality": "RARE",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 0,
-        "name": "Axe"
+        "id": 7,
+        "name": "Sword"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 5,
-          "displayString": "+5 Strength",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 5,
-          "displayString": "+5 Spirit",
+          "value": 22,
+          "displayString": "+22 Attack Power",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -677,10 +633,10 @@
     },
     {
       "slot": "Off Hand",
-      "name": "Marbled Buckler",
-      "ilvl": 36,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134956.jpg",
-      "itemId": 6725,
+      "name": "Vile Protector",
+      "ilvl": 40,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134948.jpg",
+      "itemId": 7747,
       "quality": "RARE",
       "itemClass": {
         "id": 4,
@@ -693,46 +649,13 @@
       "enchants": [],
       "stats": [
         {
-          "value": 5,
-          "displayString": "+5 Agility",
+          "value": 6,
+          "displayString": "+6 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 5,
-          "displayString": "+5 Strength",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 5,
-          "displayString": "+5 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 5,
-          "displayString": "+5 Spirit",
-          "isEquipBonus": true,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
             "a": 1.0
           }
         }
@@ -806,7 +729,7 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 1699,
+    "health": 1889,
     "power": 100,
     "powerType": {
       "id": 1,
@@ -818,23 +741,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 80,
-      "effective": 168
+      "base": 82,
+      "effective": 160
     },
     "agility": {
-      "base": 50,
-      "effective": 60
+      "base": 51,
+      "effective": 52
     },
     "intellect": {
       "base": 23,
       "effective": 26
     },
     "stamina": {
-      "base": 73,
-      "effective": 127
+      "base": 74,
+      "effective": 142
     },
     "meleeCrit": {
-      "value": 4.6460004,
+      "value": 3.5816,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -863,11 +786,11 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 440,
-    "mainHandDamageMin": 122.50286,
-    "mainHandDamageMax": 159.22287,
-    "mainHandSpeed": 2.4,
-    "mainHandDps": 58.69286,
+    "attackPower": 454,
+    "mainHandDamageMin": 129.07715,
+    "mainHandDamageMax": 173.07715,
+    "mainHandSpeed": 2.2,
+    "mainHandDps": 68.67143,
     "offHandDamageMin": 0.0,
     "offHandDamageMax": 0.0,
     "offHandSpeed": 2.0,
@@ -883,25 +806,25 @@
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 300,
-      "effective": 2471
+      "effective": 2823
     },
     "dodge": {
-      "value": 4.966,
+      "value": 4.0616,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 5.2799997,
+      "value": 5.1200004,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "block": {
-      "value": 10.28,
+      "value": 10.12,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 4.086,
+      "value": 3.2216,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -917,11 +840,11 @@
     },
     "spirit": {
       "base": 37,
-      "effective": 61
+      "effective": 58
     },
     "defense": {
-      "base": 193,
-      "effective": 202
+      "base": 194,
+      "effective": 203
     },
     "fireResistance": {
       "base": 0,
@@ -944,9 +867,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 146,
-    "rangedDamageMin": 49.433144,
-    "rangedDamageMax": 75.35314,
+    "rangedAttackPower": 158,
+    "rangedDamageMin": 52.04572,
+    "rangedDamageMax": 78.44572,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -976,7 +899,7 @@
     {
       "specId": 257,
       "specName": "Protection",
-      "spentPoints": 29,
+      "spentPoints": 31,
       "talents": [
         {
           "rank": 5,
@@ -1069,13 +992,22 @@
           "castTime": "Passive"
         },
         {
-          "rank": 4,
+          "rank": 5,
           "talentId": 135493,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134950.jpg",
           "spellId": 16538,
           "spellName": "Bastion",
-          "description": "Increases all damage you deal by 8% while a shield is equipped.",
+          "description": "Increases all damage you deal by 10% while a shield is equipped.",
           "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 135490,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134951.jpg",
+          "spellId": 23922,
+          "spellName": "Shield Slam",
+          "description": "Slam the target with your shield, causing 463 to 483 damage, increased by your Block Value, and has a 50% chance of dispelling 1 magic effect on the target. Causes a very high amount of threat.",
+          "castTime": "Instant"
         }
       ]
     }
@@ -1604,8 +1536,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 12620,
-        "value": 3620,
+        "raw": 12888,
+        "value": 3888,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1648,8 +1580,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 17561,
-        "value": 8561,
+        "raw": 17736,
+        "value": 8736,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1659,8 +1591,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 13291,
-        "value": 4291,
+        "raw": 13410,
+        "value": 4410,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1714,8 +1646,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 9853,
-        "value": 853,
+        "raw": 10272,
+        "value": 1272,
         "max": 12000,
         "tier": 5,
         "name": "Honored"

@@ -794,7 +794,7 @@
       "effective": 89
     },
     "meleeCrit": {
-      "value": 6.5899997,
+      "value": 6.6299996,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -846,17 +846,17 @@
       "effective": 1798
     },
     "dodge": {
-      "value": 6.7099996,
+      "value": 6.7899995,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 5.08,
+      "value": 5.1600003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "block": {
-      "value": 10.079999,
+      "value": 10.16,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -880,8 +880,8 @@
       "effective": 41
     },
     "defense": {
-      "base": 137,
-      "effective": 142
+      "base": 139,
+      "effective": 144
     },
     "fireResistance": {
       "base": 1,
@@ -1021,7 +1021,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 148,
+            "skillPoints": 154,
             "maxSkillPoints": 225,
             "tierId": 2946,
             "tierName": "Mining",
@@ -1455,8 +1455,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 2235,
-        "value": 2235,
+        "raw": 2244,
+        "value": 2244,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1466,8 +1466,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 12823,
-        "value": 3823,
+        "raw": 13046,
+        "value": 4046,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1477,8 +1477,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 3971,
-        "value": 971,
+        "raw": 3988,
+        "value": 988,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1488,8 +1488,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 8121,
-        "value": 5121,
+        "raw": 8317,
+        "value": 5317,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1499,8 +1499,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 5601,
-        "value": 2601,
+        "raw": 5685,
+        "value": 2685,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1510,8 +1510,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 2235,
-        "value": 2235,
+        "raw": 2244,
+        "value": 2244,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1543,8 +1543,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 2235,
-        "value": 2235,
+        "raw": 2244,
+        "value": 2244,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1554,8 +1554,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 4407,
-        "value": 1407,
+        "raw": 4491,
+        "value": 1491,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1565,8 +1565,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 2235,
-        "value": 2235,
+        "raw": 2244,
+        "value": 2244,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

@@ -27,24 +27,24 @@
     },
     {
       "slot": "Shoulders",
-      "name": "Rigid Shoulders of the Whale",
+      "name": "Talbar Mantle",
       "ilvl": 26,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135039.jpg",
-      "itemId": 15116,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135040.jpg",
+      "itemId": 10657,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
       },
       "itemSubclass": {
-        "id": 2,
-        "name": "Leather"
+        "id": 1,
+        "name": "Cloth"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 5,
-          "displayString": "+5 Stamina",
+          "value": 4,
+          "displayString": "+4 Intellect",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -54,8 +54,19 @@
           }
         },
         {
-          "value": 5,
-          "displayString": "+5 Spirit",
+          "value": 2,
+          "displayString": "+2 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 1,
+          "displayString": "+1 Mana Regeneration per 5 sec",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -157,10 +168,10 @@
     },
     {
       "slot": "Legs",
-      "name": "Lupine Leggings of Intellect",
-      "ilvl": 19,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134586.jpg",
-      "itemId": 15017,
+      "name": "Superior Leggings of the Gorilla",
+      "ilvl": 28,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134582.jpg",
+      "itemId": 9808,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -173,8 +184,19 @@
       "enchants": [],
       "stats": [
         {
-          "value": 6,
-          "displayString": "+6 Intellect",
+          "value": 7,
+          "displayString": "+7 Intellect",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 7,
+          "displayString": "+7 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -187,10 +209,10 @@
     },
     {
       "slot": "Feet",
-      "name": "Lupine Slippers of the Tiger",
-      "ilvl": 16,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132539.jpg",
-      "itemId": 15012,
+      "name": "Dervish Boots of the Falcon",
+      "ilvl": 28,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132537.jpg",
+      "itemId": 6601,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -203,8 +225,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 2,
-          "displayString": "+2 Agility",
+          "value": 5,
+          "displayString": "+5 Intellect",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -214,8 +236,8 @@
           }
         },
         {
-          "value": 2,
-          "displayString": "+2 Strength",
+          "value": 5,
+          "displayString": "+5 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -299,11 +321,11 @@
     },
     {
       "slot": "Ring 1",
-      "name": "Depleted Ritual Band",
-      "ilvl": 9,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133348.jpg",
-      "itemId": 281268,
-      "quality": "COMMON",
+      "name": "Deep Fathom Ring",
+      "ilvl": 24,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133357.jpg",
+      "itemId": 6463,
+      "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -315,8 +337,19 @@
       "enchants": [],
       "stats": [
         {
-          "value": 1,
-          "displayString": "+1 Bonus Armor",
+          "value": 3,
+          "displayString": "+3 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 2,
+          "displayString": "+2 Spell Piercing",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -370,10 +403,10 @@
     },
     {
       "slot": "Back",
-      "name": "Boar Hunter's Cape",
-      "ilvl": 20,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133762.jpg",
-      "itemId": 5314,
+      "name": "Wrangler's Cloak of the Gorilla",
+      "ilvl": 22,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133753.jpg",
+      "itemId": 15333,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -387,7 +420,18 @@
       "stats": [
         {
           "value": 3,
-          "displayString": "+3 Agility",
+          "displayString": "+3 Intellect",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 3,
+          "displayString": "+3 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -400,26 +444,24 @@
     },
     {
       "slot": "Main Hand",
-      "name": "Massive Battle Axe of Magic",
+      "name": "Hammerbone",
       "ilvl": 24,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132415.jpg",
-      "itemId": 15269,
-      "quality": "UNCOMMON",
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133052.jpg",
+      "itemId": 270018,
+      "quality": "RARE",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 1,
-        "name": "Axe"
+        "id": 5,
+        "name": "Mace"
       },
-      "enchants": [
-        "Flametongue 2"
-      ],
+      "enchants": [],
       "stats": [
         {
-          "value": 8,
-          "displayString": "+8 Intellect",
+          "value": 7,
+          "displayString": "+7 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -429,8 +471,8 @@
           }
         },
         {
-          "value": 16,
-          "displayString": "+16 Spell Power",
+          "value": 10,
+          "displayString": "+10 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -468,8 +510,8 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 545,
-    "power": 1146,
+    "health": 569,
+    "power": 1263,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -480,23 +522,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 40,
-      "effective": 45
+      "base": 41,
+      "effective": 61
     },
     "agility": {
       "base": 31,
       "effective": 43
     },
     "intellect": {
-      "base": 35,
-      "effective": 67
+      "base": 36,
+      "effective": 73
     },
     "stamina": {
-      "base": 42,
-      "effective": 52
+      "base": 43,
+      "effective": 53
     },
     "meleeCrit": {
-      "value": 11.0533,
+      "value": 6.5733,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -510,7 +552,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 1,
+    "bonusArmor": 0,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -525,30 +567,30 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 181,
-    "mainHandDamageMin": 73.66429,
-    "mainHandDamageMax": 89.66429,
-    "mainHandSpeed": 3.3,
-    "mainHandDps": 24.746756,
-    "offHandDamageMin": 13.428573,
-    "offHandDamageMax": 13.428573,
+    "attackPower": 221,
+    "mainHandDamageMin": 108.67143,
+    "mainHandDamageMax": 137.67143,
+    "mainHandSpeed": 3.4,
+    "mainHandDps": 36.22689,
+    "offHandDamageMin": 16.285717,
+    "offHandDamageMax": 16.285717,
     "offHandSpeed": 2.0,
-    "offHandDps": 6.7142863,
-    "spellPower": 16,
-    "spellPenetration": 0,
+    "offHandDps": 8.1428585,
+    "spellPower": 0,
+    "spellPenetration": 2,
     "spellCrit": {
-      "value": 10.5294,
+      "value": 10.643399,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 61.0,
-    "manaRegenCombat": 0.0,
+    "manaRegen": 66.0,
+    "manaRegenCombat": 1.0,
     "armor": {
-      "base": 1,
-      "effective": 528
+      "base": 0,
+      "effective": 519
     },
     "dodge": {
-      "value": 6.0533004,
+      "value": 5.9733005,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -558,12 +600,12 @@
       "ratingNormalized": 0
     },
     "block": {
-      "value": 4.92,
+      "value": 4.84,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 2.7333004,
+      "value": 2.5333006,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -578,12 +620,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 44,
-      "effective": 49
+      "base": 45,
+      "effective": 55
     },
     "defense": {
-      "base": 108,
-      "effective": 108
+      "base": 111,
+      "effective": 111
     },
     "fireResistance": {
       "base": 0,
@@ -612,7 +654,7 @@
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
-    "spellHealing": 16,
+    "spellHealing": 0,
     "meleeHit": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -638,7 +680,7 @@
     {
       "specId": 373,
       "specName": "Enhancement",
-      "spentPoints": 13,
+      "spentPoints": 14,
       "talents": [
         {
           "rank": 5,
@@ -668,12 +710,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 2,
+          "rank": 3,
           "talentId": 134211,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135814.jpg",
           "spellId": 16266,
           "spellName": "Elemental Weapons",
-          "description": "Increases the melee attack power bonus of your Rockbiter Weapon by 13%, your Windfury Weapon effect by 27% and increases the damage caused by your Flametongue Weapon and Frostbrand Weapon by 10%.",
+          "description": "Increases the melee attack power bonus of your Rockbiter Weapon by 20%, your Windfury Weapon effect by 40% and increases the damage caused by your Flametongue Weapon and Frostbrand Weapon by 15%.",
           "castTime": "Passive"
         },
         {
@@ -696,7 +738,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136240.jpg",
         "tiers": [
           {
-            "skillPoints": 150,
+            "skillPoints": 151,
             "maxSkillPoints": 225,
             "tierId": 2937,
             "tierName": "Alchemy",
@@ -799,7 +841,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136246.jpg",
         "tiers": [
           {
-            "skillPoints": 136,
+            "skillPoints": 141,
             "maxSkillPoints": 150,
             "tierId": 2944,
             "tierName": "Herbalism",
@@ -906,8 +948,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 1409,
-        "value": 1409,
+        "raw": 1459,
+        "value": 1459,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -917,8 +959,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 5542,
-        "value": 2542,
+        "raw": 5892,
+        "value": 2892,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -928,8 +970,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 2318,
-        "value": 2318,
+        "raw": 2418,
+        "value": 2418,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -939,8 +981,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 9811,
-        "value": 811,
+        "raw": 9898,
+        "value": 898,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -950,8 +992,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 8567,
-        "value": 5567,
+        "raw": 8655,
+        "value": 5655,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -961,8 +1003,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 1409,
-        "value": 1409,
+        "raw": 1459,
+        "value": 1459,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -972,8 +1014,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 1409,
-        "value": 1409,
+        "raw": 1459,
+        "value": 1459,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -983,8 +1025,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 2076,
-        "value": 2076,
+        "raw": 2163,
+        "value": 2163,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -994,8 +1036,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 1409,
-        "value": 1409,
+        "raw": 1459,
+        "value": 1459,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

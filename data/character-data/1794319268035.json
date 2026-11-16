@@ -49,6 +49,58 @@
       ]
     },
     {
+      "slot": "Neck",
+      "name": "Amberglow Talisman",
+      "ilvl": 44,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133294.jpg",
+      "itemId": 10824,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 1,
+          "displayString": "+1 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 7,
+          "displayString": "+7 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 10,
+          "displayString": "+10 Spirit",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
       "slot": "Shoulders",
       "name": "Barbaric Shoulders",
       "ilvl": 35,
@@ -576,53 +628,29 @@
     },
     {
       "slot": "Main Hand",
-      "name": "I'lalai Flayer",
-      "ilvl": 42,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132397.jpg",
-      "itemId": 279887,
+      "name": "Vanquisher's Sword",
+      "ilvl": 44,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135345.jpg",
+      "itemId": 10823,
       "quality": "RARE",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 0,
-        "name": "Axe"
+        "id": 7,
+        "name": "Sword"
       },
-      "enchants": [
-        "Instant Poison III (75 |4Charge:Charges;)"
-      ],
+      "enchants": [],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Agility",
-          "isEquipBonus": false,
+          "value": 22,
+          "displayString": "+22 Attack Power",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 4,
-          "displayString": "+4 Strength",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 8,
-          "displayString": "+8 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -724,7 +752,7 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 1720,
+    "health": 1751,
     "power": 100,
     "powerType": {
       "id": 3,
@@ -736,11 +764,11 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 56,
-      "effective": 93
+      "base": 57,
+      "effective": 90
     },
     "agility": {
-      "base": 77,
+      "base": 79,
       "effective": 147
     },
     "intellect": {
@@ -748,11 +776,11 @@
       "effective": 25
     },
     "stamina": {
-      "base": 52,
+      "base": 53,
       "effective": 126
     },
     "meleeCrit": {
-      "value": 8.5424,
+      "value": 8.3325,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -781,15 +809,15 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 334,
-    "mainHandDamageMin": 114.02858,
-    "mainHandDamageMax": 159.02858,
-    "mainHandSpeed": 2.6,
-    "mainHandDps": 52.510994,
-    "offHandDamageMin": 63.24643,
-    "offHandDamageMax": 89.49643,
+    "attackPower": 355,
+    "mainHandDamageMin": 101.78572,
+    "mainHandDamageMax": 141.78572,
+    "mainHandSpeed": 2.2,
+    "mainHandDps": 55.357143,
+    "offHandDamageMin": 65.38393,
+    "offHandDamageMax": 91.63393,
     "offHandSpeed": 1.9,
-    "offHandDps": 40.195488,
+    "offHandDps": 41.320488,
     "spellPower": 0,
     "spellPenetration": 0,
     "spellCrit": {
@@ -804,12 +832,12 @@
       "effective": 997
     },
     "dodge": {
-      "value": 16.9901,
+      "value": 16.5303,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 10.599999,
+      "value": 10.639999,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -819,7 +847,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 1.1424005,
+      "value": 0.6925006,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -834,12 +862,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 39,
-      "effective": 44
+      "base": 40,
+      "effective": 55
     },
     "defense": {
-      "base": 177,
-      "effective": 180
+      "base": 183,
+      "effective": 186
     },
     "fireResistance": {
       "base": 0,
@@ -862,9 +890,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 350,
-    "rangedDamageMin": 85.5,
-    "rangedDamageMax": 100.5,
+    "rangedAttackPower": 373,
+    "rangedDamageMin": 89.27858,
+    "rangedDamageMax": 104.27858,
     "expertise": 1.0,
     "offHandExpertise": 1.0,
     "armorPenetration": 0.0,
@@ -894,7 +922,7 @@
     {
       "specId": 38,
       "specName": "Combat",
-      "spentPoints": 29,
+      "spentPoints": 30,
       "talents": [
         {
           "rank": 3,
@@ -1014,12 +1042,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 1,
+          "rank": 2,
           "talentId": 135270,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/458731.jpg",
           "spellId": 1329284,
           "spellName": "Flash of Steel",
-          "description": "Increases the Energy generated by your Shank ability by 3 and reduces its cooldown by 0.4 sec.",
+          "description": "Increases the Energy generated by your Shank ability by 6 and reduces its cooldown by 0.8 sec.",
           "castTime": "Passive"
         }
       ]
@@ -1496,8 +1524,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 2775,
-        "value": 2775,
+        "raw": 2885,
+        "value": 2885,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1507,8 +1535,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 9802,
-        "value": 802,
+        "raw": 10045,
+        "value": 1045,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1518,8 +1546,8 @@
       "factionId": 87,
       "factionName": "Bloodsail Buccaneers",
       "standing": {
-        "raw": -7750,
-        "value": 34250,
+        "raw": -8250,
+        "value": 33750,
         "max": 36000,
         "tier": 0,
         "name": "Hated"
@@ -1529,8 +1557,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 5025,
-        "value": 2025,
+        "raw": 5135,
+        "value": 2135,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1540,8 +1568,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 15306,
-        "value": 6306,
+        "raw": 15436,
+        "value": 6436,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1551,8 +1579,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 12368,
-        "value": 3368,
+        "raw": 12648,
+        "value": 3648,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1562,11 +1590,11 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 2950,
-        "value": 2950,
-        "max": 3000,
-        "tier": 3,
-        "name": "Neutral"
+        "raw": 3170,
+        "value": 170,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
       }
     },
     {
@@ -1595,8 +1623,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 2775,
-        "value": 2775,
+        "raw": 2885,
+        "value": 2885,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1606,8 +1634,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 7623,
-        "value": 4623,
+        "raw": 7881,
+        "value": 4881,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1617,8 +1645,8 @@
       "factionId": 2787,
       "factionName": "Earthen Ring",
       "standing": {
-        "raw": 1000,
-        "value": 1000,
+        "raw": 1300,
+        "value": 1300,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1628,8 +1656,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 2725,
-        "value": 2725,
+        "raw": 2835,
+        "value": 2835,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

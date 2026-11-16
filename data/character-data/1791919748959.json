@@ -123,7 +123,7 @@
         "name": "Leather"
       },
       "enchants": [
-        "Enchanted: Stamina +2 and Armor +16"
+        "Enchanted: Stamina +3 and Armor +24"
       ],
       "stats": [
         {
@@ -240,7 +240,7 @@
         "name": "Leather"
       },
       "enchants": [
-        "Enchanted: Stamina +2 and Armor +16"
+        "Enchanted: Stamina +3 and Armor +24"
       ],
       "stats": [
         {
@@ -305,7 +305,7 @@
         "name": "Leather"
       },
       "enchants": [
-        "Enchanted: Stamina +2 and Armor +16"
+        "Enchanted: Stamina +3 and Armor +24"
       ],
       "stats": [
         {
@@ -411,7 +411,7 @@
         "name": "Leather"
       },
       "enchants": [
-        "Enchanted: Stamina +2 and Armor +16"
+        "Enchanted: Stamina +3 and Armor +24"
       ],
       "stats": [
         {
@@ -658,8 +658,8 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 1238,
-    "power": 1144,
+    "health": 1342,
+    "power": 1249,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -670,23 +670,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 42,
-      "effective": 58
+      "base": 43,
+      "effective": 59
     },
     "agility": {
-      "base": 30,
-      "effective": 71
+      "base": 31,
+      "effective": 72
     },
     "intellect": {
-      "base": 45,
-      "effective": 58
+      "base": 48,
+      "effective": 61
     },
     "stamina": {
-      "base": 40,
-      "effective": 98
+      "base": 42,
+      "effective": 104
     },
     "meleeCrit": {
-      "value": 5.1096,
+      "value": 4.2752,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -700,7 +700,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 124,
+    "bonusArmor": 156,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -715,30 +715,30 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 134,
-    "mainHandDamageMin": 104.58572,
-    "mainHandDamageMax": 141.58572,
+    "attackPower": 136,
+    "mainHandDamageMin": 105.057144,
+    "mainHandDamageMax": 142.05714,
     "mainHandSpeed": 3.3,
-    "mainHandDps": 37.298706,
-    "offHandDamageMin": 10.071429,
-    "offHandDamageMax": 10.071429,
+    "mainHandDps": 37.44156,
+    "offHandDamageMin": 10.214287,
+    "offHandDamageMax": 10.214287,
     "offHandSpeed": 2.0,
-    "offHandDps": 5.0357146,
+    "offHandDps": 5.1071434,
     "spellPower": 7,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 4.062,
+      "value": 3.9471998,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 73.0,
+    "manaRegen": 75.0,
     "manaRegenCombat": 0.0,
     "armor": {
-      "base": 124,
-      "effective": 805
+      "base": 156,
+      "effective": 839
     },
     "dodge": {
-      "value": 11.6296,
+      "value": 11.0352,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -753,7 +753,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 2.7496,
+      "value": 1.8352,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -768,12 +768,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 56,
-      "effective": 67
+      "base": 59,
+      "effective": 70
     },
     "defense": {
-      "base": 135,
-      "effective": 135
+      "base": 143,
+      "effective": 143
     },
     "fireResistance": {
       "base": 0,
@@ -828,15 +828,15 @@
     {
       "specId": 134,
       "specName": "Feral Combat",
-      "spentPoints": 19,
+      "spentPoints": 21,
       "talents": [
         {
-          "rank": 4,
+          "rank": 5,
           "talentId": 134399,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132190.jpg",
           "spellId": 16934,
           "spellName": "Ferocity",
-          "description": "Reduces the cost of your Maul, Primal Bite, Swipe, Claw, and Rake abilities by 4 Rage or Energy.",
+          "description": "Reduces the cost of your Maul, Primal Bite, Swipe, Claw, and Rake abilities by 5 Rage or Energy.",
           "castTime": "Passive"
         },
         {
@@ -901,6 +901,15 @@
           "spellName": "Blood Frenzy",
           "description": "Gives you a 100% chance to gain an additional 5 Rage any time you get a critical strike while in Bear Form or Dire Bear Form. In addition, your non-periodic critical strikes from Cat Form abilities that generate Combo Points have a 100% chance to add an additional Combo Point.",
           "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 134416,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136112.jpg",
+          "spellId": 17007,
+          "spellName": "Leader of the Pack",
+          "description": "While in Cat Form, Bear Form, or Dire Bear Form, the Leader of the Pack increases the Critical Strike chance of all party or raid members within 45 yards by 3%.",
+          "castTime": "Passive"
         }
       ]
     }
@@ -913,7 +922,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136247.jpg",
         "tiers": [
           {
-            "skillPoints": 135,
+            "skillPoints": 137,
             "maxSkillPoints": 225,
             "tierId": 2945,
             "tierName": "Leatherworking",
@@ -1104,7 +1113,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
         "tiers": [
           {
-            "skillPoints": 198,
+            "skillPoints": 212,
             "maxSkillPoints": 225,
             "tierId": 2947,
             "tierName": "Skinning",
@@ -1137,6 +1146,10 @@
               {
                 "id": 1535,
                 "name": "Charred Wolf Meat"
+              },
+              {
+                "id": 1536,
+                "name": "Spiced Wolf Meat"
               },
               {
                 "id": 1537,
@@ -1229,8 +1242,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 12243,
-        "value": 3243,
+        "raw": 13925,
+        "value": 4925,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1262,8 +1275,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 7935,
-        "value": 4935,
+        "raw": 8585,
+        "value": 5585,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1273,8 +1286,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 5808,
-        "value": 2808,
+        "raw": 6346,
+        "value": 3346,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1286,17 +1299,6 @@
       "standing": {
         "raw": 2278,
         "value": 2278,
-        "max": 3000,
-        "tier": 3,
-        "name": "Neutral"
-      }
-    },
-    {
-      "factionId": 729,
-      "factionName": "Frostwolf Clan",
-      "standing": {
-        "raw": 0,
-        "value": 0,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1328,22 +1330,11 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 4048,
-        "value": 1048,
+        "raw": 4942,
+        "value": 1942,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
-      }
-    },
-    {
-      "factionId": 2787,
-      "factionName": "Earthen Ring",
-      "standing": {
-        "raw": 0,
-        "value": 0,
-        "max": 3000,
-        "tier": 3,
-        "name": "Neutral"
       }
     },
     {

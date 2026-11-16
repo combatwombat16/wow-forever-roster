@@ -8,6 +8,24 @@
   },
   "gear": [
     {
+      "slot": "Head",
+      "name": "Hooded Cowl",
+      "ilvl": 30,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133136.jpg",
+      "itemId": 3732,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 1,
+        "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
       "slot": "Shirt",
       "name": "Trapper's Shirt",
       "ilvl": 1,
@@ -330,24 +348,24 @@
     },
     {
       "slot": "Main Hand",
-      "name": "Pointed Axe",
-      "ilvl": 14,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135419.jpg",
-      "itemId": 5344,
+      "name": "Massive Battle Axe of Strength",
+      "ilvl": 24,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132415.jpg",
+      "itemId": 15269,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 0,
+        "id": 1,
         "name": "Axe"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 1,
-          "displayString": "+1 Agility",
+          "value": 8,
+          "displayString": "+8 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -360,10 +378,10 @@
     },
     {
       "slot": "Ranged",
-      "name": "Short Ash Bow",
-      "ilvl": 23,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135491.jpg",
-      "itemId": 3039,
+      "name": "Bow of Plunder",
+      "ilvl": 28,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135490.jpg",
+      "itemId": 3742,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 2,
@@ -377,12 +395,23 @@
       "stats": [
         {
           "value": 2,
-          "displayString": "+2 Spirit",
-          "isEquipBonus": true,
+          "displayString": "+2 Agility",
+          "isEquipBonus": false,
           "color": {
-            "r": 0,
+            "r": 255,
             "g": 255,
-            "b": 0,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 2,
+          "displayString": "+2 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
             "a": 1.0
           }
         }
@@ -409,8 +438,8 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 453,
-    "power": 598,
+    "health": 522,
+    "power": 660,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -421,23 +450,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 31,
-      "effective": 34
+      "base": 32,
+      "effective": 43
     },
     "agility": {
-      "base": 43,
-      "effective": 58
+      "base": 46,
+      "effective": 62
     },
     "intellect": {
-      "base": 27,
-      "effective": 30
+      "base": 28,
+      "effective": 31
     },
     "stamina": {
-      "base": 39,
-      "effective": 44
+      "base": 41,
+      "effective": 48
     },
     "meleeCrit": {
-      "value": 3.7232,
+      "value": 2.6846,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -466,19 +495,19 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 110,
-    "mainHandDamageMin": 23.928574,
-    "mainHandDamageMax": 32.928574,
-    "mainHandSpeed": 1.9,
-    "mainHandDps": 14.962407,
-    "offHandDamageMin": 8.357143,
-    "offHandDamageMax": 8.357143,
+    "attackPower": 127,
+    "mainHandDamageMin": 71.935715,
+    "mainHandDamageMax": 93.935715,
+    "mainHandSpeed": 3.3,
+    "mainHandDps": 25.132034,
+    "offHandDamageMin": 9.571429,
+    "offHandDamageMax": 9.571429,
     "offHandSpeed": 2.0,
-    "offHandDps": 4.1785717,
+    "offHandDps": 4.7857146,
     "spellPower": 0,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 4.8719997,
+      "value": 4.8058996,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -486,15 +515,15 @@
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 1,
-      "effective": 359
+      "effective": 400
     },
     "dodge": {
-      "value": 7.7264004,
+      "value": 7.4492,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 4.56,
+      "value": 4.6,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -504,7 +533,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 3.8432002,
+      "value": 3.8045998,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -519,12 +548,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 35,
+      "base": 37,
       "effective": 40
     },
     "defense": {
-      "base": 84,
-      "effective": 84
+      "base": 95,
+      "effective": 95
     },
     "fireResistance": {
       "base": 0,
@@ -546,10 +575,10 @@
       "base": 0,
       "effective": 0
     },
-    "movementSpeed": 125.0,
-    "rangedAttackPower": 134,
-    "rangedDamageMin": 36.185715,
-    "rangedDamageMax": 48.185715,
+    "movementSpeed": 100.0,
+    "rangedAttackPower": 146,
+    "rangedDamageMin": 56.11429,
+    "rangedDamageMax": 75.11429,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -628,7 +657,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
         "tiers": [
           {
-            "skillPoints": 1,
+            "skillPoints": 4,
             "maxSkillPoints": 75,
             "tierId": 2947,
             "tierName": "Skinning",
@@ -647,7 +676,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 25,
+            "skillPoints": 27,
             "maxSkillPoints": 75,
             "tierId": 2946,
             "tierName": "Mining",
@@ -715,8 +744,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 4087,
-        "value": 1087,
+        "raw": 4231,
+        "value": 1231,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -737,8 +766,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 11401,
-        "value": 2401,
+        "raw": 11657,
+        "value": 2657,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -748,8 +777,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 8268,
-        "value": 5268,
+        "raw": 8412,
+        "value": 5412,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -781,8 +810,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 1348,
-        "value": 1348,
+        "raw": 1811,
+        "value": 1811,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

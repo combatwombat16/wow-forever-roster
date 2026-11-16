@@ -893,6 +893,17 @@
       }
     },
     {
+      "factionId": 889,
+      "factionName": "Warsong Outriders",
+      "standing": {
+        "raw": 0,
+        "value": 0,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
       "factionId": 529,
       "factionName": "Argent Dawn",
       "standing": {

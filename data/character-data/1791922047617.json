@@ -710,12 +710,12 @@
       "effective": 718
     },
     "dodge": {
-      "value": 8.1156,
+      "value": 8.1556,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 4.44,
+      "value": 4.48,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -744,8 +744,8 @@
       "effective": 58
     },
     "defense": {
-      "base": 121,
-      "effective": 121
+      "base": 122,
+      "effective": 122
     },
     "fireResistance": {
       "base": 2,

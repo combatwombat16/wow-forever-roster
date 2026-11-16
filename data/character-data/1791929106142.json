@@ -190,10 +190,10 @@
     },
     {
       "slot": "Shoulders",
-      "name": "Double-Stitched Woolen Shoulders",
-      "ilvl": 22,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135037.jpg",
-      "itemId": 4314,
+      "name": "Desert Shoulders",
+      "ilvl": 28,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135036.jpg",
+      "itemId": 15457,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -206,8 +206,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Stamina",
+          "value": 5,
+          "displayString": "+5 Intellect",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -217,8 +217,8 @@
           }
         },
         {
-          "value": 4,
-          "displayString": "+4 Spell Power",
+          "value": 5,
+          "displayString": "+5 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -312,10 +312,10 @@
     },
     {
       "slot": "Waist",
-      "name": "Novice Arcanist's Sash",
-      "ilvl": 15,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236919.jpg",
-      "itemId": 253885,
+      "name": "Warsong Sash",
+      "ilvl": 27,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132491.jpg",
+      "itemId": 16975,
       "quality": "RARE",
       "itemClass": {
         "id": 4,
@@ -328,30 +328,19 @@
       "enchants": [],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Intellect",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 3,
-          "displayString": "+3 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
           "value": 4,
-          "displayString": "+4 Spell Power",
+          "displayString": "+4 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 11,
+          "displayString": "+11 Spell Power",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -561,6 +550,47 @@
     },
     {
       "slot": "Ring 1",
+      "name": "Inventor's League Ring",
+      "ilvl": 31,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133364.jpg",
+      "itemId": 15467,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 4,
+          "displayString": "+4 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 4,
+          "displayString": "+4 Spirit",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Ring 2",
       "name": "Totemic Clan Ring",
       "ilvl": 25,
       "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134413.jpg",
@@ -590,36 +620,6 @@
         {
           "value": 3,
           "displayString": "+3 Spirit",
-          "isEquipBonus": true,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
-            "a": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "slot": "Ring 2",
-      "name": "Harpy Claw Ring",
-      "ilvl": 26,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133345.jpg",
-      "itemId": 281252,
-      "quality": "UNCOMMON",
-      "itemClass": {
-        "id": 4,
-        "name": "Armor"
-      },
-      "itemSubclass": {
-        "id": 0,
-        "name": "Miscellaneous"
-      },
-      "enchants": [],
-      "stats": [
-        {
-          "value": 5,
-          "displayString": "+5 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -774,14 +774,14 @@
   ],
   "progress": {
     "pvp": {
-      "honorableKills": 65,
+      "honorableKills": 66,
       "pvpRank": 0
     }
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 888,
-    "power": 1690,
+    "health": 973,
+    "power": 1879,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -796,19 +796,19 @@
       "effective": 34
     },
     "agility": {
-      "base": 26,
-      "effective": 29
+      "base": 27,
+      "effective": 30
     },
     "intellect": {
-      "base": 57,
-      "effective": 91
+      "base": 62,
+      "effective": 98
     },
     "stamina": {
-      "base": 32,
-      "effective": 69
+      "base": 34,
+      "effective": 72
     },
     "meleeCrit": {
-      "value": 1.6705999,
+      "value": 1.6700002,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -846,21 +846,21 @@
     "offHandDamageMax": 2.2142859,
     "offHandSpeed": 2.0,
     "offHandDps": 1.1071429,
-    "spellPower": 53,
+    "spellPower": 56,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 4.3399,
+      "value": 4.2006,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 96.0,
+    "manaRegen": 101.0,
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 0,
-      "effective": 318
+      "effective": 332
     },
     "dodge": {
-      "value": 4.7906,
+      "value": 4.8300004,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -875,7 +875,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 4.8705997,
+      "value": 4.87,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -890,12 +890,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 67,
-      "effective": 104
+      "base": 72,
+      "effective": 113
     },
     "defense": {
-      "base": 138,
-      "effective": 138
+      "base": 154,
+      "effective": 154
     },
     "fireResistance": {
       "base": 1,
@@ -924,7 +924,7 @@
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
-    "spellHealing": 59,
+    "spellHealing": 62,
     "meleeHit": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -1282,8 +1282,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 2074,
-        "value": 2074,
+        "raw": 2137,
+        "value": 2137,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1293,8 +1293,8 @@
       "factionId": 510,
       "factionName": "The Defilers",
       "standing": {
-        "raw": 100,
-        "value": 100,
+        "raw": 250,
+        "value": 250,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1304,8 +1304,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 5273,
-        "value": 2273,
+        "raw": 7298,
+        "value": 4298,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1315,8 +1315,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 3649,
-        "value": 649,
+        "raw": 3774,
+        "value": 774,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1326,8 +1326,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 7283,
-        "value": 4283,
+        "raw": 8471,
+        "value": 5471,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1337,8 +1337,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 5195,
-        "value": 2195,
+        "raw": 6007,
+        "value": 3007,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1348,8 +1348,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 2074,
-        "value": 2074,
+        "raw": 2137,
+        "value": 2137,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1370,8 +1370,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 2074,
-        "value": 2074,
+        "raw": 2137,
+        "value": 2137,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1381,8 +1381,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 13016,
-        "value": 4016,
+        "raw": 14728,
+        "value": 5728,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1403,8 +1403,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 2074,
-        "value": 2074,
+        "raw": 2137,
+        "value": 2137,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

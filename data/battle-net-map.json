@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-16T02:20:39Z",
+  "updatedAt": "2026-11-16T14:26:34Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -420,6 +420,30 @@
       "matchedForm": "guild_roster",
       "mappedVia": "confirmed",
       "note": "user-confirmed",
+      "candidates": []
+    },
+    "1794839024861": {
+      "rosterName": "Dompy Shambam",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "candidates": []
+    },
+    "1794839024862": {
+      "rosterName": "Dompy Stompy",
+      "status": "not_found",
+      "slug": null,
+      "href": null,
+      "bnetName": null,
+      "surname": null,
+      "matchedForm": null,
+      "mappedVia": null,
+      "note": "404 on all forms — likely not opted in (task 0.4)",
       "candidates": []
     }
   }

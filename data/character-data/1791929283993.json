@@ -69,10 +69,10 @@
     },
     {
       "slot": "Chest",
-      "name": "Rigid Tunic of Power",
-      "ilvl": 26,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132725.jpg",
-      "itemId": 15118,
+      "name": "Brawnhide Armor",
+      "ilvl": 29,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132716.jpg",
+      "itemId": 15471,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -83,12 +83,34 @@
         "name": "Leather"
       },
       "enchants": [
-        "Enchanted: Attack Power +4 and Armor +16"
+        "Enchanted: Attack Power +6 and Armor +24"
       ],
       "stats": [
         {
-          "value": 18,
-          "displayString": "+18 Attack Power",
+          "value": 4,
+          "displayString": "+4 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 9,
+          "displayString": "+9 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 3,
+          "displayString": "+3 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -356,10 +378,10 @@
     },
     {
       "slot": "Ring 1",
-      "name": "Ivory Band of the Wolf",
-      "ilvl": 28,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133347.jpg",
-      "itemId": 11995,
+      "name": "Spinel Ring of Eluding",
+      "ilvl": 34,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133353.jpg",
+      "itemId": 11970,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -372,24 +394,13 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Agility",
+          "value": 2,
+          "displayString": "+2 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 4,
-          "displayString": "+4 Spirit",
-          "isEquipBonus": true,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
             "a": 1.0
           }
         }
@@ -515,24 +526,35 @@
     },
     {
       "slot": "Main Hand",
-      "name": "Iron Fists",
-      "ilvl": 31,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132945.jpg",
-      "itemId": 250604,
+      "name": "Deadly Kris of the Monkey",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135637.jpg",
+      "itemId": 15243,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 13,
-        "name": "Fist Weapon"
+        "id": 15,
+        "name": "Dagger"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 5,
-          "displayString": "+5 Agility",
+          "value": 4,
+          "displayString": "+4 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 4,
+          "displayString": "+4 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -545,25 +567,47 @@
     },
     {
       "slot": "Off Hand",
-      "name": "Meteor Shard",
-      "ilvl": 28,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135661.jpg",
-      "itemId": 6220,
-      "quality": "RARE",
+      "name": "Mercenary Blade of the Bandit",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135346.jpg",
+      "itemId": 15213,
+      "quality": "UNCOMMON",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 15,
-        "name": "Dagger"
+        "id": 7,
+        "name": "Sword"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Fire Resistance",
+          "value": 2,
+          "displayString": "+2 Agility",
           "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 4,
+          "displayString": "+4 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Attack Power",
+          "isEquipBonus": true,
           "color": {
             "r": 0,
             "g": 255,
@@ -632,8 +676,8 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 1068,
-    "power": 1170,
+    "health": 1297,
+    "power": 1245,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -644,23 +688,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 29,
-      "effective": 33
+      "base": 30,
+      "effective": 34
     },
     "agility": {
-      "base": 64,
-      "effective": 102
+      "base": 67,
+      "effective": 108
     },
     "intellect": {
-      "base": 35,
-      "effective": 47
+      "base": 36,
+      "effective": 48
     },
     "stamina": {
-      "base": 48,
-      "effective": 87
+      "base": 50,
+      "effective": 106
     },
     "meleeCrit": {
-      "value": 9.356999,
+      "value": 9.1556,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -674,7 +718,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 64,
+    "bonusArmor": 72,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -689,35 +733,35 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 308,
-    "mainHandDamageMin": 95.759995,
-    "mainHandDamageMax": 124.56,
-    "mainHandSpeed": 2.353,
-    "mainHandDps": 46.81683,
-    "offHandDamageMin": 36.96,
-    "offHandDamageMax": 48.96,
-    "offHandSpeed": 1.765,
-    "offHandDps": 24.339943,
+    "attackPower": 309,
+    "mainHandDamageMin": 58.679996,
+    "mainHandDamageMax": 79.079994,
+    "mainHandSpeed": 1.373,
+    "mainHandDps": 50.167515,
+    "offHandDamageMin": 50.38286,
+    "offHandDamageMax": 67.18285,
+    "offHandSpeed": 2.353,
+    "offHandDps": 24.98209,
     "spellPower": 0,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 10.0946,
+      "value": 10.030399,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "manaRegen": 58.0,
     "manaRegenCombat": 0.0,
     "armor": {
-      "base": 64,
-      "effective": 832
+      "base": 72,
+      "effective": 857
     },
     "dodge": {
-      "value": 8.714,
+      "value": 9.5803995,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 9.84,
+      "value": 9.8,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -727,7 +771,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 9.356999,
+      "value": 9.315599,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -742,16 +786,16 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 43,
+      "base": 44,
       "effective": 47
     },
     "defense": {
-      "base": 141,
-      "effective": 141
+      "base": 150,
+      "effective": 150
     },
     "fireResistance": {
-      "base": 3,
-      "effective": 3
+      "base": 0,
+      "effective": 0
     },
     "shadowResistance": {
       "base": 0,
@@ -770,9 +814,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 377,
-    "rangedDamageMin": 138.18571,
-    "rangedDamageMax": 168.18571,
+    "rangedAttackPower": 383,
+    "rangedDamageMin": 139.47144,
+    "rangedDamageMax": 169.47144,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -836,7 +880,7 @@
     {
       "specId": 51,
       "specName": "Survival",
-      "spentPoints": 9,
+      "spentPoints": 11,
       "talents": [
         {
           "rank": 5,
@@ -848,12 +892,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 2,
+          "rank": 3,
           "talentId": 134459,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136100.jpg",
           "spellId": 19184,
           "spellName": "Entrapment",
-          "description": "When your traps are triggered, all affected targets are Entrapped, preventing them from moving for 2 sec.",
+          "description": "When your traps are triggered, all affected targets are Entrapped, preventing them from moving for 3 sec.",
           "castTime": "Passive"
         },
         {
@@ -864,6 +908,15 @@
           "spellName": "Savage Strikes",
           "description": "Increases the critical strike chance of all your melee abilities by 4%.",
           "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 134451,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132369.jpg",
+          "spellId": 19263,
+          "spellName": "Deterrence",
+          "description": "When activated, increases your Dodge and Parry chance by 25% for 10 sec.",
+          "castTime": "Instant"
         }
       ]
     }
@@ -876,7 +929,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
         "tiers": [
           {
-            "skillPoints": 191,
+            "skillPoints": 216,
             "maxSkillPoints": 225,
             "tierId": 2947,
             "tierName": "Skinning",
@@ -899,7 +952,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 134,
+            "skillPoints": 158,
             "maxSkillPoints": 225,
             "tierId": 2946,
             "tierName": "Mining",
@@ -1046,8 +1099,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 1882,
-        "value": 1882,
+        "raw": 1944,
+        "value": 1944,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1068,8 +1121,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 6805,
-        "value": 3805,
+        "raw": 7855,
+        "value": 4855,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1079,8 +1132,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 3264,
-        "value": 264,
+        "raw": 3389,
+        "value": 389,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1090,8 +1143,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 6620,
-        "value": 3620,
+        "raw": 6870,
+        "value": 3870,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1101,8 +1154,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 4550,
-        "value": 1550,
+        "raw": 4800,
+        "value": 1800,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1112,8 +1165,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 1882,
-        "value": 1882,
+        "raw": 1944,
+        "value": 1944,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1123,8 +1176,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 1882,
-        "value": 1882,
+        "raw": 1944,
+        "value": 1944,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1134,8 +1187,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 3893,
-        "value": 893,
+        "raw": 4143,
+        "value": 1143,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1167,8 +1220,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 1882,
-        "value": 1882,
+        "raw": 1944,
+        "value": 1944,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
