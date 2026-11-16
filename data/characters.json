@@ -116,7 +116,7 @@
       "track": "family",
       "role": "DPS",
       "roleSec": "None",
-      "race": "Horde Skyborne",
+      "race": "Windshaper Skyborne",
       "class": "Shaman",
       "prof1": "Alchemy",
       "prof2": "Herbalism"
@@ -146,7 +146,7 @@
       "track": "alts",
       "role": "DPS",
       "roleSec": "Healer",
-      "race": "Horde Skyborne",
+      "race": "Windshaper Skyborne",
       "class": "Druid",
       "prof1": "Leatherworking",
       "prof2": "Skinning"
@@ -188,7 +188,7 @@
       "track": "flowmasters",
       "role": "DPS",
       "roleSec": "None",
-      "race": "Horde Skyborne",
+      "race": "Windshaper Skyborne",
       "class": "Hunter",
       "prof1": "Skinning",
       "prof2": "Mining",

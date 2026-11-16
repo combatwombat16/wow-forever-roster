@@ -389,8 +389,13 @@ Localized strings: class/race/spec docs do **not** use a "name object carrying a
 localized-string indirection — the names are inline locale maps (`name`, `gender.name`,
 `classes[].name`, `races[].name`), so read `.en_US`. Roster-relevant cross-check: the static
 index returns **9 classes and 10 races**, matching the nine `CLASS_COLORS` and ten
-`FOREVER_RACE_CLASSES` keys in `index.html` — including the Skyborne races that three
-unresolved roster entries list as `Horde Skyborne`.
+`FOREVER_RACE_CLASSES` keys (id 95 `High Order Skyborne`, id 96 `Windshaper Skyborne`).
+On 2026-11-15 the vocabulary adopted those two API spellings verbatim — the site previously
+called them `Alliance Skyborne` / `Horde Skyborne`, which no `race.name` from the API can ever
+match, so `1791929283993` synced as `Windshaper Skyborne` and lost its race colour, filter and
+confirm-tie to the gap (gate WARN of 2026-11-14). Curated roster rows were renamed in the same
+commit; faction logic (`util.js ALLIANCE_RACES`) lists High Order only, Windshaper falling on
+the Horde branch by design.
 
 ---
 

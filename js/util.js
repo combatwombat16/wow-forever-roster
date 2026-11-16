@@ -69,7 +69,11 @@ export function showToast(message, tone = 'info') {
 // anything-not-Alliance-is-Horde default painted every race-less placeholder Horde-red (review C2),
 // which is exactly the "an unknown is recorded as an unknown" promise the sync makes. Every
 // consumer of this value must therefore handle "unknown" as a third branch, not as the else.
-const ALLIANCE_RACES = ["Human", "Dwarf", "Night Elf", "Gnome", "Alliance Skyborne"];
+// "High Order Skyborne" is the Alliance half of the new race and "Windshaper Skyborne" the Horde
+// half, in Battle.net's own spelling (playable-race 95 / 96). Only the Alliance list needs to name
+// its own: the comment above getFaction is why an unlisted race is horde rather than unknown —
+// Windshaper lands on the horde branch here and that is the correct faction, not an oversight.
+const ALLIANCE_RACES = ["Human", "Dwarf", "Night Elf", "Gnome", "High Order Skyborne"];
 export function getFaction(race) {
   if (!race) return "unknown";
   return ALLIANCE_RACES.includes(race) ? "alliance" : "horde";

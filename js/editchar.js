@@ -15,12 +15,17 @@ export const FOREVER_RACE_CLASSES = {
       "Dwarf": ["Warrior", "Hunter", "Rogue", "Priest", "Paladin", "Shaman"],
       "Night Elf": ["Warrior", "Hunter", "Rogue", "Priest", "Druid"],
       "Gnome": ["Warrior", "Mage", "Rogue", "Priest", "Warlock"],
-      "Alliance Skyborne": ["Warrior", "Hunter", "Mage", "Rogue", "Druid"],
+      // The two Skyborne spellings are Battle.net's own (`/data/wow/playable-race/index`,
+      // static-1.60.1_70399-forever-us: 95 High Order = Alliance, 96 Windshaper = Horde), not the
+      // shorthand this file carried before. A key here is what `race` must equal, so a name the API
+      // never emits is a name the nightly can only warn about: 1791929283993 came back
+      // "Windshaper Skyborne" and lost its race colour, filter and confirm-tie to that gap.
+      "High Order Skyborne": ["Warrior", "Hunter", "Mage", "Rogue", "Druid"],
       "Orc": ["Warrior", "Hunter", "Mage", "Rogue", "Warlock", "Shaman"],
       "Undead": ["Warrior", "Mage", "Rogue", "Priest", "Warlock", "Paladin"],
       "Tauren": ["Warrior", "Hunter", "Druid", "Shaman"],
       "Troll": ["Warrior", "Hunter", "Mage", "Rogue", "Priest", "Warlock", "Shaman"],
-      "Horde Skyborne": ["Warrior", "Hunter", "Rogue", "Druid", "Shaman"]
+      "Windshaper Skyborne": ["Warrior", "Hunter", "Rogue", "Druid", "Shaman"]
 };
 
 export function onRaceChange() {

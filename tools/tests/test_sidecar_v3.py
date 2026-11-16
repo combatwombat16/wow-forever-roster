@@ -596,27 +596,36 @@ class NoDataLossAgainstTheCommittedRows(unittest.TestCase):
                                      "MANIFEST_ROW_KEYS or DETAIL_DOC_KEYS is the fix, and the "
                                      "writer already refuses the run rather than losing it")
 
-    def test_the_migrated_files_are_what_the_writer_produces_for_those_rows(self):
-        """Byte-level: re-deriving from the v2 rows reproduces the committed manifest and every
-        detail document, so the tree was migrated BY this code path and not by hand."""
+    def test_the_committed_files_are_a_read_write_fixed_point(self):
+        """Byte-level, and deliberately about NOW, not about the migration day.
+
+        This test used to re-derive the tree from the pinned v2 fixture and assert byte equality,
+        which proved "migrated by this code path" exactly once: the next nightly rewrote
+        ``syncedAt`` and the byte comparison expired on schedule (it did, ~3 h after landing).
+        The claim that survives a nightly is the invariant the nightly's unchanged-data path
+        depends on: ``load_previous_data -> split_characters -> manifest_document`` over the
+        CURRENT files reproduces those CURRENT files byte for byte. If that ever breaks, a sync
+        that learned nothing still republishes rewritten bytes — churn, and a lost field hiding
+        behind it. Timestamps come from the committed document itself, so the envelope is part of
+        the fixed point without renting a value that changes every run.
+        """
         merged = artifacts.load_previous_data(REPO / "data" / "character-data.json",
                                               REPO / "data" / "character-data")
         rows, details = artifacts.split_characters(merged)
-        manifest = artifacts.manifest_document(rows, triggered_by_value=self.v2.get("triggeredBy"),
-                                               synced_at=self.v2.get("syncedAt"))
-        # HEAD is v2 and the working tree is v3, so the comparison that matters is against the
-        # files on disk: the migration carried syncedAt/triggeredBy forward verbatim.
         current = json.loads((REPO / "data" / "character-data.json").read_text(encoding="utf-8"))
-        self.assertEqual(current["syncedAt"], self.v2["syncedAt"])
-        self.assertEqual(current["triggeredBy"], self.v2["triggeredBy"])
+        manifest = artifacts.manifest_document(rows, triggered_by_value=current["triggeredBy"],
+                                               synced_at=current["syncedAt"])
         self.assertEqual(artifacts.dumps(manifest),
-                         (REPO / "data" / "character-data.json").read_text(encoding="utf-8"))
+                         (REPO / "data" / "character-data.json").read_text(encoding="utf-8"),
+                         "re-deriving from the reader's own output is not a no-op on the manifest")
         for rid, doc in details.items():
             self.assertEqual(artifacts.dumps(doc),
                              (REPO / "data" / "character-data" / f"{rid}.json").read_text(encoding="utf-8"),
                              f"id {rid}: the committed detail file is not what the writer emits")
-        self.assertEqual({rid for rid, rec in self.rows.items() if isinstance(rec, dict)
-                          and rec.get("status") == "ok"}, set(details))
+        # ok-ness comes from the current records, not the fixture: which characters are resolved
+        # is the nightly's answer, and renting it is how this class's sibling tests expired.
+        self.assertEqual({rid for rid, rec in merged.items()
+                          if isinstance(rec, dict) and rec.get("status") == "ok"}, set(details))
 
 
 # --------------------------------------------------------------------------- #
