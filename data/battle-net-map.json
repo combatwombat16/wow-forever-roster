@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-16T14:26:34Z",
+  "updatedAt": "2026-11-17T15:21:50Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -424,14 +424,14 @@
     },
     "1794839024861": {
       "rosterName": "Dompy Shambam",
-      "status": "not_found",
-      "slug": null,
-      "href": null,
-      "bnetName": null,
-      "surname": null,
-      "matchedForm": null,
-      "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "status": "ok",
+      "slug": "dompy-shambam",
+      "href": "https://us.api.blizzard.com/profile/wow/character/dompy-shambam?namespace=profile-forever-us",
+      "bnetName": "Dompy",
+      "surname": "Shambam",
+      "matchedForm": "lower_hyphen",
+      "mappedVia": "direct",
+      "note": null,
       "candidates": []
     },
     "1794839024862": {

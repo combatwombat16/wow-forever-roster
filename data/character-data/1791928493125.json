@@ -9,10 +9,10 @@
   "gear": [
     {
       "slot": "Head",
-      "name": "Veteran's Silvered Chain Helm",
-      "ilvl": 25,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133141.jpg",
-      "itemId": 250528,
+      "name": "Tusken Helm",
+      "ilvl": 34,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133077.jpg",
+      "itemId": 6686,
       "quality": "RARE",
       "itemClass": {
         "id": 4,
@@ -25,8 +25,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 10,
-          "displayString": "+10 Strength",
+          "value": 13,
+          "displayString": "+13 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -36,13 +36,13 @@
           }
         },
         {
-          "value": 9,
-          "displayString": "+9 Stamina",
-          "isEquipBonus": false,
+          "value": 120,
+          "displayString": "+120 Bonus Armor",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -190,10 +190,10 @@
     },
     {
       "slot": "Shoulders",
-      "name": "Silvered Bronze Shoulders",
-      "ilvl": 25,
+      "name": "Wicked Chain Shoulder Pads of the Beast",
+      "ilvl": 32,
       "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135040.jpg",
-      "itemId": 3481,
+      "itemId": 15542,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -206,6 +206,17 @@
       "enchants": [],
       "stats": [
         {
+          "value": 4,
+          "displayString": "+4 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
           "value": 3,
           "displayString": "+3 Strength",
           "isEquipBonus": false,
@@ -217,24 +228,13 @@
           }
         },
         {
-          "value": 3,
-          "displayString": "+3 Stamina",
+          "value": 7,
+          "displayString": "+7 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 3,
-          "displayString": "+3 Spirit",
-          "isEquipBonus": true,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
             "a": 1.0
           }
         }
@@ -260,10 +260,10 @@
     },
     {
       "slot": "Chest",
-      "name": "Shining Silver Breastplate",
-      "ilvl": 29,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132750.jpg",
-      "itemId": 2870,
+      "name": "Brutal Hauberk",
+      "ilvl": 30,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132629.jpg",
+      "itemId": 7133,
       "quality": "RARE",
       "itemClass": {
         "id": 4,
@@ -276,8 +276,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 14,
-          "displayString": "+14 Strength",
+          "value": 5,
+          "displayString": "+5 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -287,8 +287,8 @@
           }
         },
         {
-          "value": 6,
-          "displayString": "+6 Stamina",
+          "value": 14,
+          "displayString": "+14 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -301,10 +301,10 @@
     },
     {
       "slot": "Waist",
-      "name": "Cobrahn's Grasp",
-      "ilvl": 22,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132492.jpg",
-      "itemId": 6460,
+      "name": "Officer's Belt",
+      "ilvl": 35,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132509.jpg",
+      "itemId": 250556,
       "quality": "RARE",
       "itemClass": {
         "id": 4,
@@ -317,8 +317,19 @@
       "enchants": [],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Agility",
+          "value": 6,
+          "displayString": "+6 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 10,
+          "displayString": "+10 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -329,7 +340,7 @@
         },
         {
           "value": 7,
-          "displayString": "+7 Strength",
+          "displayString": "+7 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -383,11 +394,11 @@
     },
     {
       "slot": "Feet",
-      "name": "Silvered Bronze Boots",
-      "ilvl": 26,
+      "name": "Half-Eaten Boots",
+      "ilvl": 27,
       "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132535.jpg",
-      "itemId": 3482,
-      "quality": "UNCOMMON",
+      "itemId": 273646,
+      "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -399,8 +410,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Strength",
+          "value": 8,
+          "displayString": "+8 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -410,19 +421,19 @@
           }
         },
         {
-          "value": 4,
-          "displayString": "+4 Stamina",
+          "value": 10,
+          "displayString": "+10 Nature Resistance",
           "isEquipBonus": false,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         },
         {
-          "value": 3,
-          "displayString": "+3 Spirit",
+          "value": -100,
+          "displayString": "-100 Bonus Armor",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -435,10 +446,10 @@
     },
     {
       "slot": "Wrist",
-      "name": "Patterned Bronze Bracers",
-      "ilvl": 25,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132606.jpg",
-      "itemId": 2868,
+      "name": "Steel-clasped Bracers",
+      "ilvl": 28,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132605.jpg",
+      "itemId": 4534,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -450,47 +461,6 @@
       },
       "enchants": [],
       "stats": [
-        {
-          "value": 5,
-          "displayString": "+5 Strength",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "slot": "Hands",
-      "name": "Silvered Bronze Gauntlets",
-      "ilvl": 27,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132939.jpg",
-      "itemId": 3483,
-      "quality": "UNCOMMON",
-      "itemClass": {
-        "id": 4,
-        "name": "Armor"
-      },
-      "itemSubclass": {
-        "id": 3,
-        "name": "Mail"
-      },
-      "enchants": [],
-      "stats": [
-        {
-          "value": 4,
-          "displayString": "+4 Strength",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
         {
           "value": 4,
           "displayString": "+4 Stamina",
@@ -503,8 +473,8 @@
           }
         },
         {
-          "value": 3,
-          "displayString": "+3 Spirit",
+          "value": 4,
+          "displayString": "+4 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -516,25 +486,25 @@
       ]
     },
     {
-      "slot": "Ring 1",
-      "name": "Bounty Hunter's Ring",
-      "ilvl": 20,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133343.jpg",
-      "itemId": 5351,
+      "slot": "Hands",
+      "name": "Brutal Gauntlets",
+      "ilvl": 31,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132938.jpg",
+      "itemId": 7129,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
       },
       "itemSubclass": {
-        "id": 0,
-        "name": "Miscellaneous"
+        "id": 3,
+        "name": "Mail"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Agility",
+          "value": 6,
+          "displayString": "+6 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -544,8 +514,8 @@
           }
         },
         {
-          "value": 1,
-          "displayString": "+1 Stamina",
+          "value": 6,
+          "displayString": "+6 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -557,11 +527,52 @@
       ]
     },
     {
+      "slot": "Ring 1",
+      "name": "Seal of Sylvanas",
+      "ilvl": 29,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133357.jpg",
+      "itemId": 6414,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 8,
+          "displayString": "+8 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 6,
+          "displayString": "+6 Attack Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
       "slot": "Ring 2",
-      "name": "Skull Ring",
-      "ilvl": 25,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132501.jpg",
-      "itemId": 3739,
+      "name": "Boar Signet",
+      "ilvl": 32,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133368.jpg",
+      "itemId": 274078,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -574,8 +585,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Intellect",
+          "value": 5,
+          "displayString": "+5 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -585,13 +596,13 @@
           }
         },
         {
-          "value": 3,
-          "displayString": "+3 Stamina",
-          "isEquipBonus": false,
+          "value": 5,
+          "displayString": "+5 Block",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -640,20 +651,63 @@
     },
     {
       "slot": "Main Hand",
-      "name": "Wingblade",
-      "ilvl": 24,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135314.jpg",
-      "itemId": 6504,
+      "name": "Butcher's Cleaver",
+      "ilvl": 25,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132417.jpg",
+      "itemId": 1292,
       "quality": "RARE",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 7,
-        "name": "Sword"
+        "id": 0,
+        "name": "Axe"
       },
       "enchants": [],
+      "stats": [
+        {
+          "value": 2,
+          "displayString": "+2 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Off Hand",
+      "name": "Marbled Buckler",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134956.jpg",
+      "itemId": 6725,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 6,
+        "name": "Shield"
+      },
+      "enchants": [
+        "Enchanted: Iron Spike (8-12)"
+      ],
       "stats": [
         {
           "value": 5,
@@ -667,8 +721,8 @@
           }
         },
         {
-          "value": 2,
-          "displayString": "+2 Stamina",
+          "value": 5,
+          "displayString": "+5 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -676,29 +730,21 @@
             "b": 255,
             "a": 1.0
           }
-        }
-      ]
-    },
-    {
-      "slot": "Off Hand",
-      "name": "Kresh's Back",
-      "ilvl": 23,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134964.jpg",
-      "itemId": 13245,
-      "quality": "RARE",
-      "itemClass": {
-        "id": 4,
-        "name": "Armor"
-      },
-      "itemSubclass": {
-        "id": 6,
-        "name": "Shield"
-      },
-      "enchants": [],
-      "stats": [
+        },
         {
           "value": 5,
-          "displayString": "+5 Defense",
+          "displayString": "+5 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -711,24 +757,26 @@
     },
     {
       "slot": "Ranged",
-      "name": "Iron Star",
-      "ilvl": 27,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132330.jpg",
-      "itemId": 281660,
-      "quality": "UNCOMMON",
+      "name": "Quilboar Blaster",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135614.jpg",
+      "itemId": 274084,
+      "quality": "RARE",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 16,
-        "name": "Thrown"
+        "id": 3,
+        "name": "Gun"
       },
-      "enchants": [],
+      "enchants": [
+        "Enchanted: Scope (+2 Damage)"
+      ],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Agility",
+          "value": 4,
+          "displayString": "+4 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -736,23 +784,34 @@
             "b": 255,
             "a": 1.0
           }
+        },
+        {
+          "value": 4,
+          "displayString": "+4 Spirit",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
         }
       ]
     },
     {
       "slot": "Ammo",
-      "name": "Sharp Arrow",
+      "name": "Heavy Shot",
       "ilvl": 15,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132382.jpg",
-      "itemId": 2515,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132384.jpg",
+      "itemId": 2519,
       "quality": "COMMON",
       "itemClass": {
         "id": 6,
         "name": "Projectile"
       },
       "itemSubclass": {
-        "id": 2,
-        "name": "Arrow"
+        "id": 3,
+        "name": "Bullet"
       },
       "enchants": [],
       "stats": []
@@ -766,7 +825,7 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 1095,
+    "health": 1422,
     "power": 100,
     "powerType": {
       "id": 1,
@@ -778,23 +837,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 63,
-      "effective": 118
+      "base": 67,
+      "effective": 130
     },
     "agility": {
-      "base": 37,
-      "effective": 65
+      "base": 39,
+      "effective": 74
     },
     "intellect": {
       "base": 19,
-      "effective": 23
+      "effective": 20
     },
     "stamina": {
-      "base": 56,
-      "effective": 89
+      "base": 59,
+      "effective": 116
     },
     "meleeCrit": {
-      "value": 6.6299996,
+      "value": 7.0788,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -808,7 +867,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 0,
+    "bonusArmor": 20,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -823,11 +882,11 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 300,
-    "mainHandDamageMin": 71.14287,
-    "mainHandDamageMax": 92.14287,
-    "mainHandSpeed": 2.2,
-    "mainHandDps": 37.110394,
+    "attackPower": 336,
+    "mainHandDamageMin": 59.800003,
+    "mainHandDamageMax": 76.8,
+    "mainHandSpeed": 1.7,
+    "mainHandDps": 40.17647,
     "offHandDamageMin": 0.0,
     "offHandDamageMax": 0.0,
     "offHandSpeed": 2.0,
@@ -842,26 +901,26 @@
     "manaRegen": 0.0,
     "manaRegenCombat": 0.0,
     "armor": {
-      "base": 0,
-      "effective": 1798
+      "base": 20,
+      "effective": 2181
     },
     "dodge": {
-      "value": 6.7899995,
+      "value": 6.9988003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 5.1600003,
+      "value": 4.88,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "block": {
-      "value": 10.16,
-      "ratingBonus": 0.0,
-      "ratingNormalized": 0
+      "value": 10.879999,
+      "ratingBonus": 1.0,
+      "ratingNormalized": 5
     },
     "rangedCrit": {
-      "value": 5.5899997,
+      "value": 4.1588006,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -876,12 +935,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 31,
-      "effective": 41
+      "base": 32,
+      "effective": 46
     },
     "defense": {
-      "base": 139,
-      "effective": 144
+      "base": 147,
+      "effective": 147
     },
     "fireResistance": {
       "base": 1,
@@ -892,8 +951,8 @@
       "effective": 1
     },
     "natureResistance": {
-      "base": 3,
-      "effective": 3
+      "base": 13,
+      "effective": 13
     },
     "arcaneResistance": {
       "base": 1,
@@ -904,9 +963,9 @@
       "effective": 1
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 138,
-    "rangedDamageMin": 36.714287,
-    "rangedDamageMax": 52.714287,
+    "rangedAttackPower": 164,
+    "rangedDamageMin": 80.8,
+    "rangedDamageMax": 112.8,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -936,7 +995,7 @@
     {
       "specId": 257,
       "specName": "Protection",
-      "spentPoints": 19,
+      "spentPoints": 21,
       "talents": [
         {
           "rank": 5,
@@ -984,12 +1043,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 1,
+          "rank": 2,
           "talentId": 142602,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132347.jpg",
           "spellId": 12792,
           "spellName": "Defiance",
-          "description": "Increases all threat generated in Defensive stance by an additional 7% while a shield is equipped.",
+          "description": "Increases all threat generated in Defensive stance by an additional 13% while a shield is equipped.",
           "castTime": "Passive"
         },
         {
@@ -1009,6 +1068,15 @@
           "spellName": "Vanguard",
           "description": "Your Charge ability is now usable while in Defensive Stance.",
           "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 135496,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132325.jpg",
+          "spellId": 12809,
+          "spellName": "Concussion Blow",
+          "description": "Stuns the target for 5 sec.",
+          "castTime": "Instant"
         }
       ]
     }
@@ -1021,7 +1089,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 154,
+            "skillPoints": 164,
             "maxSkillPoints": 225,
             "tierId": 2946,
             "tierName": "Mining",
@@ -1068,7 +1136,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136241.jpg",
         "tiers": [
           {
-            "skillPoints": 142,
+            "skillPoints": 156,
             "maxSkillPoints": 225,
             "tierId": 2938,
             "tierName": "Blacksmithing",
@@ -1138,6 +1206,10 @@
                 "name": "Silvered Bronze Gauntlets"
               },
               {
+                "id": 1866,
+                "name": "Green Iron Boots"
+              },
+              {
                 "id": 1868,
                 "name": "Heavy Grinding Stone"
               },
@@ -1172,6 +1244,10 @@
               {
                 "id": 1637,
                 "name": "Runed Copper Belt"
+              },
+              {
+                "id": 1638,
+                "name": "Runed Copper Breastplate"
               },
               {
                 "id": 1639,
@@ -1254,6 +1330,10 @@
                 "name": "Bronze Battle Axe"
               },
               {
+                "id": 4207,
+                "name": "Iron Shield Spike"
+              },
+              {
                 "id": 4285,
                 "name": "Heavy Copper Maul"
               },
@@ -1268,6 +1348,18 @@
               {
                 "id": 54740,
                 "name": "Veteran's Silvered Chain Helm"
+              },
+              {
+                "id": 54768,
+                "name": "Officer's Belt"
+              },
+              {
+                "id": 54769,
+                "name": "Sentinel's Belt"
+              },
+              {
+                "id": 54770,
+                "name": "Warder's Belt"
               },
               {
                 "id": 54212,
@@ -1455,8 +1547,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 2244,
-        "value": 2244,
+        "raw": 2444,
+        "value": 2444,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1466,8 +1558,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 13046,
-        "value": 4046,
+        "raw": 13533,
+        "value": 4533,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1477,8 +1569,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 3988,
-        "value": 988,
+        "raw": 4388,
+        "value": 1388,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1488,8 +1580,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 8317,
-        "value": 5317,
+        "raw": 8823,
+        "value": 5823,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1499,8 +1591,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 5685,
-        "value": 2685,
+        "raw": 6116,
+        "value": 3116,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1510,8 +1602,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 2244,
-        "value": 2244,
+        "raw": 2444,
+        "value": 2444,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1521,8 +1613,8 @@
       "factionId": 2587,
       "factionName": "Durotar Supply and Logistics",
       "standing": {
-        "raw": 2000,
-        "value": 2000,
+        "raw": 2075,
+        "value": 2075,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1543,8 +1635,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 2244,
-        "value": 2244,
+        "raw": 2444,
+        "value": 2444,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1554,19 +1646,30 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 4491,
-        "value": 1491,
+        "raw": 5203,
+        "value": 2203,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
       }
     },
     {
+      "factionId": 2787,
+      "factionName": "Earthen Ring",
+      "standing": {
+        "raw": 100,
+        "value": 100,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 2244,
-        "value": 2244,
+        "raw": 2444,
+        "value": 2444,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

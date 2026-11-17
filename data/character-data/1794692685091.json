@@ -139,10 +139,51 @@
     },
     {
       "slot": "Feet",
-      "name": "Brackwater Boots",
-      "ilvl": 15,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132537.jpg",
-      "itemId": 3302,
+      "name": "Padded Lamellar Boots",
+      "ilvl": 16,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132535.jpg",
+      "itemId": 5320,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 3,
+        "name": "Mail"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 2,
+          "displayString": "+2 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 2,
+          "displayString": "+2 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Wrist",
+      "name": "War Paint Bindings",
+      "ilvl": 17,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132605.jpg",
+      "itemId": 14723,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -157,36 +198,6 @@
         {
           "value": 3,
           "displayString": "+3 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "slot": "Wrist",
-      "name": "Brog's Friendship Bracelet",
-      "ilvl": 10,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132602.jpg",
-      "itemId": 281272,
-      "quality": "UNCOMMON",
-      "itemClass": {
-        "id": 4,
-        "name": "Armor"
-      },
-      "itemSubclass": {
-        "id": 3,
-        "name": "Mail"
-      },
-      "enchants": [],
-      "stats": [
-        {
-          "value": 1,
-          "displayString": "+1 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -299,11 +310,11 @@
     },
     {
       "slot": "Off Hand",
-      "name": "Tribal Warrior's Shield",
-      "ilvl": 11,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134957.jpg",
-      "itemId": 4967,
-      "quality": "COMMON",
+      "name": "Brackwater Shield",
+      "ilvl": 14,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134955.jpg",
+      "itemId": 3654,
+      "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -313,12 +324,35 @@
         "name": "Shield"
       },
       "enchants": [],
-      "stats": []
+      "stats": [
+        {
+          "value": 1,
+          "displayString": "+1 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 1,
+          "displayString": "+1 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
     }
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 442,
+    "health": 498,
     "power": 100,
     "powerType": {
       "id": 1,
@@ -330,23 +364,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 46,
-      "effective": 55
+      "base": 47,
+      "effective": 57
     },
     "agility": {
-      "base": 26,
-      "effective": 27
+      "base": 27,
+      "effective": 29
     },
     "intellect": {
       "base": 17,
       "effective": 18
     },
     "stamina": {
-      "base": 40,
-      "effective": 45
+      "base": 42,
+      "effective": 50
     },
     "meleeCrit": {
-      "value": 3.8504999,
+      "value": 4.0659,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -375,11 +409,11 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 138,
-    "mainHandDamageMin": 53.585716,
-    "mainHandDamageMax": 75.58572,
+    "attackPower": 145,
+    "mainHandDamageMin": 55.035713,
+    "mainHandDamageMax": 77.03571,
     "mainHandSpeed": 2.9,
-    "mainHandDps": 22.270935,
+    "mainHandDps": 22.770935,
     "offHandDamageMin": 0.0,
     "offHandDamageMax": 0.0,
     "offHandSpeed": 2.0,
@@ -395,10 +429,10 @@
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 0,
-      "effective": 721
+      "effective": 874
     },
     "dodge": {
-      "value": 3.8505006,
+      "value": 4.0258994,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -413,7 +447,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 0.9304999,
+      "value": 1.0259,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -432,8 +466,8 @@
       "effective": 33
     },
     "defense": {
-      "base": 74,
-      "effective": 74
+      "base": 79,
+      "effective": 79
     },
     "fireResistance": {
       "base": 0,
@@ -456,9 +490,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 50,
-    "rangedDamageMin": 11.357143,
-    "rangedDamageMax": 11.357143,
+    "rangedAttackPower": 55,
+    "rangedDamageMin": 12.3928585,
+    "rangedDamageMax": 12.3928585,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -488,7 +522,7 @@
     {
       "specId": 257,
       "specName": "Protection",
-      "spentPoints": 6,
+      "spentPoints": 7,
       "talents": [
         {
           "rank": 5,
@@ -500,12 +534,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 1,
+          "rank": 2,
           "talentId": 135500,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132353.jpg",
           "spellId": 12797,
           "spellName": "Improved Revenge",
-          "description": "Increases damage dealt by your Revenge ability by 20%.",
+          "description": "Increases damage dealt by your Revenge ability by 40%.",
           "castTime": "Passive"
         }
       ]
@@ -519,7 +553,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 54,
+            "skillPoints": 60,
             "maxSkillPoints": 150,
             "tierId": 2946,
             "tierName": "Mining",
@@ -560,6 +594,14 @@
                 "name": "Rough Grinding Stone"
               },
               {
+                "id": 1858,
+                "name": "Runed Copper Gauntlets"
+              },
+              {
+                "id": 1861,
+                "name": "Coarse Grinding Stone"
+              },
+              {
                 "id": 6636,
                 "name": "Rough Copper Vest"
               },
@@ -570,6 +612,10 @@
               {
                 "id": 1634,
                 "name": "Copper Bracers"
+              },
+              {
+                "id": 1636,
+                "name": "Coarse Sharpening Stone"
               },
               {
                 "id": 52645,
@@ -626,7 +672,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
         "tiers": [
           {
-            "skillPoints": 51,
+            "skillPoints": 56,
             "maxSkillPoints": 150,
             "tierId": 2942,
             "tierName": "First Aid",
@@ -654,8 +700,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 787,
-        "value": 787,
+        "raw": 1217,
+        "value": 1217,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -665,8 +711,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 8431,
-        "value": 5431,
+        "raw": 8468,
+        "value": 5468,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -676,8 +722,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 1075,
-        "value": 1075,
+        "raw": 1935,
+        "value": 1935,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -687,8 +733,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 4665,
-        "value": 1665,
+        "raw": 4815,
+        "value": 1815,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -698,8 +744,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 3727,
-        "value": 727,
+        "raw": 3765,
+        "value": 765,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -709,8 +755,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 787,
-        "value": 787,
+        "raw": 1217,
+        "value": 1217,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -720,8 +766,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 787,
-        "value": 787,
+        "raw": 1217,
+        "value": 1217,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -731,8 +777,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 1108,
-        "value": 1108,
+        "raw": 1146,
+        "value": 1146,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -742,8 +788,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 787,
-        "value": 787,
+        "raw": 1217,
+        "value": 1217,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

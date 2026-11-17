@@ -317,10 +317,10 @@
     },
     {
       "slot": "Wrist",
-      "name": "Tabitha's Cuffs",
-      "ilvl": 24,
+      "name": "Knife-Polishing Rag",
+      "ilvl": 33,
       "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132609.jpg",
-      "itemId": 251486,
+      "itemId": 271740,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -333,19 +333,19 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Stamina",
-          "isEquipBonus": false,
+          "value": 6,
+          "displayString": "+6 Spell Power",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         },
         {
-          "value": 3,
-          "displayString": "+3 Spell Power",
+          "value": 4,
+          "displayString": "+4 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -491,12 +491,30 @@
       ]
     },
     {
-      "slot": "Back",
-      "name": "Sanguine Cape",
-      "ilvl": 22,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133770.jpg",
-      "itemId": 14376,
+      "slot": "Trinket 1",
+      "name": "Satchel of Potions",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133633.jpg",
+      "itemId": 280766,
       "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Back",
+      "name": "Furs of the Earthen Ring",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133756.jpg",
+      "itemId": 271719,
+      "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -508,13 +526,35 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Intellect",
+          "value": 5,
+          "displayString": "+5 Intellect",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Spirit",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -594,8 +634,8 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 823,
-    "power": 1375,
+    "health": 802,
+    "power": 1440,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -607,22 +647,22 @@
     },
     "strength": {
       "base": 24,
-      "effective": 24
+      "effective": 29
     },
     "agility": {
       "base": 27,
       "effective": 29
     },
     "intellect": {
-      "base": 53,
-      "effective": 76
+      "base": 55,
+      "effective": 79
     },
     "stamina": {
-      "base": 29,
-      "effective": 67
+      "base": 30,
+      "effective": 64
     },
     "meleeCrit": {
-      "value": 2.208,
+      "value": 2.048,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -651,30 +691,30 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 20,
-    "mainHandDamageMin": 48.142857,
-    "mainHandDamageMax": 71.14286,
+    "attackPower": 25,
+    "mainHandDamageMin": 49.428574,
+    "mainHandDamageMax": 72.42857,
     "mainHandSpeed": 3.6,
-    "mainHandDps": 16.567461,
-    "offHandDamageMin": 1.9285716,
-    "offHandDamageMax": 1.9285716,
+    "mainHandDps": 16.924604,
+    "offHandDamageMin": 2.2857144,
+    "offHandDamageMax": 2.2857144,
     "offHandSpeed": 2.0,
-    "offHandDps": 0.9642858,
-    "spellPower": 16,
+    "offHandDps": 1.1428572,
+    "spellPower": 19,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 3.6732,
+      "value": 3.6444001,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 79.0,
+    "manaRegen": 85.0,
     "manaRegenCombat": 4.0,
     "armor": {
       "base": 0,
-      "effective": 280
+      "effective": 290
     },
     "dodge": {
-      "value": 4.888,
+      "value": 4.6879997,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -704,8 +744,8 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 56,
-      "effective": 70
+      "base": 57,
+      "effective": 80
     },
     "defense": {
       "base": 120,
@@ -738,7 +778,7 @@
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
-    "spellHealing": 38,
+    "spellHealing": 41,
     "meleeHit": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -780,7 +820,7 @@
     {
       "specId": 6,
       "specName": "Frost",
-      "spentPoints": 15,
+      "spentPoints": 16,
       "talents": [
         {
           "rank": 5,
@@ -801,12 +841,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 3,
+          "rank": 4,
           "talentId": 135307,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135855.jpg",
           "spellId": 11207,
           "spellName": "Ice Shards",
-          "description": "Increases the critical strike damage bonus of your Frost spells by 60%.",
+          "description": "Increases the critical strike damage bonus of your Frost spells by 80%.",
           "castTime": "Passive"
         },
         {
@@ -847,7 +887,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
         "tiers": [
           {
-            "skillPoints": 188,
+            "skillPoints": 203,
             "maxSkillPoints": 225,
             "tierId": 2947,
             "tierName": "Skinning",
@@ -870,7 +910,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 129,
+            "skillPoints": 135,
             "maxSkillPoints": 225,
             "tierId": 2946,
             "tierName": "Mining",
@@ -997,6 +1037,10 @@
                 "name": "Basic Campfire"
               },
               {
+                "id": 54502,
+                "name": "Twice-Spiced Raptor Slice"
+              },
+              {
                 "id": 54474,
                 "name": "Royal Tea"
               }
@@ -1033,7 +1077,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
         "tiers": [
           {
-            "skillPoints": 118,
+            "skillPoints": 119,
             "maxSkillPoints": 150,
             "tierId": 2942,
             "tierName": "First Aid",
@@ -1091,17 +1135,6 @@
       "standing": {
         "raw": 1852,
         "value": 1852,
-        "max": 3000,
-        "tier": 3,
-        "name": "Neutral"
-      }
-    },
-    {
-      "factionId": 510,
-      "factionName": "The Defilers",
-      "standing": {
-        "raw": 0,
-        "value": 0,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

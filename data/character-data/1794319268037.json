@@ -161,11 +161,11 @@
     },
     {
       "slot": "Chest",
-      "name": "Dreamer's Chestguard",
-      "ilvl": 32,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132716.jpg",
-      "itemId": 270043,
-      "quality": "RARE",
+      "name": "Wolf Rider's Padded Armor of the Gorilla",
+      "ilvl": 46,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132722.jpg",
+      "itemId": 15376,
+      "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -177,8 +177,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 10,
-          "displayString": "+10 Strength",
+          "value": 13,
+          "displayString": "+13 Intellect",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -188,24 +188,13 @@
           }
         },
         {
-          "value": 5,
-          "displayString": "+5 Stamina",
+          "value": 13,
+          "displayString": "+13 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 11,
-          "displayString": "+11 Spirit",
-          "isEquipBonus": true,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
             "a": 1.0
           }
         }
@@ -418,10 +407,10 @@
     },
     {
       "slot": "Ring 1",
-      "name": "Bloodsport Band",
-      "ilvl": 45,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133346.jpg",
-      "itemId": 275044,
+      "name": "Purified Ring",
+      "ilvl": 44,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133343.jpg",
+      "itemId": 270081,
       "quality": "RARE",
       "itemClass": {
         "id": 4,
@@ -434,8 +423,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 6,
-          "displayString": "+6 Stamina",
+          "value": 12,
+          "displayString": "+12 Intellect",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -445,19 +434,8 @@
           }
         },
         {
-          "value": 22,
-          "displayString": "+22 Attack Power",
-          "isEquipBonus": true,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
-            "a": 1.0
-          }
-        },
-        {
           "value": 5,
-          "displayString": "+5 Health Per 5 Sec.",
+          "displayString": "+5 Spell Power",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -552,11 +530,11 @@
     },
     {
       "slot": "Main Hand",
-      "name": "Thud Hammer",
-      "ilvl": 46,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133046.jpg",
-      "itemId": 275011,
-      "quality": "UNCOMMON",
+      "name": "Bigger Rock on Bigger Stick",
+      "ilvl": 47,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133479.jpg",
+      "itemId": 279480,
+      "quality": "RARE",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
@@ -570,19 +548,8 @@
       ],
       "stats": [
         {
-          "value": 13,
-          "displayString": "+13 Strength",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 13,
-          "displayString": "+13 Stamina",
+          "value": 14,
+          "displayString": "+14 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -614,8 +581,8 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 1600,
-    "power": 2691,
+    "health": 1446,
+    "power": 3209,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -626,23 +593,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 70,
-      "effective": 167
+      "base": 72,
+      "effective": 173
     },
     "agility": {
-      "base": 36,
-      "effective": 36
+      "base": 37,
+      "effective": 37
     },
     "intellect": {
-      "base": 59,
-      "effective": 125
+      "base": 62,
+      "effective": 156
     },
     "stamina": {
-      "base": 71,
-      "effective": 102
+      "base": 74,
+      "effective": 81
     },
     "meleeCrit": {
-      "value": 7.8428,
+      "value": 8.7739,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -671,45 +638,45 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 563,
-    "mainHandDamageMin": 239.75002,
-    "mainHandDamageMax": 290.75,
-    "mainHandSpeed": 3.5,
-    "mainHandDps": 75.78571,
-    "offHandDamageMin": 40.71429,
-    "offHandDamageMax": 40.71429,
+    "attackPower": 588,
+    "mainHandDamageMin": 254.80002,
+    "mainHandDamageMax": 310.80002,
+    "mainHandSpeed": 3.4,
+    "mainHandDps": 83.176476,
+    "offHandDamageMin": 42.500004,
+    "offHandDamageMax": 42.500004,
     "offHandSpeed": 2.0,
-    "offHandDps": 20.357145,
-    "spellPower": 20,
+    "offHandDps": 21.250002,
+    "spellPower": 53,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 10.287499,
+      "value": 10.8412,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 88.0,
-    "manaRegenCombat": 44.0,
+    "manaRegen": 83.0,
+    "manaRegenCombat": 41.0,
     "armor": {
       "base": 0,
-      "effective": 1144
+      "effective": 1164
     },
     "dodge": {
-      "value": 3.8828003,
+      "value": 3.7739,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 4.76,
+      "value": 4.6800003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "block": {
-      "value": 4.76,
+      "value": 4.6800003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 2.9628,
+      "value": 7.5738997,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -724,12 +691,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 75,
-      "effective": 91
+      "base": 78,
+      "effective": 83
     },
     "defense": {
-      "base": 214,
-      "effective": 214
+      "base": 222,
+      "effective": 222
     },
     "fireResistance": {
       "base": 0,
@@ -752,13 +719,13 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 36,
-    "rangedDamageMin": 10.000001,
-    "rangedDamageMax": 10.000001,
+    "rangedAttackPower": 14,
+    "rangedDamageMin": 4.4,
+    "rangedDamageMax": 4.4,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
-    "spellHealing": 25,
+    "spellHealing": 58,
     "meleeHit": {
       "value": 5.0,
       "ratingBonus": 0.0,
@@ -784,7 +751,7 @@
     {
       "specId": 373,
       "specName": "Enhancement",
-      "spentPoints": 24,
+      "spentPoints": 27,
       "talents": [
         {
           "rank": 5,
@@ -833,6 +800,15 @@
         },
         {
           "rank": 1,
+          "talentId": 134208,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132152.jpg",
+          "spellId": 16256,
+          "spellName": "Flurry",
+          "description": "Increases your attack speed by 6% for your next 3 swings after dealing a melee critical strike.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 1,
           "talentId": 134204,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132314.jpg",
           "spellId": 17364,
@@ -859,12 +835,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 1,
+          "rank": 2,
           "talentId": 134205,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136090.jpg",
           "spellId": 30812,
           "spellName": "Mental Quickness",
-          "description": "Increases your spell damage and healing by up to 15% of your Intellect.",
+          "description": "Increases your spell damage and healing by up to 30% of your Intellect.",
           "castTime": "Passive"
         },
         {
@@ -874,6 +850,15 @@
           "spellId": 1223031,
           "spellName": "Improved Stormstrike",
           "description": "When you Stormstrike, you have a 100% chance to gain 50% mana regeneration while casting spells for 15 sec, and Stormstrike's cooldown has a 100% chance to reset each time you Dodge or Parry.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 134202,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/237584.jpg",
+          "spellId": 408498,
+          "spellName": "Maelstrom Weapon",
+          "description": "When you deal damage with a melee attack, you have a 34% chance (based on weapon speed) to reduce the cast time and Mana cost of your next Lightning Bolt spell by 20%. Stacks up to 5 times. Lasts 30 sec.",
           "castTime": "Passive"
         }
       ]
@@ -924,15 +909,15 @@
     {
       "specId": 373,
       "specName": "Enhancement",
-      "spentPoints": 4,
+      "spentPoints": 5,
       "talents": [
         {
-          "rank": 4,
+          "rank": 5,
           "talentId": 134214,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132325.jpg",
           "spellId": 16255,
           "spellName": "Thundering Strikes",
-          "description": "Improves your chance to get a critical strike with all spells and attacks by 4%.",
+          "description": "Improves your chance to get a critical strike with all spells and attacks by 5%.",
           "castTime": "Passive"
         }
       ]
@@ -1038,7 +1023,7 @@
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/252995.jpg",
           "spellId": 408521,
           "spellName": "Riptide",
-          "description": "Heals a friendly target for 457 over 15 sec, and increases the effectiveness of your Chain Heal casts directly on that target by 25%.",
+          "description": "Heals a friendly target for 474 over 15 sec, and increases the effectiveness of your Chain Heal casts directly on that target by 25%.",
           "castTime": "Instant"
         }
       ]
@@ -1052,8 +1037,8 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136240.jpg",
         "tiers": [
           {
-            "skillPoints": 160,
-            "maxSkillPoints": 225,
+            "skillPoints": 261,
+            "maxSkillPoints": 300,
             "tierId": 2937,
             "tierName": "Alchemy",
             "knownRecipes": [
@@ -1076,6 +1061,42 @@
               {
                 "id": 1382,
                 "name": "Elixir of Minor Fortitude"
+              },
+              {
+                "id": 5997,
+                "name": "Elixir of Agility"
+              },
+              {
+                "id": 5998,
+                "name": "Elixir of Defense"
+              },
+              {
+                "id": 6000,
+                "name": "Greater Mana Potion"
+              },
+              {
+                "id": 6002,
+                "name": "Magic Resistance Potion"
+              },
+              {
+                "id": 6007,
+                "name": "Philosopher's Stone"
+              },
+              {
+                "id": 6020,
+                "name": "Transmute: Iron to Gold"
+              },
+              {
+                "id": 6021,
+                "name": "Transmute: Mithril to Truesilver"
+              },
+              {
+                "id": 9936,
+                "name": "Stonescale Oil"
+              },
+              {
+                "id": 9938,
+                "name": "Superior Mana Potion"
               },
               {
                 "id": 4178,
@@ -1207,8 +1228,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 3084,
-        "value": 84,
+        "raw": 3554,
+        "value": 554,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1218,8 +1239,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 15897,
-        "value": 6897,
+        "raw": 16622,
+        "value": 7622,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1240,8 +1261,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 4384,
-        "value": 1384,
+        "raw": 4904,
+        "value": 1904,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1251,8 +1272,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 11831,
-        "value": 2831,
+        "raw": 13000,
+        "value": 4000,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1262,8 +1283,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 9310,
-        "value": 310,
+        "raw": 9866,
+        "value": 866,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1273,8 +1294,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 3634,
-        "value": 634,
+        "raw": 4104,
+        "value": 1104,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1306,8 +1327,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 3084,
-        "value": 84,
+        "raw": 3554,
+        "value": 554,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1317,11 +1338,11 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 8587,
-        "value": 5587,
-        "max": 6000,
-        "tier": 4,
-        "name": "Friendly"
+        "raw": 9087,
+        "value": 87,
+        "max": 12000,
+        "tier": 5,
+        "name": "Honored"
       }
     },
     {
@@ -1350,8 +1371,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 3669,
-        "value": 669,
+        "raw": 4559,
+        "value": 1559,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"

@@ -457,7 +457,9 @@
         "id": 5,
         "name": "Mace"
       },
-      "enchants": [],
+      "enchants": [
+        "Flametongue 2"
+      ],
       "stats": [
         {
           "value": 7,
@@ -510,8 +512,8 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 569,
-    "power": 1263,
+    "health": 620,
+    "power": 1380,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -522,23 +524,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 41,
-      "effective": 61
+      "base": 43,
+      "effective": 63
     },
     "agility": {
-      "base": 31,
-      "effective": 43
+      "base": 32,
+      "effective": 44
     },
     "intellect": {
-      "base": 36,
-      "effective": 73
+      "base": 38,
+      "effective": 77
     },
     "stamina": {
-      "base": 43,
-      "effective": 53
+      "base": 46,
+      "effective": 56
     },
     "meleeCrit": {
-      "value": 6.5733,
+      "value": 10.7724,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -567,30 +569,30 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 221,
-    "mainHandDamageMin": 108.67143,
-    "mainHandDamageMax": 137.67143,
+    "attackPower": 233,
+    "mainHandDamageMin": 111.585724,
+    "mainHandDamageMax": 140.58572,
     "mainHandSpeed": 3.4,
-    "mainHandDps": 36.22689,
-    "offHandDamageMin": 16.285717,
-    "offHandDamageMax": 16.285717,
+    "mainHandDps": 37.084034,
+    "offHandDamageMin": 17.142859,
+    "offHandDamageMax": 17.142859,
     "offHandSpeed": 2.0,
-    "offHandDps": 8.1428585,
+    "offHandDps": 8.571429,
     "spellPower": 0,
     "spellPenetration": 2,
     "spellCrit": {
-      "value": 10.643399,
+      "value": 10.549399,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 66.0,
+    "manaRegen": 68.0,
     "manaRegenCombat": 1.0,
     "armor": {
       "base": 0,
-      "effective": 519
+      "effective": 521
     },
     "dodge": {
-      "value": 5.9733005,
+      "value": 5.7324004,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -600,12 +602,12 @@
       "ratingNormalized": 0
     },
     "block": {
-      "value": 4.84,
+      "value": 4.76,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 2.5333006,
+      "value": 8.0124,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -620,12 +622,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 45,
-      "effective": 55
+      "base": 48,
+      "effective": 58
     },
     "defense": {
-      "base": 111,
-      "effective": 111
+      "base": 119,
+      "effective": 119
     },
     "fireResistance": {
       "base": 0,
@@ -680,7 +682,7 @@
     {
       "specId": 373,
       "specName": "Enhancement",
-      "spentPoints": 14,
+      "spentPoints": 16,
       "talents": [
         {
           "rank": 5,
@@ -692,12 +694,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 2,
+          "rank": 3,
           "talentId": 134217,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136162.jpg",
           "spellId": 17485,
           "spellName": "Ancestral Knowledge",
-          "description": "Increases your Intellect by 4%.",
+          "description": "Increases your Intellect by 6%.",
           "castTime": "Passive"
         },
         {
@@ -726,6 +728,15 @@
           "spellName": "Shamanistic Focus",
           "description": "Reduces the mana cost of your Shock and Lightning Shield spells by 45%.",
           "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 134204,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132314.jpg",
+          "spellId": 17364,
+          "spellName": "Stormstrike",
+          "description": "Instantly strike for 100% weapon damage and increase the damage you deal to the target with your next Lightning Bolt, Chain Lightning, or Earth Shock spell by 20% for 12 sec.",
+          "castTime": "Instant"
         }
       ]
     }
@@ -841,7 +852,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136246.jpg",
         "tiers": [
           {
-            "skillPoints": 141,
+            "skillPoints": 142,
             "maxSkillPoints": 150,
             "tierId": 2944,
             "tierName": "Herbalism",
@@ -959,8 +970,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 5892,
-        "value": 2892,
+        "raw": 6105,
+        "value": 3105,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -981,8 +992,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 9898,
-        "value": 898,
+        "raw": 10223,
+        "value": 1223,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -992,8 +1003,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 8655,
-        "value": 5655,
+        "raw": 8867,
+        "value": 5867,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1025,8 +1036,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 2163,
-        "value": 2163,
+        "raw": 2901,
+        "value": 2901,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

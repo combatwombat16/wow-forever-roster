@@ -9,10 +9,10 @@
   "gear": [
     {
       "slot": "Head",
-      "name": "Scaled Leather Headband of Intellect",
-      "ilvl": 32,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133681.jpg",
-      "itemId": 10406,
+      "name": "Archer's Cap of the Bandit",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133117.jpg",
+      "itemId": 9859,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -25,8 +25,60 @@
       "enchants": [],
       "stats": [
         {
-          "value": 12,
-          "displayString": "+12 Intellect",
+          "value": 4,
+          "displayString": "+4 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 10,
+          "displayString": "+10 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 11,
+          "displayString": "+11 Attack Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Neck",
+      "name": "Greenstone Talisman of Eluding",
+      "ilvl": 35,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133288.jpg",
+      "itemId": 12029,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 3,
+          "displayString": "+3 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -39,10 +91,10 @@
     },
     {
       "slot": "Shoulders",
-      "name": "Wrangler's Mantle of Power",
-      "ilvl": 28,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135049.jpg",
-      "itemId": 15338,
+      "name": "Infiltrator Shoulders of the Bandit",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135039.jpg",
+      "itemId": 7408,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -55,8 +107,30 @@
       "enchants": [],
       "stats": [
         {
-          "value": 16,
-          "displayString": "+16 Attack Power",
+          "value": 3,
+          "displayString": "+3 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 7,
+          "displayString": "+7 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 7,
+          "displayString": "+7 Attack Power",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -69,10 +143,10 @@
     },
     {
       "slot": "Chest",
-      "name": "Brawnhide Armor",
-      "ilvl": 29,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132716.jpg",
-      "itemId": 15471,
+      "name": "Scaled Leather Tunic of Power",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132725.jpg",
+      "itemId": 9835,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -87,30 +161,8 @@
       ],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Agility",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 9,
-          "displayString": "+9 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 3,
-          "displayString": "+3 Spirit",
+          "value": 26,
+          "displayString": "+26 Attack Power",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -189,7 +241,7 @@
         "name": "Leather"
       },
       "enchants": [
-        "Enchanted: Attack Power +4 and Armor +16"
+        "Enchanted: Attack Power +6 and Armor +24"
       ],
       "stats": [
         {
@@ -229,10 +281,10 @@
     },
     {
       "slot": "Feet",
-      "name": "Infiltrator Boots of the Bandit",
-      "ilvl": 33,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132539.jpg",
-      "itemId": 7409,
+      "name": "Sentinel Boots of Power",
+      "ilvl": 37,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132592.jpg",
+      "itemId": 7444,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -243,34 +295,12 @@
         "name": "Leather"
       },
       "enchants": [
-        "Enchanted: Attack Power +4 and Armor +16"
+        "Enchanted: Attack Power +6 and Armor +24"
       ],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Agility",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 7,
-          "displayString": "+7 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 7,
-          "displayString": "+7 Attack Power",
+          "value": 22,
+          "displayString": "+22 Attack Power",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -283,10 +313,10 @@
     },
     {
       "slot": "Wrist",
-      "name": "Insignia Bracers",
-      "ilvl": 33,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132603.jpg",
-      "itemId": 6410,
+      "name": "Archer's Bracers of the Bandit",
+      "ilvl": 34,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132611.jpg",
+      "itemId": 9857,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -299,8 +329,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 6,
-          "displayString": "+6 Agility",
+          "value": 2,
+          "displayString": "+2 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -310,13 +340,24 @@
           }
         },
         {
-          "value": 2,
-          "displayString": "+2 Stamina",
+          "value": 5,
+          "displayString": "+5 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 6,
+          "displayString": "+6 Attack Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -338,7 +379,7 @@
         "name": "Leather"
       },
       "enchants": [
-        "Enchanted: Attack Power +4 and Armor +16"
+        "Enchanted: Attack Power +6 and Armor +24"
       ],
       "stats": [
         {
@@ -378,36 +419,6 @@
     },
     {
       "slot": "Ring 1",
-      "name": "Spinel Ring of Eluding",
-      "ilvl": 34,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133353.jpg",
-      "itemId": 11970,
-      "quality": "UNCOMMON",
-      "itemClass": {
-        "id": 4,
-        "name": "Armor"
-      },
-      "itemSubclass": {
-        "id": 0,
-        "name": "Miscellaneous"
-      },
-      "enchants": [],
-      "stats": [
-        {
-          "value": 2,
-          "displayString": "+2 Agility",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "slot": "Ring 2",
       "name": "Seal of Sylvanas",
       "ilvl": 29,
       "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133357.jpg",
@@ -437,6 +448,36 @@
         {
           "value": 6,
           "displayString": "+6 Attack Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Ring 2",
+      "name": "Greenstone Circle of Power",
+      "ilvl": 38,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133350.jpg",
+      "itemId": 11997,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 16,
+          "displayString": "+16 Attack Power",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -485,10 +526,10 @@
     },
     {
       "slot": "Back",
-      "name": "Sage's Cloak of the Tiger",
-      "ilvl": 28,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133768.jpg",
-      "itemId": 6614,
+      "name": "Huntsman's Cape of the Bandit",
+      "ilvl": 38,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133761.jpg",
+      "itemId": 9890,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -497,6 +538,58 @@
       "itemSubclass": {
         "id": 1,
         "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 3,
+          "displayString": "+3 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 6,
+          "displayString": "+6 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 7,
+          "displayString": "+7 Attack Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Main Hand",
+      "name": "Syndicate Executioner's Slicer",
+      "ilvl": 38,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135325.jpg",
+      "itemId": 283255,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 2,
+        "name": "Weapon"
+      },
+      "itemSubclass": {
+        "id": 7,
+        "name": "Sword"
       },
       "enchants": [],
       "stats": [
@@ -525,11 +618,11 @@
       ]
     },
     {
-      "slot": "Main Hand",
-      "name": "Deadly Kris of the Monkey",
-      "ilvl": 36,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135637.jpg",
-      "itemId": 15243,
+      "slot": "Off Hand",
+      "name": "Tigerbane",
+      "ilvl": 38,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135651.jpg",
+      "itemId": 1465,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 2,
@@ -540,6 +633,49 @@
         "name": "Dagger"
       },
       "enchants": [],
+      "stats": [
+        {
+          "value": 10,
+          "displayString": "+10 Attack Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 9,
+          "displayString": "+9 Attack Power Vs Beasts",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Ranged",
+      "name": "Quilboar Blaster",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135614.jpg",
+      "itemId": 274084,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 2,
+        "name": "Weapon"
+      },
+      "itemSubclass": {
+        "id": 3,
+        "name": "Gun"
+      },
+      "enchants": [
+        "Enchanted: Scope (+5 Damage)"
+      ],
       "stats": [
         {
           "value": 4,
@@ -554,96 +690,12 @@
         },
         {
           "value": 4,
-          "displayString": "+4 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "slot": "Off Hand",
-      "name": "Mercenary Blade of the Bandit",
-      "ilvl": 36,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135346.jpg",
-      "itemId": 15213,
-      "quality": "UNCOMMON",
-      "itemClass": {
-        "id": 2,
-        "name": "Weapon"
-      },
-      "itemSubclass": {
-        "id": 7,
-        "name": "Sword"
-      },
-      "enchants": [],
-      "stats": [
-        {
-          "value": 2,
-          "displayString": "+2 Agility",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 4,
-          "displayString": "+4 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 5,
-          "displayString": "+5 Attack Power",
+          "displayString": "+4 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
             "g": 255,
             "b": 0,
-            "a": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "slot": "Ranged",
-      "name": "Golemsight Long Gun",
-      "ilvl": 33,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134536.jpg",
-      "itemId": 273029,
-      "quality": "RARE",
-      "itemClass": {
-        "id": 2,
-        "name": "Weapon"
-      },
-      "itemSubclass": {
-        "id": 3,
-        "name": "Gun"
-      },
-      "enchants": [
-        "Enchanted: Scope (+3 Damage)"
-      ],
-      "stats": [
-        {
-          "value": 6,
-          "displayString": "+6 Agility",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
             "a": 1.0
           }
         }
@@ -676,8 +728,8 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 1297,
-    "power": 1245,
+    "health": 1400,
+    "power": 1170,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -688,23 +740,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 30,
-      "effective": 34
+      "base": 32,
+      "effective": 36
     },
     "agility": {
-      "base": 67,
-      "effective": 108
+      "base": 70,
+      "effective": 103
     },
     "intellect": {
-      "base": 36,
-      "effective": 48
+      "base": 38,
+      "effective": 38
     },
     "stamina": {
-      "base": 50,
-      "effective": 106
+      "base": 53,
+      "effective": 111
     },
     "meleeCrit": {
-      "value": 9.1556,
+      "value": 8.7128,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -718,7 +770,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 72,
+    "bonusArmor": 96,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -733,35 +785,35 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 309,
-    "mainHandDamageMin": 58.679996,
-    "mainHandDamageMax": 79.079994,
-    "mainHandSpeed": 1.373,
-    "mainHandDps": 50.167515,
-    "offHandDamageMin": 50.38286,
-    "offHandDamageMax": 67.18285,
-    "offHandSpeed": 2.353,
-    "offHandDps": 24.98209,
+    "attackPower": 383,
+    "mainHandDamageMin": 129.75429,
+    "mainHandDamageMax": 169.35428,
+    "mainHandSpeed": 2.549,
+    "mainHandDps": 58.67175,
+    "offHandDamageMin": 47.387142,
+    "offHandDamageMax": 61.787144,
+    "offHandSpeed": 1.863,
+    "offHandDps": 29.300667,
     "spellPower": 0,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 10.030399,
+      "value": 9.686799,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 58.0,
+    "manaRegen": 62.0,
     "manaRegenCombat": 0.0,
     "armor": {
-      "base": 72,
-      "effective": 857
+      "base": 96,
+      "effective": 897
     },
     "dodge": {
-      "value": 9.5803995,
+      "value": 8.505599,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 9.8,
+      "value": 9.76,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -771,7 +823,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 9.315599,
+      "value": 8.7928,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -786,12 +838,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 44,
-      "effective": 47
+      "base": 46,
+      "effective": 50
     },
     "defense": {
-      "base": 150,
-      "effective": 150
+      "base": 159,
+      "effective": 159
     },
     "fireResistance": {
       "base": 0,
@@ -814,30 +866,30 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 383,
-    "rangedDamageMin": 139.47144,
-    "rangedDamageMax": 169.47144,
+    "rangedAttackPower": 450,
+    "rangedDamageMin": 178.2,
+    "rangedDamageMax": 216.59999,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
     "spellHealing": 0,
     "meleeHit": {
-      "value": 0.0,
+      "value": 2.0,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "offHandHit": {
-      "value": 0.0,
+      "value": 2.0,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedHit": {
-      "value": 0.0,
+      "value": 2.0,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "spellHit": {
-      "value": 0.0,
+      "value": 2.0,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     }
@@ -880,7 +932,7 @@
     {
       "specId": 51,
       "specName": "Survival",
-      "spentPoints": 11,
+      "spentPoints": 13,
       "talents": [
         {
           "rank": 5,
@@ -910,6 +962,15 @@
           "castTime": "Passive"
         },
         {
+          "rank": 2,
+          "talentId": 134452,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132219.jpg",
+          "spellId": 19290,
+          "spellName": "Surefooted",
+          "description": "Increases your hit chance by 2% and reduces the duration of movement impairing effects on you by 20%.",
+          "castTime": "Passive"
+        },
+        {
           "rank": 1,
           "talentId": 134451,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132369.jpg",
@@ -929,13 +990,13 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
         "tiers": [
           {
-            "skillPoints": 216,
-            "maxSkillPoints": 225,
+            "skillPoints": 224,
+            "maxSkillPoints": 300,
             "tierId": 2947,
             "tierName": "Skinning",
             "knownRecipes": [
               {
-                "id": 4768,
+                "id": 5746,
                 "name": "Skinning"
               },
               {
@@ -952,11 +1013,15 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 158,
+            "skillPoints": 185,
             "maxSkillPoints": 225,
             "tierId": 2946,
             "tierName": "Mining",
             "knownRecipes": [
+              {
+                "id": 1846,
+                "name": "Smelt Gold"
+              },
               {
                 "id": 1847,
                 "name": "Smelt Iron"
@@ -980,6 +1045,10 @@
               {
                 "id": 2036,
                 "name": "Mining"
+              },
+              {
+                "id": 2037,
+                "name": "Smelt Steel"
               },
               {
                 "id": 3324,
@@ -1099,8 +1168,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 1944,
-        "value": 1944,
+        "raw": 2019,
+        "value": 2019,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1110,8 +1179,8 @@
       "factionId": 510,
       "factionName": "The Defilers",
       "standing": {
-        "raw": 100,
-        "value": 100,
+        "raw": 250,
+        "value": 250,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1121,19 +1190,19 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 7855,
-        "value": 4855,
-        "max": 6000,
-        "tier": 4,
-        "name": "Friendly"
+        "raw": 9136,
+        "value": 136,
+        "max": 12000,
+        "tier": 5,
+        "name": "Honored"
       }
     },
     {
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 3389,
-        "value": 389,
+        "raw": 3539,
+        "value": 539,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1143,8 +1212,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 6870,
-        "value": 3870,
+        "raw": 7513,
+        "value": 4513,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1154,8 +1223,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 4800,
-        "value": 1800,
+        "raw": 5368,
+        "value": 2368,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1165,8 +1234,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 1944,
-        "value": 1944,
+        "raw": 2019,
+        "value": 2019,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1176,8 +1245,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 1944,
-        "value": 1944,
+        "raw": 2019,
+        "value": 2019,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1187,8 +1256,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 4143,
-        "value": 1143,
+        "raw": 5781,
+        "value": 2781,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1220,8 +1289,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 1944,
-        "value": 1944,
+        "raw": 2019,
+        "value": 2019,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

@@ -1,6 +1,6 @@
 {
   "staticNamespace": "static-1.60.1_70399-forever-us",
-  "updatedAt": "2026-11-16T14:26:35Z",
+  "updatedAt": "2026-11-17T15:21:51Z",
   "specs": {
     "6": {
       "treeId": 1112,
@@ -6625,6 +6625,625 @@
               "spellId": 12042,
               "spellName": "Arcane Power",
               "description": "For the next 15 sec, your spells deal 30% more damage while costing 30% more mana to cast.",
+              "castTime": "Instant"
+            }
+          ]
+        }
+      ]
+    },
+    "253": {
+      "treeId": 1111,
+      "classId": 4,
+      "className": "Rogue",
+      "specId": 253,
+      "specName": "Assassination",
+      "name": "Assassination",
+      "nodes": [
+        {
+          "id": 105742,
+          "displayRow": 1,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135272,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132155.jpg",
+              "spellId": 13741,
+              "spellName": "Improved Gouge",
+              "description": "Increases the duration of your Gouge ability by 0.5 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135272,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132155.jpg",
+              "spellId": 13741,
+              "spellName": "Improved Gouge",
+              "description": "Increases the duration of your Gouge ability by 1 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135272,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132155.jpg",
+              "spellId": 13741,
+              "spellName": "Improved Gouge",
+              "description": "Increases the duration of your Gouge ability by 1.5 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105723,
+          "displayRow": 1,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135253,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132151.jpg",
+              "spellId": 14144,
+              "spellName": "Remorseless Attacks",
+              "description": "After killing a non-trivial enemy, gives you a 20% increased critical strike chance on your next Sinister Strike, Backstab, Ambush, Mutilate, or Ghostly Strike. Lasts 20 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135253,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132151.jpg",
+              "spellId": 14144,
+              "spellName": "Remorseless Attacks",
+              "description": "After killing a non-trivial enemy, gives you a 40% increased critical strike chance on your next Sinister Strike, Backstab, Ambush, Mutilate, or Ghostly Strike. Lasts 20 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105722,
+          "displayRow": 1,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 2130,
+          "unlocks": [
+            105716
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135252,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132277.jpg",
+              "spellId": 14138,
+              "spellName": "Malice",
+              "description": "Increases your critical strike chance with all attacks and Poisons by 1%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135252,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132277.jpg",
+              "spellId": 14138,
+              "spellName": "Malice",
+              "description": "Increases your critical strike chance with all attacks and Poisons by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135252,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132277.jpg",
+              "spellId": 14138,
+              "spellName": "Malice",
+              "description": "Increases your critical strike chance with all attacks and Poisons by 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135252,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132277.jpg",
+              "spellId": 14138,
+              "spellName": "Malice",
+              "description": "Increases your critical strike chance with all attacks and Poisons by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135252,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132277.jpg",
+              "spellId": 14138,
+              "spellName": "Malice",
+              "description": "Increases your critical strike chance with all attacks and Poisons by 5%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105721,
+          "displayRow": 2,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135251,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132122.jpg",
+              "spellId": 14156,
+              "spellName": "Ruthlessness",
+              "description": "Gives your finishing moves a 20% chance to add a Combo Point to your target.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135251,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132122.jpg",
+              "spellId": 14156,
+              "spellName": "Ruthlessness",
+              "description": "Gives your finishing moves a 40% chance to add a Combo Point to your target.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135251,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132122.jpg",
+              "spellId": 14156,
+              "spellName": "Ruthlessness",
+              "description": "Gives your finishing moves a 60% chance to add a Combo Point to your target.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105717,
+          "displayRow": 2,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135247,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132354.jpg",
+              "spellId": 14168,
+              "spellName": "Improved Expose Armor",
+              "description": "Reduces the Energy cost of your Expose Armor ability by 5, and refunds 1 Combo Point when cast with 5 Combo Points.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135247,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132354.jpg",
+              "spellId": 14168,
+              "spellName": "Improved Expose Armor",
+              "description": "Reduces the Energy cost of your Expose Armor ability by 10, and refunds 2 Combo Points when cast with 5 Combo Points.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105739,
+          "displayRow": 2,
+          "displayCol": 4,
+          "rawPositionX": 2820,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135269,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132306.jpg",
+              "spellId": 14165,
+              "spellName": "Improved Slice and Dice",
+              "description": "Increases the duration of your Slice and Dice ability by 15%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135269,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132306.jpg",
+              "spellId": 14165,
+              "spellName": "Improved Slice and Dice",
+              "description": "Increases the duration of your Slice and Dice ability by 30%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135269,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132306.jpg",
+              "spellId": 14165,
+              "spellName": "Improved Slice and Dice",
+              "description": "Increases the duration of your Slice and Dice ability by 45%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105720,
+          "displayRow": 3,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135250,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136023.jpg",
+              "spellId": 14983,
+              "spellName": "Vigor",
+              "description": "Increases your maximum Energy by 5.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135250,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136023.jpg",
+              "spellId": 14983,
+              "spellName": "Vigor",
+              "description": "Increases your maximum Energy by 10.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105718,
+          "displayRow": 3,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135248,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132302.jpg",
+              "spellId": 1329256,
+              "spellName": "Blood Splatter",
+              "description": "Increases the duration of your Rupture ability by 6 sec and your Garrote ability by 9 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105716,
+          "displayRow": 3,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [
+            105722
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135246,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132109.jpg",
+              "spellId": 14128,
+              "spellName": "Lethality",
+              "description": "Increases the critical strike damage bonus of your Sinister Strike, Gouge, Backstab, Mutilate, Ghostly Strike, and Hemorrhage abilities by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135246,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132109.jpg",
+              "spellId": 14128,
+              "spellName": "Lethality",
+              "description": "Increases the critical strike damage bonus of your Sinister Strike, Gouge, Backstab, Mutilate, Ghostly Strike, and Hemorrhage abilities by 20%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105714,
+          "displayRow": 4,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135244,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132293.jpg",
+              "spellId": 16513,
+              "spellName": "Vile Poisons",
+              "description": "Increases the damage dealt by your poisons by 4% and gives your poisons an additional 8% chance to resist dispel effects.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135244,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132293.jpg",
+              "spellId": 16513,
+              "spellName": "Vile Poisons",
+              "description": "Increases the damage dealt by your poisons by 8% and gives your poisons an additional 16% chance to resist dispel effects.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135244,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132293.jpg",
+              "spellId": 16513,
+              "spellName": "Vile Poisons",
+              "description": "Increases the damage dealt by your poisons by 12% and gives your poisons an additional 24% chance to resist dispel effects.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135244,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132293.jpg",
+              "spellId": 16513,
+              "spellName": "Vile Poisons",
+              "description": "Increases the damage dealt by your poisons by 16% and gives your poisons an additional 32% chance to resist dispel effects.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135244,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132293.jpg",
+              "spellId": 16513,
+              "spellName": "Vile Poisons",
+              "description": "Increases the damage dealt by your poisons by 20% and gives your poisons an additional 40% chance to resist dispel effects.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105715,
+          "displayRow": 4,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135245,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135988.jpg",
+              "spellId": 14177,
+              "spellName": "Cold Blood",
+              "description": "When activated, increases the critical strike chance of your next Sinister Strike, Backstab, Ambush, Eviscerate, or Mutilate by 100%.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 105713,
+          "displayRow": 4,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135243,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132273.jpg",
+              "spellId": 14113,
+              "spellName": "Improved Poisons",
+              "description": "Increases the chance to apply Poisons to your target by 2%, and gives Poison applications a 10% chance to not consume a charge.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135243,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132273.jpg",
+              "spellId": 14113,
+              "spellName": "Improved Poisons",
+              "description": "Increases the chance to apply Poisons to your target by 4%, and gives Poison applications a 20% chance to not consume a charge.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135243,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132273.jpg",
+              "spellId": 14113,
+              "spellName": "Improved Poisons",
+              "description": "Increases the chance to apply Poisons to your target by 6%, and gives Poison applications a 30% chance to not consume a charge.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135243,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132273.jpg",
+              "spellId": 14113,
+              "spellName": "Improved Poisons",
+              "description": "Increases the chance to apply Poisons to your target by 8%, and gives Poison applications a 40% chance to not consume a charge.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135243,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132273.jpg",
+              "spellId": 14113,
+              "spellName": "Improved Poisons",
+              "description": "Increases the chance to apply Poisons to your target by 10%, and gives Poison applications a 50% chance to not consume a charge.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 113633,
+          "displayRow": 5,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 145964,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132340.jpg",
+              "spellId": 14179,
+              "spellName": "Relentless Strikes",
+              "description": "Your finishing moves have a 4% chance per Combo Point to restore 25 Energy.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 145964,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132340.jpg",
+              "spellId": 14179,
+              "spellName": "Relentless Strikes",
+              "description": "Your finishing moves have a 8% chance per Combo Point to restore 25 Energy.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 145964,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132340.jpg",
+              "spellId": 14179,
+              "spellName": "Relentless Strikes",
+              "description": "Your finishing moves have a 12% chance per Combo Point to restore 25 Energy.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 145964,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132340.jpg",
+              "spellId": 14179,
+              "spellName": "Relentless Strikes",
+              "description": "Your finishing moves have a 16% chance per Combo Point to restore 25 Energy.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 145964,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132340.jpg",
+              "spellId": 14179,
+              "spellName": "Relentless Strikes",
+              "description": "Your finishing moves have a 20% chance per Combo Point to restore 25 Energy.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105712,
+          "displayRow": 5,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 4530,
+          "unlocks": [
+            105709
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135242,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135341.jpg",
+              "spellId": 1329328,
+              "spellName": "Venom",
+              "description": "Causes your Shank ability to increase your Poison damage by 30% and your chance to apply Poisons by 20% for 6 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105711,
+          "displayRow": 5,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135241,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132298.jpg",
+              "spellId": 14174,
+              "spellName": "Improved Kidney Shot",
+              "description": "Enemies Stunned by your Kidney Shot ability take 5% increased damage from your poisons and attacks.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135241,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132298.jpg",
+              "spellId": 14174,
+              "spellName": "Improved Kidney Shot",
+              "description": "Enemies Stunned by your Kidney Shot ability take 10% increased damage from your poisons and attacks.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105710,
+          "displayRow": 6,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 5130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135240,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136130.jpg",
+              "spellId": 14186,
+              "spellName": "Seal Fate",
+              "description": "Your critical strikes from abilities that add Combo Points have a 33% chance to add an additional Combo Point.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135240,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136130.jpg",
+              "spellId": 14186,
+              "spellName": "Seal Fate",
+              "description": "Your critical strikes from abilities that add Combo Points have a 66% chance to add an additional Combo Point.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135240,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136130.jpg",
+              "spellId": 14186,
+              "spellName": "Seal Fate",
+              "description": "Your critical strikes from abilities that add Combo Points have a 100% chance to add an additional Combo Point.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105709,
+          "displayRow": 7,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 5730,
+          "unlocks": [],
+          "lockedBy": [
+            105712
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135239,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236270.jpg",
+              "spellId": 399956,
+              "spellName": "Mutilate",
+              "description": "Instantly attacks with both weapons for 90% weapon damage plus an additional 36 with each weapon. Damage increased by 20% against Poisoned targets. Awards 2 Combo Points.",
               "castTime": "Instant"
             }
           ]

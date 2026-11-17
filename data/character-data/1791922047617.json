@@ -658,7 +658,7 @@
       "effective": 76
     },
     "meleeCrit": {
-      "value": 4.2224,
+      "value": 4.2624006,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -710,12 +710,12 @@
       "effective": 718
     },
     "dodge": {
-      "value": 8.1556,
+      "value": 8.1956,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 4.48,
+      "value": 4.52,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -744,8 +744,8 @@
       "effective": 58
     },
     "defense": {
-      "base": 122,
-      "effective": 122
+      "base": 123,
+      "effective": 123
     },
     "fireResistance": {
       "base": 2,
@@ -989,7 +989,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
         "tiers": [
           {
-            "skillPoints": 157,
+            "skillPoints": 158,
             "maxSkillPoints": 225,
             "tierId": 2947,
             "tierName": "Skinning",

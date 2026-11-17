@@ -49,12 +49,53 @@
       ]
     },
     {
-      "slot": "Shoulders",
-      "name": "Hillman's Shoulders",
-      "ilvl": 26,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135039.jpg",
-      "itemId": 4251,
+      "slot": "Neck",
+      "name": "Spectral Necklace of the Tiger",
+      "ilvl": 30,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133291.jpg",
+      "itemId": 12047,
       "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 4,
+          "displayString": "+4 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 4,
+          "displayString": "+4 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Shoulders",
+      "name": "Rugged Spaulders",
+      "ilvl": 22,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135039.jpg",
+      "itemId": 5254,
+      "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -66,19 +107,74 @@
       "enchants": [],
       "stats": [
         {
-          "value": 5,
-          "displayString": "+5 Stamina",
+          "value": null,
+          "displayString": "+2 to All Resistances",
           "isEquipBonus": false,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         },
         {
-          "value": 3,
-          "displayString": "+3 Spirit",
+          "value": 2,
+          "displayString": "+2 Fire Resistance",
+          "isEquipBonus": false,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 2,
+          "displayString": "+2 Frost Resistance",
+          "isEquipBonus": false,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 2,
+          "displayString": "+2 Shadow Resistance",
+          "isEquipBonus": false,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 2,
+          "displayString": "+2 Nature Resistance",
+          "isEquipBonus": false,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 2,
+          "displayString": "+2 Arcane Resistance",
+          "isEquipBonus": false,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 20,
+          "displayString": "+20 Bonus Armor",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -174,10 +270,10 @@
     },
     {
       "slot": "Waist",
-      "name": "Deviate Scale Belt",
-      "ilvl": 23,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132498.jpg",
-      "itemId": 6468,
+      "name": "Prowler's Leather Belt",
+      "ilvl": 35,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236918.jpg",
+      "itemId": 252459,
       "quality": "RARE",
       "itemClass": {
         "id": 4,
@@ -190,8 +286,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 5,
-          "displayString": "+5 Agility",
+          "value": 4,
+          "displayString": "+4 Intellect",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -201,8 +297,19 @@
           }
         },
         {
-          "value": 3,
-          "displayString": "+3 Strength",
+          "value": 6,
+          "displayString": "+6 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 9,
+          "displayString": "+9 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -533,6 +640,36 @@
     },
     {
       "slot": "Trinket 1",
+      "name": "Worgenbane Talisman",
+      "ilvl": 26,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133439.jpg",
+      "itemId": 273643,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 2,
+          "displayString": "+2 Mana Regeneration per 5 sec",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Trinket 2",
       "name": "Satchel of Potions",
       "ilvl": 33,
       "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133633.jpg",
@@ -658,8 +795,8 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 1342,
-    "power": 1249,
+    "health": 1356,
+    "power": 1399,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -670,23 +807,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 43,
-      "effective": 59
+      "base": 45,
+      "effective": 71
     },
     "agility": {
-      "base": 31,
-      "effective": 72
+      "base": 32,
+      "effective": 78
     },
     "intellect": {
-      "base": 48,
-      "effective": 61
+      "base": 51,
+      "effective": 68
     },
     "stamina": {
-      "base": 42,
-      "effective": 104
+      "base": 44,
+      "effective": 101
     },
     "meleeCrit": {
-      "value": 4.2752,
+      "value": 4.5416007,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -700,7 +837,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 156,
+    "bonusArmor": 176,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -715,30 +852,30 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 136,
-    "mainHandDamageMin": 105.057144,
-    "mainHandDamageMax": 142.05714,
+    "attackPower": 160,
+    "mainHandDamageMin": 110.71429,
+    "mainHandDamageMax": 147.7143,
     "mainHandSpeed": 3.3,
-    "mainHandDps": 37.44156,
-    "offHandDamageMin": 10.214287,
-    "offHandDamageMax": 10.214287,
+    "mainHandDps": 39.155846,
+    "offHandDamageMin": 11.928573,
+    "offHandDamageMax": 11.928573,
     "offHandSpeed": 2.0,
-    "offHandDps": 5.1071434,
+    "offHandDps": 5.9642863,
     "spellPower": 7,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 3.9471998,
+      "value": 4.044,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 75.0,
-    "manaRegenCombat": 0.0,
+    "manaRegen": 77.0,
+    "manaRegenCombat": 2.0,
     "armor": {
-      "base": 156,
-      "effective": 839
+      "base": 176,
+      "effective": 885
     },
     "dodge": {
-      "value": 11.0352,
+      "value": 11.381599,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -753,7 +890,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 1.8352,
+      "value": 1.8216004,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -768,32 +905,32 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 59,
+      "base": 62,
       "effective": 70
     },
     "defense": {
-      "base": 143,
-      "effective": 143
+      "base": 152,
+      "effective": 152
     },
     "fireResistance": {
-      "base": 0,
-      "effective": 0
-    },
-    "shadowResistance": {
-      "base": 0,
-      "effective": 0
-    },
-    "natureResistance": {
       "base": 2,
       "effective": 2
     },
+    "shadowResistance": {
+      "base": 2,
+      "effective": 2
+    },
+    "natureResistance": {
+      "base": 4,
+      "effective": 4
+    },
     "arcaneResistance": {
-      "base": 0,
-      "effective": 0
+      "base": 2,
+      "effective": 2
     },
     "frostResistance": {
-      "base": 0,
-      "effective": 0
+      "base": 2,
+      "effective": 2
     },
     "movementSpeed": 100.0,
     "rangedAttackPower": 38,
@@ -802,7 +939,7 @@
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
-    "spellHealing": 10,
+    "spellHealing": 27,
     "meleeHit": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -828,7 +965,7 @@
     {
       "specId": 134,
       "specName": "Feral Combat",
-      "spentPoints": 21,
+      "spentPoints": 23,
       "talents": [
         {
           "rank": 5,
@@ -910,6 +1047,15 @@
           "spellName": "Leader of the Pack",
           "description": "While in Cat Form, Bear Form, or Dire Bear Form, the Leader of the Pack increases the Critical Strike chance of all party or raid members within 45 yards by 3%.",
           "castTime": "Passive"
+        },
+        {
+          "rank": 2,
+          "talentId": 134411,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132138.jpg",
+          "spellId": 1223242,
+          "spellName": "Natural Instinct",
+          "description": "Increases the critical strike damage bonus of your melee abilities by 20% and increases your spell healing by 25% of your Intellect.",
+          "castTime": "Passive"
         }
       ]
     }
@@ -922,7 +1068,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136247.jpg",
         "tiers": [
           {
-            "skillPoints": 137,
+            "skillPoints": 151,
             "maxSkillPoints": 225,
             "tierId": 2945,
             "tierName": "Leatherworking",
@@ -1088,6 +1234,10 @@
                 "name": "Camp Tent"
               },
               {
+                "id": 55142,
+                "name": "Prowler's Leather Belt"
+              },
+              {
                 "id": 55147,
                 "name": "Trapper's Leather Legguards"
               },
@@ -1113,7 +1263,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
         "tiers": [
           {
-            "skillPoints": 212,
+            "skillPoints": 220,
             "maxSkillPoints": 225,
             "tierId": 2947,
             "tierName": "Skinning",
@@ -1138,11 +1288,23 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133971.jpg",
         "tiers": [
           {
-            "skillPoints": 30,
-            "maxSkillPoints": 75,
+            "skillPoints": 223,
+            "maxSkillPoints": 225,
             "tierId": 2939,
             "tierName": "Cooking",
             "knownRecipes": [
+              {
+                "id": 4569,
+                "name": "Savory Deviate Delight"
+              },
+              {
+                "id": 1901,
+                "name": "Big Bear Steak"
+              },
+              {
+                "id": 1902,
+                "name": "Hot Lion Chops"
+              },
               {
                 "id": 1535,
                 "name": "Charred Wolf Meat"
@@ -1156,12 +1318,40 @@
                 "name": "Roasted Boar Meat"
               },
               {
+                "id": 1538,
+                "name": "Coyote Steak"
+              },
+              {
+                "id": 3927,
+                "name": "Scorpid Surprise"
+              },
+              {
+                "id": 4355,
+                "name": "Longjaw Mud Snapper"
+              },
+              {
+                "id": 4359,
+                "name": "Bristle Whisker Catfish"
+              },
+              {
+                "id": 4392,
+                "name": "Rockscale Cod"
+              },
+              {
+                "id": 3964,
+                "name": "Boiled Clams"
+              },
+              {
                 "id": 4786,
                 "name": "Herb Baked Egg"
               },
               {
                 "id": 52640,
                 "name": "Basic Campfire"
+              },
+              {
+                "id": 54502,
+                "name": "Twice-Spiced Raptor Slice"
               }
             ]
           }
@@ -1173,7 +1363,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136245.jpg",
         "tiers": [
           {
-            "skillPoints": 1,
+            "skillPoints": 25,
             "maxSkillPoints": 75,
             "tierId": 2943,
             "tierName": "Fishing",
@@ -1181,6 +1371,10 @@
               {
                 "id": 4344,
                 "name": "Fishing"
+              },
+              {
+                "id": 52639,
+                "name": "Fish Bowl"
               }
             ]
           }
@@ -1192,7 +1386,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
         "tiers": [
           {
-            "skillPoints": 29,
+            "skillPoints": 48,
             "maxSkillPoints": 75,
             "tierId": 2942,
             "tierName": "First Aid",
@@ -1220,8 +1414,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 2278,
-        "value": 2278,
+        "raw": 2353,
+        "value": 2353,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1242,8 +1436,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 13925,
-        "value": 4925,
+        "raw": 14887,
+        "value": 5887,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1264,8 +1458,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 4057,
-        "value": 1057,
+        "raw": 4207,
+        "value": 1207,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1275,19 +1469,19 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 8585,
-        "value": 5585,
-        "max": 6000,
-        "tier": 4,
-        "name": "Friendly"
+        "raw": 9210,
+        "value": 210,
+        "max": 12000,
+        "tier": 5,
+        "name": "Honored"
       }
     },
     {
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 6346,
-        "value": 3346,
+        "raw": 6746,
+        "value": 3746,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1297,8 +1491,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 2278,
-        "value": 2278,
+        "raw": 2353,
+        "value": 2353,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1319,8 +1513,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 2278,
-        "value": 2278,
+        "raw": 2353,
+        "value": 2353,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1330,19 +1524,30 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 4942,
-        "value": 1942,
+        "raw": 5905,
+        "value": 2905,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
       }
     },
     {
+      "factionId": 2787,
+      "factionName": "Earthen Ring",
+      "standing": {
+        "raw": 350,
+        "value": 350,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 2278,
-        "value": 2278,
+        "raw": 2353,
+        "value": 2353,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

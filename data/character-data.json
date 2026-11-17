@@ -1,13 +1,13 @@
 {
   "schemaVersion": 3,
-  "syncedAt": "2026-11-16T14:26:34Z",
+  "syncedAt": "2026-11-17T15:21:50Z",
   "triggeredBy": "schedule",
   "characters": {
     "1791919748959": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:23:58Z",
-      "level": 30,
-      "itemLevel": 22,
+      "fetchedAt": "2026-11-17T15:17:31Z",
+      "level": 32,
+      "itemLevel": 26,
       "guild": "Flowmasters",
       "activeSpec": "Feral Combat",
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/625999.jpg",
@@ -23,15 +23,15 @@
     },
     "1791919870010": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:23:58Z"
+      "fetchedAt": "2026-11-17T15:17:31Z"
     },
     "1791919950805": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:23:58Z"
+      "fetchedAt": "2026-11-17T15:17:31Z"
     },
     "1791922047617": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:24:10Z",
+      "fetchedAt": "2026-11-17T15:17:48Z",
       "level": 27,
       "itemLevel": 20,
       "guild": "Heghmoh",
@@ -49,9 +49,9 @@
     },
     "1791928493125": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:24:22Z",
-      "level": 28,
-      "itemLevel": 21,
+      "fetchedAt": "2026-11-17T15:18:08Z",
+      "level": 30,
+      "itemLevel": 26,
       "guild": "Flowmasters",
       "activeSpec": "Protection",
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626008.jpg",
@@ -67,25 +67,25 @@
     },
     "1791928548067": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:24:22Z"
+      "fetchedAt": "2026-11-17T15:18:08Z"
     },
     "1791928613248": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:24:22Z"
+      "fetchedAt": "2026-11-17T15:18:08Z"
     },
     "1791928676823": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:24:22Z"
+      "fetchedAt": "2026-11-17T15:18:08Z"
     },
     "1791928813281": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:24:22Z"
+      "fetchedAt": "2026-11-17T15:18:08Z"
     },
     "1791928886528": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:24:33Z",
-      "level": 25,
-      "itemLevel": 25,
+      "fetchedAt": "2026-11-17T15:18:24Z",
+      "level": 28,
+      "itemLevel": 27,
       "guild": "Flowmasters",
       "activeSpec": "Holy",
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626003.jpg",
@@ -101,17 +101,17 @@
     },
     "1791928967366": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:24:33Z"
+      "fetchedAt": "2026-11-17T15:18:24Z"
     },
     "1791929013125": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:24:33Z"
+      "fetchedAt": "2026-11-17T15:18:24Z"
     },
     "1791929106142": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:24:44Z",
-      "level": 32,
-      "itemLevel": 27,
+      "fetchedAt": "2026-11-17T15:18:41Z",
+      "level": 33,
+      "itemLevel": 28,
       "guild": "Flowmasters",
       "activeSpec": "Discipline",
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626004.jpg",
@@ -127,9 +127,9 @@
     },
     "1791929283993": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:24:55Z",
-      "level": 31,
-      "itemLevel": 29,
+      "fetchedAt": "2026-11-17T15:18:58Z",
+      "level": 33,
+      "itemLevel": 34,
       "guild": "Flowmasters",
       "activeSpec": "Marksmanship",
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626000.jpg",
@@ -145,27 +145,27 @@
     },
     "1791929450071": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:24:55Z"
+      "fetchedAt": "2026-11-17T15:18:58Z"
     },
     "1791929660455": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:24:55Z"
+      "fetchedAt": "2026-11-17T15:18:58Z"
     },
     "1791945705052": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:24:55Z"
+      "fetchedAt": "2026-11-17T15:18:58Z"
     },
     "1791945790634": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:24:55Z"
+      "fetchedAt": "2026-11-17T15:18:58Z"
     },
     "1793073514718": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:24:55Z"
+      "fetchedAt": "2026-11-17T15:18:58Z"
     },
     "1794163010636": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:25:03Z",
+      "fetchedAt": "2026-11-17T15:19:09Z",
       "level": 12,
       "itemLevel": 3,
       "activeSpec": "Affliction",
@@ -182,15 +182,15 @@
     },
     "1794166751512": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:25:03Z"
+      "fetchedAt": "2026-11-17T15:19:09Z"
     },
     "1794319268032": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:25:13Z",
-      "level": 40,
-      "itemLevel": 33,
+      "fetchedAt": "2026-11-17T15:19:24Z",
+      "level": 43,
+      "itemLevel": 34,
       "guild": "Heghmoh",
-      "activeSpec": "Protection",
+      "activeSpec": "Arms",
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626008.jpg",
       "race": {
         "id": 2,
@@ -204,9 +204,9 @@
     },
     "1794319268033": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:25:24Z",
-      "level": 26,
-      "itemLevel": 20,
+      "fetchedAt": "2026-11-17T15:19:40Z",
+      "level": 27,
+      "itemLevel": 23,
       "guild": "Heghmoh",
       "activeSpec": "Arcane",
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626001.jpg",
@@ -222,7 +222,7 @@
     },
     "1794319268034": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:25:31Z",
+      "fetchedAt": "2026-11-17T15:19:51Z",
       "level": 19,
       "itemLevel": 12,
       "guild": "Heghmoh",
@@ -240,11 +240,11 @@
     },
     "1794319268035": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:25:44Z",
-      "level": 39,
-      "itemLevel": 36,
+      "fetchedAt": "2026-11-17T15:20:22Z",
+      "level": 42,
+      "itemLevel": 37,
       "guild": "Heghmoh",
-      "activeSpec": "Combat",
+      "activeSpec": "Assassination",
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626005.jpg",
       "race": {
         "id": 2,
@@ -258,13 +258,13 @@
     },
     "1794319268036": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:25:44Z"
+      "fetchedAt": "2026-11-17T15:20:22Z"
     },
     "1794319268037": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:26:00Z",
-      "level": 44,
-      "itemLevel": 35,
+      "fetchedAt": "2026-11-17T15:20:49Z",
+      "level": 46,
+      "itemLevel": 36,
       "guild": "Heghmoh",
       "activeSpec": "Enhancement",
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626006.jpg",
@@ -280,7 +280,7 @@
     },
     "1794319268038": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:26:07Z",
+      "fetchedAt": "2026-11-17T15:20:59Z",
       "level": 11,
       "itemLevel": 4,
       "guild": "Heghmoh",
@@ -298,8 +298,8 @@
     },
     "1794319268039": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:26:14Z",
-      "level": 23,
+      "fetchedAt": "2026-11-17T15:21:10Z",
+      "level": 25,
       "itemLevel": 19,
       "guild": "Heghmoh",
       "activeSpec": "Enhancement",
@@ -316,15 +316,15 @@
     },
     "1794319268040": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:26:14Z"
+      "fetchedAt": "2026-11-17T15:21:10Z"
     },
     "1794319268041": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:26:14Z"
+      "fetchedAt": "2026-11-17T15:21:10Z"
     },
     "1794319268042": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:26:20Z",
+      "fetchedAt": "2026-11-17T15:21:20Z",
       "level": 23,
       "itemLevel": 12,
       "guild": "Heghmoh",
@@ -342,11 +342,11 @@
     },
     "1794692685089": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:26:20Z"
+      "fetchedAt": "2026-11-17T15:21:20Z"
     },
     "1794692685090": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:26:28Z",
+      "fetchedAt": "2026-11-17T15:21:32Z",
       "level": 21,
       "itemLevel": 14,
       "guild": "Flowmasters",
@@ -364,9 +364,9 @@
     },
     "1794692685091": {
       "status": "ok",
-      "fetchedAt": "2026-11-16T14:26:34Z",
-      "level": 16,
-      "itemLevel": 6,
+      "fetchedAt": "2026-11-17T15:21:41Z",
+      "level": 17,
+      "itemLevel": 7,
       "guild": "Flowmasters",
       "activeSpec": "Protection",
       "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626008.jpg",
@@ -381,12 +381,25 @@
       "detail": "character-data/1794692685091.json"
     },
     "1794839024861": {
-      "status": "not_found",
-      "fetchedAt": "2026-11-16T14:26:34Z"
+      "status": "ok",
+      "fetchedAt": "2026-11-17T15:21:50Z",
+      "level": 11,
+      "itemLevel": 2,
+      "guild": "Flowmasters",
+      "classIconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/626006.jpg",
+      "race": {
+        "id": 6,
+        "name": "Tauren"
+      },
+      "class": {
+        "id": 7,
+        "name": "Shaman"
+      },
+      "detail": "character-data/1794839024861.json"
     },
     "1794839024862": {
       "status": "not_found",
-      "fetchedAt": "2026-11-16T14:26:34Z"
+      "fetchedAt": "2026-11-17T15:21:50Z"
     }
   }
 }

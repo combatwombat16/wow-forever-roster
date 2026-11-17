@@ -9,11 +9,11 @@
   "gear": [
     {
       "slot": "Head",
-      "name": "Defender's Leather Hood",
-      "ilvl": 25,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133150.jpg",
-      "itemId": 252447,
-      "quality": "RARE",
+      "name": "Nightscape Headband",
+      "ilvl": 41,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132513.jpg",
+      "itemId": 8176,
+      "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -25,8 +25,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 8,
-          "displayString": "+8 Strength",
+          "value": 12,
+          "displayString": "+12 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -36,8 +36,8 @@
           }
         },
         {
-          "value": 10,
-          "displayString": "+10 Stamina",
+          "value": 11,
+          "displayString": "+11 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -172,10 +172,10 @@
     },
     {
       "slot": "Chest",
-      "name": "Archer's Jerkin of the Bandit",
-      "ilvl": 38,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132723.jpg",
-      "itemId": 9854,
+      "name": "Nightscape Tunic",
+      "ilvl": 41,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132718.jpg",
+      "itemId": 8175,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -185,11 +185,13 @@
         "id": 2,
         "name": "Leather"
       },
-      "enchants": [],
+      "enchants": [
+        "Enchanted: Stamina +4 and Armor +32"
+      ],
       "stats": [
         {
-          "value": 5,
-          "displayString": "+5 Agility",
+          "value": 15,
+          "displayString": "+15 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -199,24 +201,13 @@
           }
         },
         {
-          "value": 11,
-          "displayString": "+11 Stamina",
+          "value": 6,
+          "displayString": "+6 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 12,
-          "displayString": "+12 Attack Power",
-          "isEquipBonus": true,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
             "a": 1.0
           }
         }
@@ -319,10 +310,10 @@
     },
     {
       "slot": "Feet",
-      "name": "Gravewalker Boots",
-      "ilvl": 36,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132542.jpg",
-      "itemId": 251963,
+      "name": "Excelsior Boots",
+      "ilvl": 41,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132541.jpg",
+      "itemId": 4109,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -333,12 +324,12 @@
         "name": "Leather"
       },
       "enchants": [
-        "Enchanted: Attack Power +6 and Armor +24"
+        "Enchanted: Stamina +4 and Armor +32"
       ],
       "stats": [
         {
-          "value": 5,
-          "displayString": "+5 Agility",
+          "value": 9,
+          "displayString": "+9 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -349,23 +340,12 @@
         },
         {
           "value": 7,
-          "displayString": "+7 Stamina",
+          "displayString": "+7 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 5,
-          "displayString": "+5 Spirit",
-          "isEquipBonus": true,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
             "a": 1.0
           }
         }
@@ -598,10 +578,10 @@
     },
     {
       "slot": "Back",
-      "name": "Huntsman's Cape of Agility",
-      "ilvl": 38,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133761.jpg",
-      "itemId": 9890,
+      "name": "Darktide Cape",
+      "ilvl": 42,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133758.jpg",
+      "itemId": 4114,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -614,8 +594,19 @@
       "enchants": [],
       "stats": [
         {
-          "value": 8,
-          "displayString": "+8 Agility",
+          "value": 6,
+          "displayString": "+6 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 7,
+          "displayString": "+7 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -752,7 +743,7 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 1751,
+    "health": 1920,
     "power": 100,
     "powerType": {
       "id": 3,
@@ -764,23 +755,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 57,
-      "effective": 90
+      "base": 60,
+      "effective": 92
     },
     "agility": {
-      "base": 79,
-      "effective": 147
+      "base": 85,
+      "effective": 177
     },
     "intellect": {
-      "base": 25,
-      "effective": 25
+      "base": 26,
+      "effective": 26
     },
     "stamina": {
-      "base": 53,
-      "effective": 126
+      "base": 56,
+      "effective": 133
     },
     "meleeCrit": {
-      "value": 8.3325,
+      "value": 11.2702,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -794,7 +785,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 72,
+    "bonusArmor": 112,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -809,35 +800,35 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 355,
-    "mainHandDamageMin": 101.78572,
-    "mainHandDamageMax": 141.78572,
+    "attackPower": 375,
+    "mainHandDamageMin": 104.92857,
+    "mainHandDamageMax": 144.92857,
     "mainHandSpeed": 2.2,
-    "mainHandDps": 55.357143,
-    "offHandDamageMin": 65.38393,
-    "offHandDamageMax": 91.63393,
+    "mainHandDps": 56.785713,
+    "offHandDamageMin": 67.41965,
+    "offHandDamageMax": 93.66965,
     "offHandSpeed": 1.9,
-    "offHandDps": 41.320488,
+    "offHandDps": 42.391922,
     "spellPower": 0,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 0.0,
+      "value": 2.0,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "manaRegen": 0.0,
     "manaRegenCombat": 0.0,
     "armor": {
-      "base": 72,
-      "effective": 997
+      "base": 112,
+      "effective": 1128
     },
     "dodge": {
-      "value": 16.5303,
+      "value": 18.5581,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 10.639999,
+      "value": 10.92,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -847,7 +838,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 0.6925006,
+      "value": 2.9502003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -862,12 +853,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 40,
-      "effective": 55
+      "base": 41,
+      "effective": 51
     },
     "defense": {
-      "base": 183,
-      "effective": 186
+      "base": 205,
+      "effective": 208
     },
     "fireResistance": {
       "base": 0,
@@ -890,9 +881,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 373,
-    "rangedDamageMin": 89.27858,
-    "rangedDamageMax": 104.27858,
+    "rangedAttackPower": 418,
+    "rangedDamageMin": 96.67143,
+    "rangedDamageMax": 111.67143,
     "expertise": 1.0,
     "offHandExpertise": 1.0,
     "armorPenetration": 0.0,
@@ -920,9 +911,25 @@
   },
   "talents": [
     {
+      "specId": 253,
+      "specName": "Assassination",
+      "spentPoints": 2,
+      "talents": [
+        {
+          "rank": 2,
+          "talentId": 135252,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132277.jpg",
+          "spellId": 14138,
+          "spellName": "Malice",
+          "description": "Increases your critical strike chance with all attacks and Poisons by 2%.",
+          "castTime": "Passive"
+        }
+      ]
+    },
+    {
       "specId": 38,
       "specName": "Combat",
-      "spentPoints": 30,
+      "spentPoints": 31,
       "talents": [
         {
           "rank": 3,
@@ -1049,6 +1056,15 @@
           "spellName": "Flash of Steel",
           "description": "Increases the Energy generated by your Shank ability by 6 and reduces its cooldown by 0.8 sec.",
           "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 135254,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136206.jpg",
+          "spellId": 13750,
+          "spellName": "Adrenaline Rush",
+          "description": "Increases your Energy regeneration rate by 100% for 15 sec.",
+          "castTime": "Instant"
         }
       ]
     }
@@ -1061,7 +1077,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136247.jpg",
         "tiers": [
           {
-            "skillPoints": 158,
+            "skillPoints": 194,
             "maxSkillPoints": 225,
             "tierId": 2945,
             "tierName": "Leatherworking",
@@ -1223,6 +1239,10 @@
                 "name": "Barbaric Gloves"
               },
               {
+                "id": 2186,
+                "name": "Guardian Leather Bracers"
+              },
+              {
                 "id": 2195,
                 "name": "Cured Light Hide"
               },
@@ -1245,6 +1265,26 @@
               {
                 "id": 11757,
                 "name": "Heavy Leather"
+              },
+              {
+                "id": 11758,
+                "name": "Thick Leather"
+              },
+              {
+                "id": 5666,
+                "name": "Cured Thick Hide"
+              },
+              {
+                "id": 5667,
+                "name": "Thick Armor Kit"
+              },
+              {
+                "id": 5669,
+                "name": "Nightscape Tunic"
+              },
+              {
+                "id": 5670,
+                "name": "Nightscape Headband"
               },
               {
                 "id": 5050,
@@ -1524,19 +1564,19 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 2885,
-        "value": 2885,
-        "max": 3000,
-        "tier": 3,
-        "name": "Neutral"
+        "raw": 4222,
+        "value": 1222,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
       }
     },
     {
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 10045,
-        "value": 1045,
+        "raw": 10310,
+        "value": 1310,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1546,8 +1586,8 @@
       "factionId": 87,
       "factionName": "Bloodsail Buccaneers",
       "standing": {
-        "raw": -8250,
-        "value": 33750,
+        "raw": -18925,
+        "value": 23075,
         "max": 36000,
         "tier": 0,
         "name": "Hated"
@@ -1557,8 +1597,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 5135,
-        "value": 2135,
+        "raw": 6472,
+        "value": 3472,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1568,8 +1608,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 15436,
-        "value": 6436,
+        "raw": 16158,
+        "value": 7158,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1579,8 +1619,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 12648,
-        "value": 3648,
+        "raw": 13213,
+        "value": 4213,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1590,8 +1630,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 3170,
-        "value": 170,
+        "raw": 5652,
+        "value": 2652,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1623,19 +1663,19 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 2885,
-        "value": 2885,
-        "max": 3000,
-        "tier": 3,
-        "name": "Neutral"
+        "raw": 4235,
+        "value": 1235,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
       }
     },
     {
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 7881,
-        "value": 4881,
+        "raw": 8183,
+        "value": 5183,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1656,11 +1696,11 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 2835,
-        "value": 2835,
-        "max": 3000,
-        "tier": 3,
-        "name": "Neutral"
+        "raw": 4352,
+        "value": 1352,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
       }
     }
   ],

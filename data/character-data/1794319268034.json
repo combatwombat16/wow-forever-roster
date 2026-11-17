@@ -700,50 +700,86 @@
   "professions": {
     "primaries": [
       {
-        "id": 393,
-        "name": "Skinning",
-        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
+        "id": 197,
+        "name": "Tailoring",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136249.jpg",
         "tiers": [
           {
-            "skillPoints": 127,
-            "maxSkillPoints": 150,
-            "tierId": 2947,
-            "tierName": "Skinning",
+            "skillPoints": 21,
+            "maxSkillPoints": 75,
+            "tierId": 2948,
+            "tierName": "Tailoring",
             "knownRecipes": [
               {
-                "id": 4767,
-                "name": "Skinning"
+                "id": 6576,
+                "name": "Simple Linen Pants"
               },
               {
-                "id": 52644,
-                "name": "Camp Chair"
+                "id": 2409,
+                "name": "Brown Linen Shirt"
+              },
+              {
+                "id": 4848,
+                "name": "Linen Belt"
+              },
+              {
+                "id": 2359,
+                "name": "Bolt of Linen Cloth"
+              },
+              {
+                "id": 2360,
+                "name": "Linen Cloak"
+              },
+              {
+                "id": 2361,
+                "name": "Brown Linen Vest"
+              },
+              {
+                "id": 2365,
+                "name": "White Linen Shirt"
+              },
+              {
+                "id": 4001,
+                "name": "Linen Bag"
               }
             ]
           }
         ]
       },
       {
-        "id": 182,
-        "name": "Herbalism",
-        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136246.jpg",
+        "id": 333,
+        "name": "Enchanting",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136244.jpg",
         "tiers": [
           {
-            "skillPoints": 85,
-            "maxSkillPoints": 150,
-            "tierId": 2944,
-            "tierName": "Herbalism",
+            "skillPoints": 1,
+            "maxSkillPoints": 75,
+            "tierId": 2940,
+            "tierName": "Enchanting",
             "knownRecipes": [
               {
-                "id": 1419,
-                "name": "Herbalism"
+                "id": 7316,
+                "name": "Disenchant"
               },
               {
-                "id": 54115,
-                "name": "Herbalism"
+                "id": 4289,
+                "name": "Enchant Bracer - Inferior Stamina"
               },
               {
-                "id": 52642,
-                "name": "Incense Candle"
+                "id": 4291,
+                "name": "Runed Copper Rod"
+              },
+              {
+                "id": 4293,
+                "name": "Enchant Bracer - Minor Deflect"
+              },
+              {
+                "id": 54213,
+                "name": "Dust to Motes"
+              },
+              {
+                "id": 54214,
+                "name": "Novice's Practice Wand"
               }
             ]
           }
@@ -887,17 +923,6 @@
       "standing": {
         "raw": 2697,
         "value": 2697,
-        "max": 3000,
-        "tier": 3,
-        "name": "Neutral"
-      }
-    },
-    {
-      "factionId": 889,
-      "factionName": "Warsong Outriders",
-      "standing": {
-        "raw": 0,
-        "value": 0,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
