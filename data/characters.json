@@ -155,7 +155,13 @@
       "race": "Windshaper Skyborne",
       "class": "Druid",
       "prof1": "Leatherworking",
-      "prof2": "Skinning"
+      "prof2": "Skinning",
+      "validation": {
+        "state": "validated",
+        "confirmedSlug": "tir-rheebeard",
+        "reviewedBy": "combatwombat16",
+        "reviewedAt": "2026-11-18T16:04:06Z"
+      }
     },
     {
       "id": "1791929013125",
