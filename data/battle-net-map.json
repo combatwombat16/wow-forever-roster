@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-17T15:21:50Z",
+  "updatedAt": "2026-11-18T15:00:19Z",
   "entries": {
     "1791919748959": {
       "rosterName": "shiftybeef stroganoff",
@@ -100,14 +100,14 @@
     },
     "1791928813281": {
       "rosterName": "Vlinder Stormveil",
-      "status": "not_found",
-      "slug": null,
-      "href": null,
-      "bnetName": null,
-      "surname": null,
-      "matchedForm": null,
-      "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "status": "ok",
+      "slug": "vlinder-stormveil",
+      "href": "https://us.api.blizzard.com/profile/wow/character/vlinder-stormveil?namespace=profile-forever-us",
+      "bnetName": "Vlinder",
+      "surname": "Stormveil",
+      "matchedForm": "lower_hyphen",
+      "mappedVia": "direct",
+      "note": null,
       "candidates": []
     },
     "1791928886528": {
@@ -124,14 +124,14 @@
     },
     "1791928967366": {
       "rosterName": "Tir Rheebeard",
-      "status": "not_found",
-      "slug": null,
-      "href": null,
-      "bnetName": null,
-      "surname": null,
-      "matchedForm": null,
-      "mappedVia": null,
-      "note": "404 on all forms — likely not opted in (task 0.4)",
+      "status": "ok",
+      "slug": "tir-rheebeard",
+      "href": "https://us.api.blizzard.com/profile/wow/character/tir-rheebeard?namespace=profile-forever-us",
+      "bnetName": "Tir",
+      "surname": "Rheebeard",
+      "matchedForm": "lower_hyphen",
+      "mappedVia": "direct",
+      "note": null,
       "candidates": []
     },
     "1791929013125": {

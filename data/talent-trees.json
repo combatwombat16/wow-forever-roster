@@ -1,6 +1,6 @@
 {
   "staticNamespace": "static-1.60.1_70399-forever-us",
-  "updatedAt": "2026-11-17T15:21:51Z",
+  "updatedAt": "2026-11-18T15:00:20Z",
   "specs": {
     "6": {
       "treeId": 1112,
@@ -7250,6 +7250,699 @@
         }
       ]
     },
+    "256": {
+      "treeId": 1117,
+      "classId": 1,
+      "className": "Warrior",
+      "specId": 256,
+      "specName": "Fury",
+      "name": "Fury",
+      "nodes": [
+        {
+          "id": 105938,
+          "displayRow": 1,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135469,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136075.jpg",
+              "spellId": 12321,
+              "spellName": "Booming Voice",
+              "description": "Increases the area of effect of your Shouts by 10% and reduces the Rage cost by of your Shouts and Howls by 5%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135469,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136075.jpg",
+              "spellId": 12321,
+              "spellName": "Booming Voice",
+              "description": "Increases the area of effect of your Shouts by 20% and reduces the Rage cost by of your Shouts and Howls by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135469,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136075.jpg",
+              "spellId": 12321,
+              "spellName": "Booming Voice",
+              "description": "Increases the area of effect of your Shouts by 30% and reduces the Rage cost by of your Shouts and Howls by 15%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135469,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136075.jpg",
+              "spellId": 12321,
+              "spellName": "Booming Voice",
+              "description": "Increases the area of effect of your Shouts by 40% and reduces the Rage cost by of your Shouts and Howls by 20%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135469,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136075.jpg",
+              "spellId": 12321,
+              "spellName": "Booming Voice",
+              "description": "Increases the area of effect of your Shouts by 50% and reduces the Rage cost by of your Shouts and Howls by 25%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105939,
+          "displayRow": 1,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135470,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132292.jpg",
+              "spellId": 12320,
+              "spellName": "Cruelty",
+              "description": "Improves your chance to get a critical strike with melee attacks by 1%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135470,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132292.jpg",
+              "spellId": 12320,
+              "spellName": "Cruelty",
+              "description": "Improves your chance to get a critical strike with melee attacks by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135470,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132292.jpg",
+              "spellId": 12320,
+              "spellName": "Cruelty",
+              "description": "Improves your chance to get a critical strike with melee attacks by 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135470,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132292.jpg",
+              "spellId": 12320,
+              "spellName": "Cruelty",
+              "description": "Improves your chance to get a critical strike with melee attacks by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135470,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132292.jpg",
+              "spellId": 12320,
+              "spellName": "Cruelty",
+              "description": "Improves your chance to get a critical strike with melee attacks by 5%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 110857,
+          "displayRow": 2,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 142603,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132356.jpg",
+              "spellId": 1323964,
+              "spellName": "Lingering Rage",
+              "description": "Increases the time before your Rage begins to decay after leaving combat by 2 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 142603,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132356.jpg",
+              "spellId": 1323964,
+              "spellName": "Lingering Rage",
+              "description": "Increases the time before your Rage begins to decay after leaving combat by 4 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 142603,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132356.jpg",
+              "spellId": 1323964,
+              "spellName": "Lingering Rage",
+              "description": "Increases the time before your Rage begins to decay after leaving combat by 6 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 142603,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132356.jpg",
+              "spellId": 1323964,
+              "spellName": "Lingering Rage",
+              "description": "Increases the time before your Rage begins to decay after leaving combat by 8 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 142603,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132356.jpg",
+              "spellId": 1323964,
+              "spellName": "Lingering Rage",
+              "description": "Increases the time before your Rage begins to decay after leaving combat by 10 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105937,
+          "displayRow": 2,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135468,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136097.jpg",
+              "spellId": 12322,
+              "spellName": "Unbridled Wrath",
+              "description": "Gives you a 12% chance to generate 1 additional Rage when you deal melee damage with a weapon.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135468,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136097.jpg",
+              "spellId": 12322,
+              "spellName": "Unbridled Wrath",
+              "description": "Gives you a 24% chance to generate 1 additional Rage when you deal melee damage with a weapon.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135468,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136097.jpg",
+              "spellId": 12322,
+              "spellName": "Unbridled Wrath",
+              "description": "Gives you a 36% chance to generate 1 additional Rage when you deal melee damage with a weapon.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135468,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136097.jpg",
+              "spellId": 12322,
+              "spellName": "Unbridled Wrath",
+              "description": "Gives you a 48% chance to generate 1 additional Rage when you deal melee damage with a weapon.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135468,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136097.jpg",
+              "spellId": 12322,
+              "spellName": "Unbridled Wrath",
+              "description": "Gives you a 60% chance to generate 1 additional Rage when you deal melee damage with a weapon.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105953,
+          "displayRow": 3,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135484,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236309.jpg",
+              "spellId": 1323963,
+              "spellName": "Furious Precision",
+              "description": "Increases your chance to hit with off-hand attacks by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135484,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236309.jpg",
+              "spellId": 1323963,
+              "spellName": "Furious Precision",
+              "description": "Increases your chance to hit with off-hand attacks by 7%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135484,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236309.jpg",
+              "spellId": 1323963,
+              "spellName": "Furious Precision",
+              "description": "Increases your chance to hit with off-hand attacks by 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105935,
+          "displayRow": 3,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135466,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136147.jpg",
+              "spellId": 12323,
+              "spellName": "Piercing Howl",
+              "description": "Causes all enemies within 10 yds to be Dazed, reducing movement speed by 50% for 6 sec.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 105934,
+          "displayRow": 3,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 3330,
+          "unlocks": [
+            113569
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135465,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136218.jpg",
+              "spellId": 16487,
+              "spellName": "Blood Craze",
+              "description": "Regenerates 1% of your total Health over 6 sec after being the victim of a critical strike or suffering more than 20% of your maximum Health from a single attack.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135465,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136218.jpg",
+              "spellId": 16487,
+              "spellName": "Blood Craze",
+              "description": "Regenerates 2% of your total Health over 6 sec after being the victim of a critical strike or suffering more than 20% of your maximum Health from a single attack.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135465,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136218.jpg",
+              "spellId": 16487,
+              "spellName": "Blood Craze",
+              "description": "Regenerates 3% of your total Health over 6 sec after being the victim of a critical strike or suffering more than 20% of your maximum Health from a single attack.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105931,
+          "displayRow": 3,
+          "displayCol": 10,
+          "rawPositionX": 6820,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135462,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136224.jpg",
+              "spellId": 12317,
+              "spellName": "Enrage",
+              "description": "Gives you a 30% chance to deal 2% increased Physical damage for 12 sec after being the victim of any damaging attack.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135462,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136224.jpg",
+              "spellId": 12317,
+              "spellName": "Enrage",
+              "description": "Gives you a 30% chance to deal 4% increased Physical damage for 12 sec after being the victim of any damaging attack.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135462,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136224.jpg",
+              "spellId": 12317,
+              "spellName": "Enrage",
+              "description": "Gives you a 30% chance to deal 6% increased Physical damage for 12 sec after being the victim of any damaging attack.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135462,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136224.jpg",
+              "spellId": 12317,
+              "spellName": "Enrage",
+              "description": "Gives you a 30% chance to deal 8% increased Physical damage for 12 sec after being the victim of any damaging attack.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135462,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136224.jpg",
+              "spellId": 12317,
+              "spellName": "Enrage",
+              "description": "Gives you a 30% chance to deal 10% increased Physical damage for 12 sec after being the victim of any damaging attack.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105933,
+          "displayRow": 4,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135464,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132147.jpg",
+              "spellId": 23584,
+              "spellName": "Dual Wield Specialization",
+              "description": "Increases the damage done by your off-hand weapon by 5% and the Rage generated by your off-hand attacks by 10%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135464,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132147.jpg",
+              "spellId": 23584,
+              "spellName": "Dual Wield Specialization",
+              "description": "Increases the damage done by your off-hand weapon by 10% and the Rage generated by your off-hand attacks by 20%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135464,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132147.jpg",
+              "spellId": 23584,
+              "spellName": "Dual Wield Specialization",
+              "description": "Increases the damage done by your off-hand weapon by 15% and the Rage generated by your off-hand attacks by 30%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 135464,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132147.jpg",
+              "spellId": 23584,
+              "spellName": "Dual Wield Specialization",
+              "description": "Increases the damage done by your off-hand weapon by 20% and the Rage generated by your off-hand attacks by 40%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 135464,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132147.jpg",
+              "spellId": 23584,
+              "spellName": "Dual Wield Specialization",
+              "description": "Increases the damage done by your off-hand weapon by 25% and the Rage generated by your off-hand attacks by 50%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 113636,
+          "displayRow": 4,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 145966,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132334.jpg",
+              "spellId": 1329555,
+              "spellName": "Reckless Swings",
+              "description": "Your next 4 melee attacks generate 5 additional Rage. Lasts 8 sec.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 105932,
+          "displayRow": 4,
+          "displayCol": 10,
+          "rawPositionX": 6820,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135463,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135358.jpg",
+              "spellId": 20502,
+              "spellName": "Improved Execute",
+              "description": "Reduces the Rage cost of your Execute ability by 3.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135463,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135358.jpg",
+              "spellId": 20502,
+              "spellName": "Improved Execute",
+              "description": "Reduces the Rage cost of your Execute ability by 5.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105978,
+          "displayRow": 5,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135509,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136009.jpg",
+              "spellId": 20500,
+              "spellName": "Improved Berserker Rage",
+              "description": "Your Berserker Rage ability will instantly generate 5 Rage and has a 50% chance to remove all movement impairing effects when activated.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135509,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136009.jpg",
+              "spellId": 20500,
+              "spellName": "Improved Berserker Rage",
+              "description": "Your Berserker Rage ability will instantly generate 10 Rage and has a 100% chance to remove all movement impairing effects when activated.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105927,
+          "displayRow": 5,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 4530,
+          "unlocks": [
+            105930
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135458,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136146.jpg",
+              "spellId": 12328,
+              "spellName": "Death Wish",
+              "description": "When activated, increases your Physical damage done by 20% and makes you immune to Fear effects, but increases all damage you take by 5%. Lasts 30 sec.",
+              "castTime": "Instant"
+            }
+          ]
+        },
+        {
+          "id": 113569,
+          "displayRow": 5,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [
+            105934
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 145863,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135727.jpg",
+              "spellId": 1323967,
+              "spellName": "Gore Drinker",
+              "description": "Your Enrage, Berserker Rage, Bloodrage, Death Wish, Reckless Swings, and Bloodthirst abilities cause your next 3 melee attacks to restore 0.5% of your maximum Health.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 145863,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135727.jpg",
+              "spellId": 1323967,
+              "spellName": "Gore Drinker",
+              "description": "Your Enrage, Berserker Rage, Bloodrage, Death Wish, Reckless Swings, and Bloodthirst abilities cause your next 3 melee attacks to restore 1.0% of your maximum Health.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105926,
+          "displayRow": 5,
+          "displayCol": 10,
+          "rawPositionX": 6820,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135457,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132307.jpg",
+              "spellId": 20504,
+              "spellName": "Improved Intercept",
+              "description": "Reduces the cooldown of your Intercept ability by 5 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135457,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132307.jpg",
+              "spellId": 20504,
+              "spellName": "Improved Intercept",
+              "description": "Reduces the cooldown of your Intercept ability by 10 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105977,
+          "displayRow": 6,
+          "displayCol": 7,
+          "rawPositionX": 5020,
+          "rawPositionY": 5130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135508,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132369.jpg",
+              "spellId": 1310315,
+              "spellName": "Improved Whirlwind",
+              "description": "Reduces the cooldown of your Whirlwind ability by 1 sec and increases the damage it deals to the closest enemy by 15%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135508,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132369.jpg",
+              "spellId": 1310315,
+              "spellName": "Improved Whirlwind",
+              "description": "Reduces the cooldown of your Whirlwind ability by 2 sec and increases the damage it deals to the closest enemy by 30%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105928,
+          "displayRow": 6,
+          "displayCol": 9,
+          "rawPositionX": 6220,
+          "rawPositionY": 5130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135459,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132152.jpg",
+              "spellId": 12319,
+              "spellName": "Flurry",
+              "description": "Increases your melee attack speed by 10% for your next 3 swings after dealing a melee critical strike.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 135459,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132152.jpg",
+              "spellId": 12319,
+              "spellName": "Flurry",
+              "description": "Increases your melee attack speed by 20% for your next 3 swings after dealing a melee critical strike.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 135459,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132152.jpg",
+              "spellId": 12319,
+              "spellName": "Flurry",
+              "description": "Increases your melee attack speed by 30% for your next 3 swings after dealing a melee critical strike.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 105930,
+          "displayRow": 7,
+          "displayCol": 8,
+          "rawPositionX": 5620,
+          "rawPositionY": 5730,
+          "unlocks": [],
+          "lockedBy": [
+            105927
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 135461,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136012.jpg",
+              "spellId": 23881,
+              "spellName": "Bloodthirst",
+              "description": "Instantly attack the target causing damage equal to 45% of your Attack Power plus 30 and increasing your movement speed by 10% for 10 sec.",
+              "castTime": "Instant"
+            }
+          ]
+        }
+      ]
+    },
     "257": {
       "treeId": 1117,
       "classId": 1,
@@ -9857,6 +10550,618 @@
               "spellId": 408521,
               "spellName": "Riptide",
               "description": "Heals a friendly target for 600 over 15 sec, and increases the effectiveness of your Chain Heal casts directly on that target by 25%.",
+              "castTime": "Instant"
+            }
+          ]
+        }
+      ]
+    },
+    "375": {
+      "treeId": 1082,
+      "classId": 7,
+      "className": "Shaman",
+      "specId": 375,
+      "specName": "Elemental Combat",
+      "name": "Elemental Combat",
+      "nodes": [
+        {
+          "id": 104773,
+          "displayRow": 1,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134234,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136116.jpg",
+              "spellId": 16039,
+              "spellName": "Convection",
+              "description": "Reduces the mana cost of your Shock, Lightning Bolt, and Chain Lightning spells by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134234,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136116.jpg",
+              "spellId": 16039,
+              "spellName": "Convection",
+              "description": "Reduces the mana cost of your Shock, Lightning Bolt, and Chain Lightning spells by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134234,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136116.jpg",
+              "spellId": 16039,
+              "spellName": "Convection",
+              "description": "Reduces the mana cost of your Shock, Lightning Bolt, and Chain Lightning spells by 6%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134234,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136116.jpg",
+              "spellId": 16039,
+              "spellName": "Convection",
+              "description": "Reduces the mana cost of your Shock, Lightning Bolt, and Chain Lightning spells by 8%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134234,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136116.jpg",
+              "spellId": 16039,
+              "spellName": "Convection",
+              "description": "Reduces the mana cost of your Shock, Lightning Bolt, and Chain Lightning spells by 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104772,
+          "displayRow": 1,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 2130,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134233,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136026.jpg",
+              "spellId": 16035,
+              "spellName": "Concussion",
+              "description": "Increases the damage done by your Lightning Bolt, Chain Lightning, and Earth Shock spells by 1%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134233,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136026.jpg",
+              "spellId": 16035,
+              "spellName": "Concussion",
+              "description": "Increases the damage done by your Lightning Bolt, Chain Lightning, and Earth Shock spells by 2%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134233,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136026.jpg",
+              "spellId": 16035,
+              "spellName": "Concussion",
+              "description": "Increases the damage done by your Lightning Bolt, Chain Lightning, and Earth Shock spells by 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134233,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136026.jpg",
+              "spellId": 16035,
+              "spellName": "Concussion",
+              "description": "Increases the damage done by your Lightning Bolt, Chain Lightning, and Earth Shock spells by 4%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134233,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136026.jpg",
+              "spellId": 16035,
+              "spellName": "Concussion",
+              "description": "Increases the damage done by your Lightning Bolt, Chain Lightning, and Earth Shock spells by 5%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104769,
+          "displayRow": 2,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134230,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135791.jpg",
+              "spellId": 30160,
+              "spellName": "Elemental Devastation",
+              "description": "Your Critical Strikes with direct damage spells increase your chance to get a Critical Strike with melee attacks by 3% for 10 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134230,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135791.jpg",
+              "spellId": 30160,
+              "spellName": "Elemental Devastation",
+              "description": "Your Critical Strikes with direct damage spells increase your chance to get a Critical Strike with melee attacks by 6% for 10 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134230,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135791.jpg",
+              "spellId": 30160,
+              "spellName": "Elemental Devastation",
+              "description": "Your Critical Strikes with direct damage spells increase your chance to get a Critical Strike with melee attacks by 9% for 10 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104767,
+          "displayRow": 2,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134228,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135850.jpg",
+              "spellId": 16040,
+              "spellName": "Reverberation",
+              "description": "Reduces the cooldown of your Shock spells by 0.2 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134228,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135850.jpg",
+              "spellId": 16040,
+              "spellName": "Reverberation",
+              "description": "Reduces the cooldown of your Shock spells by 0.4 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134228,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135850.jpg",
+              "spellId": 16040,
+              "spellName": "Reverberation",
+              "description": "Reduces the cooldown of your Shock spells by 0.6 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134228,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135850.jpg",
+              "spellId": 16040,
+              "spellName": "Reverberation",
+              "description": "Reduces the cooldown of your Shock spells by 0.8 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134228,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135850.jpg",
+              "spellId": 16040,
+              "spellName": "Reverberation",
+              "description": "Reduces the cooldown of your Shock spells by 1.0 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104771,
+          "displayRow": 2,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 2730,
+          "unlocks": [
+            104759
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134232,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135990.jpg",
+              "spellId": 16578,
+              "spellName": "Elemental Alacrity",
+              "description": "Reduces the cast time of your Lightning Bolt and Chain Lightning spells by 0.17 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134232,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135990.jpg",
+              "spellId": 16578,
+              "spellName": "Elemental Alacrity",
+              "description": "Reduces the cast time of your Lightning Bolt and Chain Lightning spells by 0.33 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134232,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135990.jpg",
+              "spellId": 16578,
+              "spellName": "Elemental Alacrity",
+              "description": "Reduces the cast time of your Lightning Bolt and Chain Lightning spells by 0.50 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104770,
+          "displayRow": 2,
+          "displayCol": 4,
+          "rawPositionX": 2820,
+          "rawPositionY": 2730,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134231,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135817.jpg",
+              "spellId": 16038,
+              "spellName": "Call of Flame",
+              "description": "Increases the damage done by your Fire Totems and by your Flame Shock and Fire Nova spells by 5%, as well as increases the duration of your Flame Shock spell by 3 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134231,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135817.jpg",
+              "spellId": 16038,
+              "spellName": "Call of Flame",
+              "description": "Increases the damage done by your Fire Totems and by your Flame Shock and Fire Nova spells by 10%, as well as increases the duration of your Flame Shock spell by 6 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134231,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135817.jpg",
+              "spellId": 16038,
+              "spellName": "Call of Flame",
+              "description": "Increases the damage done by your Fire Totems and by your Flame Shock and Fire Nova spells by 15%, as well as increases the duration of your Flame Shock spell by 9 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104768,
+          "displayRow": 3,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134229,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136170.jpg",
+              "spellId": 16164,
+              "spellName": "Elemental Focus",
+              "description": "Gives you a 10% chance to enter a Clearcasting state after casting any Fire, Frost, or Nature damage spell.  The Clearcasting state reduces the mana cost of your next damage spell by 100%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104765,
+          "displayRow": 3,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 3330,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134226,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136094.jpg",
+              "spellId": 28996,
+              "spellName": "Elemental Warding",
+              "description": "Reduces damage taken from Fire, Frost, and Nature effects by 3%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134226,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136094.jpg",
+              "spellId": 28996,
+              "spellName": "Elemental Warding",
+              "description": "Reduces damage taken from Fire, Frost, and Nature effects by 7%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134226,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136094.jpg",
+              "spellId": 28996,
+              "spellName": "Elemental Warding",
+              "description": "Reduces damage taken from Fire, Frost, and Nature effects by 10%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104764,
+          "displayRow": 4,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134225,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135824.jpg",
+              "spellId": 16086,
+              "spellName": "Trial by Fire",
+              "description": "Increases the damage done by your Fire Nova spell by 10% and reduces its cooldown by 2 sec, and increases the duration of your Magma Totem by 10 sec.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134225,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135824.jpg",
+              "spellId": 16086,
+              "spellName": "Trial by Fire",
+              "description": "Increases the damage done by your Fire Nova spell by 20% and reduces its cooldown by 4 sec, and increases the duration of your Magma Totem by 20 sec.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104763,
+          "displayRow": 4,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134224,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136032.jpg",
+              "spellId": 29062,
+              "spellName": "Eye of the Storm",
+              "description": "Gives your Lightning Bolt and Chain Lightning spells a 23% chance to not lose casting time when you take damage.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134224,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136032.jpg",
+              "spellId": 29062,
+              "spellName": "Eye of the Storm",
+              "description": "Gives your Lightning Bolt and Chain Lightning spells a 47% chance to not lose casting time when you take damage.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134224,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136032.jpg",
+              "spellId": 29062,
+              "spellName": "Eye of the Storm",
+              "description": "Gives your Lightning Bolt and Chain Lightning spells a 70% chance to not lose casting time when you take damage.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104762,
+          "displayRow": 4,
+          "displayCol": 4,
+          "rawPositionX": 2820,
+          "rawPositionY": 3930,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134223,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136100.jpg",
+              "spellId": 1222988,
+              "spellName": "Earthbound",
+              "description": "Your Earthbind Totem Immobilizes nearby targets for 5 sec when cast.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104761,
+          "displayRow": 5,
+          "displayCol": 1,
+          "rawPositionX": 1020,
+          "rawPositionY": 4530,
+          "unlocks": [],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134222,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136099.jpg",
+              "spellId": 28999,
+              "spellName": "Elemental Reach",
+              "description": "Increases the range of your Lightning Bolt, Chain Lightning, and Fire Nova spells by 3 yards.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134222,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136099.jpg",
+              "spellId": 28999,
+              "spellName": "Elemental Reach",
+              "description": "Increases the range of your Lightning Bolt, Chain Lightning, and Fire Nova spells by 6 yards.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104760,
+          "displayRow": 5,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 4530,
+          "unlocks": [
+            104758
+          ],
+          "lockedBy": [],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134221,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136014.jpg",
+              "spellId": 16120,
+              "spellName": "Call of Thunder",
+              "description": "Increases the critical strike chance of your Lightning Bolt and Chain Lightning spells by 5%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104759,
+          "displayRow": 5,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 4530,
+          "unlocks": [
+            104766
+          ],
+          "lockedBy": [
+            104771
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134220,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136050.jpg",
+              "spellId": 408438,
+              "spellName": "Lightning Overload",
+              "description": "Gives your Lightning Bolt and Chain Lightning spells a 10% chance to cast a second, similar spell on the same target at no additional cost that causes half damage and no threat.\r\n",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134220,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136050.jpg",
+              "spellId": 408438,
+              "spellName": "Lightning Overload",
+              "description": "Gives your Lightning Bolt and Chain Lightning spells a 20% chance to cast a second, similar spell on the same target at no additional cost that causes half damage and no threat.\r\n",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134220,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136050.jpg",
+              "spellId": 408438,
+              "spellName": "Lightning Overload",
+              "description": "Gives your Lightning Bolt and Chain Lightning spells a 30% chance to cast a second, similar spell on the same target at no additional cost that causes half damage and no threat.\r\n",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104766,
+          "displayRow": 6,
+          "displayCol": 3,
+          "rawPositionX": 2220,
+          "rawPositionY": 5130,
+          "unlocks": [],
+          "lockedBy": [
+            104759
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134227,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135830.jpg",
+              "spellId": 16089,
+              "spellName": "Elemental Fury",
+              "description": "Increases the critical strike damage bonus of your Searing and Magma Totems and your Fire, Frost, and Nature spells by 20%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 2,
+              "talentId": 134227,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135830.jpg",
+              "spellId": 16089,
+              "spellName": "Elemental Fury",
+              "description": "Increases the critical strike damage bonus of your Searing and Magma Totems and your Fire, Frost, and Nature spells by 40%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 3,
+              "talentId": 134227,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135830.jpg",
+              "spellId": 16089,
+              "spellName": "Elemental Fury",
+              "description": "Increases the critical strike damage bonus of your Searing and Magma Totems and your Fire, Frost, and Nature spells by 60%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 4,
+              "talentId": 134227,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135830.jpg",
+              "spellId": 16089,
+              "spellName": "Elemental Fury",
+              "description": "Increases the critical strike damage bonus of your Searing and Magma Totems and your Fire, Frost, and Nature spells by 80%.",
+              "castTime": "Passive"
+            },
+            {
+              "rank": 5,
+              "talentId": 134227,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135830.jpg",
+              "spellId": 16089,
+              "spellName": "Elemental Fury",
+              "description": "Increases the critical strike damage bonus of your Searing and Magma Totems and your Fire, Frost, and Nature spells by 100%.",
+              "castTime": "Passive"
+            }
+          ]
+        },
+        {
+          "id": 104758,
+          "displayRow": 7,
+          "displayCol": 2,
+          "rawPositionX": 1620,
+          "rawPositionY": 5730,
+          "unlocks": [],
+          "lockedBy": [
+            104760
+          ],
+          "ranks": [
+            {
+              "rank": 1,
+              "talentId": 134219,
+              "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136111.jpg",
+              "spellId": 16166,
+              "spellName": "Lightning Mastery",
+              "description": "Gain mastery over Lightning, reducing the cast time of your Lightning Bolt spell by 0.5 sec, and removing the cooldown from your Chain Lightning spell. Lasts 15 sec.",
               "castTime": "Instant"
             }
           ]

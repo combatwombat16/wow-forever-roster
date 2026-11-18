@@ -63,10 +63,10 @@
     },
     {
       "slot": "Legs",
-      "name": "Primitive Kilt",
-      "ilvl": 1,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134582.jpg",
-      "itemId": 153,
+      "name": "Worn Leather Pants",
+      "ilvl": 7,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134586.jpg",
+      "itemId": 1423,
       "quality": "POOR",
       "itemClass": {
         "id": 4,
@@ -81,10 +81,10 @@
     },
     {
       "slot": "Feet",
-      "name": "Ragged Leather Boots",
-      "ilvl": 3,
+      "name": "Worn Leather Boots",
+      "ilvl": 8,
       "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132540.jpg",
-      "itemId": 1367,
+      "itemId": 1419,
       "quality": "POOR",
       "itemClass": {
         "id": 4,
@@ -220,7 +220,7 @@
       "effective": 32
     },
     "meleeCrit": {
-      "value": 4.0725,
+      "value": 4.2725,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -269,10 +269,10 @@
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 0,
-      "effective": 267
+      "effective": 300
     },
     "dodge": {
-      "value": 4.0325003,
+      "value": 4.1924996,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -282,7 +282,7 @@
       "ratingNormalized": 0
     },
     "block": {
-      "value": 4.7200003,
+      "value": 4.88,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -306,8 +306,8 @@
       "effective": 33
     },
     "defense": {
-      "base": 48,
-      "effective": 48
+      "base": 52,
+      "effective": 52
     },
     "fireResistance": {
       "base": 0,
@@ -358,6 +358,24 @@
       "ratingNormalized": 0
     }
   },
+  "talents": [
+    {
+      "specId": 375,
+      "specName": "Elemental Combat",
+      "spentPoints": 2,
+      "talents": [
+        {
+          "rank": 2,
+          "talentId": 134233,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136026.jpg",
+          "spellId": 16035,
+          "spellName": "Concussion",
+          "description": "Increases the damage done by your Lightning Bolt, Chain Lightning, and Earth Shock spells by 2%.",
+          "castTime": "Passive"
+        }
+      ]
+    }
+  ],
   "professions": {
     "primaries": [
       {
@@ -366,7 +384,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 13,
+            "skillPoints": 17,
             "maxSkillPoints": 75,
             "tierId": 2946,
             "tierName": "Mining",
@@ -389,7 +407,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136246.jpg",
         "tiers": [
           {
-            "skillPoints": 15,
+            "skillPoints": 22,
             "maxSkillPoints": 75,
             "tierId": 2944,
             "tierName": "Herbalism",
@@ -445,7 +463,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
         "tiers": [
           {
-            "skillPoints": 1,
+            "skillPoints": 22,
             "maxSkillPoints": 75,
             "tierId": 2942,
             "tierName": "First Aid",
@@ -453,6 +471,10 @@
               {
                 "id": 1838,
                 "name": "Linen Bandage"
+              },
+              {
+                "id": 54191,
+                "name": "Minor Healing Potion"
               }
             ]
           }
@@ -465,8 +487,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 6905,
-        "value": 3905,
+        "raw": 7080,
+        "value": 4080,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"

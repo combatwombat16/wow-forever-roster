@@ -654,11 +654,11 @@
     },
     {
       "slot": "Ranged",
-      "name": "Quilrager Throwing Axe",
-      "ilvl": 36,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135421.jpg",
-      "itemId": 274160,
-      "quality": "RARE",
+      "name": "Orwin's Axe",
+      "ilvl": 43,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135419.jpg",
+      "itemId": 287073,
+      "quality": "UNCOMMON",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
@@ -681,13 +681,13 @@
           }
         },
         {
-          "value": 40,
-          "displayString": "+40 Bonus Armor",
-          "isEquipBonus": true,
+          "value": 4,
+          "displayString": "+4 Stamina",
+          "isEquipBonus": false,
           "color": {
-            "r": 0,
+            "r": 255,
             "g": 255,
-            "b": 0,
+            "b": 255,
             "a": 1.0
           }
         }
@@ -738,7 +738,7 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 2211,
+    "health": 2309,
     "power": 100,
     "powerType": {
       "id": 1,
@@ -750,23 +750,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 87,
-      "effective": 156
+      "base": 89,
+      "effective": 158
     },
     "agility": {
-      "base": 55,
-      "effective": 56
+      "base": 56,
+      "effective": 57
     },
     "intellect": {
       "base": 23,
       "effective": 26
     },
     "stamina": {
-      "base": 79,
-      "effective": 163
+      "base": 81,
+      "effective": 169
     },
     "meleeCrit": {
-      "value": 3.8624003,
+      "value": 4.9558,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -780,7 +780,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 414,
+    "bonusArmor": 374,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -795,11 +795,11 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 455,
-    "mainHandDamageMin": 129.25002,
-    "mainHandDamageMax": 173.25,
+    "attackPower": 462,
+    "mainHandDamageMin": 130.46,
+    "mainHandDamageMax": 174.46,
     "mainHandSpeed": 2.2,
-    "mainHandDps": 68.75,
+    "mainHandDps": 69.3,
     "offHandDamageMin": 0.0,
     "offHandDamageMax": 0.0,
     "offHandSpeed": 2.0,
@@ -814,26 +814,26 @@
     "manaRegen": 0.0,
     "manaRegenCombat": 0.0,
     "armor": {
-      "base": 414,
-      "effective": 3202
+      "base": 374,
+      "effective": 3164
     },
     "dodge": {
-      "value": 4.0224,
+      "value": 4.1958,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 5.08,
+      "value": 5.2400002,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "block": {
-      "value": 10.079999,
+      "value": 10.24,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 2.9424002,
+      "value": 3.0358002,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -852,8 +852,8 @@
       "effective": 60
     },
     "defense": {
-      "base": 210,
-      "effective": 217
+      "base": 219,
+      "effective": 226
     },
     "fireResistance": {
       "base": 0,
@@ -876,9 +876,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 169,
-    "rangedDamageMin": 53.601433,
-    "rangedDamageMax": 80.001434,
+    "rangedAttackPower": 172,
+    "rangedDamageMin": 61.128574,
+    "rangedDamageMax": 91.92857,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -917,6 +917,22 @@
           "spellId": 12286,
           "spellName": "Improved Rend",
           "description": "Increases the Bleed damage done by your Rend ability by 35%.",
+          "castTime": "Passive"
+        }
+      ]
+    },
+    {
+      "specId": 256,
+      "specName": "Fury",
+      "spentPoints": 1,
+      "talents": [
+        {
+          "rank": 1,
+          "talentId": 135470,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132292.jpg",
+          "spellId": 12320,
+          "spellName": "Cruelty",
+          "description": "Improves your chance to get a critical strike with melee attacks by 1%.",
           "castTime": "Passive"
         }
       ]
@@ -1045,7 +1061,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 190,
+            "skillPoints": 199,
             "maxSkillPoints": 225,
             "tierId": 2946,
             "tierName": "Mining",
@@ -1104,7 +1120,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136241.jpg",
         "tiers": [
           {
-            "skillPoints": 165,
+            "skillPoints": 170,
             "maxSkillPoints": 225,
             "tierId": 2938,
             "tierName": "Blacksmithing",
@@ -1403,6 +1419,10 @@
                 "name": "Roast Raptor"
               },
               {
+                "id": 8619,
+                "name": "Hot Wolf Ribs"
+              },
+              {
                 "id": 1875,
                 "name": "Curiously Tasty Omelet"
               },
@@ -1523,7 +1543,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
         "tiers": [
           {
-            "skillPoints": 242,
+            "skillPoints": 257,
             "maxSkillPoints": 300,
             "tierId": 2942,
             "tierName": "First Aid",
@@ -1577,6 +1597,10 @@
                 "name": "Healing Potion"
               },
               {
+                "id": 54195,
+                "name": "Superior Healing Potion"
+              },
+              {
                 "id": 55743,
                 "name": "Woolen Tourniquet"
               },
@@ -1595,8 +1619,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 3540,
-        "value": 540,
+        "raw": 3920,
+        "value": 920,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1617,8 +1641,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 13313,
-        "value": 4313,
+        "raw": 14188,
+        "value": 5188,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1639,8 +1663,8 @@
       "factionId": 87,
       "factionName": "Bloodsail Buccaneers",
       "standing": {
-        "raw": -11375,
-        "value": 30625,
+        "raw": -11875,
+        "value": 30125,
         "max": 36000,
         "tier": 0,
         "name": "Hated"
@@ -1650,8 +1674,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 5707,
-        "value": 2707,
+        "raw": 6087,
+        "value": 3087,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1661,8 +1685,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 18648,
-        "value": 9648,
+        "raw": 19986,
+        "value": 10986,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1672,8 +1696,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 14416,
-        "value": 5416,
+        "raw": 15028,
+        "value": 6028,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1683,8 +1707,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 4290,
-        "value": 1290,
+        "raw": 4720,
+        "value": 1720,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1705,8 +1729,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 3812,
-        "value": 812,
+        "raw": 4522,
+        "value": 1522,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1727,8 +1751,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 10778,
-        "value": 1778,
+        "raw": 11428,
+        "value": 2428,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1749,8 +1773,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 3490,
-        "value": 490,
+        "raw": 3870,
+        "value": 870,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"

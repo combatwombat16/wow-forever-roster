@@ -1,0 +1,718 @@
+{
+  "schemaVersion": 3,
+  "id": "1791928967366",
+  "bnet": {
+    "name": "Tir",
+    "surname": "Rheebeard",
+    "href": "https://us.api.blizzard.com/profile/wow/character/tir-rheebeard?namespace=profile-forever-us"
+  },
+  "gear": [
+    {
+      "slot": "Shirt",
+      "name": "Thendal Survivalist's Shirt",
+      "ilvl": 1,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/7813752.jpg",
+      "itemId": 271668,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Chest",
+      "name": "Embossed Leather Vest",
+      "ilvl": 12,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132724.jpg",
+      "itemId": 2300,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [
+        "Enchanted: Stamina +1 and Armor +8"
+      ],
+      "stats": [
+        {
+          "value": 2,
+          "displayString": "+2 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Waist",
+      "name": "Handstitched Leather Belt",
+      "ilvl": 10,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132493.jpg",
+      "itemId": 4237,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 1,
+          "displayString": "+1 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Legs",
+      "name": "Handstitched Leather Pants",
+      "ilvl": 10,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134706.jpg",
+      "itemId": 2303,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [
+        "Enchanted: Stamina +1 and Armor +8"
+      ],
+      "stats": [
+        {
+          "value": 1,
+          "displayString": "+1 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Feet",
+      "name": "Handstitched Leather Boots",
+      "ilvl": 8,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132538.jpg",
+      "itemId": 2302,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [
+        "Enchanted: Stamina +1 and Armor +8"
+      ],
+      "stats": []
+    },
+    {
+      "slot": "Wrist",
+      "name": "Handstitched Leather Bracers",
+      "ilvl": 9,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132607.jpg",
+      "itemId": 7277,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Hands",
+      "name": "Embossed Leather Gloves",
+      "ilvl": 13,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132939.jpg",
+      "itemId": 4239,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [
+        "Enchanted: Stamina +1 and Armor +8"
+      ],
+      "stats": [
+        {
+          "value": 1,
+          "displayString": "+1 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 1,
+          "displayString": "+1 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Ring 1",
+      "name": "Ancient Heirloom",
+      "ilvl": 1,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/629694.jpg",
+      "itemId": 264908,
+      "quality": "COMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 0,
+        "name": "Miscellaneous"
+      },
+      "enchants": [],
+      "stats": []
+    },
+    {
+      "slot": "Back",
+      "name": "Embossed Leather Cloak",
+      "ilvl": 13,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133150.jpg",
+      "itemId": 2310,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 1,
+        "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 1,
+          "displayString": "+1 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Main Hand",
+      "name": "Flutterfly Swatter",
+      "ilvl": 9,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/7791298.jpg",
+      "itemId": 263329,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 2,
+        "name": "Weapon"
+      },
+      "itemSubclass": {
+        "id": 4,
+        "name": "Mace"
+      },
+      "enchants": [],
+      "stats": []
+    }
+  ],
+  "achievementPoints": 0,
+  "stats": {
+    "health": 277,
+    "power": 304,
+    "powerType": {
+      "id": 0,
+      "name": "Mana"
+    },
+    "speed": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "strength": {
+      "base": 22,
+      "effective": 23
+    },
+    "agility": {
+      "base": 27,
+      "effective": 30
+    },
+    "intellect": {
+      "base": 29,
+      "effective": 29
+    },
+    "stamina": {
+      "base": 25,
+      "effective": 32
+    },
+    "meleeCrit": {
+      "value": 4.9110003,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "meleeHaste": {
+      "value": 1.9999981,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "mastery": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "bonusArmor": 32,
+    "lifesteal": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "versatility": 0.0,
+    "versatilityDamageDoneBonus": 0.0,
+    "versatilityHealingDoneBonus": 0.0,
+    "versatilityDamageTakenBonus": 0.0,
+    "avoidance": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "attackPower": 26,
+    "mainHandDamageMin": 9.714286,
+    "mainHandDamageMax": 16.714287,
+    "mainHandSpeed": 1.961,
+    "mainHandDps": 6.738545,
+    "offHandDamageMin": 2.357143,
+    "offHandDamageMax": 2.357143,
+    "offHandSpeed": 1.961,
+    "offHandDps": 1.2020108,
+    "spellPower": 0,
+    "spellPenetration": 0,
+    "spellCrit": {
+      "value": 4.7000003,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "manaRegen": 42.0,
+    "manaRegenCombat": 0.0,
+    "armor": {
+      "base": 32,
+      "effective": 338
+    },
+    "dodge": {
+      "value": 5.5109997,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "parry": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "block": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "rangedCrit": {
+      "value": 3.6710002,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "rangedHaste": {
+      "value": 1.9999981,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "spellHaste": {
+      "value": 1.9999981,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "spirit": {
+      "base": 34,
+      "effective": 34
+    },
+    "defense": {
+      "base": 47,
+      "effective": 47
+    },
+    "fireResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "shadowResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "natureResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "arcaneResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "frostResistance": {
+      "base": 0,
+      "effective": 0
+    },
+    "movementSpeed": 100.0,
+    "rangedAttackPower": 0,
+    "rangedDamageMin": 1.0,
+    "rangedDamageMax": 1.0,
+    "expertise": 0.0,
+    "offHandExpertise": 0.0,
+    "armorPenetration": 0.0,
+    "spellHealing": 0,
+    "meleeHit": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "offHandHit": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "rangedHit": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    },
+    "spellHit": {
+      "value": 0.0,
+      "ratingBonus": 0.0,
+      "ratingNormalized": 0
+    }
+  },
+  "talents": [
+    {
+      "specId": 134,
+      "specName": "Feral Combat",
+      "spentPoints": 1,
+      "talents": [
+        {
+          "rank": 1,
+          "talentId": 134399,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132190.jpg",
+          "spellId": 16934,
+          "spellName": "Ferocity",
+          "description": "Reduces the cost of your Maul, Primal Bite, Swipe, Claw, and Rake abilities by 1 Rage or Energy.",
+          "castTime": "Passive"
+        }
+      ]
+    }
+  ],
+  "professions": {
+    "primaries": [
+      {
+        "id": 165,
+        "name": "Leatherworking",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136247.jpg",
+        "tiers": [
+          {
+            "skillPoints": 51,
+            "maxSkillPoints": 75,
+            "tierId": 2945,
+            "tierName": "Leatherworking",
+            "knownRecipes": [
+              {
+                "id": 1353,
+                "name": "Handstitched Leather Boots"
+              },
+              {
+                "id": 1355,
+                "name": "Handstitched Leather Pants"
+              },
+              {
+                "id": 1356,
+                "name": "Light Armor Kit"
+              },
+              {
+                "id": 1362,
+                "name": "Embossed Leather Vest"
+              },
+              {
+                "id": 1363,
+                "name": "Embossed Leather Boots"
+              },
+              {
+                "id": 1364,
+                "name": "Embossed Leather Cloak"
+              },
+              {
+                "id": 1708,
+                "name": "Light Leather"
+              },
+              {
+                "id": 2162,
+                "name": "Handstitched Leather Belt"
+              },
+              {
+                "id": 2164,
+                "name": "Embossed Leather Gloves"
+              },
+              {
+                "id": 2167,
+                "name": "Embossed Leather Pants"
+              },
+              {
+                "id": 4987,
+                "name": "Handstitched Leather Cloak"
+              },
+              {
+                "id": 4988,
+                "name": "Handstitched Leather Bracers"
+              },
+              {
+                "id": 4989,
+                "name": "Light Leather Quiver"
+              },
+              {
+                "id": 4992,
+                "name": "Light Leather Bracers"
+              },
+              {
+                "id": 2195,
+                "name": "Cured Light Hide"
+              },
+              {
+                "id": 4156,
+                "name": "Handstitched Leather Vest"
+              },
+              {
+                "id": 52647,
+                "name": "Camp Tent"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 393,
+        "name": "Skinning",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
+        "tiers": [
+          {
+            "skillPoints": 100,
+            "maxSkillPoints": 150,
+            "tierId": 2947,
+            "tierName": "Skinning",
+            "knownRecipes": [
+              {
+                "id": 4767,
+                "name": "Skinning"
+              },
+              {
+                "id": 52644,
+                "name": "Camp Chair"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "secondaries": [
+      {
+        "id": 185,
+        "name": "Cooking",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133971.jpg",
+        "tiers": [
+          {
+            "skillPoints": 13,
+            "maxSkillPoints": 75,
+            "tierId": 2939,
+            "tierName": "Cooking",
+            "knownRecipes": [
+              {
+                "id": 1535,
+                "name": "Charred Wolf Meat"
+              },
+              {
+                "id": 1536,
+                "name": "Spiced Wolf Meat"
+              },
+              {
+                "id": 1537,
+                "name": "Roasted Boar Meat"
+              },
+              {
+                "id": 4786,
+                "name": "Herb Baked Egg"
+              },
+              {
+                "id": 52640,
+                "name": "Basic Campfire"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 356,
+        "name": "Fishing",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136245.jpg",
+        "tiers": [
+          {
+            "skillPoints": 7,
+            "maxSkillPoints": 75,
+            "tierId": 2943,
+            "tierName": "Fishing",
+            "knownRecipes": [
+              {
+                "id": 4344,
+                "name": "Fishing"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 129,
+        "name": "First Aid",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
+        "tiers": [
+          {
+            "skillPoints": 16,
+            "maxSkillPoints": 75,
+            "tierId": 2942,
+            "tierName": "First Aid",
+            "knownRecipes": [
+              {
+                "id": 1838,
+                "name": "Linen Bandage"
+              },
+              {
+                "id": 54191,
+                "name": "Minor Healing Potion"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "reputations": [
+    {
+      "factionId": 81,
+      "factionName": "Thunder Bluff",
+      "standing": {
+        "raw": 3100,
+        "value": 100,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
+      }
+    },
+    {
+      "factionId": 76,
+      "factionName": "Orgrimmar",
+      "standing": {
+        "raw": 2000,
+        "value": 2000,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 530,
+      "factionName": "Darkspear Trolls",
+      "standing": {
+        "raw": 2000,
+        "value": 2000,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 68,
+      "factionName": "Undercity",
+      "standing": {
+        "raw": 500,
+        "value": 500,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 2778,
+      "factionName": "Windshapers",
+      "standing": {
+        "raw": 4565,
+        "value": 1565,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
+      }
+    },
+    {
+      "factionId": 2758,
+      "factionName": "Nightclaw Druids",
+      "standing": {
+        "raw": 0,
+        "value": 0,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    }
+  ],
+  "media": {
+    "avatar": "https://render.worldofwarcraft.com/forever-us/character/86/674646-avatar.jpg",
+    "avatarSd": "https://render.worldofwarcraft.com/forever-us/character/86/674646-avatar-sd.jpg",
+    "fullRender": "https://render.worldofwarcraft.com/forever-us/character/86/674646-main-raw.png"
+  }
+}

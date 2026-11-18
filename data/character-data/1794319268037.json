@@ -377,24 +377,35 @@
     },
     {
       "slot": "Hands",
-      "name": "Ancient Gauntlets of Strength",
-      "ilvl": 42,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132950.jpg",
-      "itemId": 15605,
+      "name": "Jangdor's Handcrafted Gloves",
+      "ilvl": 45,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132957.jpg",
+      "itemId": 9632,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
       },
       "itemSubclass": {
-        "id": 3,
-        "name": "Mail"
+        "id": 2,
+        "name": "Leather"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 13,
-          "displayString": "+13 Strength",
+          "value": 9,
+          "displayString": "+9 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 10,
+          "displayString": "+10 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -543,9 +554,7 @@
         "id": 5,
         "name": "Mace"
       },
-      "enchants": [
-        "Windfury 2"
-      ],
+      "enchants": [],
       "stats": [
         {
           "value": 14,
@@ -581,8 +590,8 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 1446,
-    "power": 3209,
+    "health": 1496,
+    "power": 3258,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -593,23 +602,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 72,
-      "effective": 173
+      "base": 74,
+      "effective": 172
     },
     "agility": {
-      "base": 37,
-      "effective": 37
+      "base": 38,
+      "effective": 47
     },
     "intellect": {
-      "base": 62,
-      "effective": 156
+      "base": 63,
+      "effective": 157
     },
     "stamina": {
-      "base": 74,
-      "effective": 81
+      "base": 76,
+      "effective": 83
     },
     "meleeCrit": {
-      "value": 8.7739,
+      "value": 9.4045,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -638,19 +647,19 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 588,
-    "mainHandDamageMin": 254.80002,
-    "mainHandDamageMax": 310.80002,
+    "attackPower": 589,
+    "mainHandDamageMin": 255.04286,
+    "mainHandDamageMax": 311.04285,
     "mainHandSpeed": 3.4,
-    "mainHandDps": 83.176476,
-    "offHandDamageMin": 42.500004,
-    "offHandDamageMax": 42.500004,
+    "mainHandDps": 83.247894,
+    "offHandDamageMin": 42.57143,
+    "offHandDamageMax": 42.57143,
     "offHandSpeed": 2.0,
-    "offHandDps": 21.250002,
-    "spellPower": 53,
+    "offHandDps": 21.285715,
+    "spellPower": 54,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 10.8412,
+      "value": 10.801099,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -658,25 +667,25 @@
     "manaRegenCombat": 41.0,
     "armor": {
       "base": 0,
-      "effective": 1164
+      "effective": 1111
     },
     "dodge": {
-      "value": 3.7739,
+      "value": 4.4045,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 4.6800003,
+      "value": 4.7200003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "block": {
-      "value": 4.6800003,
+      "value": 4.7200003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 7.5738997,
+      "value": 7.9645,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -691,12 +700,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 78,
-      "effective": 83
+      "base": 79,
+      "effective": 84
     },
     "defense": {
-      "base": 222,
-      "effective": 222
+      "base": 228,
+      "effective": 228
     },
     "fireResistance": {
       "base": 0,
@@ -725,7 +734,7 @@
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
-    "spellHealing": 58,
+    "spellHealing": 59,
     "meleeHit": {
       "value": 5.0,
       "ratingBonus": 0.0,
@@ -751,7 +760,7 @@
     {
       "specId": 373,
       "specName": "Enhancement",
-      "spentPoints": 27,
+      "spentPoints": 29,
       "talents": [
         {
           "rank": 5,
@@ -799,12 +808,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 1,
+          "rank": 3,
           "talentId": 134208,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132152.jpg",
           "spellId": 16256,
           "spellName": "Flurry",
-          "description": "Increases your attack speed by 6% for your next 3 swings after dealing a melee critical strike.",
+          "description": "Increases your attack speed by 18% for your next 3 swings after dealing a melee critical strike.",
           "castTime": "Passive"
         },
         {
@@ -909,7 +918,7 @@
     {
       "specId": 373,
       "specName": "Enhancement",
-      "spentPoints": 5,
+      "spentPoints": 7,
       "talents": [
         {
           "rank": 5,
@@ -918,6 +927,15 @@
           "spellId": 16255,
           "spellName": "Thundering Strikes",
           "description": "Improves your chance to get a critical strike with all spells and attacks by 5%.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 2,
+          "talentId": 134217,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136162.jpg",
+          "spellId": 17485,
+          "spellName": "Ancestral Knowledge",
+          "description": "Increases your Intellect by 4%.",
           "castTime": "Passive"
         }
       ]
@@ -1037,7 +1055,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136240.jpg",
         "tiers": [
           {
-            "skillPoints": 261,
+            "skillPoints": 300,
             "maxSkillPoints": 300,
             "tierId": 2937,
             "tierName": "Alchemy",
@@ -1095,8 +1113,24 @@
                 "name": "Stonescale Oil"
               },
               {
+                "id": 11316,
+                "name": "Limited Invulnerability Potion"
+              },
+              {
                 "id": 9938,
                 "name": "Superior Mana Potion"
+              },
+              {
+                "id": 9939,
+                "name": "Elixir of Greater Defense"
+              },
+              {
+                "id": 4004,
+                "name": "Free Action Potion"
+              },
+              {
+                "id": 9840,
+                "name": "Transmute: Arcanite"
               },
               {
                 "id": 4178,
@@ -1113,6 +1147,10 @@
               {
                 "id": 54211,
                 "name": "Elixir of Minor Force"
+              },
+              {
+                "id": 59405,
+                "name": "Transmute: Legionite"
               }
             ]
           }
@@ -1124,22 +1162,22 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136246.jpg",
         "tiers": [
           {
-            "skillPoints": 26,
-            "maxSkillPoints": 75,
+            "skillPoints": 91,
+            "maxSkillPoints": 150,
             "tierId": 2944,
             "tierName": "Herbalism",
             "knownRecipes": [
               {
-                "id": 54114,
+                "id": 1419,
+                "name": "Herbalism"
+              },
+              {
+                "id": 54115,
                 "name": "Herbalism"
               },
               {
                 "id": 52642,
                 "name": "Incense Candle"
-              },
-              {
-                "id": 56960,
-                "name": "Herbalism"
               }
             ]
           }
@@ -1173,6 +1211,25 @@
               {
                 "id": 52640,
                 "name": "Basic Campfire"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 356,
+        "name": "Fishing",
+        "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136245.jpg",
+        "tiers": [
+          {
+            "skillPoints": 1,
+            "maxSkillPoints": 75,
+            "tierId": 2943,
+            "tierName": "Fishing",
+            "knownRecipes": [
+              {
+                "id": 4344,
+                "name": "Fishing"
               }
             ]
           }
@@ -1228,8 +1285,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 3554,
-        "value": 554,
+        "raw": 4529,
+        "value": 1529,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1239,8 +1296,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 16622,
-        "value": 7622,
+        "raw": 16932,
+        "value": 7932,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1250,8 +1307,8 @@
       "factionId": 87,
       "factionName": "Bloodsail Buccaneers",
       "standing": {
-        "raw": -9875,
-        "value": 32125,
+        "raw": -11125,
+        "value": 30875,
         "max": 36000,
         "tier": 0,
         "name": "Hated"
@@ -1261,8 +1318,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 4904,
-        "value": 1904,
+        "raw": 5879,
+        "value": 2879,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1272,8 +1329,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 13000,
-        "value": 4000,
+        "raw": 13077,
+        "value": 4077,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1283,8 +1340,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 9866,
-        "value": 866,
+        "raw": 9943,
+        "value": 943,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1294,8 +1351,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 4104,
-        "value": 1104,
+        "raw": 5204,
+        "value": 2204,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1327,8 +1384,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 3554,
-        "value": 554,
+        "raw": 5374,
+        "value": 2374,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1338,8 +1395,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 9087,
-        "value": 87,
+        "raw": 9165,
+        "value": 165,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1371,8 +1428,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 4559,
-        "value": 1559,
+        "raw": 5539,
+        "value": 2539,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"

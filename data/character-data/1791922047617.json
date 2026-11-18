@@ -141,62 +141,10 @@
     },
     {
       "slot": "Chest",
-      "name": "Armor of the Fang",
-      "ilvl": 23,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135020.jpg",
-      "itemId": 6473,
-      "quality": "RARE",
-      "itemClass": {
-        "id": 4,
-        "name": "Armor"
-      },
-      "itemSubclass": {
-        "id": 2,
-        "name": "Leather"
-      },
-      "enchants": [],
-      "stats": [
-        {
-          "value": 3,
-          "displayString": "+3 Intellect",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 3,
-          "displayString": "+3 Strength",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 10,
-          "displayString": "+10 Spirit",
-          "isEquipBonus": true,
-          "color": {
-            "r": 0,
-            "g": 255,
-            "b": 0,
-            "a": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "slot": "Waist",
-      "name": "Beastmaster's Girdle",
-      "ilvl": 28,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132493.jpg",
-      "itemId": 5355,
+      "name": "Brawnhide Armor",
+      "ilvl": 29,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132716.jpg",
+      "itemId": 15471,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -209,8 +157,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 5,
-          "displayString": "+5 Agility",
+          "value": 4,
+          "displayString": "+4 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -220,8 +168,60 @@
           }
         },
         {
-          "value": 5,
-          "displayString": "+5 Stamina",
+          "value": 9,
+          "displayString": "+9 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 3,
+          "displayString": "+3 Spirit",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Waist",
+      "name": "Larcenist's Belt",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132493.jpg",
+      "itemId": 279846,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 2,
+        "name": "Leather"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 6,
+          "displayString": "+6 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 8,
+          "displayString": "+8 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -247,7 +247,9 @@
         "id": 2,
         "name": "Leather"
       },
-      "enchants": [],
+      "enchants": [
+        "Enchanted: Stamina +3 and Armor +24"
+      ],
       "stats": [
         {
           "value": 8,
@@ -275,10 +277,10 @@
     },
     {
       "slot": "Feet",
-      "name": "Grizzled Boots",
-      "ilvl": 28,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132537.jpg",
-      "itemId": 6335,
+      "name": "Gravewalker Boots",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132542.jpg",
+      "itemId": 251963,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -291,6 +293,17 @@
       "enchants": [],
       "stats": [
         {
+          "value": 5,
+          "displayString": "+5 Agility",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
           "value": 7,
           "displayString": "+7 Stamina",
           "isEquipBonus": false,
@@ -302,8 +315,8 @@
           }
         },
         {
-          "value": 20,
-          "displayString": "+20 Bonus Armor",
+          "value": 5,
+          "displayString": "+5 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -480,11 +493,11 @@
     },
     {
       "slot": "Back",
-      "name": "Wrangler's Cloak of Agility",
-      "ilvl": 22,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133753.jpg",
-      "itemId": 15333,
-      "quality": "UNCOMMON",
+      "name": "Drape of Shifting Energy",
+      "ilvl": 32,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133770.jpg",
+      "itemId": 273045,
+      "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -496,13 +509,24 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Agility",
-          "isEquipBonus": false,
+          "value": 12,
+          "displayString": "+12 Attack Power",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 7,
+          "displayString": "+7 Spirit",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -611,11 +635,11 @@
     },
     {
       "slot": "Ammo",
-      "name": "Feathered Arrow",
-      "ilvl": 35,
+      "name": "Razor Arrow",
+      "ilvl": 30,
       "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132382.jpg",
-      "itemId": 3464,
-      "quality": "UNCOMMON",
+      "itemId": 3030,
+      "quality": "COMMON",
       "itemClass": {
         "id": 6,
         "name": "Projectile"
@@ -630,8 +654,8 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 913,
-    "power": 1065,
+    "health": 748,
+    "power": 753,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -642,23 +666,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 35,
-      "effective": 42
+      "base": 36,
+      "effective": 13
     },
     "agility": {
-      "base": 55,
-      "effective": 92
+      "base": 58,
+      "effective": 57
     },
     "intellect": {
-      "base": 32,
-      "effective": 45
+      "base": 33,
+      "effective": 8
     },
     "stamina": {
-      "base": 48,
-      "effective": 76
+      "base": 50,
+      "effective": 55
     },
     "meleeCrit": {
-      "value": 4.2624006,
+      "value": 2.2395,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -672,7 +696,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 40,
+    "bonusArmor": 44,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -687,35 +711,35 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 178,
-    "mainHandDamageMin": 39.88572,
-    "mainHandDamageMax": 54.88572,
+    "attackPower": 130,
+    "mainHandDamageMin": 8.428572,
+    "mainHandDamageMax": 12.178572,
     "mainHandSpeed": 1.8,
-    "mainHandDps": 26.3254,
-    "offHandDamageMin": 16.264286,
-    "offHandDamageMax": 23.264286,
+    "mainHandDps": 5.7242064,
+    "offHandDamageMin": 3.5089288,
+    "offHandDamageMax": 5.258929,
     "offHandSpeed": 1.3,
-    "offHandDps": 15.203298,
+    "offHandDps": 3.372253,
     "spellPower": 0,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 5.0985,
+      "value": 3.8544,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 67.0,
+    "manaRegen": 40.0,
     "manaRegenCombat": 0.0,
     "armor": {
-      "base": 40,
-      "effective": 718
+      "base": 4294967254,
+      "effective": 168
     },
     "dodge": {
-      "value": 8.1956,
+      "value": 4.319,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 4.52,
+      "value": 4.36,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -725,7 +749,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 4.3424,
+      "value": 2.4395,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -740,37 +764,37 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 41,
-      "effective": 58
+      "base": 43,
+      "effective": 32
     },
     "defense": {
-      "base": 123,
-      "effective": 123
+      "base": 129,
+      "effective": 129
     },
     "fireResistance": {
-      "base": 2,
-      "effective": 2
+      "base": 0,
+      "effective": 0
     },
     "shadowResistance": {
-      "base": 2,
-      "effective": 2
+      "base": 0,
+      "effective": 0
     },
     "natureResistance": {
-      "base": 4,
-      "effective": 4
+      "base": 1,
+      "effective": 1
     },
     "arcaneResistance": {
-      "base": 2,
-      "effective": 2
+      "base": 0,
+      "effective": 0
     },
     "frostResistance": {
-      "base": 2,
-      "effective": 2
+      "base": 0,
+      "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 228,
-    "rangedDamageMin": 77.828575,
-    "rangedDamageMax": 96.828575,
+    "rangedAttackPower": 174,
+    "rangedDamageMin": 28.085714,
+    "rangedDamageMax": 33.835716,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -800,7 +824,7 @@
     {
       "specId": 50,
       "specName": "Beast Mastery",
-      "spentPoints": 18,
+      "spentPoints": 20,
       "talents": [
         {
           "rank": 5,
@@ -866,12 +890,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 1,
+          "rank": 3,
           "talentId": 134429,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134297.jpg",
           "spellId": 19598,
           "spellName": "Ferocity",
-          "description": "Increases the critical strike chance of your pets and hawks by 2%.",
+          "description": "Increases the critical strike chance of your pets and hawks by 6%.",
           "castTime": "Passive"
         },
         {
@@ -880,7 +904,7 @@
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132158.jpg",
           "spellId": 1293241,
           "spellName": "Summon Hawk",
-          "description": "Command a hawk to dive-bomb your targeted enemy, dealing 51 Physical damage and continuing its assault for 18 sec. Only 2 hawks can be active at once. Summon Hawk shares its cooldown with Arcane Shot.",
+          "description": "Command a hawk to dive-bomb your targeted enemy, dealing 19 Physical damage and continuing its assault for 18 sec. Only 2 hawks can be active at once. Summon Hawk shares its cooldown with Arcane Shot.",
           "castTime": "Instant"
         }
       ]
@@ -989,7 +1013,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
         "tiers": [
           {
-            "skillPoints": 158,
+            "skillPoints": 169,
             "maxSkillPoints": 225,
             "tierId": 2947,
             "tierName": "Skinning",
@@ -1103,8 +1127,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 6951,
-        "value": 3951,
+        "raw": 7776,
+        "value": 4776,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1125,8 +1149,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 12600,
-        "value": 3600,
+        "raw": 12806,
+        "value": 3806,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1136,8 +1160,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 9475,
-        "value": 475,
+        "raw": 9681,
+        "value": 681,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1180,8 +1204,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 3480,
-        "value": 480,
+        "raw": 3686,
+        "value": 686,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"

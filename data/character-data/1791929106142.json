@@ -780,8 +780,8 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 1070,
-    "power": 1873,
+    "health": 1127,
+    "power": 2026,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -796,19 +796,19 @@
       "effective": 30
     },
     "agility": {
-      "base": 27,
-      "effective": 28
+      "base": 28,
+      "effective": 29
     },
     "intellect": {
-      "base": 64,
-      "effective": 95
+      "base": 67,
+      "effective": 102
     },
     "stamina": {
-      "base": 34,
-      "effective": 79
+      "base": 35,
+      "effective": 80
     },
     "meleeCrit": {
-      "value": 1.3720002,
+      "value": 1.2543002,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -849,18 +849,18 @@
     "spellPower": 91,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 3.9919999,
+      "value": 3.9926,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 105.0,
+    "manaRegen": 107.0,
     "manaRegenCombat": 5.0,
     "armor": {
       "base": 0,
-      "effective": 336
+      "effective": 338
     },
     "dodge": {
-      "value": 4.652,
+      "value": 4.7742996,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -875,7 +875,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 4.892,
+      "value": 4.8943,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -890,12 +890,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 74,
-      "effective": 111
+      "base": 77,
+      "effective": 114
     },
     "defense": {
-      "base": 158,
-      "effective": 158
+      "base": 171,
+      "effective": 171
     },
     "fireResistance": {
       "base": 1,
@@ -950,7 +950,7 @@
     {
       "specId": 613,
       "specName": "Discipline",
-      "spentPoints": 11,
+      "spentPoints": 13,
       "talents": [
         {
           "rank": 2,
@@ -971,12 +971,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 3,
+          "rank": 5,
           "talentId": 135367,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136031.jpg",
           "spellId": 18551,
           "spellName": "Mental Strength",
-          "description": "Increases your total Intellect by 6%.",
+          "description": "Increases your total Intellect by 10%.",
           "castTime": "Passive"
         },
         {
@@ -993,7 +993,7 @@
     {
       "specId": 78,
       "specName": "Shadow Magic",
-      "spentPoints": 7,
+      "spentPoints": 13,
       "talents": [
         {
           "rank": 5,
@@ -1005,12 +1005,39 @@
           "castTime": "Passive"
         },
         {
+          "rank": 3,
+          "talentId": 135361,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136224.jpg",
+          "spellId": 15273,
+          "spellName": "Improved Mind Blast",
+          "description": "Reduces the cooldown of your Mind Blast spell by 1.5 sec.",
+          "castTime": "Passive"
+        },
+        {
           "rank": 2,
           "talentId": 135360,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136207.jpg",
           "spellId": 15275,
           "spellName": "Improved Shadow Word: Pain",
           "description": "Increases the duration of your Shadow Word: Pain spell by 6 sec.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 1,
+          "talentId": 135356,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136208.jpg",
+          "spellId": 15407,
+          "spellName": "Mind Flay",
+          "description": "Assault the target's mind with Shadow energy, causing 114 Shadow damage over 3 sec  and slowing their movement speed by 50%.",
+          "castTime": "Channeled"
+        },
+        {
+          "rank": 2,
+          "talentId": 135355,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136213.jpg",
+          "spellId": 1225139,
+          "spellName": "Improved Mind Flay",
+          "description": "Each instance of damage of Mind Flay deals 20% more damage than its previous instance of damage.",
           "castTime": "Passive"
         }
       ]
@@ -1024,7 +1051,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136249.jpg",
         "tiers": [
           {
-            "skillPoints": 142,
+            "skillPoints": 146,
             "maxSkillPoints": 150,
             "tierId": 2948,
             "tierName": "Tailoring",
@@ -1308,8 +1335,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 7986,
-        "value": 4986,
+        "raw": 8242,
+        "value": 5242,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1341,8 +1368,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 9046,
-        "value": 46,
+        "raw": 9596,
+        "value": 596,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1352,8 +1379,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 6470,
-        "value": 3470,
+        "raw": 6876,
+        "value": 3876,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1396,8 +1423,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 15341,
-        "value": 6341,
+        "raw": 15972,
+        "value": 6972,
         "max": 12000,
         "tier": 5,
         "name": "Honored"

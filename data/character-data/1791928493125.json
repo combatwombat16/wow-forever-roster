@@ -273,7 +273,9 @@
         "id": 3,
         "name": "Mail"
       },
-      "enchants": [],
+      "enchants": [
+        "Enchanted: Stamina +3 and Armor +24"
+      ],
       "stats": [
         {
           "value": 5,
@@ -353,51 +355,10 @@
     },
     {
       "slot": "Legs",
-      "name": "Mercenary Leggings",
-      "ilvl": 30,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134583.jpg",
-      "itemId": 3751,
-      "quality": "UNCOMMON",
-      "itemClass": {
-        "id": 4,
-        "name": "Armor"
-      },
-      "itemSubclass": {
-        "id": 3,
-        "name": "Mail"
-      },
-      "enchants": [],
-      "stats": [
-        {
-          "value": 7,
-          "displayString": "+7 Agility",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 7,
-          "displayString": "+7 Strength",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "slot": "Feet",
-      "name": "Half-Eaten Boots",
-      "ilvl": 27,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132535.jpg",
-      "itemId": 273646,
+      "name": "Refractory Scaleguards",
+      "ilvl": 33,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134664.jpg",
+      "itemId": 273048,
       "quality": "RARE",
       "itemClass": {
         "id": 4,
@@ -407,11 +368,13 @@
         "id": 3,
         "name": "Mail"
       },
-      "enchants": [],
+      "enchants": [
+        "Enchanted: Stamina +3 and Armor +24"
+      ],
       "stats": [
         {
-          "value": 8,
-          "displayString": "+8 Strength",
+          "value": 12,
+          "displayString": "+12 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -421,8 +384,8 @@
           }
         },
         {
-          "value": 10,
-          "displayString": "+10 Nature Resistance",
+          "value": 5,
+          "displayString": "+5 Arcane Resistance",
           "isEquipBonus": false,
           "color": {
             "r": 0,
@@ -432,8 +395,8 @@
           }
         },
         {
-          "value": -100,
-          "displayString": "-100 Bonus Armor",
+          "value": 100,
+          "displayString": "+100 Bonus Armor",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -445,11 +408,11 @@
       ]
     },
     {
-      "slot": "Wrist",
-      "name": "Steel-clasped Bracers",
-      "ilvl": 28,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132605.jpg",
-      "itemId": 4534,
+      "slot": "Feet",
+      "name": "Silvered Bronze Boots",
+      "ilvl": 26,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132535.jpg",
+      "itemId": 3482,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -461,6 +424,17 @@
       },
       "enchants": [],
       "stats": [
+        {
+          "value": 4,
+          "displayString": "+4 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
         {
           "value": 4,
           "displayString": "+4 Stamina",
@@ -473,13 +447,65 @@
           }
         },
         {
-          "value": 4,
-          "displayString": "+4 Spirit",
+          "value": 3,
+          "displayString": "+3 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
             "g": 255,
             "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Wrist",
+      "name": "Undead Knight's Bracers",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132615.jpg",
+      "itemId": 251965,
+      "quality": "UNCOMMON",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 3,
+        "name": "Mail"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 3,
+          "displayString": "+3 Intellect",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 3,
+          "displayString": "+3 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 6,
+          "displayString": "+6 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
             "a": 1.0
           }
         }
@@ -610,11 +636,11 @@
     },
     {
       "slot": "Back",
-      "name": "Glowing Lizardscale Cloak",
-      "ilvl": 23,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132656.jpg",
-      "itemId": 6449,
-      "quality": "RARE",
+      "name": "Construct Cloak",
+      "ilvl": 36,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133754.jpg",
+      "itemId": 279848,
+      "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -626,8 +652,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 6,
-          "displayString": "+6 Agility",
+          "value": 5,
+          "displayString": "+5 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -637,9 +663,9 @@
           }
         },
         {
-          "value": 2,
-          "displayString": "+2 Nature Resistance",
-          "isEquipBonus": false,
+          "value": 5,
+          "displayString": "+5 Spirit",
+          "isEquipBonus": true,
           "color": {
             "r": 0,
             "g": 255,
@@ -819,13 +845,13 @@
   ],
   "progress": {
     "pvp": {
-      "honorableKills": 11,
+      "honorableKills": 71,
       "pvpRank": 0
     }
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 1422,
+    "health": 1667,
     "power": 100,
     "powerType": {
       "id": 1,
@@ -837,23 +863,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 67,
-      "effective": 130
+      "base": 71,
+      "effective": 143
     },
     "agility": {
-      "base": 39,
-      "effective": 74
+      "base": 42,
+      "effective": 64
     },
     "intellect": {
       "base": 19,
-      "effective": 20
+      "effective": 23
     },
     "stamina": {
-      "base": 59,
-      "effective": 116
+      "base": 63,
+      "effective": 132
     },
     "meleeCrit": {
-      "value": 7.0788,
+      "value": 5.4752,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -867,7 +893,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 20,
+    "bonusArmor": 268,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -882,11 +908,11 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 336,
-    "mainHandDamageMin": 59.800003,
-    "mainHandDamageMax": 76.8,
+    "attackPower": 371,
+    "mainHandDamageMin": 64.05,
+    "mainHandDamageMax": 81.05,
     "mainHandSpeed": 1.7,
-    "mainHandDps": 40.17647,
+    "mainHandDps": 42.67647,
     "offHandDamageMin": 0.0,
     "offHandDamageMax": 0.0,
     "offHandSpeed": 2.0,
@@ -901,26 +927,26 @@
     "manaRegen": 0.0,
     "manaRegenCombat": 0.0,
     "armor": {
-      "base": 20,
-      "effective": 2181
+      "base": 268,
+      "effective": 2435
     },
     "dodge": {
-      "value": 6.9988003,
+      "value": 5.4752,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 4.88,
+      "value": 4.76,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "block": {
-      "value": 10.879999,
+      "value": 10.76,
       "ratingBonus": 1.0,
       "ratingNormalized": 5
     },
     "rangedCrit": {
-      "value": 4.1588006,
+      "value": 3.2352,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -935,12 +961,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 32,
-      "effective": 46
+      "base": 33,
+      "effective": 51
     },
     "defense": {
-      "base": 147,
-      "effective": 147
+      "base": 159,
+      "effective": 159
     },
     "fireResistance": {
       "base": 1,
@@ -951,21 +977,21 @@
       "effective": 1
     },
     "natureResistance": {
-      "base": 13,
-      "effective": 13
-    },
-    "arcaneResistance": {
       "base": 1,
       "effective": 1
+    },
+    "arcaneResistance": {
+      "base": 6,
+      "effective": 6
     },
     "frostResistance": {
       "base": 1,
       "effective": 1
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 164,
-    "rangedDamageMin": 80.8,
-    "rangedDamageMax": 112.8,
+    "rangedAttackPower": 147,
+    "rangedDamageMin": 77.4,
+    "rangedDamageMax": 109.4,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -995,7 +1021,7 @@
     {
       "specId": 257,
       "specName": "Protection",
-      "spentPoints": 21,
+      "spentPoints": 23,
       "talents": [
         {
           "rank": 5,
@@ -1077,6 +1103,15 @@
           "spellName": "Concussion Blow",
           "description": "Stuns the target for 5 sec.",
           "castTime": "Instant"
+        },
+        {
+          "rank": 2,
+          "talentId": 135492,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132345.jpg",
+          "spellId": 29787,
+          "spellName": "Focused Rage",
+          "description": "Reduces the Rage cost of your offensive abilities by 2.",
+          "castTime": "Passive"
         }
       ]
     }
@@ -1089,7 +1124,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136248.jpg",
         "tiers": [
           {
-            "skillPoints": 164,
+            "skillPoints": 175,
             "maxSkillPoints": 225,
             "tierId": 2946,
             "tierName": "Mining",
@@ -1136,7 +1171,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136241.jpg",
         "tiers": [
           {
-            "skillPoints": 156,
+            "skillPoints": 158,
             "maxSkillPoints": 225,
             "tierId": 2938,
             "tierName": "Blacksmithing",
@@ -1491,7 +1526,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
         "tiers": [
           {
-            "skillPoints": 132,
+            "skillPoints": 136,
             "maxSkillPoints": 150,
             "tierId": 2942,
             "tierName": "First Aid",
@@ -1558,8 +1593,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 13533,
-        "value": 4533,
+        "raw": 14952,
+        "value": 5952,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1580,19 +1615,19 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 8823,
-        "value": 5823,
-        "max": 6000,
-        "tier": 4,
-        "name": "Friendly"
+        "raw": 9661,
+        "value": 661,
+        "max": 12000,
+        "tier": 5,
+        "name": "Honored"
       }
     },
     {
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 6116,
-        "value": 3116,
+        "raw": 6710,
+        "value": 3710,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1646,8 +1681,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 5203,
-        "value": 2203,
+        "raw": 5985,
+        "value": 2985,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1659,6 +1694,17 @@
       "standing": {
         "raw": 100,
         "value": 100,
+        "max": 3000,
+        "tier": 3,
+        "name": "Neutral"
+      }
+    },
+    {
+      "factionId": 2798,
+      "factionName": "Darkspear Raiders",
+      "standing": {
+        "raw": 40,
+        "value": 40,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

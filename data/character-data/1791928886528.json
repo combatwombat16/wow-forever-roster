@@ -80,40 +80,40 @@
     },
     {
       "slot": "Shoulders",
-      "name": "Rough Bronze Shoulders",
-      "ilvl": 22,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135036.jpg",
-      "itemId": 3480,
+      "name": "Superior Shoulders of Healing",
+      "ilvl": 27,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135039.jpg",
+      "itemId": 9807,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
       },
       "itemSubclass": {
-        "id": 3,
-        "name": "Mail"
+        "id": 2,
+        "name": "Leather"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 3,
-          "displayString": "+3 Strength",
-          "isEquipBonus": false,
+          "value": 5,
+          "displayString": "+5 Spell Damage",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         },
         {
-          "value": 4,
-          "displayString": "+4 Stamina",
-          "isEquipBonus": false,
+          "value": 15,
+          "displayString": "+15 Spell Healing",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -139,51 +139,10 @@
     },
     {
       "slot": "Chest",
-      "name": "Orcish War Chain",
-      "ilvl": 23,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132624.jpg",
-      "itemId": 3733,
-      "quality": "UNCOMMON",
-      "itemClass": {
-        "id": 4,
-        "name": "Armor"
-      },
-      "itemSubclass": {
-        "id": 3,
-        "name": "Mail"
-      },
-      "enchants": [],
-      "stats": [
-        {
-          "value": 6,
-          "displayString": "+6 Strength",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 3,
-          "displayString": "+3 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "slot": "Waist",
-      "name": "Saltscale Girdle",
-      "ilvl": 31,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132510.jpg",
-      "itemId": 273023,
+      "name": "Mana-Warped Chain Shirt",
+      "ilvl": 32,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132626.jpg",
+      "itemId": 273035,
       "quality": "RARE",
       "itemClass": {
         "id": 4,
@@ -196,8 +155,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 9,
-          "displayString": "+9 Intellect",
+          "value": 12,
+          "displayString": "+12 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -207,8 +166,60 @@
           }
         },
         {
-          "value": 9,
-          "displayString": "+9 Strength",
+          "value": 8,
+          "displayString": "+8 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 3,
+          "displayString": "+3 Mana Regeneration per 5 sec",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Waist",
+      "name": "Rotmender's Sash",
+      "ilvl": 22,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132500.jpg",
+      "itemId": 286980,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 1,
+        "name": "Cloth"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 6,
+          "displayString": "+6 Intellect",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 6,
+          "displayString": "+6 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -221,35 +232,24 @@
     },
     {
       "slot": "Legs",
-      "name": "Worgpelt Leggings",
-      "ilvl": 26,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134592.jpg",
-      "itemId": 273647,
-      "quality": "RARE",
+      "name": "Rough Bronze Leggings",
+      "ilvl": 21,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134583.jpg",
+      "itemId": 2865,
+      "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
       },
       "itemSubclass": {
-        "id": 2,
-        "name": "Leather"
+        "id": 3,
+        "name": "Mail"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 10,
-          "displayString": "+10 Agility",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
           "value": 5,
-          "displayString": "+5 Strength",
+          "displayString": "+5 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -259,9 +259,9 @@
           }
         },
         {
-          "value": 7,
-          "displayString": "+7 Fire Resistance",
-          "isEquipBonus": false,
+          "value": 4,
+          "displayString": "+4 Spirit",
+          "isEquipBonus": true,
           "color": {
             "r": 0,
             "g": 255,
@@ -366,24 +366,24 @@
     },
     {
       "slot": "Hands",
-      "name": "Burnished Gloves",
-      "ilvl": 20,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132944.jpg",
-      "itemId": 2992,
-      "quality": "UNCOMMON",
+      "name": "Naga Battle Gloves",
+      "ilvl": 27,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132947.jpg",
+      "itemId": 888,
+      "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
       },
       "itemSubclass": {
-        "id": 3,
-        "name": "Mail"
+        "id": 2,
+        "name": "Leather"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 2,
-          "displayString": "+2 Agility",
+          "value": 4,
+          "displayString": "+4 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -394,12 +394,34 @@
         },
         {
           "value": 4,
-          "displayString": "+4 Strength",
+          "displayString": "+4 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
             "g": 255,
             "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Spell Damage",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 15,
+          "displayString": "+15 Spell Healing",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -448,10 +470,10 @@
     },
     {
       "slot": "Ring 2",
-      "name": "Savannah Ring of Strength",
-      "ilvl": 28,
+      "name": "Solid Gold Band",
+      "ilvl": 36,
       "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133345.jpg",
-      "itemId": 12008,
+      "itemId": 279845,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -464,13 +486,35 @@
       "enchants": [],
       "stats": [
         {
-          "value": 6,
-          "displayString": "+6 Strength",
-          "isEquipBonus": false,
+          "value": 4,
+          "displayString": "+4 Spell Damage",
+          "isEquipBonus": true,
           "color": {
-            "r": 255,
+            "r": 0,
             "g": 255,
-            "b": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 11,
+          "displayString": "+11 Spell Healing",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Spirit",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
             "a": 1.0
           }
         }
@@ -538,11 +582,11 @@
     },
     {
       "slot": "Back",
-      "name": "Dervish Cape of the Channeler",
-      "ilvl": 26,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133759.jpg",
-      "itemId": 6604,
-      "quality": "UNCOMMON",
+      "name": "Drape of Shifting Energy",
+      "ilvl": 32,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133770.jpg",
+      "itemId": 273045,
+      "quality": "RARE",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -554,19 +598,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 4,
-          "displayString": "+4 Stamina",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 2,
-          "displayString": "+2 Spell Power",
+          "value": 12,
+          "displayString": "+12 Attack Power",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -576,8 +609,8 @@
           }
         },
         {
-          "value": 2,
-          "displayString": "+2 Spirit",
+          "value": 7,
+          "displayString": "+7 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -590,25 +623,77 @@
     },
     {
       "slot": "Main Hand",
-      "name": "Heavehammer",
-      "ilvl": 33,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133046.jpg",
-      "itemId": 271766,
+      "name": "Baron's Scepter",
+      "ilvl": 26,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133477.jpg",
+      "itemId": 6323,
       "quality": "RARE",
       "itemClass": {
         "id": 2,
         "name": "Weapon"
       },
       "itemSubclass": {
-        "id": 5,
+        "id": 4,
         "name": "Mace"
       },
       "enchants": [],
       "stats": [
         {
-          "value": 32,
-          "displayString": "+32 Attack Power",
-          "isEquipBonus": true,
+          "value": 2,
+          "displayString": "+2 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 3,
+          "displayString": "+3 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "slot": "Off Hand",
+      "name": "Arctic Buckler",
+      "ilvl": 29,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134948.jpg",
+      "itemId": 7002,
+      "quality": "RARE",
+      "itemClass": {
+        "id": 4,
+        "name": "Armor"
+      },
+      "itemSubclass": {
+        "id": 6,
+        "name": "Shield"
+      },
+      "enchants": [],
+      "stats": [
+        {
+          "value": 8,
+          "displayString": "+8 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Frost Resistance",
+          "isEquipBonus": false,
           "color": {
             "r": 0,
             "g": 255,
@@ -617,8 +702,8 @@
           }
         },
         {
-          "value": 60,
-          "displayString": "+60 Bonus Armor",
+          "value": 3,
+          "displayString": "+3 Spirit",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -638,8 +723,8 @@
   },
   "achievementPoints": 0,
   "stats": {
-    "health": 959,
-    "power": 1208,
+    "health": 1222,
+    "power": 1205,
     "powerType": {
       "id": 0,
       "name": "Mana"
@@ -650,23 +735,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 51,
-      "effective": 91
+      "base": 53,
+      "effective": 78
     },
     "agility": {
-      "base": 34,
-      "effective": 46
+      "base": 35,
+      "effective": 35
     },
     "intellect": {
-      "base": 36,
-      "effective": 56
+      "base": 37,
+      "effective": 54
     },
     "stamina": {
-      "base": 51,
-      "effective": 81
+      "base": 53,
+      "effective": 106
     },
     "meleeCrit": {
-      "value": 5.1000004,
+      "value": 3.8795002,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -680,7 +765,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 60,
+    "bonusArmor": 0,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -695,45 +780,45 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 278,
-    "mainHandDamageMin": 138.52856,
-    "mainHandDamageMax": 175.52856,
-    "mainHandSpeed": 3.3,
-    "mainHandDps": 47.584415,
-    "offHandDamageMin": 20.357143,
-    "offHandDamageMax": 20.357143,
+    "attackPower": 235,
+    "mainHandDamageMin": 68.28572,
+    "mainHandDamageMax": 92.28572,
+    "mainHandSpeed": 2.4,
+    "mainHandDps": 33.45238,
+    "offHandDamageMin": 0.0,
+    "offHandDamageMax": 0.0,
     "offHandSpeed": 2.0,
-    "offHandDps": 10.178572,
-    "spellPower": 8,
+    "offHandDps": 0.0,
+    "spellPower": 20,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 5.3648,
+      "value": 5.2604003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "manaRegen": 76.0,
-    "manaRegenCombat": 24.0,
+    "manaRegen": 90.0,
+    "manaRegenCombat": 30.0,
     "armor": {
-      "base": 60,
-      "effective": 1191
+      "base": 0,
+      "effective": 1659
     },
     "dodge": {
-      "value": 5.18,
+      "value": 3.7994995,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 4.88,
+      "value": 4.6800003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "block": {
-      "value": 4.88,
+      "value": 4.6800003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 2.2600005,
+      "value": 0.87950027,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -748,16 +833,16 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 46,
-      "effective": 69
+      "base": 47,
+      "effective": 87
     },
     "defense": {
       "base": 137,
       "effective": 137
     },
     "fireResistance": {
-      "base": 7,
-      "effective": 7
+      "base": 0,
+      "effective": 0
     },
     "shadowResistance": {
       "base": 0,
@@ -772,17 +857,17 @@
       "effective": 0
     },
     "frostResistance": {
-      "base": 0,
-      "effective": 0
+      "base": 5,
+      "effective": 5
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 32,
-    "rangedDamageMin": 8.542858,
-    "rangedDamageMax": 8.542858,
+    "rangedAttackPower": 12,
+    "rangedDamageMin": 3.0571432,
+    "rangedDamageMax": 3.0571432,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
-    "spellHealing": 8,
+    "spellHealing": 47,
     "meleeHit": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -808,7 +893,7 @@
     {
       "specId": 594,
       "specName": "Holy",
-      "spentPoints": 18,
+      "spentPoints": 20,
       "talents": [
         {
           "rank": 5,
@@ -857,11 +942,20 @@
         },
         {
           "rank": 1,
+          "talentId": 134819,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135933.jpg",
+          "spellId": 1310904,
+          "spellName": "Divine Precision",
+          "description": "Improves your chance to hit with Holy spells by 4%, and reduces the duration of Silence effects on you by 10%.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 2,
           "talentId": 142625,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/236254.jpg",
           "spellId": 426065,
           "spellName": "Infusion of Light",
-          "description": "Your Holy Shock and Flash of Light critical hits reduce the cast time of your next Holy Light cast within 15 sec by 0.5 sec.",
+          "description": "Your Holy Shock and Flash of Light critical hits reduce the cast time of your next Holy Light cast within 15 sec by 1.0 sec.",
           "castTime": "Passive"
         },
         {
@@ -870,7 +964,7 @@
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135909.jpg",
           "spellId": 1328548,
           "spellName": "Oath of Light",
-          "description": "Swear an Oath to protect target ally for 5 min, increasing the healing of your Holy Light on them by up to 186, your Flash of Light by up to 53, and your Holy Shock by up to 107. Only one Oath of Light may be sworn by the Paladin at any one time.",
+          "description": "Swear an Oath to protect target ally for 5 min, increasing the healing of your Holy Light on them by up to 193, your Flash of Light by up to 55, and your Holy Shock by up to 111. Only one Oath of Light may be sworn by the Paladin at any one time.",
           "castTime": "Instant"
         }
       ]
@@ -931,7 +1025,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136243.jpg",
         "tiers": [
           {
-            "skillPoints": 158,
+            "skillPoints": 167,
             "maxSkillPoints": 225,
             "tierId": 2941,
             "tierName": "Engineering",
@@ -1096,14 +1190,26 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133971.jpg",
         "tiers": [
           {
-            "skillPoints": 28,
-            "maxSkillPoints": 75,
+            "skillPoints": 130,
+            "maxSkillPoints": 150,
             "tierId": 2939,
             "tierName": "Cooking",
             "knownRecipes": [
               {
                 "id": 8616,
                 "name": "Crispy Bat Wing"
+              },
+              {
+                "id": 1901,
+                "name": "Big Bear Steak"
+              },
+              {
+                "id": 1902,
+                "name": "Hot Lion Chops"
+              },
+              {
+                "id": 13344,
+                "name": "Smoked Sagefish"
               },
               {
                 "id": 1535,
@@ -1118,6 +1224,18 @@
                 "name": "Roasted Boar Meat"
               },
               {
+                "id": 1538,
+                "name": "Coyote Steak"
+              },
+              {
+                "id": 1543,
+                "name": "Crab Cake"
+              },
+              {
+                "id": 1545,
+                "name": "Dry Pork Ribs"
+              },
+              {
                 "id": 4353,
                 "name": "Brilliant Smallfish"
               },
@@ -1126,12 +1244,32 @@
                 "name": "Slitherskin Mackerel"
               },
               {
+                "id": 4359,
+                "name": "Bristle Whisker Catfish"
+              },
+              {
+                "id": 4391,
+                "name": "Rainbow Fin Albacore"
+              },
+              {
+                "id": 3963,
+                "name": "Goblin Deviled Clams"
+              },
+              {
+                "id": 3964,
+                "name": "Boiled Clams"
+              },
+              {
                 "id": 4786,
                 "name": "Herb Baked Egg"
               },
               {
                 "id": 52640,
                 "name": "Basic Campfire"
+              },
+              {
+                "id": 54502,
+                "name": "Twice-Spiced Raptor Slice"
               }
             ]
           }
@@ -1166,11 +1304,15 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
         "tiers": [
           {
-            "skillPoints": 60,
-            "maxSkillPoints": 75,
+            "skillPoints": 125,
+            "maxSkillPoints": 150,
             "tierId": 2942,
             "tierName": "First Aid",
             "knownRecipes": [
+              {
+                "id": 4417,
+                "name": "Anti-Venom"
+              },
               {
                 "id": 1838,
                 "name": "Linen Bandage"
@@ -1180,12 +1322,36 @@
                 "name": "Heavy Linen Bandage"
               },
               {
+                "id": 1840,
+                "name": "Wool Bandage"
+              },
+              {
+                "id": 1841,
+                "name": "Heavy Wool Bandage"
+              },
+              {
                 "id": 52641,
                 "name": "First Aid Kit"
               },
               {
                 "id": 54191,
                 "name": "Minor Healing Potion"
+              },
+              {
+                "id": 54192,
+                "name": "Lesser Healing Potion"
+              },
+              {
+                "id": 54193,
+                "name": "Healing Potion"
+              },
+              {
+                "id": 55743,
+                "name": "Woolen Tourniquet"
+              },
+              {
+                "id": 55747,
+                "name": "Simple Poultice"
               }
             ]
           }
@@ -1220,11 +1386,11 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 2727,
-        "value": 2727,
-        "max": 3000,
-        "tier": 3,
-        "name": "Neutral"
+        "raw": 3021,
+        "value": 21,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
       }
     },
     {
@@ -1242,8 +1408,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 3957,
-        "value": 957,
+        "raw": 4051,
+        "value": 1051,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1253,8 +1419,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 3770,
-        "value": 770,
+        "raw": 4107,
+        "value": 1107,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1286,8 +1452,8 @@
       "factionId": 529,
       "factionName": "Argent Dawn",
       "standing": {
-        "raw": 1050,
-        "value": 1050,
+        "raw": 1250,
+        "value": 1250,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1308,8 +1474,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 15120,
-        "value": 6120,
+        "raw": 15251,
+        "value": 6251,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1319,8 +1485,8 @@
       "factionId": 2787,
       "factionName": "Earthen Ring",
       "standing": {
-        "raw": 450,
-        "value": 450,
+        "raw": 600,
+        "value": 600,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"

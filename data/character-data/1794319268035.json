@@ -102,10 +102,10 @@
     },
     {
       "slot": "Shoulders",
-      "name": "Barbaric Shoulders",
-      "ilvl": 35,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135039.jpg",
-      "itemId": 5964,
+      "name": "Nightscape Shoulders",
+      "ilvl": 42,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135038.jpg",
+      "itemId": 8192,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -118,8 +118,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 5,
-          "displayString": "+5 Agility",
+          "value": 11,
+          "displayString": "+11 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -130,18 +130,7 @@
         },
         {
           "value": 5,
-          "displayString": "+5 Strength",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 6,
-          "displayString": "+6 Stamina",
+          "displayString": "+5 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -172,10 +161,10 @@
     },
     {
       "slot": "Chest",
-      "name": "Nightscape Tunic",
-      "ilvl": 41,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132718.jpg",
-      "itemId": 8175,
+      "name": "Jangdor's Handcrafted Tunic",
+      "ilvl": 48,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132723.jpg",
+      "itemId": 19042,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -185,13 +174,11 @@
         "id": 2,
         "name": "Leather"
       },
-      "enchants": [
-        "Enchanted: Stamina +4 and Armor +32"
-      ],
+      "enchants": [],
       "stats": [
         {
-          "value": 15,
-          "displayString": "+15 Agility",
+          "value": 7,
+          "displayString": "+7 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -202,7 +189,18 @@
         },
         {
           "value": 6,
-          "displayString": "+6 Stamina",
+          "displayString": "+6 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 15,
+          "displayString": "+15 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -310,10 +308,10 @@
     },
     {
       "slot": "Feet",
-      "name": "Excelsior Boots",
-      "ilvl": 41,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132541.jpg",
-      "itemId": 4109,
+      "name": "Nightscape Boots",
+      "ilvl": 47,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132539.jpg",
+      "itemId": 8197,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -324,23 +322,12 @@
         "name": "Leather"
       },
       "enchants": [
-        "Enchanted: Stamina +4 and Armor +32"
+        "Enchanted: Stamina +5 and Armor +40"
       ],
       "stats": [
         {
-          "value": 9,
-          "displayString": "+9 Agility",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 7,
-          "displayString": "+7 Strength",
+          "value": 12,
+          "displayString": "+12 Agility",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -489,10 +476,10 @@
     },
     {
       "slot": "Ring 2",
-      "name": "Nogg's Gold Ring",
-      "ilvl": 37,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133345.jpg",
-      "itemId": 9588,
+      "name": "Bloodsport Band",
+      "ilvl": 45,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/133346.jpg",
+      "itemId": 275044,
       "quality": "RARE",
       "itemClass": {
         "id": 4,
@@ -505,8 +492,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 10,
-          "displayString": "+10 Stamina",
+          "value": 6,
+          "displayString": "+6 Stamina",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -516,8 +503,19 @@
           }
         },
         {
-          "value": 3,
-          "displayString": "+3 Defense",
+          "value": 22,
+          "displayString": "+22 Attack Power",
+          "isEquipBonus": true,
+          "color": {
+            "r": 0,
+            "g": 255,
+            "b": 0,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 5,
+          "displayString": "+5 Health Per 5 Sec.",
           "isEquipBonus": true,
           "color": {
             "r": 0,
@@ -632,7 +630,9 @@
         "id": 7,
         "name": "Sword"
       },
-      "enchants": [],
+      "enchants": [
+        "Instant Poison III (51 |4Charge:Charges;)"
+      ],
       "stats": [
         {
           "value": 22,
@@ -662,7 +662,9 @@
         "id": 7,
         "name": "Sword"
       },
-      "enchants": [],
+      "enchants": [
+        "Deadly Poison II (95 |4Charge:Charges;)"
+      ],
       "stats": [
         {
           "value": 3,
@@ -743,7 +745,7 @@
   ],
   "achievementPoints": 0,
   "stats": {
-    "health": 1920,
+    "health": 2068,
     "power": 100,
     "powerType": {
       "id": 3,
@@ -755,23 +757,23 @@
       "ratingNormalized": 0
     },
     "strength": {
-      "base": 60,
-      "effective": 92
+      "base": 64,
+      "effective": 90
     },
     "agility": {
-      "base": 85,
-      "effective": 177
+      "base": 92,
+      "effective": 185
     },
     "intellect": {
-      "base": 26,
-      "effective": 26
+      "base": 27,
+      "effective": 27
     },
     "stamina": {
-      "base": 56,
-      "effective": 133
+      "base": 59,
+      "effective": 137
     },
     "meleeCrit": {
-      "value": 11.2702,
+      "value": 13.695499,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -785,7 +787,7 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "bonusArmor": 112,
+    "bonusArmor": 88,
     "lifesteal": {
       "value": 0.0,
       "ratingBonus": 0.0,
@@ -800,35 +802,35 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 375,
-    "mainHandDamageMin": 104.92857,
-    "mainHandDamageMax": 144.92857,
+    "attackPower": 409,
+    "mainHandDamageMin": 110.27144,
+    "mainHandDamageMax": 150.27144,
     "mainHandSpeed": 2.2,
-    "mainHandDps": 56.785713,
-    "offHandDamageMin": 67.41965,
-    "offHandDamageMax": 93.66965,
+    "mainHandDps": 59.21429,
+    "offHandDamageMin": 70.88036,
+    "offHandDamageMax": 97.130356,
     "offHandSpeed": 1.9,
-    "offHandDps": 42.391922,
+    "offHandDps": 44.213345,
     "spellPower": 0,
     "spellPenetration": 0,
     "spellCrit": {
-      "value": 2.0,
+      "value": 4.9999995,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "manaRegen": 0.0,
     "manaRegenCombat": 0.0,
     "armor": {
-      "base": 112,
-      "effective": 1128
+      "base": 88,
+      "effective": 1156
     },
     "dodge": {
-      "value": 18.5581,
+      "value": 17.511,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 10.92,
+      "value": 10.639999,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -838,7 +840,7 @@
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 2.9502003,
+      "value": 4.9999995,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -853,12 +855,12 @@
       "ratingNormalized": 0
     },
     "spirit": {
-      "base": 41,
-      "effective": 51
+      "base": 43,
+      "effective": 53
     },
     "defense": {
-      "base": 205,
-      "effective": 208
+      "base": 216,
+      "effective": 216
     },
     "fireResistance": {
       "base": 0,
@@ -881,9 +883,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 418,
-    "rangedDamageMin": 96.67143,
-    "rangedDamageMax": 111.67143,
+    "rangedAttackPower": 459,
+    "rangedDamageMin": 103.40715,
+    "rangedDamageMax": 118.40715,
     "expertise": 1.0,
     "offHandExpertise": 1.0,
     "armorPenetration": 0.0,
@@ -913,15 +915,24 @@
     {
       "specId": 253,
       "specName": "Assassination",
-      "spentPoints": 2,
+      "spentPoints": 8,
       "talents": [
         {
-          "rank": 2,
+          "rank": 5,
           "talentId": 135252,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132277.jpg",
           "spellId": 14138,
           "spellName": "Malice",
-          "description": "Increases your critical strike chance with all attacks and Poisons by 2%.",
+          "description": "Increases your critical strike chance with all attacks and Poisons by 5%.",
+          "castTime": "Passive"
+        },
+        {
+          "rank": 3,
+          "talentId": 135251,
+          "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132122.jpg",
+          "spellId": 14156,
+          "spellName": "Ruthlessness",
+          "description": "Gives your finishing moves a 60% chance to add a Combo Point to your target.",
           "castTime": "Passive"
         }
       ]
@@ -1077,7 +1088,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136247.jpg",
         "tiers": [
           {
-            "skillPoints": 194,
+            "skillPoints": 225,
             "maxSkillPoints": 225,
             "tierId": 2945,
             "tierName": "Leatherworking",
@@ -1157,6 +1168,30 @@
               {
                 "id": 2171,
                 "name": "Hillman's Leather Vest"
+              },
+              {
+                "id": 5671,
+                "name": "Turtle Scale Gloves"
+              },
+              {
+                "id": 5672,
+                "name": "Turtle Scale Breastplate"
+              },
+              {
+                "id": 5673,
+                "name": "Nightscape Shoulders"
+              },
+              {
+                "id": 5677,
+                "name": "Wild Leather Shoulders"
+              },
+              {
+                "id": 5681,
+                "name": "Wild Leather Vest"
+              },
+              {
+                "id": 5691,
+                "name": "Nightscape Boots"
               },
               {
                 "id": 4987,
@@ -1287,6 +1322,10 @@
                 "name": "Nightscape Headband"
               },
               {
+                "id": 5682,
+                "name": "Wild Leather Helmet"
+              },
+              {
                 "id": 5050,
                 "name": "Dusky Leather Armor"
               },
@@ -1363,6 +1402,10 @@
                 "name": "Brawler's Leather Gloves"
               },
               {
+                "id": 55192,
+                "name": "Wisdom's Leather Armor"
+              },
+              {
                 "id": 55204,
                 "name": "Moonglow Boots"
               },
@@ -1392,13 +1435,13 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134366.jpg",
         "tiers": [
           {
-            "skillPoints": 225,
-            "maxSkillPoints": 225,
+            "skillPoints": 246,
+            "maxSkillPoints": 300,
             "tierId": 2947,
             "tierName": "Skinning",
             "knownRecipes": [
               {
-                "id": 4768,
+                "id": 5746,
                 "name": "Skinning"
               },
               {
@@ -1516,7 +1559,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/135966.jpg",
         "tiers": [
           {
-            "skillPoints": 210,
+            "skillPoints": 225,
             "maxSkillPoints": 225,
             "tierId": 2942,
             "tierName": "First Aid",
@@ -1524,6 +1567,10 @@
               {
                 "id": 4414,
                 "name": "Silk Bandage"
+              },
+              {
+                "id": 4415,
+                "name": "Heavy Silk Bandage"
               },
               {
                 "id": 4417,
@@ -1546,6 +1593,10 @@
                 "name": "Heavy Wool Bandage"
               },
               {
+                "id": 5767,
+                "name": "Mageweave Bandage"
+              },
+              {
                 "id": 52641,
                 "name": "First Aid Kit"
               },
@@ -1564,8 +1615,8 @@
       "factionId": 577,
       "factionName": "Everlook",
       "standing": {
-        "raw": 4222,
-        "value": 1222,
+        "raw": 4782,
+        "value": 1782,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1575,8 +1626,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 10310,
-        "value": 1310,
+        "raw": 10616,
+        "value": 1616,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1597,8 +1648,8 @@
       "factionId": 470,
       "factionName": "Ratchet",
       "standing": {
-        "raw": 6472,
-        "value": 3472,
+        "raw": 7032,
+        "value": 4032,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1608,8 +1659,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 16158,
-        "value": 7158,
+        "raw": 16258,
+        "value": 7258,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1619,8 +1670,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 13213,
-        "value": 4213,
+        "raw": 13295,
+        "value": 4295,
         "max": 12000,
         "tier": 5,
         "name": "Honored"
@@ -1630,8 +1681,8 @@
       "factionId": 21,
       "factionName": "Booty Bay",
       "standing": {
-        "raw": 5652,
-        "value": 2652,
+        "raw": 6212,
+        "value": 3212,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1641,8 +1692,8 @@
       "factionId": 2587,
       "factionName": "Durotar Supply and Logistics",
       "standing": {
-        "raw": 2000,
-        "value": 2000,
+        "raw": 2125,
+        "value": 2125,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
@@ -1663,8 +1714,8 @@
       "factionId": 369,
       "factionName": "Gadgetzan",
       "standing": {
-        "raw": 4235,
-        "value": 1235,
+        "raw": 4795,
+        "value": 1795,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1674,8 +1725,19 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 8183,
-        "value": 5183,
+        "raw": 8415,
+        "value": 5415,
+        "max": 6000,
+        "tier": 4,
+        "name": "Friendly"
+      }
+    },
+    {
+      "factionId": 2782,
+      "factionName": "Bolder'ok Clan",
+      "standing": {
+        "raw": 3861,
+        "value": 861,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -1696,8 +1758,8 @@
       "factionId": 2827,
       "factionName": "Powderfuse",
       "standing": {
-        "raw": 4352,
-        "value": 1352,
+        "raw": 5472,
+        "value": 2472,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"

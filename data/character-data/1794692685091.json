@@ -210,11 +210,11 @@
     },
     {
       "slot": "Hands",
-      "name": "Loose Chain Gloves",
-      "ilvl": 7,
+      "name": "Runed Copper Gauntlets",
+      "ilvl": 12,
       "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132938.jpg",
-      "itemId": 2645,
-      "quality": "POOR",
+      "itemId": 3472,
+      "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
         "name": "Armor"
@@ -224,7 +224,30 @@
         "name": "Mail"
       },
       "enchants": [],
-      "stats": []
+      "stats": [
+        {
+          "value": 1,
+          "displayString": "+1 Strength",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        },
+        {
+          "value": 1,
+          "displayString": "+1 Stamina",
+          "isEquipBonus": false,
+          "color": {
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 1.0
+          }
+        }
+      ]
     },
     {
       "slot": "Back",
@@ -310,10 +333,10 @@
     },
     {
       "slot": "Off Hand",
-      "name": "Brackwater Shield",
-      "ilvl": 14,
-      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134955.jpg",
-      "itemId": 3654,
+      "name": "Faerleia's Shield",
+      "ilvl": 15,
+      "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/134950.jpg",
+      "itemId": 3450,
       "quality": "UNCOMMON",
       "itemClass": {
         "id": 4,
@@ -326,19 +349,8 @@
       "enchants": [],
       "stats": [
         {
-          "value": 1,
-          "displayString": "+1 Agility",
-          "isEquipBonus": false,
-          "color": {
-            "r": 255,
-            "g": 255,
-            "b": 255,
-            "a": 1.0
-          }
-        },
-        {
-          "value": 1,
-          "displayString": "+1 Stamina",
+          "value": 2,
+          "displayString": "+2 Strength",
           "isEquipBonus": false,
           "color": {
             "r": 255,
@@ -365,11 +377,11 @@
     },
     "strength": {
       "base": 47,
-      "effective": 57
+      "effective": 60
     },
     "agility": {
       "base": 27,
-      "effective": 29
+      "effective": 28
     },
     "intellect": {
       "base": 17,
@@ -380,7 +392,7 @@
       "effective": 50
     },
     "meleeCrit": {
-      "value": 4.0659,
+      "value": 4.0788,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -409,11 +421,11 @@
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
-    "attackPower": 145,
-    "mainHandDamageMin": 55.035713,
-    "mainHandDamageMax": 77.03571,
+    "attackPower": 151,
+    "mainHandDamageMin": 56.278576,
+    "mainHandDamageMax": 78.27858,
     "mainHandSpeed": 2.9,
-    "mainHandDps": 22.770935,
+    "mainHandDps": 23.199509,
     "offHandDamageMin": 0.0,
     "offHandDamageMax": 0.0,
     "offHandSpeed": 2.0,
@@ -429,25 +441,25 @@
     "manaRegenCombat": 0.0,
     "armor": {
       "base": 0,
-      "effective": 874
+      "effective": 918
     },
     "dodge": {
-      "value": 4.0258994,
+      "value": 4.0388,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "parry": {
-      "value": 4.76,
+      "value": 4.92,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "block": {
-      "value": 9.76,
+      "value": 9.919999,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
     "rangedCrit": {
-      "value": 1.0259,
+      "value": 0.8788003,
       "ratingBonus": 0.0,
       "ratingNormalized": 0
     },
@@ -466,8 +478,8 @@
       "effective": 33
     },
     "defense": {
-      "base": 79,
-      "effective": 79
+      "base": 83,
+      "effective": 83
     },
     "fireResistance": {
       "base": 0,
@@ -490,9 +502,9 @@
       "effective": 0
     },
     "movementSpeed": 100.0,
-    "rangedAttackPower": 55,
-    "rangedDamageMin": 12.3928585,
-    "rangedDamageMax": 12.3928585,
+    "rangedAttackPower": 53,
+    "rangedDamageMin": 11.978573,
+    "rangedDamageMax": 11.978573,
     "expertise": 0.0,
     "offHandExpertise": 0.0,
     "armorPenetration": 0.0,
@@ -522,7 +534,7 @@
     {
       "specId": 257,
       "specName": "Protection",
-      "spentPoints": 7,
+      "spentPoints": 8,
       "talents": [
         {
           "rank": 5,
@@ -534,12 +546,12 @@
           "castTime": "Passive"
         },
         {
-          "rank": 2,
+          "rank": 3,
           "talentId": 135500,
           "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/132353.jpg",
           "spellId": 12797,
           "spellName": "Improved Revenge",
-          "description": "Increases damage dealt by your Revenge ability by 40%.",
+          "description": "Increases damage dealt by your Revenge ability by 60%.",
           "castTime": "Passive"
         }
       ]
@@ -580,7 +592,7 @@
         "iconUrl": "https://render.worldofwarcraft.com/forever-us/icons/56/136241.jpg",
         "tiers": [
           {
-            "skillPoints": 65,
+            "skillPoints": 67,
             "maxSkillPoints": 75,
             "tierId": 2938,
             "tierName": "Blacksmithing",
@@ -711,8 +723,8 @@
       "factionId": 81,
       "factionName": "Thunder Bluff",
       "standing": {
-        "raw": 8468,
-        "value": 5468,
+        "raw": 8531,
+        "value": 5531,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -733,8 +745,8 @@
       "factionId": 76,
       "factionName": "Orgrimmar",
       "standing": {
-        "raw": 4815,
-        "value": 1815,
+        "raw": 4877,
+        "value": 1877,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -744,8 +756,8 @@
       "factionId": 530,
       "factionName": "Darkspear Trolls",
       "standing": {
-        "raw": 3765,
-        "value": 765,
+        "raw": 3827,
+        "value": 827,
         "max": 6000,
         "tier": 4,
         "name": "Friendly"
@@ -777,8 +789,8 @@
       "factionId": 68,
       "factionName": "Undercity",
       "standing": {
-        "raw": 1146,
-        "value": 1146,
+        "raw": 1571,
+        "value": 1571,
         "max": 3000,
         "tier": 3,
         "name": "Neutral"
