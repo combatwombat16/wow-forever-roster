@@ -514,12 +514,17 @@
       "track": "alts",
       "role": "None",
       "roleSec": "None",
-      "prof1": "None",
-      "prof2": "None",
+      "prof1": "Mining",
+      "prof2": "Herbalism",
       "guild": "Flowmasters",
       "validation": {
-        "state": "pending"
-      }
+        "state": "validated",
+        "confirmedSlug": "dompy-shambam",
+        "reviewedBy": "combatwombat16",
+        "reviewedAt": "2026-11-18T16:04:18Z"
+      },
+      "race": "Tauren",
+      "class": "Shaman"
     },
     {
       "id": "1794839024862",
