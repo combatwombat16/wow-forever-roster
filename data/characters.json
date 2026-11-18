@@ -119,7 +119,13 @@
       "race": "Windshaper Skyborne",
       "class": "Shaman",
       "prof1": "Alchemy",
-      "prof2": "Herbalism"
+      "prof2": "Herbalism",
+      "validation": {
+        "state": "validated",
+        "confirmedSlug": "vlinder-stormveil",
+        "reviewedBy": "combatwombat16",
+        "reviewedAt": "2026-11-18T16:04:00Z"
+      }
     },
     {
       "id": "1791928886528",
